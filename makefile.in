@@ -1,0 +1,289 @@
+CC	  = @CC@
+XCFLAGS   =
+CFLAGS    =-g -O2 @CFLAGS@ -I./include $(XCFLAGS)
+XLDFLAGS  =
+LDFLAGS   = @LDFLAGS@ $(EFENCE)
+LIBS      = @LIBS@ $(EFENCE) -lm
+U8VERSION = @U8VERSION@
+U8MINOR   = @U8MINOR@
+
+DESTDIR		=
+prefix		= @prefix@
+exec_prefix	= @exec_prefix@
+datarootdir	= @datarootdir@
+datadir		= @datadir@
+LOCALEDIR	= $(DESTDIR)@localedir@
+MANDIR		= $(DESTDIR)@mandir@
+LIBINSTALLDIR	= $(DESTDIR)@libdir@
+CLEAN		= @CLEAN@
+INSTALL		= @INSTALL@
+RANLIB		= @RANLIB@
+MKSTATIC	= @MKSTATIC@
+MKSO		= $(CC) $(CFLAGS) $(XCFLAGS) -shared $(LDFLAGS) $(XLDFLAGS) $(LIBS)
+#MACLIBTOOL	= libtool -dynamic -single_module $(LDFLAGS) $(LIBS)
+MACLIBTOOL	= $(CC) -dynamiclib -single_module $(LDFLAGS) $(LIBS)
+LIBU8SVN	= https://dev.beingmeta.com/src/libu8/trunk
+
+COMMON_HEADERS=\
+	include/libu8/config.h include/libu8/threading.h \
+	include/libu8/libu8.h include/libu8/u8contour.h \
+	include/libu8/u8streamio.h include/libu8/u8stringfns.h \
+	include/libu8/u8ctype.h include/libu8/u8convert.h
+
+LIBU8_SOURCES=\
+  libu8.c streamio.c printf.c logging.c exceptions.c  ctype.c stringfns.c \
+  libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c \
+  digestfns.c pathfns.c filefns.c fileio.c \
+  libu8io.c xfiles.c convert.c filestring.c \
+  tests/latin1u8.c tests/u8recode.c tests/u8xrecode.c tests/echosrv.c
+LIBU8_OBJECTS=libu8.o streamio.o printf.o  contour.o logging.o \
+              ctype.o exceptions.o stringfns.o
+LIBU8FNS_OBJECTS=libu8fns.o netfns.o srvfns.o \
+		 pathfns.o filefns.o fileio.o \
+		 rusage.o timefns.o digestfns.o
+LIBU8IO_OBJECTS=libu8io.o xfiles.o convert.o filestring.o
+LIBU8DATA_OBJECTS=chardata.o
+LIBU8STDIO_OBJECTS=u8stdio.o
+LIBU8SYSLOG_OBJECTS=u8syslog.o
+TESTBIN=tests/u8recode tests/latin1u8 tests/u8xrecode tests/getentity \
+	tests/echosrv
+
+STATIC_LIBS=lib/libu8.a lib/libu8io.a lib/libu8fns.a lib/libu8data.a lib/libu8stdio.a
+
+all: testbin @TAGS@ libs @I18N@
+
+%.o: %.c
+	$(CC) $(CFLAGS) -o $@ -c $<
+tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a lib/libu8stdio.a lib/libu8.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+tests/latin1u8: tests/latin1u8.c lib/libu8stdio.a lib/libu8.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+tests/getentity: tests/getentity.c lib/libu8stdio.a lib/libu8.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+tests/echosrv: tests/echosrv.c lib/libu8stdio.a lib/libu8fns.a lib/libu8.a 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+
+lib/%@suffix@.a:
+	$(MKSTATIC) $@ $^
+lib/%@suffix@.so.@U8VERSION@:
+	$(MKSO) -Wl,-soname=$(@F) -o $@ $^
+lib/%@suffix@.so: lib/%.so.@U8VERSION@
+	ln -sf $(<F) $@
+lib/%@suffix@.@U8VERSION@.dylib:
+	$(MACLIBTOOL) -install_name $(@F) -o $@ $^
+lib/%@suffix@.dylib: lib/%@suffix@.@U8VERSION@.dylib
+	ln -sf $(<F) $@
+
+$(LIBINSTALLDIR)/%.a: lib/%.a
+	$(INSTALL) -d $(LIBINSTALLDIR)
+	$(INSTALL) $< $(LIBINSTALLDIR)
+
+$(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: lib/%@suffix@.so.@U8VERSION@
+	$(INSTALL) -d $(LIBINSTALLDIR)
+	$(INSTALL) $< $(LIBINSTALLDIR)
+$(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
+	ln -sf $(shell basename $<) $@
+
+$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: lib/%@suffix@.@U8VERSION@.dylib
+	$(INSTALL) -d $(LIBINSTALLDIR)
+	$(INSTALL) $< $(LIBINSTALLDIR)
+
+$(LIBINSTALLDIR)/%@suffix@.dylib: \
+		$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
+	ln -sf $(shell basename $<) $@
+
+testbin: $(TESTBIN)
+
+TAGS: tests/*.c include/libu8/*.h *.c
+	etags tests/*.c include/libu8/*.h *.c
+
+libs: lib/libu8.a lib/libu8fns.a lib/libu8io.a lib/libu8data.a \
+      lib/libu8stdio.a lib/libu8.@shared_suffix@ lib/libu8fns.@shared_suffix@ \
+      lib/libu8io.@shared_suffix@ lib/libu8data.@shared_suffix@ \
+      lib/libu8stdio.@shared_suffix@ @syslog_target@
+
+syslog_libs: lib/libu8syslog.a lib/libu8syslog.@shared_suffix@
+
+lib/libu8.a: $(LIBU8_OBJECTS)
+lib/libu8.so.@U8VERSION@: $(LIBU8_OBJECTS)
+lib/libu8.@U8VERSION@.dylib: $(LIBU8_OBJECTS)
+lib/libu8.dll: $(LIBU8_OBJECTS)
+
+lib/libu8fns.a: $(LIBU8FNS_OBJECTS)
+lib/libu8fns.so.@U8VERSION@: $(LIBU8FNS_OBJECTS)
+lib/libu8fns.@U8VERSION@.dylib: $(LIBU8FNS_OBJECTS) lib/libu8.dylib 
+lib/libu8fns.dll: $(LIBU8FNS_OBJECTS) libu8.dll 
+
+lib/libu8data.a: $(LIBU8DATA_OBJECTS)
+lib/libu8data.so.@U8VERSION@: $(LIBU8DATA_OBJECTS)
+lib/libu8data.@U8VERSION@.dylib: $(LIBU8DATA_OBJECTS) lib/libu8.dylib lib/libu8fns.dylib 
+lib/libu8data.dll: $(LIBU8DATA_OBJECTS) lib/libu8.dll lib/libu8fns.dll
+
+lib/libu8io.a: $(LIBU8IO_OBJECTS)
+lib/libu8io.so.@U8VERSION@: $(LIBU8IO_OBJECTS)
+lib/libu8io.@U8VERSION@.dylib: $(LIBU8IO_OBJECTS) \
+	lib/libu8.dylib lib/libu8fns.dylib 
+lib/libu8io.dll: $(LIBU8IO_OBJECTS) lib/libu8.dll lib/libu8fns.dll
+
+lib/libu8stdio.a: $(LIBU8STDIO_OBJECTS)
+lib/libu8stdio.so.@U8VERSION@: $(LIBU8STDIO_OBJECTS)
+lib/libu8stdio.@U8VERSION@.dylib: $(LIBU8STDIO_OBJECTS) lib/libu8.dylib
+lib/libu8stdio.dll: $(LIBU8STDIO_OBJECTS) lib/libu8.dll
+
+lib/libu8syslog.a: $(LIBU8SYSLOG_OBJECTS)
+lib/libu8syslog.so.@U8VERSION@: $(LIBU8SYSLOG_OBJECTS)
+lib/libu8syslog.@U8VERSION@.dylib: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dylib
+lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
+
+docs: docs/man/man3/libu8.h.3
+
+docs/man/man3/libu8.h.3:
+	doxygen docs/doxygen.cfg
+
+clean: 
+	$(CLEAN) *.o *.a *.so *.dylib *.so.* 
+	$(CLEAN) docs/man/man3/* docs/html/* docs/rtf/* docs/latex/*
+	$(CLEAN) tests/getentity tests/latin1u8 tests/u8recode tests/u8xrecode
+	$(CLEAN) tests/echosrv
+tidy: 
+	$(CLEAN) *~ tests/*~ include/libu8/*~
+distclean: clean
+	$(CLEAN) makefile include/libu8/config.h
+	$(CLEAN) config.log config.status config.cache
+
+# Internationalization stuff
+
+$(LOCALEDIR)/%/LC_MESSAGES/libu8msg.mo: etc/intl/%.gmo
+	install $^ $@
+
+etc/intl/libu8msg.pot: *.c tests/*.c
+	xgettext -dlibu8 -oetc/intl/libu8msg.pot -k_ *.c tests/*.c
+etc/intl/%.po: etc/intl/libu8msg.pot
+	msgmerge -U $@ $<
+etc/intl/%.gmo: etc/intl/%.po
+	msgfmt $^ -o $@ 
+
+install-i18n: $(LOCALEDIR)/fr/LC_MESSAGES/libu8msg.mo \
+		$(LOCALEDIR)/es/LC_MESSAGES/libu8msg.mo \
+		$(LOCALEDIR)/nl/LC_MESSAGES/libu8msg.mo
+i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
+
+# Packaging targets
+
+rpmtar: etc/libu8-@U8VERSION@.tar.gz
+rpms: etc/rpms.done
+
+etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile \
+		$(LIBU8_SOURCES) $(COMMON_HEADERS)
+	svn export $(LIBU8SVN) etc/libu8-@U8VERSION@
+	tar -czvf $@ -C etc libu8-@U8VERSION@
+	rm -rf etc/libu8-@U8VERSION@
+
+etc/rpms.done: etc/libu8-@U8VERSION@.tar.gz
+	lsb-rpm --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
+
+# Installation targets
+
+install: install-libs install-headers install-encodings @INSTALLI18N@
+
+install-libs: install-static-libs @install_shared@
+
+install-headers: $(DESTDIR)@prefix@/include/libu8
+	$(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
+$(DESTDIR)@prefix@/include/libu8:
+	$(INSTALL) -d $(DESTDIR)@prefix@/include/libu8
+
+install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
+	$(INSTALL) $(ENCODINGS) $(DESTDIR)@prefix@/share/libu8/encodings
+$(DESTDIR)@prefix@/share/libu8/encodings:
+	$(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
+
+install-docs: docs
+	$(INSTALL) -d $(MANDIR)/man3
+	$(INSTALL) docs/man/man3/* $(MANDIR)/man3
+
+install-static-libs: $(LIBINSTALLDIR)/libu8.a \
+		     $(LIBINSTALLDIR)/libu8io.a \
+		     $(LIBINSTALLDIR)/libu8fns.a \
+		     $(LIBINSTALLDIR)/libu8data.a \
+		     $(LIBINSTALLDIR)/libu8stdio.a
+
+install-so: $(LIBINSTALLDIR)/libu8.so                  \
+	    $(LIBINSTALLDIR)/libu8.so.@U8VERSION@      \
+	    $(LIBINSTALLDIR)/libu8io.so                \
+	    $(LIBINSTALLDIR)/libu8io.so.@U8VERSION@    \
+	    $(LIBINSTALLDIR)/libu8fns.so               \
+	    $(LIBINSTALLDIR)/libu8fns.so.@U8VERSION@   \
+	    $(LIBINSTALLDIR)/libu8data.so              \
+	    $(LIBINSTALLDIR)/libu8data.so.@U8VERSION@  \
+	    $(LIBINSTALLDIR)/libu8stdio.so             \
+	    $(LIBINSTALLDIR)/libu8stdio.so.@U8VERSION@ \
+	    $(LIBINSTALLDIR)/libu8syslog.so            \
+	    $(LIBINSTALLDIR)/libu8syslog.so.@U8VERSION@
+
+install-dylib: $(LIBINSTALLDIR)/libu8.dylib                  \
+               $(LIBINSTALLDIR)/libu8.@U8VERSION@.dylib      \
+	       $(LIBINSTALLDIR)/libu8io.dylib                \
+	       $(LIBINSTALLDIR)/libu8io.@U8VERSION@.dylib    \
+	       $(LIBINSTALLDIR)/libu8fns.dylib               \
+	       $(LIBINSTALLDIR)/libu8fns.@U8VERSION@.dylib   \
+	       $(LIBINSTALLDIR)/libu8data.dylib              \
+	       $(LIBINSTALLDIR)/libu8data.@U8VERSION@.dylib  \
+	       $(LIBINSTALLDIR)/libu8stdio.dylib             \
+	       $(LIBINSTALLDIR)/libu8stdio.@U8VERSION@.dylib \
+	       $(LIBINSTALLDIR)/libu8syslog.dylib            \
+	       $(LIBINSTALLDIR)/libu8syslog.@U8VERSION@.dylib
+
+install-dll: libu8.dll libu8io.dll \
+	    libu8fns.dll libu8data.dll \
+	    libu8stdio.dll \
+	    $(LIBINSTALLDIR)
+	$(INSTALL) -D $^ $(LIBINSTALLDIR)
+
+ENCODINGS=\
+	encodings/ISO88591 \
+	encodings/ISO88593 \
+	encodings/ISO88594 \
+	encodings/ISO88595 \
+	encodings/ISO88597 \
+	encodings/ISO885913 \
+	encodings/ISO885915 \
+	encodings/ISO885916 \
+	encodings/ISO88598 \
+	encodings/ISO88599 \
+	encodings/ISO885910 \
+	encodings/ISO885911 \
+	encodings/ISO885914 \
+	encodings/KOI8 \
+	encodings/KOI8R \
+	encodings/MACINTOSH \
+	encodings/ISO_6937 \
+	encodings/GBK \
+	encodings/CP1258 \
+	encodings/SHIFT_JIS \
+	encodings/CP1125 \
+	encodings/CP1252 \
+	encodings/GB2312 \
+	encodings/ISO88592 \
+	encodings/BIG5 \
+	encodings/EUCJP \
+	encodings/GREEK7 \
+	encodings/EUCKR \
+	encodings/EUCTW \
+	encodings/CP1251 \
+	encodings/SHIFT_JISX0213
+
+# dependencies
+
+streamio.o printf.o logging.o exceptions.o chardata.o stringfns.o convert.o libu8.o: \
+  $(COMMON_HEADERS)
+ctype.o: $(COMMON_HEADERS) entities.h
+timefns.o: $(COMMON_HEADERS) include/libu8/u8timefns.h
+rusage.o: $(COMMON_HEADERS) include/libu8/u8rusage.h
+printf.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8printf.h
+xfiles.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/xfiles.h
+netfns.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8netfns.h
+srvfns.o: $(COMMON_HEADERS) \
+	include/libu8/libu8io.h include/libu8/u8netfns.h \
+	include/libu8/u8srvfns.h
+

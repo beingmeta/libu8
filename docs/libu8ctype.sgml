@@ -1,0 +1,120 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8ctype">
+
+<refmeta>
+<refentrytitle>libu8ctype</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_isalpha</refname>
+<refname>u8_isupper</refname>
+<refname>u8_islower</refname>
+<refname>u8_isalnum</refname>
+<refname>u8_isdigit</refname>
+<refname>u8_ispunct</refname>
+<refpurpose>manipulate UTF-8 string representations</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/ctype.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>int <function>u8_isalpha</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_isupper</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_islower</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_isalnum</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_isdigit</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_isxdigit</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_isodigit</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_ispunct</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_ismodifier</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_isspace</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_isctrl</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_tolower</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_toupper</function></funcdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+
+<para>
+
+The predicates above return 1 or 0 for unicode codepoints based on
+character class information.  The attributed semantics are the same as
+the C library character type functions.  The particular semantics for
+each function are: <function>u8_isalpha</function> returns 1 for
+alphabetic characters; <function>u8_isupper</function> return 1 for
+upper case and title case characters; <function>u8_islower</function>
+return 1 for lower case characters; <function>u8_isspace</function>
+returns 1 for spacing characters; <function>u8_isdigit</function>
+returns 1 for numeric digit characters;
+<function>u8_ispunct</function> returns 1 for punctuation characters;
+<function>u8_isctrl</function> returns 1 for control characters;
+<function>u8_isxdigit</function> returns 1 for hexadecimal digits;
+<function>u8_ioxdigit</function> returns 1 for octal digits.  </para>
+
+<para>
+<function>u8_ismodifier</function> returns 1 if its argument is a
+codepoint for a modifier.  All of these predicate functions return -1
+if their argument is not a valid Unicode character/codepoint.</para>
+
+<para>The functions <function>u8_tolower</function>
+and <function>u8_toupper</function> return lower and uppercase
+versions of their arguments respectively.
+</para>
+
+<para>The simple libu8 library only contains character data info for
+the first two unicode code pages.  The character data info can be set
+by the function <function>u8_set_charinfo</function> or, more
+commonly, by just calling the
+function <function>u8_init_chardata</function> on no arguments, which
+is defined in the <filename>libu8data</filename> library and provides 
+unicode information for the standard Unicode range.</para>
+
+</refsect1>
+
+</refentry>

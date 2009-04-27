@@ -1,0 +1,78 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8netfns">
+
+<refmeta>
+<refentrytitle>libu8netfns</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_connect</refname>
+<refname>u8_host_primary</refname>
+<refname>u8_lookup_host</refname>
+<refname>u8_canonical_addr</refname>
+<refname>u8_connect</refname>
+<refname>u8_sessionid</refname>
+<refpurpose>access network databases and connections</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/netfns.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>char *<function>u8_host_primary</function></funcdef>
+  <paramdef>char *<parameter>hostname</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>char *<function>u8_lookup_host</function></funcdef>
+  <paramdef>char *<parameter>hostname</parameter></paramdef>
+  <paramdef>char **<parameter>addrp</parameter></paramdef>
+  <paramdef>int *<parameter>addrlen</parameter></paramdef>
+  <paramdef>unsigned int *<parameter>typep</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>char *<function>u8_canonical_addr</function></funcdef>
+  <paramdef>char *<parameter>spec</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int<function>u8_connect</function></funcdef>
+  <paramdef>char *<parameter>spec</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_sessionid</function></funcdef>
+  <void>
+</funcprototype>
+
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+
+<para>These functions provide a uniform access layer to network
+databases as well as for making network connections and canonical
+service ids.  The canonical service ids take the form "port@host"
+where port is either a service name, an integer port number, or a
+touch-tone encoded port number.
+</para>
+
+<para><function>u8_host_primary</function> returns the primary name
+for a particular network host.  <function>u8_lookup_host</function>
+looks up a host, storing its address, the address size, and the
+address type, at the designated pointers.</para>
+
+<para>A canonical service id is returned
+by <function>u8_canonical_addr</function>.  This gets the primary host
+name and converts the port number to an integer.  A connection to this
+service is made by the function <function>u8_connect</function>.</para>
+
+<para><function>u8_session_id</function> returns a string intended to
+uniquely identify the current execution context, based on hostnames,
+start times, and process ids.</para>
+
+</refsect1>
+
+</refentry>

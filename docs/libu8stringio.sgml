@@ -1,0 +1,130 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8stringio">
+
+<refmeta>
+<refentrytitle>libu8stringio</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_open_input_string</refname>
+<refname>u8_open_output_string</refname>
+<refname>U8_INIT_OUTPUT</refname>
+<refname>U8_INIT_OUTPUT_X</refname>
+<refname>U8_INIT_FIXED_OUTPUT</refname>
+<refname>U8_INIT_INPUT</refname>
+<refname>u8_sputc</refname>
+<refname>u8_sputn</refname>
+<refname>u8_sgetc</refname>
+<refpurpose>does direct string input and output</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#define U8_INLINE_IO 1
+#include &lt;libu8/stringio.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>U8_OUTPUT *<function>u8_open_output_string</function></funcdef>
+  <paramdef>int <parameter>bufsiz</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>U8_INPUT *<function>u8_open_input_string</function></funcdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_sgetc</function></funcdef>
+  <paramdef>U8_INPUT *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_sputc</function></funcdef>
+  <paramdef>U8_OUTPUT *<parameter>stream</parameter></paramdef>
+  <paramdef>int <parameter>codepoint</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_sputn</function></funcdef>
+  <paramdef>U8_OUTPUT *<parameter>stream</parameter></paramdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>n</parameter></paramdef>
+<funcprototype>
+  <funcdef>macro <function>U8_INIT_OUTPUT</function></funcdef>
+  <paramdef>U8_STREAM *<parameter>stream</parameter></paramdef>
+  <paramdef>int <parameter>bufsiz</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>macro <function>U8_INIT_FIXED_OUTPUT</function></funcdef>
+  <paramdef>U8_STREAM *<parameter>stream</parameter></paramdef>
+  <paramdef>int <parameter>bufsiz</parameter></paramdef>
+  <paramdef>char *<parameter>buf</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>macro <function>U8_INIT_INPUT</function></funcdef>
+  <paramdef>U8_STREAM *<parameter>stream</parameter></paramdef>
+  <paramdef>int <parameter>bufsiz</parameter></paramdef>
+  <paramdef>char *<parameter>buf</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>macro <function>U8_INIT_INPUT_BUF</function></funcdef>
+  <paramdef>U8_STREAM *<parameter>stream</parameter></paramdef>
+  <paramdef>int <parameter>bufsiz</parameter></paramdef>
+</funcprototype>
+
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+
+<para>The core libu8 library provides for string input and output
+using <type>U8_INPUT</type> and <type>U8_OUTPUT</type> structs.  Note
+that the generic functions, such as <function>u8_putc</function> and
+<function>u8_getc</function> also work on pointers to these
+structures.</para>
+
+<para>The function <function>u8_open_input_string</function> returns
+an input stream reading from its argument.  The
+function <function>u8_open_output_string</function> return an output
+stream initialized to the specified size.</para>
+
+<para><type>U8_INPUT</type> and <type>U8_OUTPUT</type> structures can
+also be stack-allocated and initialized by the
+<function>U8_INIT_OUTPUT</function>, <function>U8_INIT_FIXED_OUTPUT</function>,
+and <function>U8_INIT_INPUT</function>
+macros.  <function>U8_INIT_OUTPUT</function> initializes a string
+output stream to a particular size but will be extended as
+needed. <function>U8_INIT_FIXED_OUTPUT</function> initializes a stream
+with a particular buffer which will not be grown automatically.
+<function>U8_INIT_INPUT</function> initialized a string input stream
+from a particular null-terminated utf-8 string.</para>
+
+<para><function>u8_sgetc</function> returns one codepoint from the
+string stream.</para>
+
+<para><function>u8_sputc</function> writes a single unicode character
+(codepoint) to the output string
+stream.  <function>u8_sputn</function> writes n bytes (or a whole
+number of unicode characters/codepoints).</para>
+
+<para>Note that the generic libu8 I/O
+functions <function>u8_getc</function>,
+<function>u8_getn</function>, <function>u8_gets</function>,
+<function>u8_putc</function>,
+<function>u8_putn</function>, and <function>u8_puts</function> all
+also work with input and output string streams.</para>
+
+<para>The generic function <function>u8_close</function>, called on a
+pointerto an input or output stream (cast to
+type <type>u8_stream</type>)) will free any memory associated with the
+stream.</para>
+
+<para>If the preprocessor macro <function>U8_INLINE_IO</function> is
+defined to 1 before including the
+file <filename>libu8/stringio.h</filename>, I/O will be
+inline-coded.</para>
+
+</refsect1>
+
+</refentry>
+

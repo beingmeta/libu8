@@ -1,0 +1,67 @@
+/* -*- Mode: C; -*- */
+
+/* Copyright (C) 2004-2009 beingmeta, inc.
+   This file is part of the libu8 UTF-8 unicode library.
+
+   This program comes with absolutely NO WARRANTY, including implied
+   warranties of merchantability or fitness for any particular
+   purpose.
+
+    Use, modification, and redistribution of this program is permitted
+    under any of the licenses found in the the 'licenses' directory 
+    accompanying this distribution, including the GNU General Public License
+    (GPL) Version 2 or the GNU Lesser General Public License.
+*/
+
+/** \file u8digestfns.h
+    Provides u8_getdigestfns.
+    This wraps or implements various functions for computing
+     various message digests (hashes) to use in validation or
+     cryptography.
+ **/
+
+#ifndef LIBU8_DIGESTFNS_H
+#define LIBU8_DIGESTFNS_H 1
+#define LIBU8_DIGESTFNS_H_VERSION \
+        "$Id: u8digestfns.h 3635 2009-04-22 02:45:30Z haase $"
+
+/** Returns the MD5 hash (16 bytes) of a data buffer
+    @param data a pointer to a data buffer
+    @param len the number of bytes in the data buffer (or -1)
+    @param result a result buffer (at least 20 bytes) or NULL
+    @returns the MD5 hash of the provided data
+  If @var len is negative, strlen() is called on the input data.
+  If @var result is NULL, a buffer of appropriate size is created with malloc()
+**/
+U8_EXPORT unsigned char *u8_md5
+  (unsigned char *data,int len,unsigned char *result);
+
+/** Returns the SHA-1 hash (20 bytes) of a data buffer
+    @param data a pointer to a data buffer
+    @param len the number of bytes in the data buffer (or -1)
+    @param result a result buffer (at least 20 bytes) or NULL
+    @returns the SHA1 hash of the provided data
+  If @var len is negative, strlen() is called on the input data.
+  If @var result is NULL, a buffer of appropriate size is created with malloc()
+**/
+U8_EXPORT unsigned char *u8_sha1
+  (unsigned char *data,int len,unsigned char *result);
+
+/** Returns a signed HMAC-SHA1 signature (20 bytes) of a data buffer
+    @param key     a pointer to a key buffer
+    @param key_len the length of the key buffer in bytes (or -1)
+    @param data    a pointer to a data buffer
+    @param len     the number of bytes in the data buffer (or -1)
+    @param result  a result buffer (at least 20 bytes) or NULL
+    @returns the SHA1 hash of the provided data
+  If @var len or @var key_len is negative, strlen() is called on the
+    corresponding input buffers;
+  If @var result is NULL, a buffer of appropriate size is created with malloc()
+**/
+U8_EXPORT unsigned char *u8_hmac_sha1
+  (unsigned char *key,int key_len,
+   unsigned char *data,int data_len,
+   unsigned char *result,int *result_len);
+
+
+#endif

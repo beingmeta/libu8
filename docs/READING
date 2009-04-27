@@ -1,0 +1,65 @@
+READING THE CODE
+
+This document describes conventions and advice for reading the libu8
+library code.
+
+libu8 is a set of cross-platform libraries for working with unicode
+strings internally represented using utf-8.  It provides basic string
+functions over this representation as well as operating system
+interfaces and buffered I/O functions which do automatic character set
+encoding and decoding.  Finally, it provides a variety of
+cross-platform functions for file and environment access.
+
+MORPHOLOGY
+
+Uppercase identifiers are nearly always preprocessor macros or
+structure names.  Mixed case identifiers are typically *condition
+names* used when signalling errors.  Lowercase identifiers are
+typically functions though they may occasionally be implemented by the
+preprocessor for efficiency.
+
+A C structure named FOO is typically typedefed to the identifier FOO
+and pointers to the structure are typically typedefed to the lowercase
+identifier foo.  For example, 
+  typedef struct U8_OUTPUT { ...} U8_OUTPUT;
+  typedef struct U8_OUTPUT *u8_output;
+
+Functions or macros ending in _x or _X are typically the full-featured
+version of a given function, while the name without the suffix refer
+to the most common use case, typically with fewer arguments.
+
+PSEUDO SUBCLASSING
+
+The libraries use a simple approach to a kind of subclassing based on
+C structs.  The key idea is that a struct X might be pseudo subclassed
+by two structs Y and Z which include all of the fields/members of X
+but add distinct fields of their own.  The preprocessor variable
+X_FIELDS specifies all of these fields, allowing simple inclusion and
+extension.
+
+THE PIECES
+
+libu8 is the core library with functions for reading, validating, and
+mainpulating utf8 strings, handling unicode character type (isspace,
+isupper, etc) information, and doing I/O to and from streams generic
+Unicode streams.  In the core library, the only kind of streams
+provided for are string streams consisting of utf-8 encoded data.
+
+libu8io builds on libu8 with functions for converting to and from
+other encodings and for streams which do automatic conversion of data
+coming on file descriptors or sockets.  It includes the ability to
+open a file or a network connection with a given character encoding
+and reading or writing to that file.
+
+libu8fns provides various utility functions, most of which aren't
+really related to utf8, but are handy to have.  They include functions
+for accessing the file system, connecting across the network, and
+getting time information of various sorts.
+
+libu8data provides the raw data used for character type determination
+and character manipulation generally.  Without it, the libraries are
+less effective dealing with typing or case changing of most unicode
+characters.
+
+The libraries libu8stdio and libu8syslog provide different ways to
+handle errors and other messages.

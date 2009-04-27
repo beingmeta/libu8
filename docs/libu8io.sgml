@@ -1,0 +1,84 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8io">
+
+<refmeta>
+<refentrytitle>libu8io</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_putc</refname>
+<refname>u8_puts</refname>
+<refname>u8_putn</refname>
+<refname>u8_getc</refname>
+<refname>u8_getn</refname>
+<refname>u8_gets</refname>
+<refpurpose>utf8 I/O functions</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/u8io.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>int <function>u8_getc</function></funcdef>
+  <paramdef>U8_INPUT *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_getn</function></funcdef>
+  <paramdef>u8_byte *<parameter>buf</parameter></paramdef>
+  <paramdef>int <parameter>len</parameter></paramdef>
+  <paramdef>U8_INPUT *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_getn</function></funcdef>
+  <paramdef>u8_byte *<parameter>buf</parameter></paramdef>
+  <paramdef>int <parameter>len</parameter></paramdef>
+  <paramdef>U8_INPUT *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_gets_x</function></funcdef>
+  <paramdef>u8_byte *<parameter>buf</parameter></paramdef>
+  <paramdef>int <parameter>len</parameter></paramdef>
+  <paramdef>U8_INPUT *<parameter>stream</parameter></paramdef>
+  <paramdef>u8_string <parameter>terminator</parameter></paramdef>
+  <paramdef>int *<parameter>sizep</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_getrec</function></funcdef>
+  <paramdef>U8_INPUT *<parameter>stream</parameter></paramdef>
+  <paramdef>u8_string <parameter>terminator</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_gets</function></funcdef>
+  <paramdef>U8_INPUT *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_putc</function></funcdef>
+  <paramdef>U8_OUTPUT *<parameter>stream</parameter></paramdef>
+  <paramdef>int <parameter>char</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_putn</function></funcdef>
+  <paramdef>U8_OUTPUT *<parameter>stream</parameter></paramdef>
+  <paramdef>u8_byte *<parameter>buf</parameter></paramdef>
+  <paramdef>int <parameter>len</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_puts</function></funcdef>
+  <paramdef>U8_OUTPUT *<parameter>stream</parameter></paramdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+</funcprototype>
+
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para></para>
+
+</refsect1>
+
+</refentry>

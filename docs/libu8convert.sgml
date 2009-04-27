@@ -1,0 +1,169 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="convert">
+
+<refmeta>
+<refentrytitle>libu8convert</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_convert</refname>
+<refname>u8_localize</refname>
+<refname>u8_make_string</refname>
+<refname>u8_get_encoding</refname>
+<refname>u8_load_encoding</refname>
+<refpurpose>use, read, and declare text encodings</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/convert.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>int <function>u8_convert</function></funcdef>
+  <paramdef>U8_ENCODING *<parameter>encoding</parameter></paramdef>
+  <paramdef>U8_OUTPUT *<parameter>outstream</parameter></paramdef>
+  <paramdef>unsigned char **<parameter>start</parameter></paramdef>
+  <paramdef>unsigned char *<parameter>end</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_make_string</function></funcdef>
+  <paramdef>U8_ENCODING *<parameter>encoding</parameter></paramdef>
+  <paramdef>unsigned char *<parameter>start</parameter></paramdef>
+  <paramdef>unsigned char *<parameter>end</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>unsigned char *<function>u8_localize</function></funcdef>
+  <paramdef>U8_ENCODING *<parameter>encoding</parameter></paramdef>
+  <paramdef>u8_byte **<parameter>scanner</parameter></paramdef>
+  <paramdef>u8_byte *<parameter>end</parameter></paramdef>
+  <paramdef>int <parameter>escape_char</parameter></paramdef>
+  <paramdef>int <parameter>crlf_convert</parameter></paramdef>
+  <paramdef>unsigned char *<parameter>buf</parameter></paramdef>
+  <paramdef>int *<parameter>buflenp</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>char *<function>u8_localize_string</function></funcdef>
+  <paramdef>U8_ENCODING *<parameter>encoding</parameter></paramdef>
+  <paramdef>u8_byte *<parameter>start</parameter></paramdef>
+  <paramdef>u8_byte *<parameter>end</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_encoding <function>u8_get_encoding</function></funcdef>
+  <paramdef>char *<parameter>name</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_encoding <function>u8_default_encoding</function></funcdef>
+  <paramdef>char *<parameter>name</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_encoding <function>u8_load_encoding</function></funcdef>
+  <paramdef>char *<parameter>name</parameter></paramdef>
+  <paramdef>char *<parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_encoding <function>u8_define_encoding</function></funcdef>
+  <paramdef>char *<parameter>name</parameter></paramdef>
+  <paramdef>struct U8_MB_MAP *<parameter>map</parameter></paramdef>
+  <paramdef>int <parameter>size</parameter></paramdef>
+  <paramdef>wc2mb_fn <parameter>wc2mb</parameter></paramdef>
+  <paramdef>mb2wc_fn <parameter>mb2wc</parameter></paramdef>
+  <paramdef>int <parameter>flags</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+
+<para>These functions handle conversion of UTF-8 into and out of other
+character encodings.  They include the functions for getting the
+encodings themselves, loading encoding files in several formats, and
+doing the actual conversion.</para>
+
+<para><function>u8_convert</function> converts a local character
+encoding into a UTF-8 string.  It takes a pointer to an encoding
+structure describing the input character set, a pointer to a string
+output stream, a scanner (a pointer to a pointer) into a data buffer
+and another pointer into a later point into the same buffer.  It
+converts the contents of the data buffer up until the end point,
+outputting the results to the output string stream and advancing the
+scanner.  It returns the number of Unicode code points read during the
+conversion.
+
+<para><function>u8_make_string</function> takes an encoding, a
+scanner and and end pointer and simply returns the UTF-8 string
+resulting from the conversion.  If the end pointer is NULL, the string
+is assumed to be NULL-terminated and processing stops when the NULL is
+encountered.</para>
+
+<para><function>u8_localize</function> takes an encoding, a scanner
+into a UTF-8 string, an end pointer, an escape character, a flag for
+crlf conversion, a pointer to a buffer and a pointer to an integer
+length.  It converts the substring into the specified encoding until
+either the end pointer is reached or the provided buffer runs out of
+space.  In either case, a pointer to the converted content is
+returned.  The number of bytes written into the buffer are written
+into the length pointer passed to the function.  If the buffer is null
+a buffer is allocated with enough space for the generated
+string.</para>
+
+<para>The escape character, if specified, indicates how
+unrepresentable characters are handled.  If it is negative,
+unrepresentable characters set the error status and cause the call to
+return NULL.  If it is a backslash or ampersand character, the
+character is output using either Java or XML conventions
+(e.g. <literal>\u0345</literal> or <literal>&0x0345</literal>).
+Otherwise, the specified argument is output in place of the
+unrepresentable character.</para>
+
+<para><function>u8_localize_string</function> takes a pointer to an
+encoding structure and two pointers into a UTF-8 string.  It returns a
+freshly mallocd string based on converting the characters in the
+range.</para>
+
+<para><function>u8_get_encoding</function> takes a string and returns
+a pointer to an encoding data structure with a particular name, trying
+to load the definition if one is not available.  Encoding names are
+compared by removing all punctuation and converting to lower case.
+The function <function>u8_load_encoding</function> explicitly loads a
+named encoding from a particular file.</para>
+
+<para><function>u8_default_encoding</function> takes a string argument
+(a default encoding name) returns a pointer to an encoding data
+structure describing the default encoding, using the LC_CTYPE and LANG
+environment variables.  If these fail, it returns an encoding based on
+its default argument.</para>
+
+<para><function>u8_define_encoding</function> defines a new character
+encoding with a particular name, returning a pointer to the created
+encoding structure.  If an encoding with that name currently exists, a
+warning is produced and the existing coding is returned.  The most
+common kind of encoding is defined by passing an array of U8_MB_MAP
+structs.  Each element of this array consists of a pair of integers;
+the first integer is a code point in the character set and the second
+integer is the unicode code point it corresponds to.  When doing a
+conversion of this sort, local codepoints of increasing sizes are read
+in MSB order until an entry is found in the table, in which case the
+corresponding unicode code point is used.  The method is especially
+optimized for cases where all the code points in a range are
+represented linearly.  <function>u8_define_encoding</function>
+automatically generates an inverse map to be used when it is given a
+U8_MB_MAP array.</para>
+
+<para>The more general case for character conversion is specified when
+the map argument is NULL and a pair of encoding/decoding functions is
+provided.  The mb2wc function takes a pointer to an unicode code point
+(represented as a native int), a pointer to a character buffer, and a
+buffer size.  It returns the number of characters consumed and
+deposits a unicode character in its first argument.  The buffer size
+argument indicates the number of valid bytes in the buffer and the
+function returns -1 if there is not a valid encoding in the buffer.
+</para>
+
+</refsect1>
+
+</refentry>
+

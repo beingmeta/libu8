@@ -1,0 +1,136 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8pathfns">
+
+<refmeta>
+<refentrytitle>libu8pathfns</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_tolibc</refname>
+<refname>u8_fromlibc</refname>
+<refname>u8_filename</refname>
+<refname>u8_localize_filename</refname>
+<refname>u8_dirname</refname>
+<refname>u8_basename</refname>
+<refname>u8_directoryp</refname>
+<refname>u8_searchpath</refname>
+<refname>u8_find_file</refname>
+<refpurpose>manipulate pathname strings</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/filefns.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>u8_string <function>u8_fromlibc</function></funcdef>
+  <paramdef>char *<parameter>string</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>char *<function>u8_tolibc</function></funcdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_dirname</function></funcdef>
+  <paramdef>u8_string <parameter>pathname</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_basename</function></funcdef>
+  <paramdef>u8_string <parameter>pathname</parameter></paramdef>
+  <paramdef>u8_string <parameter>suffix</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_directoryp</function></funcdef>
+  <paramdef>u8_string <parameter>pathname</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_file_existsp</function></funcdef>
+  <paramdef>u8_string <parameter>pathname</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_file_writablep</function></funcdef>
+  <paramdef>u8_string <parameter>pathname</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_file_readablep</function></funcdef>
+  <paramdef>u8_string <parameter>pathname</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string *<function>u8_search_path</function></funcdef>
+  <paramdef>u8_string <parameter>path</parameter></paramdef>
+  <paramdef>int <parameter>sepchar</parameter></paramdef>
+  <paramdef>int *<parameter>n_elts</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_find_file</function></funcdef>
+  <paramdef>u8_string <parameter>core</parameter></paramdef>
+  <paramdef>u8_string *<parameter>prefixes</parameter></paramdef>
+  <paramdef>int <parameter>n_prefixes</parameter></paramdef>
+  <paramdef>u8_string *<parameter>suffixes</parameter></paramdef>
+  <paramdef>int <parameter>n_suffixes</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_abspath</function></funcdef>
+  <paramdef>u8_string <parameter>path</parameter></paramdef>
+  <paramdef>u8_string <parameter>base</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_realpath</function></funcdef>
+  <paramdef>u8_string <parameter>path</parameter></paramdef>
+  <paramdef>u8_string <parameter>base</parameter></paramdef>
+</funcprototype>
+
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+
+<para>These functions provide a generic layer for manipulating file
+pathnames, including lexical extraction and file pathname information.
+<function>u8_dirname</function> returns the directory component of a
+pathname while <function>u8_basename</function> returns the
+non-directory portion of a filename, possibly removing the specified
+<varname>suffix</varname>.  <function>u8_directoryp</function> returns
+1 if its argument is a directory pathname.
+<function>u8_file_existsp</function> returns 1 if its argument
+specifies an existing pathname.
+<function>u8_file_readablep</function> returns 1 if its argument
+specifies a readable pathname.  <function>u8_file_writablep</function>
+returns 1 if its argument specifies a writable pathname.</para>
+
+<para>The functions <function>u8_tolibc</function>
+and <function>u8_fromlibc</function> convert to and from the C
+libraries native representation, which presumably reflects (or will be
+convereted to) the underlying file system.  The behaviour of these
+function is simply to call the functions stored
+in <varname>u8_tolibcfn</varname>
+and <varname>u8_fromlibcfn</varname>.  If these variables are NULL,
+the default, they simply copy the UTF-8 string, translating bad UTF-8
+sequences into the "unknown character" 0xFFFD.
+</para>
+
+<para>The functions <function>u8_abspath</function>
+and <function>u8_realpath</function> generate canonical pathname
+variants assuming a current directory <varname>base</varname>, which
+defaults to the current directory.  <function>u8_abspath</function>
+interprets relative pathnames and also handles (if possible) the
+"~user" syntax.  <function>u8_realpath</function> uses POSIX functions
+to follow symbolic links after generating an absolute path.</para>
+
+<para><function>u8_localpath</function> converts a UTF-8 filename into
+local pathname (char *) after u8_abspath conversion.</para>
+
+<para>A path/file searching mechanism is provided by the
+function <function>u8_find_file</function>.  This function takes a
+core name, a search path, and a possibly NULL test function.  The
+search path is a colon-separated string of paths which are either used
+as prefixes to the core name or include a percent sign (%) which will
+be replaced by the core name.</para>
+
+</refsect1>
+
+</refentry>

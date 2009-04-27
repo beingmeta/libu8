@@ -1,0 +1,20 @@
+prefix		= @prefix@
+datarootdir	= @datarootdir@
+datadir		= @datadir@
+INSTALL		= @INSTALL@
+MANDIR		= @mandir@/man3
+
+MANFILES=libu8.3S libu8ctype.3S libu8io.3S libu8stringio.3S \
+	libu8convert.3S libu8printf.3S libu8xfiles.3S \
+	libu8pathfns.3S libu8filefns.3S libu8netfns.3S libu8timefns.3S 
+
+man-pages: $(MANFILES)
+
+clean:
+	rm -f *.3S 
+
+%.3S: %.sgml
+	docbook2man $^
+
+install: $(MANFILES)
+	$(INSTALL) $(MANFILES) $(MANDIR)

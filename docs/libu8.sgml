@@ -1,0 +1,71 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8io">
+
+<refmeta>
+<refentrytitle>libu8</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_strlen</refname>
+<refname>u8_strlen_x</refname>
+<refname>u8_substring</refname>
+<refname>u8_string_ref</refname>
+<refname>u8_string_append</refname>
+<refname>u8_slice</refname>
+<refname>u8_valid_ptr</refname>
+<refname>u8_validp</refname>
+<refname>u8_validp_x</refname>
+<refname>u8_isalpha</refname>
+<refname>u8_isupper</refname>
+<refname>u8_islower</refname>
+<refname>u8_isalnum</refname>
+<refname>u8_isdigit</refname>
+<refname>u8_ispunct</refname>
+<refpurpose>manipulate UTF-8 string representations</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/printf.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>int <function>u8_strlen</function></funcdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_strlen_x</function></funcdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>len</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_substring</function></funcdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>offset</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_substring</function></funcdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+  <paramdef>int <parameter>offset</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_string_ref</function></funcdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_string_append</function></funcdef>
+  <paramdef>u8_string <parameter>string</parameter></paramdef>
+  <paramdef>...</paramdef>
+</funcprototype>
+
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para></para>
+
+</refsect1>
+</refentry>

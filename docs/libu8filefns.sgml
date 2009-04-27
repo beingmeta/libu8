@@ -1,0 +1,172 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8filefns">
+
+<refmeta>
+<refentrytitle>libu8filefns</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_fopen</refname>
+<refname>u8_fopen_locked</refname>
+<refname>u8_fclose</refname>
+<refname>u8_lock_fd</refname>
+<refname>u8_unlock_fd</refname>
+<refname>u8_getcwd</refname>
+<refname>u8_setcwd</refname>
+<refname>u8_getenv</refname>
+<refname>u8_removefile</refname>
+<refname>u8_movefile</refname>
+<refname>u8_linkfile</refname>
+<refname>u8_find_file</refname>
+<refname>u8_localpath</refname>
+<refname>u8_path_append</refname>
+<refname>u8_abspath</refname>
+<refname>u8_realpath</refname>
+<refname>u8_dirname</refname>
+<refname>u8_basename</refname>
+<refname>u8_directoryp</refname>
+<refname>u8_file_existsp</refname>
+<refname>u8_file_readablep</refname>
+<refname>u8_file_writablep</refname>
+<refname>u8_file_ctime</refname>
+<refname>u8_file_mtime</refname>
+<refname>u8_file_atime</refname>
+<refname>u8_file_mode</refname>
+<refname>u8_file_owner</refname>
+<refname>u8_subscribe</refname>
+<refname>u8_renew</refname>
+<refname>u8_renew_all</refname>
+<refname>u8_getfiles</refname>
+<refname>u8_getdirs</refname>
+<refpurpose>open and manipulate files</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/filefns.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>FILE *<function>u8_fopen</function></funcdef>
+  <paramdef>u8_string <parameter>pathname</parameter></paramdef>
+  <paramdef>char *<parameter>mode</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>FILE *<function>u8_fopen_locked</function></funcdef>
+  <paramdef>u8_string <parameter>pathname</parameter></paramdef>
+  <paramdef>char *<parameter>mode</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_fclose</function></funcdef>
+  <paramdef>FILE *<parameter>file</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_lock_fd</function></funcdef>
+  <paramdef>int <parameter>fd</parameter></paramdef>
+  <paramdef>int <parameter>for_write</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_unlock_fd</function></funcdef>
+  <paramdef>int <parameter>fd</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_getwd</function></funcdef>
+  <void>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_getenv</function></funcdef>
+  <paramdef>char *<parameter>envname</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>char *<function>u8_localpath</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_abspath</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+  <paramdef>u8_string <parameter>base</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_realpath</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+  <paramdef>u8_string <parameter>base</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_dirname</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_basename</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_file_existsp</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_file_writablep</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_file_readablep</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_directoryp</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>time_t <function>u8_file_ctime</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>time_t <function>u8_file_mtime</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>time_t <function>u8_file_atime</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_file_owner</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_find_file</function></funcdef>
+  <paramdef>u8_string <parameter>name</parameter></paramdef>
+  <paramdef>u8_string <parameter>search_path</parameter></paramdef>
+  <paramdef>int (*)(u8_string) <parameter>testp</parameter></paramdef>
+</funcprototype>
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+
+<para>These functions provide wrappers to the STDIO file functions
+which do pathname translation and include special provisions for file
+locking.</para>
+
+<para><function>u8_fopen</function>
+and <function>u8_fopen_locked</function> return <type>FILE *</type>
+pointers based on filenames converted
+by <function>u8_localpath</function> and possibly locking the underlying
+file.</para>
+
+<para>A low level interface for file locking
+provides <function>u8_lock_fd</function> to lock a file designated by
+a file descriptor, locking it for writing if the second argument is
+non-zero.  <function>u8_unlock_fd</function> unlocks a file descriptor
+locked with <function>u8_lock_fd</function>.</para>
+
+<para><function>u8_getwd</function> returns the current working
+directory, doing libc conversion as appropriate.
+<function>u8_getenv</function> calls the C library
+function <function>getenv</function> and converts the result.
+</para>
+
+</refsect1>
+
+</refentry>

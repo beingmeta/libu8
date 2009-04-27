@@ -1,0 +1,92 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8printf">
+
+<refmeta>
+<refentrytitle>libu8printf</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_printf_handlers</refname>
+<refname>u8_printf</refname>
+<refname>u8_mkstring</refname>
+<refname>u8_fprintf</refname>
+<refname>u8_fputs</refname>
+<refname>u8_utf8_stdio</refname>
+<refname>u8_latin1_stdio</refname>
+<refname>u8_ascii_stdio</refname>
+<refname>u8_add_handler</refname>
+<refpurpose>produce formatted output</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/printf.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>void <function>u8_printf</function></funcdef>
+  <paramdef>U8_OUTPUT *<parameter>stream</parameter></paramdef>
+  <paramdef>const char *<parameter>format</parameter></paramdef>
+  <varargs>
+</funcprototype>
+<funcprototype>
+  <funcdef>u8_string <function>u8_mkstring</function></funcdef>
+  <paramdef>const char *<parameter>format</parameter></paramdef>
+  <varargs>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_fprintf</function></funcdef>
+  <paramdef>FILE *<parameter>stream</parameter></paramdef>
+  <paramdef>const char *<parameter>format</parameter></paramdef>
+  <varargs>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_fputs</function></funcdef>
+  <paramdef>const char *<parameter>string</parameter></paramdef>
+  <paramdef>FILE *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_utf8_stdio</function></funcdef>
+  <void>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_latin1_stdio</function></funcdef>
+  <void>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_ascii_stdio</function></funcdef>
+  <void>
+</funcprototype>
+
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+
+<para>These functions provide for formatted output along the lines of
+the standard C libraries <function>printf</function> family of
+functions.  The format codes in the format string include the standard
+format codes 'd' (for ints), 'f' and 'g' (floating point numbers), 'x'
+(hexadecimal ints), and 's' (for strings).  In addition, the format
+code 'm' outputs a string but first tries to translate the string
+through the <function>gettext</function> function.</para>
+
+<para><function>u8_printf</function> puts formatted output to an
+output stream, while <function>u8_mkstring</function> puts the
+formatted output into a UTF-8 string which is returned.</para>
+
+<para>These functions are combined with the standard I/O library
+through a variety of other functions.  <function>u8_fprintf</function>
+outputs the results to a FILE * pointer, while u8_fputs outputs a
+utf-8 string to a FILE * pointer.  By default, this output is simply
+the direct UTF-8 but a small range of output encodings can be set by
+the
+functions <function>u8_latin1_stdio</function>, <function>u8_ascii_stdio</function>, <function>u8_utf8_stdio</function>.</para>
+
+</refsect1>
+
+</refentry>
+

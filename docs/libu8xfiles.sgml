@@ -1,0 +1,98 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8xfiles">
+
+<refmeta>
+<refentrytitle>libu8xfiles</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_open_xinput</refname>
+<refname>u8_open_input_file</refname>
+<refname>u8_close_xinput</refname>
+<refname>u8_open_output_file</refname>
+<refname>u8_open_xoutput</refname>
+<refname>u8_flush</refname>
+<refname>u8_close_xoutput</refname>
+<refname>u8_close</refname>
+<refname>u8_close_open_xfiles</refname>
+<refname>u8_register_open_xfile</refname>
+<refname>u8_deregister_open_xfile</refname>
+<refname>u8_init_xinput</refname>
+<refname>u8_init_xoutput</refname>
+<refpurpose>produce formatted output</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/xfiles.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>U8_INPUT *<function>u8_open_xinput</function></funcdef>
+  <paramdef>int <parameter>fd</parameter></paramdef>
+  <paramdef>u8_encoding <parameter>enc</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>U8_INPUT *<function>u8_open_input_file</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+  <paramdef>u8_encoding <parameter>enc</parameter></paramdef>
+  <paramdef>int <parameter>flags</parameter></paramdef>
+  <paramdef>int <parameter>mode</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_close_xinput</function></funcdef>
+  <paramdef>U8_INPUT *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>U8_OUTPUT *<function>u8_open_xoutput</function></funcdef>
+  <paramdef>int <parameter>fd</parameter></paramdef>
+  <paramdef>u8_encoding <parameter>enc</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>U8_OUTPUT *<function>u8_open_output_file</function></funcdef>
+  <paramdef>u8_string <parameter>filename</parameter></paramdef>
+  <paramdef>u8_encoding <parameter>enc</parameter></paramdef>
+  <paramdef>int <parameter>flags</parameter></paramdef>
+  <paramdef>int <parameter>mode</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_close_xoutput</function></funcdef>
+  <paramdef>U8_OUTPUT *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_flush</function></funcdef>
+  <paramdef>U8_OUTPUT *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_close</function></funcdef>
+  <paramdef>U8_STREAM *<parameter>stream</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_init_xoutput</function></funcdef>
+  <paramdef>U8_XOUTPUT *<parameter>ptr</parameter></paramdef>
+  <paramdef>int <parameter>fd</parameter></paramdef>
+  <paramdef>u8_encoding <parameter>enc</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_init_xinput</function></funcdef>
+  <paramdef>U8_XINPUT *<parameter>ptr</parameter></paramdef>
+  <paramdef>int <parameter>fd</parameter></paramdef>
+  <paramdef>u8_encoding <parameter>enc</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_close_xfiles</function></funcdef>
+  <void>
+</funcprototype>
+
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+<para></para>
+
+</refsect1>
+</refentry>
+

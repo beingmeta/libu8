@@ -1,0 +1,119 @@
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook V4.1//EN">
+<refentry id="u8printf">
+
+<refmeta>
+<refentrytitle>libu8timefns</refentrytitle>
+<manvolnum>3S</manvolnum>
+</refmeta>
+
+<refnamediv>
+<refname>u8_elapsed_time</refname>
+<refname>u8_localtime</refname>
+<refname>u8_time</refname>
+<refname>u8_xtime_set_tzoff</refname>
+<refname>u8_now</refname>
+<refname>u8_parse_tzspec</refname>
+<refname>u8_ios8601_to_xtime</refname>
+<refname>u8_xtime_to_ios8601</refname>
+<refpurpose>provide various time functions</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+
+<funcsynopsis>
+<funcsynopsisinfo>
+#include &lt;libu8/timefins.h&gt;
+</funcsynopsisinfo>
+<funcprototype>
+  <funcdef>double <function>u8_elapsed_time</function></funcdef>
+  <void>
+</funcprototype>
+<funcprototype>
+  <funcdef>time_t <function>u8_localtime</function></funcdef>
+  <paramdef>U8_XTIME *<parameter>ptr</parameter></paramdef>
+  <paramdef>time_t <parameter>tick</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>time_t <function>u8_mktime</function></funcdef>
+  <paramdef>U8_XTIME *<parameter>ptr</parameter></paramdef>
+  <paramdef>time_t <parameter>tick</parameter></paramdef>
+  <paramdef>int <parameter>tzoff</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>void <function>u8_xtime_set_tzoff</function></funcdef>
+  <paramdef>U8_XTIME *<parameter>ptr</parameter></paramdef>
+  <paramdef>int <parameter>tzoff</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>time_t <function>u8_now</function></funcdef>
+  <paramdef>U8_XTIME *<parameter>ptr</parameter></paramdef>
+  <paramdef>int <parameter>tzoff</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>int <function>u8_parse_tzspec</function></funcdef>
+  <paramdef>char *<parameter>spec</parameter></paramdef>
+  <paramdef>int <parameter>default</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>time_t <function>u8_iso8601_to_xtime</function></funcdef>
+  <paramdef>char *<parameter>timestring</parameter></paramdef>
+  <paramdef>U8_XTIME *<parameter>ptr</parameter></paramdef>
+</funcprototype>
+<funcprototype>
+  <funcdef>void<function>u8_xtime_to_ios8601</function></funcdef>
+  <paramdef>U8_OUTPUT *<parameter>stream</parameter></paramdef>
+  <paramdef>U8_XTIME *<parameter>ptr</parameter></paramdef>
+</funcprototype>
+
+</funcsynopsis>
+
+</refsynopsisdiv>
+
+<refsect1><title>Description</title>
+
+<para>These functions provide a standard interface for various time
+functions.</para>
+
+<para><function>u8_elapsed_time</function> returns a double
+representing the number of seconds since the first time
+<function>u8_elapsed_time</function> was called.  This attempts to be
+as precise as possible for the platform and environment.</para>
+
+<para>The other time functions are organized around the U8_XTIME
+struct which combines a time representation with precision information
+and time zone information.  The timezone information is an integral
+number of seconds difference from GMT.  The precision information runs
+from <function>u8_year</function>
+to <function>u8_nanosecond</function>.</para>
+
+<para><function>u8_localtime</function> takes a pointer to an U8_XTIME
+structure and a time_t value (returned by the
+function <function>time</function>) and initializes the U8_XTIME
+structure to that moment in the current timezone to
+the <function>u8_second</function> precision.</para>
+
+<para><function>u8_mktime</function> takes a pointer to an U8_XTIME
+structure, a time_t value (returned by the
+function <function>time</function>), and a timezone offset.  The
+U8_XTIME structure is initialized to that moment in the current
+timezone to the <function>u8_second</function> precision.</para>
+
+<para><function>u8_now</function> takes a pointer to an U8_XTIME
+structure and a timezone offset.  The U8_XTIME structure is
+initialized to the current moment in the current timezone to
+the maximnum possible precision.</para>
+
+<para><function>u8_parse_tzspec</function> takes a timezone string and
+returns the integer offset in seconds from GMT.</para>
+
+<para><function>u8_iso8601_to_xtime</function> takes an ISO8601 string
+representation and initializes an U8_XTIME structure.</para>
+
+<para><function>u8_xtime_to_iso8601</function> takes a string output
+stream and a pointer to an U8_XTIME structure.  This outputs an
+ISO8601 representation to the string output stream.</para>
+
+</refsect1>
+
+</refentry>
+

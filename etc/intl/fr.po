@@ -1,0 +1,235 @@
+# French translations for libu8 package.
+# Copyright (C) 2005 beingmeta, inc.
+# This file is distributed under the same license as the libu8 package.
+# Kenneth Haase <kh@beingmeta.com>, 2005.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: libu8 1\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-02-18 14:01-0500\n"
+"PO-Revision-Date: 2005-03-04 22:15-0500\n"
+"Last-Translator: Kenneth Haase <kh@beingmeta.com>\n"
+"Language-Team: French <traduc@traduc.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: contour.c:11
+msgid "Bad Dynamic Contour"
+msgstr ""
+
+#: convert.c:20
+msgid "Encoding can't represent character"
+msgstr "Encodage fourni invalide"
+
+#: convert.c:21
+msgid "Can't find named encoding"
+msgstr ""
+
+#: convert.c:187
+#, c-format
+msgid "Text encoding `%s' already exists"
+msgstr "L'encodage %s existe déjà"
+
+#: exceptions.c:18
+msgid "Unknown error"
+msgstr ""
+
+#: exceptions.c:19
+msgid "Attempt to pop an empty exception stack"
+msgstr ""
+
+#: filefns.c:353
+msgid "No directory lists"
+msgstr ""
+
+#: filestring.c:21
+msgid "Can't open file for reading"
+msgstr "ne peut ouvrir pour lire"
+
+#: libu8.c:141
+msgid "RANDOMIZE"
+msgstr ""
+
+#: libu8.c:227
+msgid "No dynamic loading of libraries"
+msgstr ""
+
+#: libu8.c:228
+msgid "Call to DLOPEN failed"
+msgstr ""
+
+#: logging.c:26
+msgid "Emergency!!!"
+msgstr ""
+
+#: logging.c:26
+msgid "Alert!!"
+msgstr ""
+
+#: logging.c:26
+msgid "Critical"
+msgstr ""
+
+#: logging.c:26
+msgid "Error"
+msgstr ""
+
+#: logging.c:26
+msgid "Warning"
+msgstr ""
+
+#: logging.c:27
+msgid "Note"
+msgstr ""
+
+#: logging.c:27
+msgid "Info"
+msgstr ""
+
+#: logging.c:27
+msgid "Debug"
+msgstr ""
+
+#: netfns.c:33
+msgid "Internal error"
+msgstr ""
+
+#: netfns.c:34
+msgid "Socket timeout"
+msgstr ""
+
+#: netfns.c:36
+msgid "No UNIX domain (file) sockets"
+msgstr ""
+
+#: netfns.c:37
+msgid "Unknown host"
+msgstr ""
+
+#: netfns.c:51
+msgid "network error"
+msgstr ""
+
+#: netfns.c:52
+msgid "Bad port specification"
+msgstr ""
+
+#: netfns.c:558 netfns.c:560 netfns.c:601
+msgid "Connection not in block"
+msgstr ""
+
+#: printf.c:22
+msgid "u8_printf: Bad format code"
+msgstr "code invalide pour printf"
+
+#: rusage.c:52
+msgid "no OS support"
+msgstr ""
+
+#: srvfns.c:26
+msgid "Closed connection"
+msgstr ""
+
+#: srvfns.c:27
+msgid "Shutting down server"
+msgstr ""
+
+#: srvfns.c:28
+msgid "New server port"
+msgstr ""
+
+#: srvfns.c:29
+msgid "New connection"
+msgstr ""
+
+#: srvfns.c:30
+msgid "Rejected connection"
+msgstr ""
+
+#: srvfns.c:31
+msgid "Client request"
+msgstr ""
+
+#: srvfns.c:351
+msgid "sockopt"
+msgstr ""
+
+#: srvfns.c:369
+msgid "invalid sockaddr"
+msgstr ""
+
+#: srvfns.c:569
+#, c-format
+msgid "Failed accept on socket %d"
+msgstr ""
+
+#: streamio.c:25
+msgid "Unexpected EOD"
+msgstr "Fin prématurée des données"
+
+#: streamio.c:26
+msgid "Invalid UTF-8 encoded text"
+msgstr "Texte encodé UTF-8 non valide"
+
+#: streamio.c:27
+msgid "Invalid Unicode Character"
+msgstr "Unicode caractère non valide"
+
+#: streamio.c:28
+msgid "UNGETC error"
+msgstr "UNGETC un caractère non valide"
+
+#: streamio.c:29
+msgid "No zero-length string streams"
+msgstr "Taille de «stream» invalide"
+
+#: streamio.c:141
+#, c-format
+msgid "Unexpected continuation byte: 0x%2x"
+msgstr ""
+
+#: streamio.c:152
+#, c-format
+msgid "Illegal UTF-8 byte: 0x%2x"
+msgstr ""
+
+#: streamio.c:176
+#, c-format
+msgid "Truncated UTF-8 sequence: 0x%s"
+msgstr ""
+
+#: xfiles.c:31
+#, fuzzy
+msgid "XFILE does not allow positioning"
+msgstr "Repérage illégal"
+
+#: xfiles.c:32
+msgid "XFILE only allows writing"
+msgstr "ne peut lire «XFILE»"
+
+#: xfiles.c:33
+msgid "XFILE only allows reading"
+msgstr "Ne peut écrire «XFILE»"
+
+#: xfiles.c:35
+msgid "Invalid buffer size for xfile"
+msgstr ""
+
+#: xfiles.c:36
+msgid "Stream XBUF is static"
+msgstr ""
+
+#~ msgid "Invalid hostname"
+#~ msgstr "Nom d'hôte non valide"
+
+#~ msgid "Invalid byte sequence in conversion input"
+#~ msgstr "Séquence d'octets illégale"
+
+#~ msgid "Invalid input for %s"
+#~ msgstr "Séquence d'octets illégale pour %s"
+
+#~ msgid "no zero-length string streams"
+#~ msgstr "taille de «stream» invalide"
