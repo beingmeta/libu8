@@ -282,8 +282,13 @@ time_t u8_mktime(struct U8_XTIME *xt)
   time_t moment; struct tm tptr;
   memset(&tptr,0,sizeof(struct tm));
   copy_xt2tm(xt,&tptr);
+  tptr.tm_gmtoff=xt->u8_tzoff+xt->u8_dstoff;
   moment=mktime(&tptr);
   if (moment<0) {}
+  else if ((tptr.tm_isdst) && (xt->u8_dstoff==0) &&
+	   (xt->u8_tzoff==tptr.tm_gmtoff)) {
+    xt->u8_dstoff=3600; xt->u8_tzoff=xt->u8_tzoff-3600;
+    moment=moment+xt->u8_tzoff+xt->u8_dstoff;}
   else moment=moment+xt->u8_tzoff+xt->u8_dstoff;
   return moment;
 }
