@@ -283,7 +283,7 @@ time_t u8_mktime(struct U8_XTIME *xt)
   memset(&tptr,0,sizeof(struct tm));
   copy_xt2tm(xt,&tptr);
   tptr.tm_gmtoff=xt->u8_tzoff+xt->u8_dstoff;
-  moment=mktime(&tptr);
+  xt->u8_tick=moment=mktime(&tptr);
   if (moment<0) {}
   else if ((tptr.tm_isdst) && (xt->u8_dstoff==0) &&
 	   (xt->u8_tzoff==tptr.tm_gmtoff)) {
