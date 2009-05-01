@@ -36,8 +36,8 @@ LIBU8_SOURCES=\
   digestfns.c pathfns.c filefns.c fileio.c \
   libu8io.c xfiles.c convert.c filestring.c \
   tests/latin1u8.c tests/u8recode.c tests/u8xrecode.c tests/echosrv.c
-LIBU8_OBJECTS=libu8.o streamio.o printf.o  contour.o logging.o \
-              ctype.o exceptions.o stringfns.o
+LIBU8CORE_OBJECTS=libu8.o streamio.o printf.o  contour.o logging.o \
+                  ctype.o exceptions.o stringfns.o
 LIBU8FNS_OBJECTS=libu8fns.o netfns.o srvfns.o \
 		 pathfns.o filefns.o fileio.o \
 		 rusage.o timefns.o digestfns.o
@@ -45,22 +45,26 @@ LIBU8IO_OBJECTS=libu8io.o xfiles.o convert.o filestring.o
 LIBU8DATA_OBJECTS=chardata.o
 LIBU8STDIO_OBJECTS=u8stdio.o
 LIBU8SYSLOG_OBJECTS=u8syslog.o
+LIBU8_OBJECTS=$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8SYSLOG_OBJECTS)
 TESTBIN=tests/u8recode tests/latin1u8 tests/u8xrecode tests/getentity \
 	tests/echosrv
 
-STATIC_LIBS=lib/libu8.a lib/libu8io.a lib/libu8fns.a lib/libu8data.a lib/libu8stdio.a
+STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
+            lib/libu8data.a lib/libu8stdio.a
 
 all: testbin @TAGS@ libs @I18N@
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
-tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a lib/libu8stdio.a lib/libu8.a
+tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a lib/libu8stdio.a lib/libu8core.a 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
-tests/latin1u8: tests/latin1u8.c lib/libu8stdio.a lib/libu8.a
+tests/latin1u8: tests/latin1u8.c lib/libu8stdio.a lib/libu8core.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
-tests/getentity: tests/getentity.c lib/libu8stdio.a lib/libu8.a
+tests/getentity: tests/getentity.c lib/libu8stdio.a lib/libu8core.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
-tests/echosrv: tests/echosrv.c lib/libu8stdio.a lib/libu8fns.a lib/libu8.a 
+tests/echosrv: tests/echosrv.c lib/libu8stdio.a lib/libu8fns.a lib/libu8core.a 
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+tests/echosrv2: tests/echosrv.c lib/libu8.a 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 
 lib/%@suffix@.a:
@@ -97,7 +101,7 @@ testbin: $(TESTBIN)
 TAGS: tests/*.c include/libu8/*.h *.c
 	etags tests/*.c include/libu8/*.h *.c
 
-libs: lib/libu8.a lib/libu8fns.a lib/libu8io.a lib/libu8data.a \
+libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a lib/libu8data.a \
       lib/libu8stdio.a lib/libu8.@shared_suffix@ lib/libu8fns.@shared_suffix@ \
       lib/libu8io.@shared_suffix@ lib/libu8data.@shared_suffix@ \
       lib/libu8stdio.@shared_suffix@ @syslog_target@
@@ -108,6 +112,11 @@ lib/libu8.a: $(LIBU8_OBJECTS)
 lib/libu8.so.@U8VERSION@: $(LIBU8_OBJECTS)
 lib/libu8.@U8VERSION@.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
+
+lib/libu8core.a: $(LIBU8CORE_OBJECTS)
+lib/libu8core.so.@U8VERSION@: $(LIBU8CORE_OBJECTS)
+lib/libu8core.@U8VERSION@.dylib: $(LIBU8CORE_OBJECTS)
+lib/libu8core.dll: $(LIBU8CORE_OBJECTS)
 
 lib/libu8fns.a: $(LIBU8FNS_OBJECTS)
 lib/libu8fns.so.@U8VERSION@: $(LIBU8FNS_OBJECTS)
