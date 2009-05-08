@@ -50,6 +50,20 @@ U8_EXPORT u8_exception u8_make_exception
   return newex;
 }
 
+U8_EXPORT u8_exception u8_new_exception
+  (u8_condition c,u8_context cxt,u8_string details,
+   void *xdata,void (*freefn)(void *))
+{
+  struct U8_EXCEPTION *newex=u8_alloc(struct U8_EXCEPTION);
+  memset(newex,0,sizeof(struct U8_EXCEPTION));
+  newex->u8x_cond=c; newex->u8x_context=cxt;
+  newex->u8x_details=details;
+  newex->u8x_xdata=xdata;
+  newex->u8x_free_xdata=freefn;
+  newex->u8x_prev=NULL;
+  return newex;
+}
+
 U8_EXPORT u8_exception u8_push_exception
   (u8_condition c,u8_context cxt,u8_string details,
    void *xdata,void (*freefn)(void *))
@@ -57,8 +71,10 @@ U8_EXPORT u8_exception u8_push_exception
   struct U8_EXCEPTION *current=u8_current_exception;
   struct U8_EXCEPTION *newex;
   if ((current) && (c==NULL)) c=current->u8x_cond;
-  newex=u8_make_exception(c,cxt,details,xdata,freefn);
-  newex->u8x_prev=current;
+  if (current) {
+    newex=u8_make_exception(c,cxt,details,xdata,freefn);
+    newex->u8x_prev=current;}
+  else newex=u8_new_exception(c,cxt,details,xdata,freefn);
 #if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
   u8_tld_set(u8_current_exception_key,newex);
 #else
