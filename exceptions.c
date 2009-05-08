@@ -1,6 +1,5 @@
 /* -*- Mode: C; -*- */
 
-
 /* Copyright (C) 2004-2009 beingmeta, inc.
    This file is part of the libu8 UTF-8 unicode library.
 
@@ -17,7 +16,7 @@
 #include "libu8/libu8.h"
 
 static char versionid[] MAYBE_UNUSED=
-  "$Id: exceptions.c 3635 2009-04-22 02:45:30Z haase $";
+  "$Id:$";
 
 #include "libu8/u8streamio.h"
 #include "libu8/u8printf.h"
