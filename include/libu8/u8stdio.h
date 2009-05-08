@@ -16,7 +16,7 @@
 #ifndef LIBU8_STDIO_H
 #define LIBU8_STDIO_H 1
 #define LIBU8_STDIO_H_VERSION \
-        "$Id: u8stdio.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 #include <stdio.h>
 #include <stdarg.h>

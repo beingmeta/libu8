@@ -21,7 +21,7 @@
 #ifndef LIBU8_U8CONTOUR_H
 #define LIBU8_U8CONTOUR_H 1
 #define LIBU8_U8CONTOUR_H_VERSION \
-        "$Id: $"
+        "$Id$"
 
 #ifndef U8_INLINE_CONTOURS
 #define U8_INLINE_CONTOURS 0

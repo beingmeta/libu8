@@ -16,7 +16,7 @@
 #ifndef LIBU8_LIBU8_H
 #define LIBU8_LIBU8_H 1
 #define LIBU8_LIBU8_H_VERSION \
-        "$Id: libu8.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /** \file libu8.h
     These functions provide miscellaneous functionality.

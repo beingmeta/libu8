@@ -16,7 +16,7 @@
 #ifndef LIBU8_U8EXCEPTIONS_H
 #define LIBU8_U8EXCEPTIONS_H 1
 #define LIBU8_U8EXCEPTIONS_H_VERSION \
-        "$Id: u8exceptions.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /** \file u8exceptions.h
     These functions provide ways of managing exception state for

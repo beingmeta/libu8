@@ -16,7 +16,7 @@
 #ifndef LIBU8_THREADING_H
 #define LIBU8_THREADING_H 1
 #define LIBU8_THREADING_H_VERSION \
-        "$Id: threading.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /* Portable threading */
 

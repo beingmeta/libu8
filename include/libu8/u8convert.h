@@ -25,7 +25,7 @@
 #ifndef LIBU8_CONVERT_H
 #define LIBU8_CONVERT_H 1
 #define LIBU8_CONVERT_H_VERSION \
-        "$Id: u8convert.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 #define U8_ENCODING_INCLUDES_ASCII 1
 #define U8_ENCODING_IS_LINEAR (U8_ENCODING_INCLUDES_ASCII<<1)

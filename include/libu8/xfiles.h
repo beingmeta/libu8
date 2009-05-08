@@ -16,7 +16,7 @@
 #ifndef LIBU8_XFILES_H
 #define LIBU8_XFILES_H 1
 #define LIBU8_XFILES_H_VERSION \
-        "$Id: xfiles.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 U8_EXPORT u8_condition u8_nopos, u8_nowrite, u8_no_read;
 

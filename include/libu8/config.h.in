@@ -6,7 +6,7 @@
 
 #ifndef LIBU8_CONFIG_H
 #define LIBU8_CONFIG_H 1
-#define LIBU8_CONFIG_VERSION "$Id: config.h.in 2534 2008-04-20 19:35:54Z haase $"
+#define LIBU8_CONFIG_VERSION "$Id$"
 
 /* Define if you don't have off_t */
 #undef off_t

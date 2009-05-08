@@ -16,7 +16,7 @@
 #include "libu8/libu8.h"
 
 static char versionid[] MAYBE_UNUSED=
-  "$Id: libu8fns.c 3635 2009-04-22 02:45:30Z haase $";
+  "$Id$";
 
 U8_EXPORT void u8_init_timefns_c(void);
 U8_EXPORT void u8_init_filefns_c(void);

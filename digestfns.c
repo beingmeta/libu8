@@ -3,7 +3,7 @@
 #include <string.h>
 
 static char versionid[] MAYBE_UNUSED=
-  "$Id: digestfns.c 3071 2008-10-07 16:01:08Z haase $";
+  "$Id$";
 
 #if HAVE_OPENSSL_HMAC_H
 #include <openssl/hmac.h>

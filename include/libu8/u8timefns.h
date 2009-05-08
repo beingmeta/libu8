@@ -16,7 +16,7 @@
 #ifndef LIBU8_TIMEFNS_H
 #define LIBU8_TIMEFNS_H 1
 #define LIBU8_TIMEFNS_H_VERSION \
-        "$Id: u8timefns.h 3669 2009-04-27 01:44:12Z haase $"
+        "$Id$"
 
 /** \file u8timefns.h
     Provides various functions for manipulating information about dates and

@@ -16,7 +16,7 @@
 #ifndef LIBU8_U8NETFNS_H
 #define LIBU8_U8NETFNS_H 1
 #define LIBU8_U8NETFNS_H_VERSION \
-        "$Id: u8netfns.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /** \file u8netfns.h
     These functions provide for network access, especially

@@ -16,7 +16,7 @@
 #ifndef LIBU8_U8LOGGING_H
 #define LIBU8_U8LOGGING_H 1
 #define LIBU8_U8LOGGING_H_VERSION \
-        "$Id: u8logging.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /** \file u8logging.h
     These functions provide various ways of logging program events.

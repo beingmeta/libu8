@@ -16,7 +16,7 @@
 #ifndef LIBU8_PRINTF_H
 #define LIBU8_PRINTF_H 1
 #define LIBU8_PRINTF_H_VERSION \
-        "$Id: u8printf.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /** \file u8printf.h
     This is a customizable formatted printer (based on printf) that

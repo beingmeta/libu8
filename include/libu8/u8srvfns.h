@@ -16,7 +16,7 @@
 #ifndef LIBU8_U8SRVFNS_H
 #define LIBU8_U8SRVFNS_H 1
 #define LIBU8_U8SRVFNS_H_VERSION \
-        "$Id: u8srvfns.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /** \file u8srvfns.h
     These functions provide a scaffolding for internet servers

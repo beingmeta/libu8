@@ -16,7 +16,7 @@
 #ifndef LIBU8_U8FILEFNS_H
 #define LIBU8_U8FILEFNS_H 1
 #define LIBU8_U8FILEFNS_H_VERSION \
-        "$Id: u8filefns.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /** \file u8filefns.h
     These functions access the metadata for local files.

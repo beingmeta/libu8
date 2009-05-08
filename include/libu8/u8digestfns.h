@@ -23,7 +23,7 @@
 #ifndef LIBU8_DIGESTFNS_H
 #define LIBU8_DIGESTFNS_H 1
 #define LIBU8_DIGESTFNS_H_VERSION \
-        "$Id: u8digestfns.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /** Returns the MD5 hash (16 bytes) of a data buffer
     @param data a pointer to a data buffer

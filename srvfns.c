@@ -16,7 +16,7 @@
 #include "libu8/libu8.h"
 
 static char versionid[] MAYBE_UNUSED=
-  "$Id: srvfns.c 3635 2009-04-22 02:45:30Z haase $";
+  "$Id$";
 
 #ifndef MAX_BACKLOG
 #define MAX_BACKLOG 16

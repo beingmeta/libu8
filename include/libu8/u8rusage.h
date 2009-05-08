@@ -24,7 +24,7 @@
 #ifndef LIBU8_RUSAGE_H
 #define LIBU8_RUSAGE_H 1
 #define LIBU8_RUSAGE_H_VERSION \
-        "$Id: u8rusage.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 #if (!(HAVE_GETRUSAGE))
 struct rusage { int noval;};

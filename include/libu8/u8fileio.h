@@ -22,7 +22,7 @@
 #ifndef LIBU8_FILEIO_H
 #define LIBU8_FILEIO_H 1
 #define LIBU8_FILEIO_H_VERSION \
-        "$Id: u8fileio.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 #include <stdio.h>
 #include <time.h>

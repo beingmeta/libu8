@@ -18,7 +18,7 @@
 #include "libu8/libu8.h"
 
 static char versionid[] MAYBE_UNUSED=
-  "$Id: streamio.c 3635 2009-04-22 02:45:30Z haase $";
+  "$Id$";
 
 #include "libu8/u8streamio.h"
 #include "libu8/u8ctype.h"

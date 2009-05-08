@@ -16,7 +16,7 @@
 #ifndef LIBU8_LIBU8IO_H
 #define LIBU8_LIBU8IO_H 1
 #define LIBU8_LIBU8IO_H_VERSION \
-        "$Id: libu8io.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 #include "libu8/libu8.h"
 #include "libu8/u8streamio.h"

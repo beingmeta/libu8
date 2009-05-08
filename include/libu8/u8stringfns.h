@@ -16,7 +16,7 @@
 #ifndef LIBU8_U8STRINGFNS_H
 #define LIBU8_U8STRINGFNS_H 1
 #define LIBU8_U8STRINGFNS_H_VERSION \
-        "$Id: u8stringfns.h 3635 2009-04-22 02:45:30Z haase $"
+        "$Id$"
 
 /** \file u8stringfns.h
     These functions provide utilities over UTF-8 strings.
