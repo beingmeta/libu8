@@ -282,14 +282,28 @@ time_t u8_mktime(struct U8_XTIME *xt)
   time_t moment; struct tm tptr;
   memset(&tptr,0,sizeof(struct tm));
   copy_xt2tm(xt,&tptr);
-  tptr.tm_gmtoff=xt->u8_tzoff+xt->u8_dstoff;
-  xt->u8_tick=moment=mktime(&tptr);
+  /* This tells it to figure it out. */
+  moment=mktime(&tptr);
+  /* The moment is what time it would be if the specified
+     time were in the current timezone and appropriate
+     daylight savings regimen for that time of year. */
+  if (tptr.tm_isdst) moment=moment-3600;
+  if ((xt->u8_dstoff==0) &&
+      (tptr.tm_isdst) &&
+      (!(xt->u8_forcedst))) {
+    /* Our argument says its not DST, but it would be locally,
+       so we assume that it is and adjust tzoff and dstoff
+       appropriately. If we *know* the dstoff value, the caller
+       should set the u8_forcedst field. */
+    xt->u8_dstoff=3600; xt->u8_tzoff=xt->u8_tzoff-3600;}
   if (moment<0) {}
-  else if ((tptr.tm_isdst) && (xt->u8_dstoff==0) &&
-	   (xt->u8_tzoff==tptr.tm_gmtoff)) {
-    xt->u8_dstoff=3600; xt->u8_tzoff=xt->u8_tzoff-3600;
-    moment=moment+xt->u8_tzoff+xt->u8_dstoff;}
-  else moment=moment+xt->u8_tzoff+xt->u8_dstoff;
+  else if ((xt->u8_tzoff+xt->u8_dstoff)!=tptr.tm_gmtoff) 
+    /* This means that the current timezone assumed by mktime
+       is different from the timezone specified for our U8_XTIME
+       object. So we adjust the tick to compensate for where we really
+       are.  */
+    moment=moment+((tptr.tm_gmtoff)-(xt->u8_tzoff+xt->u8_dstoff));
+  xt->u8_tick=moment;
   return moment;
 }
 
@@ -466,7 +480,8 @@ facilities if they were even remotely standardized.
 int u8_parse_tzspec(u8_string s,int dflt)
 {
   int hours=0, mins=0, secs=0, sign=1;
-  char *offstart=strchr(s,'+');
+  int dhours=0, dmins=0, dsecs=0, dsign=1;
+  char *offstart=strchr(s,'+'), *dstart;
   if (offstart == NULL) {
     offstart=strchr(s,'-');
     if (offstart) sign=-1;
@@ -508,6 +523,18 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
     xtp->u8_prec=xtp->u8_prec+((scan-start)/3);
     tzstart=scan;}
   else tzstart=s+pos[n_elts];
+  /* Handle our own little extension of IS9601 to separate
+     out DST and TZ offsets */
+  if ((tzstart=="+") || (tzstart=="-")) {
+    int dsign=1;
+    char *dststart=strchr(tzstart+1,'+');
+    if (dststart==NULL) {
+      dststart=strchr(tzstart+1,'-'); dsign=-1;}
+    if (dststart) {
+      int hr=0, min=0, sec=0;
+      sscanf(dststart+1,"%d:%d:%d",&hr,&min,&sec);
+      xtp->u8_dstoff=dsign*(3600*hr+60*min+sec);
+      xtp->u8_forcedst=1;}}
   xtp->u8_tzoff=u8_parse_tzspec(tzstart,xtp->u8_tzoff);
   xtp->u8_tick=u8_mktime(xtp); xtp->u8_nsecs=0;
   return xtp->u8_tick;

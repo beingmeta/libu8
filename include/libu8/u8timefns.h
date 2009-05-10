@@ -71,7 +71,10 @@ typedef struct U8_XTIME {
   int u8_nsecs;      /**< number of nanoseconds beyond the last seconds tick **/
   u8_tmprec u8_prec; /**< the precision of this timestamp **/
   /** The offset of this time from GMT **/
-  int u8_tzoff, u8_dstoff;} U8_XTIME;
+  short u8_tzoff, u8_dstoff;
+  /* This indicates that the algorithm shouldn't adjust DST based
+     on information from local rules (libc mktime() in particular. */
+  char u8_forcedst;} U8_XTIME;
 typedef struct U8_XTIME *u8_xtime;
 
 #define u8_dbltime(tm) \
