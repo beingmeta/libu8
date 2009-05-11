@@ -36,9 +36,11 @@ U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
   FILE *f=u8_fopen(abspath,"rb");
   if (f==NULL) {
     u8_seterr(u8_CantOpenFile,"u8_filedata",abspath);
+    *n_bytes=-1;
     return NULL;}
   fseek(f,0,SEEK_END);
   to_read=size=ftell(f);
+  /* We malloc an extra byte in case we're going to use this as a string. */
   data=u8_malloc(size+1);
   fseek(f,0,SEEK_SET);
   while (to_read) {
@@ -52,7 +54,6 @@ U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
       *n_bytes=-1;
       u8_fclose(f);
       return NULL;}}
-  data[size]='\0';
   *n_bytes=size;
   u8_fclose(f);
   u8_free(abspath);
@@ -64,8 +65,10 @@ U8_EXPORT u8_string u8_filestring(u8_string filename,u8_string encname)
   struct U8_TEXT_ENCODING *enc=NULL;
   u8_byte *buf; int n_bytes;
   buf=u8_filedata(filename,&n_bytes);
-  if (buf==NULL) return buf;
+  if ((buf==NULL) || (n_bytes<0)) return NULL;
   buf[n_bytes]='\0';
+  /* If there are no bytes, there can be no conversion */
+  if (n_bytes==0) return buf;
   if (encname == NULL) enc=NULL;
   else if (strcmp(encname,"auto")==0) {
     u8_byte *code_start, *code_end, codename[128];
