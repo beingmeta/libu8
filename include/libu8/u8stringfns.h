@@ -207,8 +207,9 @@ static int u8_charoffset(u8_string s,u8_byteoff i)
 static int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 {
   u8_string string=s, lim=s+max; int c=1;
-  while ((string < lim) && (offset > 0)) {
-    c=u8_sgetc(&string); offset--;}
+  if (offset<0) return -1;
+  else while ((string < lim) && (offset > 0)) {
+      c=u8_sgetc(&string); offset--;}
   if (string > lim) return -1;
   else return string-s;
 }
