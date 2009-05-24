@@ -166,7 +166,7 @@ U8_EXPORT u8_string u8_basename(u8_string path,u8_string suffix)
       suff=scan; scan=strstr(suff+sufflen,suffix);}}
   /* This is good for a default case, where people leave the '.' off
      of the suffix arg. */
-  if ((suff>path) && (suff[-1]=='.')) suff--;
+  if ((suff>copy) && (suff[-1]=='.')) suff--;
   if (suff) *suff='\0';
   return copy;
 }
