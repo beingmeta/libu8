@@ -318,7 +318,7 @@ U8_EXPORT int u8_register_threadinit(u8_threadinitfn fn)
 }
 U8_EXPORT int u8_run_threadinits()
 {
-  int start=u8_getinitlevel(), n=u8_n_threadinits, errs=0, i=start;
+  u8_wideint start=u8_getinitlevel(), n=u8_n_threadinits, errs=0, i=start;
   while (i<n) {
     int retval=threadinitfns[i]();
     if (retval<0) {

@@ -114,6 +114,16 @@
 /* This is for sockets */
 typedef long u8_connection;
 
+/* Wide ints are the smallest ints as big as a pointer */
+#if (SIZEOF_LONG_LONG == SIZEOF_VOID_P)
+typedef unsigned long long u8_wideint;
+#elif (SIZEOF_LONG == SIZEOF_VOID_P)
+typedef unsigned long u8_wideint;
+#else
+typedef unsigned int u8_wideint;
+#endif
+
+
 /* Load threading compatability libraries */
 #include "threading.h"
 
@@ -135,7 +145,7 @@ U8_EXPORT int u8_n_threadexitfns;
   #define u8_setinitlevel(n) u8_initlevel=(n);
 #else
   U8_EXPORT u8_tld_key u8_initlevel_key;
-  #define u8_getinitlevel() ((int)(u8_tld_get(u8_initlevel_key)))
+  #define u8_getinitlevel() ((int) ((u8_wideint)(u8_tld_get(u8_initlevel_key))))
   #define u8_setinitlevel(n) u8_tld_set(u8_initlevel_key,((void *)n))
 #endif
 
