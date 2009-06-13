@@ -17,6 +17,7 @@ libc_dlopen="no"
 syslog_target="syslog_libs"
 suffix=""
 have_constructor_attributes="yes"
+default_arch=""
 
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADER(include/libu8/config.h)
@@ -42,25 +43,6 @@ AC_PROG_INSTALL
 AC_PROG_RANLIB
 AC_AIX
 
-case $host_os in
-  linux*)
-   AC_DEFINE(U8_RUSAGE_PROC_PATCH,1)
-   ;;
-  darwin*)
-   MKSTATIC="libtool -static -o "
-   LIBS="$LIBS -lgcc"
-   shared_suffix="dylib"
-   install_shared="install-dylib"
-   ifmacosx=""
-   ;;
-esac  
-
-if test $target = "i686-pc-mingw32"; then
-   shared_suffix="dll"
-   install_shared="install-dll"
-   LIBS="$LIBS -lwsock32"
-fi
-
 AC_ARG_WITH(encodings_dir,--with-encodings-dir pathname,,with_encodings_dir=$prefix/share/libu8/encodings)
 AC_DEFINE_UNQUOTED(U8_ENCODINGS_DIR,"$with_encodings_dir")
 
@@ -79,6 +61,40 @@ if test $etags = "na"; then
    TAGS=""
 fi
 
+gcc_version=`gcc -dumpversion`
+
+case $host_os in
+  linux*)
+   AC_DEFINE(U8_RUSAGE_PROC_PATCH,1)
+   ;;
+  darwin*)
+   MKSTATIC="libtool -static -o "
+   LIBS="$LIBS -lgcc"
+   shared_suffix="dylib"
+   install_shared="install-dylib"
+   default_arch="x86_64"
+   ifmacosx=""
+   ;;
+esac  
+
+if test $target = "i686-pc-mingw32"; then
+   shared_suffix="dll"
+   install_shared="install-dll"
+   LIBS="$LIBS -lwsock32"
+fi
+
+case $gcc_version in
+  4*)
+   CFLAGS="-Wno-pointer-sign -Wimplicit $CFLAGS"
+  ;;
+esac
+
+AC_ARG_WITH(arch,--with[out]-arch build with particular --arch arg,,with_arch=$default_arch)
+
+if test ! -z "$with_arch"; then
+   LDFLAGS="-arch $with_arch $LDFLAGS"
+fi			     
+
 AC_DEFINE(FD_WORDS_ARE_ALIGNED,1)
 AC_TYPE_UID_T
 AC_TYPE_OFF_T
@@ -88,14 +104,6 @@ AC_CHECK_SIZEOF(int,4)
 AC_CHECK_SIZEOF(long,4)
 AC_CHECK_SIZEOF(long long,8)
 AC_CHECK_SIZEOF(void *,4)
-
-gcc_version=`gcc -dumpversion`
-
-case $gcc_version in
-  4*)
-   CFLAGS="-Wno-pointer-sign -Wimplicit $CFLAGS"
-  ;;
-esac
 
 AC_CHECK_HEADERS(sys/stat.h unistd.h pwd.h fcntl.h)
 AC_CHECK_HEADERS(sys/socket.h sys/select.h sys/un.h netdb.h)

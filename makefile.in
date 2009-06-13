@@ -151,6 +151,7 @@ docs/man/man3/libu8.h.3:
 
 clean: 
 	$(CLEAN) *.o *.a *.so *.dylib *.so.* 
+	$(CLEAN) lib/*.o lib/*.a lib/*.so lib/*.dylib lib/*.so.* 
 	$(CLEAN) docs/man/man3/* docs/html/* docs/rtf/* docs/latex/*
 	$(CLEAN) tests/getentity tests/latin1u8 tests/u8recode tests/u8xrecode
 	$(CLEAN) tests/echosrv
