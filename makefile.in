@@ -1,6 +1,7 @@
 CC	  = @CC@
 XCFLAGS   =
-CFLAGS    =-g -O2 @CFLAGS@ -I./include $(XCFLAGS)
+ARCHFLAGS = @archflags@
+CFLAGS    =-g -O2 @CFLAGS@ -I./include $(XCFLAGS) $(ARCHFLAGS)
 XLDFLAGS  =
 LDFLAGS   = @LDFLAGS@ $(EFENCE)
 LIBS      = @LIBS@ $(EFENCE) -lm

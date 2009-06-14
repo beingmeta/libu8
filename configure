@@ -661,6 +661,7 @@ shared_suffix
 suffix
 install_shared
 syslog_target
+archflags
 I18N
 INSTALLI18N
 build
@@ -1283,7 +1284,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
 --with-encodings-dir pathname
---without-arch build with particular --arch arg
+--without-arch build with particular --arch flags
 --without-i18n built and install message catalogs
 --without-tcmalloc Use the Google malloc library
 --without-tls Force use of threadlocal storage
@@ -1738,7 +1739,7 @@ libc_dlopen="no"
 syslog_target="syslog_libs"
 suffix=""
 have_constructor_attributes="yes"
-default_arch=""
+archflags=""
 
 ac_aux_dir=
 for ac_dir in etc "$srcdir"/etc; do
@@ -1772,6 +1773,7 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 ac_config_headers="$ac_config_headers include/libu8/config.h"
+
 
 
 
@@ -3446,6 +3448,25 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+
+# Check whether --with-arch was given.
+if test "${with_arch+set}" = set; then
+  withval=$with_arch;
+else
+  with_arch=""
+fi
+
+if test -z $with_arch; then
+  archflags=""
+elif test $with_arch = "all"; then
+  archflags="-arch i386 -arch x86_64 -arch ppc -arch ppc64";
+elif test $with_arch = "all86"; then
+  archflags="-arch i386 -arch x86_64";
+elif test $with_arch = "allppc"; then
+  archflags="-arch ppc -arch ppc64";
+else archflags=$with_arch
+fi
+
 # Check whether --enable-shared was given.
 if test "${enable_shared+set}" = set; then
   enableval=$enable_shared;
@@ -3523,7 +3544,6 @@ _ACEOF
    LIBS="$LIBS -lgcc"
    shared_suffix="dylib"
    install_shared="install-dylib"
-   default_arch="x86_64"
    ifmacosx=""
    ;;
 esac
@@ -3539,19 +3559,6 @@ case $gcc_version in
    CFLAGS="-Wno-pointer-sign -Wimplicit $CFLAGS"
   ;;
 esac
-
-
-# Check whether --with-arch was given.
-if test "${with_arch+set}" = set; then
-  withval=$with_arch;
-else
-  with_arch=$default_arch
-fi
-
-
-if test ! -z "$with_arch"; then
-   LDFLAGS="-arch $with_arch $LDFLAGS"
-fi
 
 cat >>confdefs.h <<\_ACEOF
 #define FD_WORDS_ARE_ALIGNED 1
@@ -11200,6 +11207,7 @@ shared_suffix!$shared_suffix$ac_delim
 suffix!$suffix$ac_delim
 install_shared!$install_shared$ac_delim
 syslog_target!$syslog_target$ac_delim
+archflags!$archflags$ac_delim
 I18N!$I18N$ac_delim
 INSTALLI18N!$INSTALLI18N$ac_delim
 build!$build$ac_delim
@@ -11233,7 +11241,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 78; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 79; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
