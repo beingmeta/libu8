@@ -102,7 +102,7 @@ U8_EXPORT int u8_base_char(unsigned int ch);
 /** Returns 1 if its argument is an ASCII hex digit. **/
 #define u8_isxdigit(c) ((c>=0) && ((c<128) && (isxdigit(c))))
 /** Returns 1 if its argument is an ASCII octal digit. **/
-#define u8_isodigit(c) ((c>=0) && ((c<128) && (isodigit(c))))
+#define u8_isodigit(c) ((c>=0) && ((c<128) && (isdigit(c)) && (c<'8')))
 
 /** Returns a non-lowercase version of a unicode code point.  **/
 #define u8_toupper(c) \
