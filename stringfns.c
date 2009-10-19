@@ -222,6 +222,27 @@ u8_string u8_valid_copy(u8_byte *s)
   return out.u8_outbuf;
 }
 
+U8_EXPORT
+/* u8_valid_copy:
+     Input: a string which should be UTF-8 encoded
+     Output: a utf-8 encoding string
+Copies its argument, converting invalid UTF-8 sequences into
+sequences of latin-1 characters. This always returns a valid UTF8 
+string. */
+u8_string u8_convert_crlfs(u8_byte *s)
+{
+  U8_OUTPUT out; U8_INIT_OUTPUT(&out,32);
+  while (*s)
+    if (*s=='\r')
+      if (s[1]=='\n') {u8_putc(&out,'\n'); s=s+2;}
+      else u8_putc(&out,*s++);
+    else if (*s<0x80) u8_putc(&out,*s++);
+    else if (check_utf8_ptr(s,get_utf8_size(*s))>0) {
+      int c=u8_sgetc(&s); u8_putc(&out,c);}
+    else while (*s>=0x80) u8_putc(&out,*s++);
+  return out.u8_outbuf;
+}
+
 /* Additional functions */
 
 U8_EXPORT

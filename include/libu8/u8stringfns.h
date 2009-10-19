@@ -136,6 +136,12 @@ U8_EXPORT int u8_validate(u8_byte *s,int n);
 **/
 U8_EXPORT u8_string u8_valid_copy(u8_byte *s);
 
+/** Checks the validity of a UTF-8 string and copies it, converting CRLFS
+    @param s a possibly (probably) valid UTF-8 string.
+    @returns a valid UTF-8 string or NULL
+**/
+U8_EXPORT u8_string u8_convert_crlfs(u8_byte *s);
+
 /* u8_sgetc */
 
 U8_EXPORT int _u8_sgetc(u8_byte **sptr);
