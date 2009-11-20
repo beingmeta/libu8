@@ -191,7 +191,7 @@ etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile \
 	rm -rf etc/libu8-@U8VERSION@
 
 etc/rpms.done: etc/libu8-@U8VERSION@.tar.gz
-	lsb-rpm --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
+	lsb-rpmbuild --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
 
 # Installation targets
 
