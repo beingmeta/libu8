@@ -10,6 +10,7 @@ MKSTATIC="ld -r -o"
 I18N=""
 INSTALLI18N=""
 TAGS="TAGS"
+BUILDRPM="lsbrpmbuild"
 doi18n="no"
 install_shared="install-so"
 libc_pthreads="no"
@@ -70,6 +71,7 @@ else
 fi
 
 AC_CHECK_PROGS(etags,etags,"na")
+AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","lsb-rpm","na")
 
 if test $etags = "na"; then
    TAGS=""

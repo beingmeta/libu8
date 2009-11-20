@@ -23,7 +23,7 @@ MKSTATIC	= @MKSTATIC@
 MKSO		= $(CC) $(CFLAGS) $(XCFLAGS) -shared $(LDFLAGS) $(XLDFLAGS) $(LIBS)
 #MACLIBTOOL	= libtool -dynamic -single_module $(LDFLAGS) $(LIBS)
 MACLIBTOOL	= $(CC) -dynamiclib -single_module $(LDFLAGS) $(LIBS)
-LIBU8SVN	= https://dev.beingmeta.com/src/libu8/trunk
+LIBU8SVN	=  https://svn.libu8.org/svnroot/libu8/trunk
 
 COMMON_HEADERS=\
 	include/libu8/config.h include/libu8/threading.h \
@@ -191,7 +191,7 @@ etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile \
 	rm -rf etc/libu8-@U8VERSION@
 
 etc/rpms.done: etc/libu8-@U8VERSION@.tar.gz
-	lsb-rpmbuild --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
+	@buildrpm@ --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
 
 # Installation targets
 

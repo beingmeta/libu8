@@ -691,6 +691,7 @@ CPP
 GREP
 EGREP
 etags
+buildrpm
 LIBOBJS
 LTLIBOBJS'
 ac_subst_files=''
@@ -1732,6 +1733,7 @@ MKSTATIC="ld -r -o"
 I18N=""
 INSTALLI18N=""
 TAGS="TAGS"
+BUILDRPM="lsbrpmbuild"
 doi18n="no"
 install_shared="install-so"
 libc_pthreads="no"
@@ -3524,6 +3526,49 @@ fi
   test -n "$etags" && break
 done
 test -n "$etags" || etags=""na""
+
+for ac_prog in "lsb-rpmbuild"
+do
+  # Extract the first word of "$ac_prog", so it can be a program name with args.
+set dummy $ac_prog; ac_word=$2
+{ echo "$as_me:$LINENO: checking for $ac_word" >&5
+echo $ECHO_N "checking for $ac_word... $ECHO_C" >&6; }
+if test "${ac_cv_prog_buildrpm+set}" = set; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  if test -n "$buildrpm"; then
+  ac_cv_prog_buildrpm="$buildrpm" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in "na"
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+  for ac_exec_ext in '' $ac_executable_extensions; do
+  if { test -f "$as_dir/$ac_word$ac_exec_ext" && $as_test_x "$as_dir/$ac_word$ac_exec_ext"; }; then
+    ac_cv_prog_buildrpm="$ac_prog"
+    echo "$as_me:$LINENO: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+done
+IFS=$as_save_IFS
+
+fi
+fi
+buildrpm=$ac_cv_prog_buildrpm
+if test -n "$buildrpm"; then
+  { echo "$as_me:$LINENO: result: $buildrpm" >&5
+echo "${ECHO_T}$buildrpm" >&6; }
+else
+  { echo "$as_me:$LINENO: result: no" >&5
+echo "${ECHO_T}no" >&6; }
+fi
+
+
+  test -n "$buildrpm" && break
+done
+test -n "$buildrpm" || buildrpm=""lsb-rpm""
 
 
 if test $etags = "na"; then
@@ -11237,11 +11282,12 @@ CPP!$CPP$ac_delim
 GREP!$GREP$ac_delim
 EGREP!$EGREP$ac_delim
 etags!$etags$ac_delim
+buildrpm!$buildrpm$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 79; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 80; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
