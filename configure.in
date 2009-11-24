@@ -71,7 +71,7 @@ else
 fi
 
 AC_CHECK_PROGS(etags,etags,"na")
-AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","lsb-rpm","na")
+AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","na")
 
 if test $etags = "na"; then
    TAGS=""

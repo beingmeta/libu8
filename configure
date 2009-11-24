@@ -3433,7 +3433,7 @@ else
   { echo "$as_me:$LINENO: result: no" >&5
 echo "${ECHO_T}no" >&6; }
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 
 
@@ -3540,7 +3540,7 @@ else
   ac_cv_prog_buildrpm="$buildrpm" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in "na"
+for as_dir in "lsb-rpm"
 do
   IFS=$as_save_IFS
   test -z "$as_dir" && as_dir=.
@@ -3568,7 +3568,7 @@ fi
 
   test -n "$buildrpm" && break
 done
-test -n "$buildrpm" || buildrpm=""lsb-rpm""
+test -n "$buildrpm" || buildrpm=""rpmbuild""
 
 
 if test $etags = "na"; then
@@ -3629,7 +3629,7 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 else
   ac_cv_type_uid_t=no
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 fi
 { echo "$as_me:$LINENO: result: $ac_cv_type_uid_t" >&5
@@ -3715,7 +3715,7 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 else
   ac_cv_header_stdc=no
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 fi
 
@@ -3736,7 +3736,7 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 else
   ac_cv_header_stdc=no
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 fi
 
@@ -7273,7 +7273,7 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 else
   ac_cv_header_stdc=no
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 fi
 
@@ -7294,7 +7294,7 @@ if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
 else
   ac_cv_header_stdc=no
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 fi
 
@@ -7838,7 +7838,7 @@ else
 _ACEOF
 
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -7861,7 +7861,7 @@ else
 _ACEOF
 
 fi
-rm -f conftest*
+rm -f -r conftest*
 
 
 
