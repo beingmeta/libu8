@@ -1,5 +1,5 @@
 #include "libu8/libu8.h"
-#include "libu8/u8digestfns.h"
+#include "libu8/u8crypto.h"
 #include <string.h>
 
 static char versionid[] MAYBE_UNUSED=
