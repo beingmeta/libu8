@@ -29,19 +29,21 @@ COMMON_HEADERS=\
 	include/libu8/config.h include/libu8/threading.h \
 	include/libu8/libu8.h include/libu8/u8contour.h \
 	include/libu8/u8streamio.h include/libu8/u8stringfns.h \
-	include/libu8/u8ctype.h include/libu8/u8convert.h
+	include/libu8/u8ctype.h include/libu8/u8convert.h \
+	include/libu8/u8crypto.h
 
 LIBU8_SOURCES=\
   libu8.c streamio.c printf.c logging.c exceptions.c  ctype.c stringfns.c \
   libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c \
-  digestfns.c pathfns.c filefns.c fileio.c \
-  libu8io.c xfiles.c convert.c filestring.c \
+  digestfns.c cryptofn.c pathfns.c filefns.c fileio.c \
+  libu8io.c xfiles.c convert.c filestring.c bytebuf.c \
   tests/latin1u8.c tests/u8recode.c tests/u8xrecode.c tests/echosrv.c
 LIBU8CORE_OBJECTS=libu8.o streamio.o printf.o  contour.o logging.o \
-                  ctype.o exceptions.o stringfns.o
+                  ctype.o exceptions.o stringfns.o bytebuf.o
 LIBU8FNS_OBJECTS=libu8fns.o netfns.o srvfns.o \
 		 pathfns.o filefns.o fileio.o \
-		 rusage.o timefns.o digestfns.o
+		 rusage.o timefns.o digestfns.o \
+		 cryptofns.o
 LIBU8IO_OBJECTS=libu8io.o xfiles.o convert.o filestring.o
 LIBU8DATA_OBJECTS=chardata.o
 LIBU8STDIO_OBJECTS=u8stdio.o

@@ -254,4 +254,6 @@ U8_EXPORT int u8_geterr
 U8_EXPORT int u8_poperr
   (u8_condition *conditionp,u8_context *contextp,u8_string *detailsp);
 
+U8_EXPORT u8_condition u8_MallocFailed;
+
 #endif /* ndef LIBU8_U8EXCEPTIONS_H */

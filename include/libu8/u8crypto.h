@@ -63,5 +63,11 @@ U8_EXPORT unsigned char *u8_hmac_sha1
    unsigned char *data,int data_len,
    unsigned char *result,int *result_len);
 
+U8_EXPORT u8_condition u8_BadCryptoKey;
+U8_EXPORT u8_condition u8_InternalCryptoError;
+U8_EXPORT u8_condition u8_UnknownCipher;
+U8_EXPORT u8_condition u8_UnknownCipherNID;
+
+U8_EXPORT unsigned char *u8_random_vector(int len);
 
 #endif

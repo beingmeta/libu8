@@ -240,4 +240,10 @@
 /* For openssl crypto libraries */
 #undef HAVE_SHA1_INIT
 
+/* For openssl crypto libraries */
+#undef HAVE_EVP_GET_CIPHERBYNAME
+
+/* For openssl crypto libraries */
+#undef HAVE_EVP_CIPHER_CTX_INIT
+
 #endif

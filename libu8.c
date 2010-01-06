@@ -48,6 +48,7 @@ void perror(const char *s);
 U8_EXPORT void u8_init_errors_c(void);
 U8_EXPORT void u8_init_printf_c(void);
 
+u8_condition u8_MallocFailed=_("Malloc failed");
 
 static int u8_initialized=0;
 
