@@ -153,6 +153,8 @@ AC_CHECK_LIB(ssl,SHA1_Init)
 AC_CHECK_LIB(ssl,EVP_get_cipherbyname)
 AC_CHECK_LIB(ssl,EVP_CIPHER_CTX_init)
 
+AC_CHECK_FUNCS(EVP_get_cipherbyname EVP_CIPHER_CTX_init)
+
 AC_ARG_WITH(i18n,--with[out]-i18n built and install message catalogs,,with_i18n="no")
 if test $with_i18n = "yes"; then
   AC_CHECK_FUNCS(gettext,[doi18n="yes"])

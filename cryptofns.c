@@ -45,7 +45,7 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
   else return vec;
 }
 
-#if (HAVE_EVP_CIPHER_CTX_INIT)
+#if HAVE_EVP_CIPHER_CTX_INIT
 
 U8_EXPORT size_t u8_cryptic
   (int do_encrypt,char *cname,
@@ -100,7 +100,7 @@ U8_EXPORT size_t u8_cryptic
 #endif
 
 
-#if (HAVE_EVP_CIPHER_CTX_INIT)
+#if HAVE_EVP_CIPHER_CTX_INIT
 
 U8_EXPORT unsigned char *u8_encrypt
   (unsigned char *input,size_t len,
