@@ -100,7 +100,7 @@ U8_EXPORT size_t u8_cryptic
 #endif
 
 
-#if HAVE_EVP_CIPHER_CTX_INIT
+#if U8_HAVE_CRYPTO
 
 U8_EXPORT unsigned char *u8_encrypt
   (unsigned char *input,size_t len,

@@ -111,6 +111,12 @@
 #define U8_EXPECT_FALSE(x) (x)
 #endif
 
+#if HAVE_EVP_CIPHER_CTX_INIT
+#define U8_HAVE_CRYPTO 1
+#else
+#define U8_HAVE_CRYPTO 0
+#endif
+
 /* This is for sockets */
 typedef long u8_connection;
 
