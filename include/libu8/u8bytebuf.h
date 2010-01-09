@@ -24,7 +24,7 @@ static int u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
 static int u8_bufread(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
 {
   if (len==0) return 0;
-  else if ((bb->u8_lim)<=(bb->u8_ptr)) {
+  else if ((bb->u8_ptr)<(bb->u8_lim)) {
     int avail=(bb->u8_lim)-(bb->u8_ptr);
     int nbytes=((avail>len)?(len):(avail));
     memcpy(buf,(bb->u8_ptr),nbytes);

@@ -21,12 +21,14 @@
 #include "libu8/u8bytebuf.h"
 
 #include <string.h>
+#include <openssl/err.h>
 #include <openssl/evp.h>
 
 static char versionid[] MAYBE_UNUSED=
   "$Id: digestfns.c 11 2009-05-08 20:46:29Z haase $";
 
 u8_condition u8_BadCryptoKey=_("bad crypto key value");
+u8_condition u8_BadCryptoInit=_("bad crypto init value");
 u8_condition u8_InternalCryptoError=_("internal libcrypto error");
 u8_condition u8_UnknownCipher=_("Unknown cipher name");
 u8_condition u8_UnknownCipherNID=_("Unknown cipher name");
@@ -50,6 +52,7 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
 U8_EXPORT size_t u8_cryptic
   (int do_encrypt,char *cname,
    unsigned char *key,int keylen,
+   unsigned char *iv,int ivlen,
    u8_block_reader reader,u8_block_writer writer,
    void *readstate,void *writestate,
    u8_context caller)
@@ -57,44 +60,65 @@ U8_EXPORT size_t u8_cryptic
   EVP_CIPHER_CTX ctx;
   int inlen, outlen, totalout=0;
   unsigned char inbuf[1024], outbuf[1024+EVP_MAX_BLOCK_LENGTH];
-  const EVP_CIPHER *cipher=EVP_get_cipherbyname(cname);
+  const EVP_CIPHER *cipher=((cname)?(EVP_get_cipherbyname(cname)):
+			    (EVP_bf_cbc()));
   if (cipher) {
     int needkeylen=EVP_CIPHER_key_length(cipher);
-    int ivlen=EVP_CIPHER_iv_length(cipher);
-    unsigned char *initval;
-    if (keylen!=needkeylen)
+    int needivlen=EVP_CIPHER_iv_length(cipher);
+    int blocksize=EVP_CIPHER_block_size(cipher);
+    char errbuf[128];
+    if (blocksize>1024) blocksize=1024;
+    if ((needkeylen)&&(keylen!=needkeylen))
       return u8_reterr(u8_BadCryptoKey,
 		       ((caller)?(caller):((u8_context)"u8_cryptic")),
 		       u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
-    else initval=((ivlen)?(u8_random_vector(ivlen)):(NULL));
+    if ((needivlen)&&(ivlen)&&(ivlen!=needivlen))
+      return u8_reterr(u8_BadCryptoInit,
+		       ((caller)?(caller):((u8_context)"u8_cryptic")),
+		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
+
     EVP_CIPHER_CTX_init(&ctx);
-    EVP_CipherInit_ex(&ctx, cipher, NULL, NULL, NULL, do_encrypt);
-    EVP_CIPHER_CTX_set_key_length(&ctx, 10);
-    /* We finished modifying parameters so now we can set key and IV */
-    EVP_CipherInit_ex(&ctx, NULL, NULL, key, initval, do_encrypt);
+    EVP_CipherInit(&ctx, cipher, NULL, NULL, do_encrypt);
+    EVP_CIPHER_CTX_set_key_length(&ctx,keylen);
+    EVP_CipherInit(&ctx, cipher, key, iv, do_encrypt);
     while (1) {
-      inlen = reader(inbuf,1024,readstate);
+      inlen = reader(inbuf,blocksize,readstate);
       if(inlen <= 0) break;
       if(!(EVP_CipherUpdate(&ctx,outbuf,&outlen,inbuf,inlen))) {
+	char *details=u8_malloc(256);
+	unsigned long err=ERR_get_error();
+	ERR_error_string_n(err,details,256);
 	EVP_CIPHER_CTX_cleanup(&ctx);
 	return u8_reterr(u8_InternalCryptoError,
 			 ((caller)?(caller):((u8_context)"u8_cryptic")),
-			 u8_strdup(cname));}
+			 details);}
       else writer(outbuf,outlen,writestate);
       totalout=totalout+outlen;}
-    if(!(EVP_CipherFinal_ex(&ctx,outbuf,&outlen))) {
+    if(!(EVP_CipherFinal(&ctx,outbuf,&outlen))) {
+      char *details=u8_malloc(256);
+      unsigned long err=ERR_get_error();
+      ERR_error_string_n(err,details,256);
       EVP_CIPHER_CTX_cleanup(&ctx);
       return u8_reterr(u8_InternalCryptoError,
 		       ((caller)?(caller):((u8_context)"u8_cryptic")),
-		       u8_strdup(cname));}
+		       details);}
     else {
       writer(outbuf,outlen,writestate);
       EVP_CIPHER_CTX_cleanup(&ctx);
       totalout=totalout+outlen;
       return totalout;}}
-  else return u8_reterr("Unknown cipher",
-			((caller)?(caller):((u8_context)"u8_cryptic")),
-			u8_strdup(cname));
+  else {
+    char *details=u8_malloc(256);
+    unsigned long err=ERR_get_error();
+    ERR_error_string_n(err,details,256);
+    return u8_reterr("Unknown cipher",
+		     ((caller)?(caller):((u8_context)"u8_cryptic")),
+		     details);}
+}
+
+U8_EXPORT void u8_init_crypto()
+{
+  OpenSSL_add_all_algorithms();
 }
 
 #endif
@@ -115,7 +139,7 @@ U8_EXPORT unsigned char *u8_encrypt
   in.u8_direction=u8_output_buffer; out.u8_growbuf=len;
   out.u8_ptr=out.u8_buf=outbuf; out.u8_lim=outbuf+2*len;
   bytecount=u8_cryptic
-    (1,cipher,key,keylen,
+    (1,cipher,key,keylen,NULL,0,
      (u8_block_reader)u8_bbreader,(u8_block_writer)u8_bbwriter,
      &in,&out,"u8_encrypt");
   if (bytecount<0) return NULL;
@@ -136,7 +160,7 @@ U8_EXPORT unsigned char *u8_decrypt
   in.u8_direction=u8_output_buffer; out.u8_growbuf=len;
   out.u8_ptr=out.u8_buf=outbuf; out.u8_lim=outbuf+2*len;
   bytecount=u8_cryptic
-    (0,cipher,key,keylen,
+    (0,cipher,key,keylen,NULL,0,
      (u8_block_reader)u8_bbreader,(u8_block_writer)u8_bbwriter,
      &in,&out,"u8_encrypt");
   if (bytecount<0) return NULL;

@@ -68,6 +68,44 @@ U8_EXPORT u8_condition u8_InternalCryptoError;
 U8_EXPORT u8_condition u8_UnknownCipher;
 U8_EXPORT u8_condition u8_UnknownCipherNID;
 
+/** Returns a packet (vector) of N random bytes, for keys, algorithm seeds, etc
+    @param len     the length of the byte vector to generate
+    @returns a malloc'd packet of length @var len initialized with random values
+**/
 U8_EXPORT unsigned char *u8_random_vector(int len);
+
+U8_EXPORT void u8_init_crypto(void);
+
+/** Decrypts a packet which was encrypted with a particular
+       key using a particular named cipher. Cipher names are 
+       determined by the underlying library.
+    @param input	a byte vector of data to decrypt
+    @param len		the length (in bytes) of the byte vector
+    @param cipher	a string identifying the cipher used
+    @param key		a byte vector containing the decryption key
+    @param keylen	the length (in bytes) of the key vector
+    @param outlen	a pointer to a size_t to store the output length
+    @returns a decrypted packet of data whose length is deposited in @var outlen
+**/
+U8_EXPORT unsigned char *u8_decrypt
+  (unsigned char *input,size_t len,
+   char *cipher,unsigned char *key,size_t keylen,
+   size_t *result_len);
+
+/** Encrypts a packet with a particular key using a particular
+       named cipher. Cipher names are determined by the underlying library.
+    @param input	a byte vector of data to encrypt
+    @param len		the length (in bytes) of the byte vector
+    @param cipher	a string identifying the cipher to use
+    @param key		a byte vector containing the encryption key
+    @param keylen	the length (in bytes) of the key vector
+    @param outlen	a pointer to a size_t to store the output length
+    @returns an encrypted packet of data whose length is
+        deposited in @var outlen
+**/
+U8_EXPORT unsigned char *u8_encrypt
+  (unsigned char *input,size_t len,
+   char *cipher,unsigned char *key,size_t keylen,
+   size_t *result_len);
 
 #endif
