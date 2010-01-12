@@ -152,6 +152,9 @@ AC_CHECK_LIB(md5,openssl)
 AC_CHECK_LIB(ssl,SHA1_Init)
 AC_CHECK_LIB(ssl,EVP_get_cipherbyname)
 AC_CHECK_LIB(ssl,EVP_CIPHER_CTX_init)
+AC_CHECK_LIB(crypto,SHA1_Init)
+AC_CHECK_LIB(crypto,EVP_get_cipherbyname)
+AC_CHECK_LIB(crypto,EVP_CIPHER_CTX_init)
 
 AC_CHECK_FUNCS(EVP_get_cipherbyname EVP_CIPHER_CTX_init)
 
