@@ -35,7 +35,7 @@ COMMON_HEADERS=\
 LIBU8_SOURCES=\
   libu8.c streamio.c printf.c logging.c exceptions.c  ctype.c stringfns.c \
   libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c \
-  digestfns.c cryptofsn.c pathfns.c filefns.c fileio.c \
+  digestfns.c cryptofns.c pathfns.c filefns.c fileio.c \
   libu8io.c xfiles.c convert.c filestring.c bytebuf.c \
   tests/latin1u8.c tests/u8recode.c tests/u8xrecode.c tests/echosrv.c
 LIBU8CORE_OBJECTS=libu8.o streamio.o printf.o  contour.o logging.o \
