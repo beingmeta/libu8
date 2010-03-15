@@ -221,7 +221,7 @@ static int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 }
 #else
 #define u8_charoffset(s,i) _u8_charoffset(s,i)
-#define u8_byteoffset(s,i) _u8_byteoffset(s,i)
+#define u8_byteoffset(s,i,m) _u8_byteoffset(s,i,m)
 #endif
 
 #endif /* ndef LIBU8_U8STRINGFNS_H */
