@@ -104,6 +104,12 @@ U8_EXPORT struct U8_TEXT_ENCODING *u8_get_default_encoding();
 **/
 U8_EXPORT int u8_set_default_encoding(char *name);
 
+/** Guesses the encoding in a block of data
+    @param data (a buffer of data)
+    @returns an encoding if a known named encoding occurs inn the data
+**/
+U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *buf);
+
 /** Converts @a n bytes of text encoded with @a enc to the stream @a out.
     Scans @a n bytes from @a scan up to @a end or a NUL, converting
      external representations based on @a enc into Unicode code points

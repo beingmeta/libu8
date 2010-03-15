@@ -422,6 +422,33 @@ U8_EXPORT int u8_set_default_encoding(char *name)
     return 1;}
 }
 
+
+/* Guessing encodings */
+
+U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *buf)
+{
+  u8_byte *code_start, *code_end, codename[128];
+  if ((code_start=strstr(buf,"coding:"))) {
+    if ((code_end=strstr(code_start,";")) && ((code_end-code_start)<128)) {
+      code_start=code_start+7;
+      while ((code_start<code_end) &&
+	     (isspace(*code_end)))
+	code_end++;
+      strncpy(codename,code_start,code_end-code_start);
+      codename[code_end-code_start]='\0';
+      return u8_get_encoding(codename);}}
+  else if (code_start=strstr(buf,"charset=")) {
+    code_end=code_start+8;
+    if (ispunct(*code_end)) code_end++;
+    while ((code_end<code_start+128)&&
+	   ((*code_end=='-')||(isalnum(*code_end))))
+      code_end++;
+    strncpy(codename,code_start,code_end-code_start);
+    codename[code_end-code_start]='\0';
+    return u8_get_encoding(codename);}
+  else return NULL;
+}
+
 /** Charset primitives **/
 
 static int mb_lookup_code(int code,struct U8_MB_MAP *map,int size)

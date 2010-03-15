@@ -70,17 +70,8 @@ U8_EXPORT u8_string u8_filestring(u8_string filename,u8_string encname)
   /* If there are no bytes, there can be no conversion */
   if (n_bytes==0) return buf;
   if (encname == NULL) enc=NULL;
-  else if (strcmp(encname,"auto")==0) {
-    u8_byte *code_start, *code_end, codename[128];
-    if ((code_start=strstr(buf,"coding:"))) {
-      if ((code_end=strstr(code_start,";")) && ((code_end-code_start)<128)) {
-	code_start=code_start+7;
-	while ((code_start<code_end) &&
-	       (isspace(*code_start)))
-	  code_start++;
-	strncpy(codename,code_start,code_end-code_start);
-	codename[code_end-code_start]='\0';
-	enc=u8_get_encoding(codename);}}}
+  else if (strcmp(encname,"auto")==0)
+    enc=u8_guess_encoding(buf);
   else enc=u8_get_encoding(encname);
   if (enc) {
     struct U8_OUTPUT out;
