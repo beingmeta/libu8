@@ -626,7 +626,6 @@ syslog_target
 install_shared
 suffix
 shared_suffix
-U8RELEASE
 MKSTATIC
 U8VERSION
 SHARED_LIBV
@@ -2446,7 +2445,6 @@ I18N=""
 INSTALLI18N=""
 TAGS="TAGS"
 BUILDRPM="lsbrpmbuild"
-U8RELEASE=`cat REVNUM`
 doi18n="no"
 install_shared="install-so"
 libc_pthreads="no"
@@ -2480,7 +2478,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 ac_config_headers="$ac_config_headers include/libu8/config.h"
-
 
 
 
