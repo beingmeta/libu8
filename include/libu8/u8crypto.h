@@ -13,11 +13,10 @@
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
-/** \file u8digestfns.h
-    Provides u8_getdigestfns.
-    This wraps or implements various functions for computing
-     various message digests (hashes) to use in validation or
-     cryptography.
+/** \file u8crypto.h
+    Provides u8_cryptofns.
+    This wraps or implements various functions for cryptography
+    and related functions (like digests)
  **/
 
 #ifndef LIBU8_DIGESTFNS_H

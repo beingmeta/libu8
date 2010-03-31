@@ -5461,7 +5461,7 @@ _ACEOF
 fi
 done
 
-if test $libc_dlopen != "yes"; then
+if test x$libc_dlopen != "xyes"; then
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for dlopen in -ldl" >&5
 $as_echo_n "checking for dlopen in -ldl... " >&6; }
 if test "${ac_cv_lib_dl_dlopen+set}" = set; then :

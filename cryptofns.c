@@ -66,7 +66,6 @@ U8_EXPORT size_t u8_cryptic
     int needkeylen=EVP_CIPHER_key_length(cipher);
     int needivlen=EVP_CIPHER_iv_length(cipher);
     int blocksize=EVP_CIPHER_block_size(cipher);
-    char errbuf[128];
     if (blocksize>1024) blocksize=1024;
     if ((needkeylen)&&(keylen!=needkeylen))
       return u8_reterr(u8_BadCryptoKey,
