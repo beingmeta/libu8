@@ -74,7 +74,7 @@ tests/echosrv2: tests/echosrv.c lib/libu8.a
 lib/%@suffix@.a:
 	$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
-	$(MKSO) -Wl,-soname=$(@F) -o $@ $^
+	$(MKSO) -Wl,-soname=$(@F) -lu8 -o $@ $^
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	ln -sf $(<F) $@
 lib/%@suffix@.@U8VERSION@.dylib:
@@ -116,11 +116,17 @@ lib/libu8.a: $(LIBU8_OBJECTS)
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
 lib/libu8.@U8VERSION@.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
+# Avoid recursive reference
+lib/libu8@suffix@.so.@U8VERSION@:
+	$(MKSO) -Wl,-soname=$(@F) -o $@ $^
 
 lib/libu8core.a: $(LIBU8CORE_OBJECTS)
 lib/libu8core@suffix@.so.@U8VERSION@: $(LIBU8CORE_OBJECTS)
 lib/libu8core.@U8VERSION@.dylib: $(LIBU8CORE_OBJECTS)
 lib/libu8core.dll: $(LIBU8CORE_OBJECTS)
+# Avoid recursive reference
+lib/libu8core@suffix@.so.@U8VERSION@:
+	$(MKSO) -Wl,-soname=$(@F) -o $@ $^
 
 lib/libu8fns.a: $(LIBU8FNS_OBJECTS)
 lib/libu8fns@suffix@.so.@U8VERSION@: $(LIBU8FNS_OBJECTS)
@@ -137,22 +143,16 @@ lib/libu8io@suffix@.so.@U8VERSION@: $(LIBU8IO_OBJECTS)
 lib/libu8io.@U8VERSION@.dylib: $(LIBU8IO_OBJECTS) \
 	lib/libu8.dylib lib/libu8fns.dylib 
 lib/libu8io.dll: $(LIBU8IO_OBJECTS) lib/libu8.dll lib/libu8fns.dll
-lib/libu8io@suffix@.so.@U8VERSION@:
-	$(MKSO) -Wl,-soname=$(@F) -lu8 -o $@ $^
 
 lib/libu8stdio.a: $(LIBU8STDIO_OBJECTS)
 lib/libu8stdio@suffix@.so.@U8VERSION@: $(LIBU8STDIO_OBJECTS)
 lib/libu8stdio.@U8VERSION@.dylib: $(LIBU8STDIO_OBJECTS) lib/libu8.dylib
 lib/libu8stdio.dll: $(LIBU8STDIO_OBJECTS) lib/libu8.dll
-lib/libu8stdio@suffix@.so.@U8VERSION@:
-	$(MKSO) -Wl,-soname=$(@F) -lu8 -o $@ $^
 
 lib/libu8syslog.a: $(LIBU8SYSLOG_OBJECTS)
 lib/libu8syslog@suffix@.so.@U8VERSION@: $(LIBU8SYSLOG_OBJECTS)
 lib/libu8syslog.@U8VERSION@.dylib: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dylib
 lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
-lib/libu8syslog@suffix@.so.@U8VERSION@:
-	$(MKSO) -Wl,-soname=$(@F) -lu8 -o $@ $^
 
 
 docs: docs/man/man3/libu8.h.3
