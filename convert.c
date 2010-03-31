@@ -438,7 +438,7 @@ U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *buf)
       strncpy(codename,code_start,code_end-code_start);
       codename[code_end-code_start]='\0';
       return u8_get_encoding(codename);}}
-  else if (code_start=strstr(buf,"charset=")) {
+  if (code_start=strstr(buf,"charset=")) {
     code_start=code_start+8; code_end=code_start;
     if (ispunct(*code_end)) code_end++;
     while ((code_end<code_start+128)&&
@@ -447,7 +447,7 @@ U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *buf)
     strncpy(codename,code_start,code_end-code_start);
     codename[code_end-code_start]='\0';
     return u8_get_encoding(codename);}
-  else return NULL;
+  return NULL;
 }
 
 /** Charset primitives **/
