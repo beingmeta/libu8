@@ -75,7 +75,7 @@ lib/%@suffix@.a:
 	$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
 	$(MKSO) -Wl,-soname=$(@F) -o $@ $^
-lib/%@suffix@.so: lib/%.so.@U8VERSION@
+lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	ln -sf $(<F) $@
 lib/%@suffix@.@U8VERSION@.dylib:
 	$(MACLIBTOOL) -install_name $(@F) -o $@ $^
@@ -113,40 +113,47 @@ libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a lib/libu8data.a \
 syslog_libs: lib/libu8syslog.a lib/libu8syslog.@shared_suffix@
 
 lib/libu8.a: $(LIBU8_OBJECTS)
-lib/libu8.so.@U8VERSION@: $(LIBU8_OBJECTS)
+lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
 lib/libu8.@U8VERSION@.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
 
 lib/libu8core.a: $(LIBU8CORE_OBJECTS)
-lib/libu8core.so.@U8VERSION@: $(LIBU8CORE_OBJECTS)
+lib/libu8core@suffix@.so.@U8VERSION@: $(LIBU8CORE_OBJECTS)
 lib/libu8core.@U8VERSION@.dylib: $(LIBU8CORE_OBJECTS)
 lib/libu8core.dll: $(LIBU8CORE_OBJECTS)
 
 lib/libu8fns.a: $(LIBU8FNS_OBJECTS)
-lib/libu8fns.so.@U8VERSION@: $(LIBU8FNS_OBJECTS)
+lib/libu8fns@suffix@.so.@U8VERSION@: $(LIBU8FNS_OBJECTS)
 lib/libu8fns.@U8VERSION@.dylib: $(LIBU8FNS_OBJECTS) lib/libu8.dylib 
 lib/libu8fns.dll: $(LIBU8FNS_OBJECTS) libu8.dll 
 
 lib/libu8data.a: $(LIBU8DATA_OBJECTS)
-lib/libu8data.so.@U8VERSION@: $(LIBU8DATA_OBJECTS)
+lib/libu8data@suffix@.so.@U8VERSION@: $(LIBU8DATA_OBJECTS)
 lib/libu8data.@U8VERSION@.dylib: $(LIBU8DATA_OBJECTS) lib/libu8.dylib lib/libu8fns.dylib 
 lib/libu8data.dll: $(LIBU8DATA_OBJECTS) lib/libu8.dll lib/libu8fns.dll
 
 lib/libu8io.a: $(LIBU8IO_OBJECTS)
-lib/libu8io.so.@U8VERSION@: $(LIBU8IO_OBJECTS)
+lib/libu8io@suffix@.so.@U8VERSION@: $(LIBU8IO_OBJECTS)
 lib/libu8io.@U8VERSION@.dylib: $(LIBU8IO_OBJECTS) \
 	lib/libu8.dylib lib/libu8fns.dylib 
 lib/libu8io.dll: $(LIBU8IO_OBJECTS) lib/libu8.dll lib/libu8fns.dll
+lib/libu8io@suffix@.so.@U8VERSION@:
+	$(MKSO) -Wl,-soname=$(@F) -lu8 -o $@ $^
 
 lib/libu8stdio.a: $(LIBU8STDIO_OBJECTS)
-lib/libu8stdio.so.@U8VERSION@: $(LIBU8STDIO_OBJECTS)
+lib/libu8stdio@suffix@.so.@U8VERSION@: $(LIBU8STDIO_OBJECTS)
 lib/libu8stdio.@U8VERSION@.dylib: $(LIBU8STDIO_OBJECTS) lib/libu8.dylib
 lib/libu8stdio.dll: $(LIBU8STDIO_OBJECTS) lib/libu8.dll
+lib/libu8stdio@suffix@.so.@U8VERSION@:
+	$(MKSO) -Wl,-soname=$(@F) -lu8 -o $@ $^
 
 lib/libu8syslog.a: $(LIBU8SYSLOG_OBJECTS)
-lib/libu8syslog.so.@U8VERSION@: $(LIBU8SYSLOG_OBJECTS)
+lib/libu8syslog@suffix@.so.@U8VERSION@: $(LIBU8SYSLOG_OBJECTS)
 lib/libu8syslog.@U8VERSION@.dylib: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dylib
 lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
+lib/libu8syslog@suffix@.so.@U8VERSION@:
+	$(MKSO) -Wl,-soname=$(@F) -lu8 -o $@ $^
+
 
 docs: docs/man/man3/libu8.h.3
 
@@ -157,8 +164,8 @@ REVNUM: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	svnversion . > REVNUM
 
 clean: 
-	$(CLEAN) *.o *.a *.so *.dylib *.so.* 
-	$(CLEAN) lib/*.o lib/*.a lib/*.so lib/*.dylib lib/*.so.* 
+	$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* 
+	$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
 	$(CLEAN) docs/man/man3/* docs/html/* docs/rtf/* docs/latex/*
 	$(CLEAN) tests/getentity tests/latin1u8 tests/u8recode tests/u8xrecode
 	$(CLEAN) tests/echosrv
@@ -234,18 +241,18 @@ install-static-libs: $(LIBINSTALLDIR)/libu8.a \
 		     $(LIBINSTALLDIR)/libu8data.a \
 		     $(LIBINSTALLDIR)/libu8stdio.a
 
-install-so: $(LIBINSTALLDIR)/libu8.so                  \
-	    $(LIBINSTALLDIR)/libu8.so.@U8VERSION@      \
-	    $(LIBINSTALLDIR)/libu8io.so                \
-	    $(LIBINSTALLDIR)/libu8io.so.@U8VERSION@    \
-	    $(LIBINSTALLDIR)/libu8fns.so               \
-	    $(LIBINSTALLDIR)/libu8fns.so.@U8VERSION@   \
-	    $(LIBINSTALLDIR)/libu8data.so              \
-	    $(LIBINSTALLDIR)/libu8data.so.@U8VERSION@  \
-	    $(LIBINSTALLDIR)/libu8stdio.so             \
-	    $(LIBINSTALLDIR)/libu8stdio.so.@U8VERSION@ \
-	    $(LIBINSTALLDIR)/libu8syslog.so            \
-	    $(LIBINSTALLDIR)/libu8syslog.so.@U8VERSION@
+install-so: $(LIBINSTALLDIR)/libu8@suffix@.so                  \
+	    $(LIBINSTALLDIR)/libu8@suffix@.so.@U8VERSION@      \
+	    $(LIBINSTALLDIR)/libu8io@suffix@.so                \
+	    $(LIBINSTALLDIR)/libu8io@suffix@.so.@U8VERSION@    \
+	    $(LIBINSTALLDIR)/libu8fns@suffix@.so               \
+	    $(LIBINSTALLDIR)/libu8fns@suffix@.so.@U8VERSION@   \
+	    $(LIBINSTALLDIR)/libu8data@suffix@.so              \
+	    $(LIBINSTALLDIR)/libu8data@suffix@.so.@U8VERSION@  \
+	    $(LIBINSTALLDIR)/libu8stdio@suffix@.so             \
+	    $(LIBINSTALLDIR)/libu8stdio@suffix@.so.@U8VERSION@ \
+	    $(LIBINSTALLDIR)/libu8syslog@suffix@.so            \
+	    $(LIBINSTALLDIR)/libu8syslog@suffix@.so.@U8VERSION@
 
 install-dylib: $(LIBINSTALLDIR)/libu8.dylib                  \
                $(LIBINSTALLDIR)/libu8.@U8VERSION@.dylib      \
