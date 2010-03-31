@@ -87,11 +87,20 @@ U8_EXPORT int u8_base_char(unsigned int ch);
 /** Returns 1 if its argument is numeric digit unicode point. **/
 #define u8_isdigit(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_NUMBER)) 
 /** Returns 1 if its argument is a punctuation character. **/
-#define u8_ispunct(c) \
-  ((c>=0) && \
-   (((u8_getcharinfo(c)) == U8_GLUE_PUNCTUATION) || \
+#define u8_ispunct(c)                                \
+  ((c>=0) &&                                         \
+   (((u8_getcharinfo(c)) == U8_GLUE_PUNCTUATION)  || \
     ((u8_getcharinfo(c)) == U8_BREAK_PUNCTUATION) || \
-    ((u8_getcharinfo(c)) == U8_SYMBOL) || \
+    ((u8_getcharinfo(c)) == U8_SYMBOL)            || \
+    ((u8_getcharinfo(c)) == U8_MARK)))
+/** Returns 1 if its argument is a printing character (letter,digit,punct) **/
+#define u8_isprint(c)                                \
+  ((c>=0) &&					     \
+   ((u8_isalpha(c))                               || \
+    (u8_isdigit(c))                               || \
+    ((u8_getcharinfo(c)) == U8_GLUE_PUNCTUATION)  || \
+    ((u8_getcharinfo(c)) == U8_BREAK_PUNCTUATION) || \
+    ((u8_getcharinfo(c)) == U8_SYMBOL) ||	     \
     ((u8_getcharinfo(c)) == U8_MARK)))
 /** Returns 1 if its argument is whitespace unicode point. **/
 #define u8_isspace(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_SEPARATOR))
