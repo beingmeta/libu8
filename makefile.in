@@ -7,7 +7,7 @@ LDFLAGS   = @LDFLAGS@ $(EFENCE)
 LIBS      = @LIBS@ $(EFENCE) -lm
 U8VERSION = @U8VERSION@
 U8MINOR   = @U8MINOR@
-REVNUM    = `cat REVNUM`
+U8RELEASE = `svnversion .`
 
 DESTDIR		=
 prefix		= @prefix@
@@ -191,24 +191,22 @@ rpmtar: etc/libu8-@U8VERSION@.tar.gz
 rpms: etc/rpms.done
 debs: etc/debs.done
 
-etc/libu8-@U8VERSION@.$(REVNUM): makefile.in configure makefile \
-		$(LIBU8_SOURCES) $(COMMON_HEADERS)
-	rm -rf etc/libu8-@U8VERSION@.$(REVNUM)
-	svn export $(LIBU8SVN) etc/libu8-@U8VERSION@.$(REVNUM)
-	echo "#define LIBU8_SVN_REVNUM \""`svnversion .`"\"" > etc/libu8-@U8VERSION@.$(REVNUM)/include/libu8/revision.h
-	svnversion . > etc/libu8-@U8VERSION@.$(REVNUM)/REVNUM
-etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile \
-		$(LIBU8_SOURCES) $(COMMON_HEADERS)
-	make etc/libu8-@U8VERSION@.$(REVNUM)
-	tar -czvf $@ -C etc libu8-@U8VERSION@.$(REVNUM)
-	rm -rf etc/libu8-@U8VERSION@.$(REVNUM)
+etc/libu8-@U8VERSION@: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
+	rm -rf etc/libu8-@U8VERSION@
+	svn export $(LIBU8SVN) etc/libu8-@U8VERSION@
+	echo "#define LIBU8_SVNREV \""`svnversion .`"\"" > etc/libu8-@U8VERSION@/include/libu8/revision.h
+etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
+	make etc/libu8-@U8VERSION@
+	tar -czvf $@ -C etc libu8-@U8VERSION@
+	rm -rf etc/libu8-@U8VERSION@
 
 etc/rpms.done: etc/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
 
 etc/debs.done: etc/libu8-@U8VERSION@
-	cd etc/libu8-@U8VERSION@; dpkg-buildpackage -rfakeroot
-	rm -rf etc/libu8-@U8VERSION@
+	mv etc/libu8-@U8VERSION@ etc/libu8-@U8VERSION@.$(U8RELEASE)
+	cd etc/libu8-@U8VERSION@.$(U8RELEASE); dpkg-buildpackage -rfakeroot
+	rm -rf etc/libu8-@U8VERSION@.$(U8RELEASE)
 
 # Installation targets
 
