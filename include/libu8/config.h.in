@@ -32,6 +32,9 @@
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H
 
+/* Define if you have the <uuid/uuid.h> header file.  */
+#undef HAVE_UUID_UUID_H
+
 /* Define if you have the uchar type.  */
 #undef HAVE_UCHAR
 
@@ -92,6 +95,9 @@
 
 /* Define if you have the realpath function.  */
 #undef HAVE_REALPATH
+
+/* Define if you have uuid_generate */
+#undef HAVE_UUID_GENERATE
 
 /* Define if you have the unistd.h header.  */
 #undef HAVE_UNISTD_H

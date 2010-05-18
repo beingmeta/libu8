@@ -33,6 +33,7 @@
 #define U8_CLIENT_FIELDS           \
   int socket;                      \
   unsigned int flags, n_trans;     \
+  long long queued, started;       \
   u8_string idstring;              \
   struct U8_SERVER *server
 /** struct U8_CLIENT
@@ -45,6 +46,7 @@
 typedef struct U8_CLIENT {
   int socket;
   unsigned int flags, n_trans;
+  long long queued, started;
   u8_string idstring;
   struct U8_SERVER *server;} U8_CLIENT;
 typedef struct U8_CLIENT *u8_client;
@@ -94,6 +96,10 @@ typedef struct U8_SERVER {
   int n_trans; /* How many transactions have been initiated to date */
   int socket_max; /* Largest open socket */
   int socket_lim; /* The size of socketmap */
+  /* Tracking wait times */
+  long long waitsum; int waitcount;
+  /* Tracking run times */
+  long long runsum; int runcount;
   /* Handling functions */
   u8_client (*acceptfn)(int sock,struct sockaddr *,int);
   int (*servefn)(u8_client);

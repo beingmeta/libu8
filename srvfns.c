@@ -114,11 +114,14 @@ U8_EXPORT
 void u8_client_done(u8_client cl)
 {
   if (cl->flags&U8_CLIENT_BUSY) {
-    U8_SERVER *server=cl->server;
+    U8_SERVER *server=cl->server; long long cur;
     u8_lock_mutex(&(server->lock));
     server->n_busy--;
     FD_SET(cl->socket,&server->listening);
     cl->flags=cl->flags&(~(U8_CLIENT_BUSY));
+    cur=u8_microtime();
+    server->runsum=server->runsum+(cur-cl->started); server->runcount++;
+    cl->queued=-1; cl->started=-1;
     u8_unlock_mutex(&(server->lock));}
 }
 
@@ -207,7 +210,7 @@ static void finish_close_client(u8_client cl)
 #if U8_THREADS_ENABLED
 static u8_client pop_task(struct U8_SERVER *server)
 {
-  u8_client task=NULL;
+  u8_client task=NULL; long long curtime;
   u8_lock_mutex(&(server->lock));
   while ((server->n_tasks == 0) && ((server->flags&U8_SERVER_CLOSED)==0)) 
     u8_condvar_wait(&(server->empty),&(server->lock));
@@ -217,7 +220,11 @@ static u8_client pop_task(struct U8_SERVER *server)
 	    sizeof(void *)*(server->n_tasks-1));
     server->n_tasks--;}
   server->n_trans++;
+  curtime=u8_microtime();
+  server->waitsum=server->waitsum+(curtime-task->queued);
+  server->waitcount++;
   u8_unlock_mutex(&(server->lock));
+  task->started=curtime;
   return task;
 }
 
@@ -225,6 +232,7 @@ static int push_task(struct U8_SERVER *server,u8_client cl)
 {
   if (server->n_tasks >= server->max_tasks) return 0;
   server->queue[server->n_tasks++]=cl;
+  cl->queued=u8_microtime(); cl->started=-1;
   u8_condvar_signal(&(server->empty));
   return 1;
 }
@@ -285,6 +293,8 @@ int u8_server_init(struct U8_SERVER *server,
   server->thread_pool=u8_alloc_n(n_threads,pthread_t);
   server->n_trans=0; /* Transaction count */
   server->n_accepted=0; /* Accept count (new clients) */
+  server->waitsum=0; server->waitcount=0;
+  server->runsum=0; server->runcount=0;
   i=0; while (i < n_threads) {
 	 pthread_create(&(server->thread_pool[i]),
 			pthread_attr_default,
