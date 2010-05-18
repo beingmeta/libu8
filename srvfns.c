@@ -120,7 +120,8 @@ void u8_client_done(u8_client cl)
     FD_SET(cl->socket,&server->listening);
     cl->flags=cl->flags&(~(U8_CLIENT_BUSY));
     cur=u8_microtime();
-    server->runsum=server->runsum+(cur-cl->started); server->runcount++;
+    server->runsum=server->runsum+(cur-cl->started);
+    server->runcount++;
     cl->queued=-1; cl->started=-1;
     u8_unlock_mutex(&(server->lock));}
 }
@@ -192,6 +193,7 @@ static void finish_close_client(u8_client cl)
     /* We grab idstring, because our code allocated it but we will use it
        only after the closefn has freed the client object. */
     u8_string idstring=cl->idstring;
+    long long cur;
     u8_lock_mutex(&(server->lock));
     /* Catch race conditions */
     if (cl->flags&U8_CLIENT_CLOSED) {
@@ -199,6 +201,9 @@ static void finish_close_client(u8_client cl)
       return;}
     cl->flags=cl->flags&U8_CLIENT_CLOSED;
     server->n_busy--;
+    cur=u8_microtime();
+    server->runsum=server->runsum+(cur-cl->started);
+    server->runcount++;
     u8_unlock_mutex(&(server->lock));
     server->closefn(cl);
     if (cl->server->flags&U8_SERVER_LOG_CONNECT)
@@ -282,6 +287,7 @@ int u8_server_init(struct U8_SERVER *server,
   FD_ZERO(&server->servers);
   FD_ZERO(&server->clients);
   FD_ZERO(&server->listening);
+  memset(server->socketmap,0,sizeof(u8_client)*256);
   server->acceptfn=acceptfn;
   server->servefn=servefn;
   server->closefn=closefn;
