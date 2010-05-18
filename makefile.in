@@ -74,7 +74,7 @@ tests/echosrv2: tests/echosrv.c lib/libu8.a
 lib/%@suffix@.a:
 	$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
-	$(MKSO) -Wl,-soname=$(@F) -lu8 -o $@ $^
+	$(MKSO) -Wl,-soname=$(@F) -Llib -lu8 -o $@ $^
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	ln -sf $(<F) $@
 lib/%@suffix@.@U8VERSION@.dylib:
@@ -209,6 +209,10 @@ etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(
 
 etc/rpms.done: etc/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
+
+etc/rpms32.done: etc/libu8-2.0.tar.gz
+	CC='gcc -m32' rpmbuild --target x86_32 --nodeps -ta etc/libu8-2.0.tar.gz &&\
+	touch etc/rpms32.done
 
 etc/debs.done: etc/libu8-@U8VERSION@
 	mv etc/libu8-@U8VERSION@ etc/libu8-@U8VERSION@.$(U8RELEASE)
