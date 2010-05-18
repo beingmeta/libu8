@@ -1,4 +1,5 @@
 CC	  = @CC@
+LD	  = ld
 XCFLAGS   =
 ARCHFLAGS = @archflags@
 CFLAGS    =-g -O2 @CFLAGS@ -I./include $(XCFLAGS) $(ARCHFLAGS)
@@ -211,7 +212,7 @@ etc/rpms.done: etc/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
 
 etc/rpms32.done: etc/libu8-2.0.tar.gz
-	CC='gcc -m32' rpmbuild --target x86_32 --nodeps -ta etc/libu8-2.0.tar.gz &&\
+	CC='gcc -m32' rpmbuild --target x86 --nodeps -ta etc/libu8-2.0.tar.gz &&\
 	touch etc/rpms32.done
 
 etc/debs.done: etc/libu8-@U8VERSION@
