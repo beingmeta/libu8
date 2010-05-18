@@ -240,5 +240,34 @@ U8_EXPORT
 */
 long long u8_microtime(void);
 
+typedef unsigned char u8_uuid[16];
+
+U8_EXPORT
+/**
+   Gets a 16-byte UUID based on the time and MAC address
+   Arguments: none
+   @returns an array of 16 bytes
+ */
+u8_uuid *u8_getuuid(void);
+
+
+U8_EXPORT
+/**
+   Gets the text representation of a 16-byte UUID
+   based on the time and MAC address
+   Arguments: none
+   @returns a UTF-8 (actually, ASCII) string
+ */
+u8_string u8_getuuidstring(void);
+
+U8_EXPORT
+/**
+   Converts a text representation of a UUID into a UUID
+   Arguments: a string
+   @params a UTF-8 string
+   @returns an array of 16 bytes
+ */
+u8_uuid *u8_parseuuid(u8_string s);
+
 
 #endif

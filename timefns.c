@@ -28,6 +28,9 @@ static char versionid[] MAYBE_UNUSED=
 #include <stdarg.h>
 #include <ctype.h>
 #include <errno.h>
+#if HAVE_UUID_UUID_H
+#include <uuid/uuid.h>
+#endif
 
 #if U8_THREADS_ENABLED
 static u8_mutex timefns_lock;
@@ -743,6 +746,37 @@ static u8_string time_printf_handler
     strftime(buf,bufsz,"%H:%M:%S",&tmp);
     return buf;}
 }
+
+/* UUID generation and related functions */
+
+#if HAVE_GETUUID
+U8_EXPORT u8_uuid *u8_getuuid()
+{
+  uuid_t tmp;
+  u8_uuid *data=u8_malloc(16*sizeof(unsigned char));
+  uuid_generate(tmp);
+  memcpy(data,tmp,16);
+  return data;
+}
+
+U8_EXPORT u8_string u8_getuuidstring()
+{
+  uuid_t tmp; u8_string str=u8_malloc(37*sizeof(unsigned char));
+  uuid_generate(tmp);
+  uuid_unparse(tmp,str);
+  return str;
+}
+
+U8_EXPORT u8_uuid *u8_parseuuid(u8_string s)
+{
+  uuid_t tmp;
+  u8_uuid *data=u8_malloc(16*sizeof(unsigned char));
+  uuid_parse((char *)s,tmp);
+  memcpy(data,tmp,16);
+  return data;
+}
+#else
+#endif
 
 /* Initialization functions */
 
