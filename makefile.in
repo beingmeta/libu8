@@ -58,6 +58,20 @@ STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
 
 all: testbin @TAGS@ libs @I18N@
+debug:
+	make XCFLAGS="-O0" all
+fresh:
+	make clean; make all
+dbg:
+	make clean; make XCFLAGS="-O0" all
+# Makes everything and then sudoes install.  Keeps build files non-root
+suinstall:
+	make all
+	sudo make install
+dbginstall:
+	make XCFLAGS="-O0" all
+	sudo make install
+
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
