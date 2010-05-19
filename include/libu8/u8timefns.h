@@ -240,34 +240,89 @@ U8_EXPORT
 */
 long long u8_microtime(void);
 
-typedef unsigned char u8_uuid[16];
+typedef unsigned char U8_UUID[16];
+typedef unsigned char *u8_uuid;
 
 U8_EXPORT
 /**
    Gets a 16-byte UUID based on the time and MAC address
    Arguments: none
+   @param an xtime structure
+   @param a 48-bit node id, -1 means use the default
+   @param a clock id, -1 means make one up
+   @params a (possibly NULL) 16-byte buffer to use/return
    @returns an array of 16 bytes
  */
-u8_uuid *u8_getuuid(void);
+u8_uuid u8_consuuid(struct U8_XTIME *xtime,long long nodeid,short clockid,
+		     u8_uuid);
+
+U8_EXPORT
+/**
+   Gets a 16-byte UUID based on the time and MAC address
+   @params a (possibly NULL) 16-byte buffer to use/return
+   @returns an array of 16 bytes
+ */
+u8_uuid u8_getuuid(u8_uuid);
 
 
 U8_EXPORT
 /**
    Gets the text representation of a 16-byte UUID
    based on the time and MAC address
-   Arguments: none
+   @param a UUID
+   @param a (possibly NULL) string buffer
    @returns a UTF-8 (actually, ASCII) string
  */
-u8_string u8_getuuidstring(void);
+u8_string u8_uuidstring(u8_uuid,u8_byte *);
 
 U8_EXPORT
 /**
    Converts a text representation of a UUID into a UUID
    Arguments: a string
    @params a UTF-8 string
+   @params a (possibly NULL) 16-byte buffer to use/return
    @returns an array of 16 bytes
  */
-u8_uuid *u8_parseuuid(u8_string s);
+u8_uuid u8_parseuuid(u8_string s,u8_uuid);
 
+
+U8_EXPORT
+/**
+   Gets the node id for a time-based UUID, returning -1 if the UUID is not
+    time-based.
+   @params a pointer to uuid (u8_uuid)
+   @returns a long long (actually 48 bits)
+ */
+long long u8_uuid_nodeid(u8_uuid uuid);
+
+
+U8_EXPORT
+/**
+   Gets the timestamp for the UUID, returning -1 if the UUID is not
+    time-based.  The timestamp is the number of 100-nanosecond ticks
+    since 15 October 1582, when the Gregorian calendar was adopted.
+   @params a pointer to uuid (u8_uuid)
+   @returns a long long uuid timestamp
+ */
+long long u8_uuid_timestamp(u8_uuid);
+
+U8_EXPORT
+/**
+   Gets the time_t tick for the UUID, returning -1 if the UUID is not
+    time-based or is outside of the time_t range
+   @params a pointer to uuid (u8_uuid)
+   @returns a time_t value
+ */
+time_t u8_uuid_tick(u8_uuid);
+
+U8_EXPORT
+/**
+   Gets the time_t tick for the UUID, returning -1 if the UUID is not
+    time-based or is outside of the time_t range
+   @params a pointer to uuid (u8_uuid)
+   @params a (possibly NULL) pointer to a U8_XTIME struct to use
+   @returns a pointer to a U8_XTIME struct
+ */
+struct U8_XTIME *u8_uuid_xtime(u8_uuid,struct U8_XTIME *);
 
 #endif

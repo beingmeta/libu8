@@ -97,7 +97,7 @@
 #undef HAVE_REALPATH
 
 /* Define if you have uuid_generate */
-#undef HAVE_UUID_GENERATE
+#undef HAVE_UUID_GENERATE_TIME
 
 /* Define if you have the unistd.h header.  */
 #undef HAVE_UNISTD_H

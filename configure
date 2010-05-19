@@ -4795,9 +4795,9 @@ _ACEOF
 fi
 done
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uuid_generate in -luuid" >&5
-$as_echo_n "checking for uuid_generate in -luuid... " >&6; }
-if test "${ac_cv_lib_uuid_uuid_generate+set}" = set; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uuid_generate_time in -luuid" >&5
+$as_echo_n "checking for uuid_generate_time in -luuid... " >&6; }
+if test "${ac_cv_lib_uuid_uuid_generate_time+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
   ac_check_lib_save_LIBS=$LIBS
@@ -4811,27 +4811,27 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char uuid_generate ();
+char uuid_generate_time ();
 int
 main ()
 {
-return uuid_generate ();
+return uuid_generate_time ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_uuid_uuid_generate=yes
+  ac_cv_lib_uuid_uuid_generate_time=yes
 else
-  ac_cv_lib_uuid_uuid_generate=no
+  ac_cv_lib_uuid_uuid_generate_time=no
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
 LIBS=$ac_check_lib_save_LIBS
 fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_uuid_uuid_generate" >&5
-$as_echo "$ac_cv_lib_uuid_uuid_generate" >&6; }
-if test "x$ac_cv_lib_uuid_uuid_generate" = x""yes; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_uuid_uuid_generate_time" >&5
+$as_echo "$ac_cv_lib_uuid_uuid_generate_time" >&6; }
+if test "x$ac_cv_lib_uuid_uuid_generate_time" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_LIBUUID 1
 _ACEOF
@@ -4840,12 +4840,12 @@ _ACEOF
 
 fi
 
-for ac_func in uuid_generate
+for ac_func in uuid_generate_time
 do :
-  ac_fn_c_check_func "$LINENO" "uuid_generate" "ac_cv_func_uuid_generate"
-if test "x$ac_cv_func_uuid_generate" = x""yes; then :
+  ac_fn_c_check_func "$LINENO" "uuid_generate_time" "ac_cv_func_uuid_generate_time"
+if test "x$ac_cv_func_uuid_generate_time" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_UUID_GENERATE 1
+#define HAVE_UUID_GENERATE_TIME 1
 _ACEOF
 
 fi

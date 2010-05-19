@@ -125,8 +125,8 @@ AC_CHECK_FUNCS(getrusage mallinfo)
 # For OS X
 AC_CHECK_HEADERS(CommonCrypto/CommonDigest.h CommonCrypto/CommonHMAC.h)
 AC_CHECK_FUNCS(CCHmacInit)
-AC_CHECK_LIB(uuid,uuid_generate)
-AC_CHECK_FUNCS(uuid_generate)
+AC_CHECK_LIB(uuid,uuid_generate_time)
+AC_CHECK_FUNCS(uuid_generate_time)
 
 AC_HEADER_STDC
 AC_HEADER_STAT

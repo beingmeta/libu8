@@ -15,6 +15,12 @@
 
 #include "libu8/libu8.h"
 
+typedef unsigned long long u8ull;
+typedef unsigned int u8uint;
+#ifndef WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN 0
+#endif
+
 static char versionid[] MAYBE_UNUSED=
   "$Id$";
 
@@ -749,34 +755,210 @@ static u8_string time_printf_handler
 
 /* UUID generation and related functions */
 
-#if HAVE_GETUUID
-U8_EXPORT u8_uuid *u8_getuuid()
-{
-  uuid_t tmp;
-  u8_uuid *data=u8_malloc(16*sizeof(unsigned char));
-  uuid_generate(tmp);
-  memcpy(data,tmp,16);
-  return data;
-}
+long long u8_uuid_node=-1;
 
-U8_EXPORT u8_string u8_getuuidstring()
-{
-  uuid_t tmp; u8_string str=u8_malloc(37*sizeof(unsigned char));
-  uuid_generate(tmp);
-  uuid_unparse(tmp,str);
-  return str;
-}
+static unsigned long long flip64(unsigned long long _w)
+{ return ((((u8ull)(_w&(0xFF))) << 56) |
+	  (((u8ull)(_w&(0xFF00))) << 40) |
+	  (((u8ull)(_w&(0xFF0000))) << 24) |
+	  (((u8ull)(_w&(0xFF000000))) << 8) |
+	  (((u8ull)(_w>>56)) & 0xFF) |
+	  (((u8ull)(_w>>40)) & 0xFF00) |
+	  (((u8ull)(_w>>24)) & 0xFF0000) |
+	  (((u8ull)(_w>>8)) & 0xFF000000));}
 
-U8_EXPORT u8_uuid *u8_parseuuid(u8_string s)
+#define knuth_hash(i)  ((((u8ull)(i))*2654435761)%(0x10000000))
+
+static unsigned long long generate_nodeid()
 {
-  uuid_t tmp;
-  u8_uuid *data=u8_malloc(16*sizeof(unsigned char));
-  uuid_parse((char *)s,tmp);
-  memcpy(data,tmp,16);
-  return data;
+  time_t now=time(NULL);
+  return (((u8ull)u8_random(65536))<<32)|
+    (((u8ull)knuth_hash((unsigned int)now))<<16)|
+    ((u8ull)(u8_random(65536)));
 }
+/* The main constructor function */
+
+static u8_uuid consuuid
+   (struct U8_XTIME *xtime,unsigned long long nodeid,short clockid,
+    u8_uuid buf)
+{
+  unsigned long long nanotick=
+    122192928000000000LL+
+    (((unsigned long long)xtime->u8_tick)*10000000)+
+    xtime->u8_nsecs/100;
+  unsigned char *data=((buf)?(buf):(u8_malloc(16*sizeof(unsigned char))));
+  unsigned long long low, high;
+  unsigned long long *lowp=(unsigned long long *)(data+8);
+  unsigned long long *highp=(unsigned long long *)(data);
+  low=(((u8ull)nodeid)&((u8ull)0xFFFFFFFFFFFFLL))|
+    /* THis is the 14-bit clockid */
+    (((u8ull)(clockid|0x1000))<<48)|
+    /* This is the variant code */
+    (0x8000000000000000);
+  high=
+    ((nanotick&       0xFFFFFFFF)<<32)|
+    ((nanotick&   0xFFFF00000000)>>16)|
+    ((nanotick&0xFFF000000000000)>>48)|
+    /* This is the version (time-based) */
+    (0x1000);
+#if WORDS_BIGENDIAN
+  *highp=((u8ull)high); *lowp=((u8ull)low);
 #else
+  *highp=((u8ull)(flip64(high))); *lowp=((u8ull)(flip64(low)));
 #endif
+    return (u8_uuid) data;
+}
+
+/* UUID functions */
+
+U8_EXPORT u8_uuid u8_consuuid
+  (struct U8_XTIME *xtime,long long nodeid,short clockid,u8_uuid buf)
+{
+  struct U8_XTIME timebuf;
+  if (xtime==NULL) {
+    u8_now(&timebuf); xtime=&timebuf;}
+  if (clockid<0) clockid=u8_random(256*4*16);
+  if (nodeid<0)
+    if (u8_uuid_node<0) 
+      nodeid=generate_nodeid();
+    else nodeid=u8_uuid_node;
+  if (u8_uuid_node<0) u8_uuid_node=nodeid;
+  return consuuid(xtime,nodeid,clockid,buf);
+}
+
+U8_EXPORT u8_string u8_uuidstring(u8_uuid uuid,u8_byte *buf)
+{
+  if (buf==NULL) buf=u8_malloc(37);
+  sprintf(buf,
+	  "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+	  ((u8uint)(uuid[0])),((u8uint)(uuid[1])),((u8uint)(uuid[2])),
+	  ((u8uint)(uuid[3])),((u8uint)(uuid[4])),((u8uint)(uuid[5])),
+	  ((u8uint)(uuid[6])),((u8uint)(uuid[7])),((u8uint)(uuid[8])),
+	  ((u8uint)(uuid[9])),((u8uint)(uuid[10])),((u8uint)(uuid[11])),
+	  ((u8uint)(uuid[12])),((u8uint)(uuid[13])),((u8uint)(uuid[14])),
+	  ((u8uint)(uuid[15])));
+  return buf;
+}
+
+U8_EXPORT u8_uuid u8_parseuuid(u8_string buf,u8_uuid uuid)
+{
+  unsigned char *ubuf=((uuid)?(uuid):(u8_malloc(16)));
+  u8ull high, low, *highp=((u8ull *)ubuf), *lowp=((u8ull *)(ubuf+8));
+  u8ull head, nodelow; unsigned int nodehigh, b1, b2, b3; 
+  int items=sscanf(buf,"%8llx-%4x-%4x-%4x-%4x%8llx",
+		   &head,&b1,&b2,&b3,&nodehigh,&nodelow);
+  if (items!=6) {
+    if (!(uuid)) u8_free(ubuf);
+    return NULL;}
+  high=((((u8ull)head)<<32))|(b1<<16)|(b2);
+  low=((((u8ull)b3)<<48))|((((u8ull)nodehigh)<<32))|(nodelow);
+#if WORDS_BIGENDIAN
+  *highp=high; *lowp=high;
+#else
+  *highp=flip64(high); *lowp=flip64(low);
+#endif
+  return (u8_uuid) buf;
+}
+
+#define TIMEUUIDP(uuid) ((uuid[6]&0xF0)==0x10)
+
+static long long get_nanotick(unsigned long long high)
+{
+  return
+    ((high&0x0FFFFFFF00000000)>>32)|
+    ((high&         0xFFFF0000)<<16)|
+    ((high&              0xFFF)<<48);
+}
+
+U8_EXPORT long long u8_uuid_nodeid(u8_uuid uuid)
+{
+  unsigned char *ubuf=uuid;
+#if WORDS_BIGENDIAN
+  u8ull *lowp=(u8ull *)(ubuf+8), low=*lowp;
+#else
+  u8ull *lowp=(u8ull *)(ubuf+8), low=flip64(*lowp);
+#endif  
+  if (TIMEUUIDP(ubuf))
+    return low&(0xFFFFFFFFFFFF);
+  else return -1;
+}
+
+U8_EXPORT long long u8_uuid_timestamp(u8_uuid uuid)
+{
+  unsigned char *ubuf=uuid;
+#if WORDS_BIGENDIAN
+  u8ull *highp=(u8ull *)(ubuf), high=*highp;
+#else
+  u8ull *highp=(u8ull *)(ubuf), high=flip64(*highp);
+#endif  
+  if (TIMEUUIDP(ubuf))
+    return get_nanotick(high);
+  else return -1;
+}
+
+U8_EXPORT time_t u8_uuid_tick(u8_uuid uuid)
+{
+  unsigned char *ubuf=uuid;
+#if WORDS_BIGENDIAN
+  u8ull *highp=(u8ull *)(ubuf), high=*lowp;
+#else
+  u8ull *highp=(u8ull *)(ubuf), high=flip64(*highp);
+#endif  
+  u8ull nanotick=get_nanotick(high);
+  if (TIMEUUIDP(ubuf)) {
+    time_t tick=((nanotick-122192928000000000LL)/100000000);
+    if (tick<0) return -1;
+    else return tick;}
+  else return -1;
+}
+
+U8_EXPORT struct U8_XTIME *u8_uuid_xtime(u8_uuid uuid,struct U8_XTIME *xt)
+{
+  unsigned char *ubuf=uuid;
+#if WORDS_BIGENDIAN
+  u8ull *highp=(u8ull *)(ubuf), high=*highp;
+#else
+  u8ull *highp=(u8ull *)(ubuf), high=flip64(*highp);
+#endif  
+  u8ull nanotick=get_nanotick(high);
+  if (!(TIMEUUIDP(ubuf))) return NULL;
+  if (!(xt)) xt=u8_alloc(struct U8_XTIME);
+  u8_init_xtime
+    (xt,(time_t)((nanotick-122192928000000000LL)/10000000),
+     u8_nanosecond,(nanotick%10)*100,0,0);
+  return xt;
+}
+
+/* Generating fresh UUIDs */
+static short clockid=-1;
+static long long last_nanotick=-1;
+
+U8_EXPORT u8_uuid freshuuid(u8_uuid uuid)
+{
+  struct U8_XTIME buf; long long nanotick;
+  if (clockid<0) clockid=u8_random(256*4*16);
+  if (u8_uuid_node<0) u8_uuid_node=generate_nodeid();
+  u8_now(&buf);
+  nanotick=122192928000000000LL+
+    (((unsigned long long)buf.u8_tick)*10000000)+
+    buf.u8_nsecs/100;
+  if (last_nanotick>nanotick) clockid=(clockid+1)%(256*4*16);
+  last_nanotick=nanotick;
+  return consuuid(&buf,u8_uuid_node,clockid,uuid);
+}
+
+U8_EXPORT u8_uuid u8_getuuid(u8_uuid buf)
+{
+#if HAVE_UUID_GENERATE_TIME
+  uuid_t tmp; 
+  uuid_generate_time(tmp);
+  if (buf==NULL) buf=u8_malloc(16);
+  memcpy(buf,tmp,16);
+  return (u8_uuid)buf;
+#else
+  return freshuuid(buf);
+#endif
+}
 
 /* Initialization functions */
 
