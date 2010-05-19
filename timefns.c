@@ -767,7 +767,7 @@ static unsigned long long flip64(unsigned long long _w)
 	  (((u8ull)(_w>>24)) & 0xFF0000) |
 	  (((u8ull)(_w>>8)) & 0xFF000000));}
 
-#define knuth_hash(i)  ((((u8ull)(i))*2654435761)%(0x10000000))
+#define knuth_hash(i)  ((((u8ull)(i))*2654435761LL)%(0x10000000LL))
 
 static unsigned long long generate_nodeid()
 {
@@ -794,11 +794,11 @@ static u8_uuid consuuid
     /* THis is the 14-bit clockid */
     (((u8ull)(clockid|0x1000))<<48)|
     /* This is the variant code */
-    (0x8000000000000000);
+    (0x8000000000000000LL);
   high=
     ((nanotick&       0xFFFFFFFF)<<32)|
-    ((nanotick&   0xFFFF00000000)>>16)|
-    ((nanotick&0xFFF000000000000)>>48)|
+    ((nanotick&   0xFFFF00000000LL)>>16)|
+    ((nanotick&0xFFF000000000000LL)>>48)|
     /* This is the version (time-based) */
     (0x1000);
 #if WORDS_BIGENDIAN
@@ -865,9 +865,9 @@ U8_EXPORT u8_uuid u8_parseuuid(u8_string buf,u8_uuid uuid)
 static long long get_nanotick(unsigned long long high)
 {
   return
-    ((high&0x0FFFFFFF00000000)>>32)|
-    ((high&         0xFFFF0000)<<16)|
-    ((high&              0xFFF)<<48);
+    ((high&0x0FFFFFFF00000000LL)>>32)|
+    ((high&         0xFFFF0000LL)<<16)|
+    ((high&              0xFFFLL)<<48);
 }
 
 U8_EXPORT long long u8_uuid_nodeid(u8_uuid uuid)
@@ -879,7 +879,7 @@ U8_EXPORT long long u8_uuid_nodeid(u8_uuid uuid)
   u8ull *lowp=(u8ull *)(ubuf+8), low=flip64(*lowp);
 #endif  
   if (TIMEUUIDP(ubuf))
-    return low&(0xFFFFFFFFFFFF);
+    return low&(0xFFFFFFFFFFFFLL);
   else return -1;
 }
 
