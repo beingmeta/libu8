@@ -769,13 +769,34 @@ static unsigned long long flip64(unsigned long long _w)
 
 #define knuth_hash(i)  ((((u8ull)(i))*2654435761LL)%(0x10000000LL))
 
-static unsigned long long generate_nodeid()
+#if HAVE_UUID_GENERATE_TIME
+static unsigned long long generate_nodeid(int temp)
+{
+  uuid_t tmp; unsigned char buf[16];
+  unsigned long long id;
+  if ((!(temp))&&(u8_uuid_node>=0))
+    return u8_uuid_node;
+  uuid_generate_time(tmp);
+  memcpy(buf,tmp,16);
+  id=u8_uuid_nodeid(buf);
+  if (!(temp)) u8_uuid_node=id;
+  return id;
+}
+#else
+static unsigned long long generate_nodeid(int temp)
 {
   time_t now=time(NULL);
-  return (((u8ull)u8_random(65536))<<32)|
+  unsigned long long id;
+  if ((!(temp))&&(u8_uuid_node>=0))
+    return u8_uuid_node;
+  id=(((u8ull)u8_random(65536))<<32)|
     (((u8ull)knuth_hash((unsigned int)now))<<16)|
     ((u8ull)(u8_random(65536)));
+  if (!(temp)) u8_uuid_node=id;
+  return id;
 }
+#endif
+
 /* The main constructor function */
 
 static u8_uuid consuuid
@@ -820,7 +841,7 @@ U8_EXPORT u8_uuid u8_consuuid
   if (clockid<0) clockid=u8_random(256*4*16);
   if (nodeid<0)
     if (u8_uuid_node<0) 
-      nodeid=generate_nodeid();
+      nodeid=generate_nodeid(0);
     else nodeid=u8_uuid_node;
   if (u8_uuid_node<0) u8_uuid_node=nodeid;
   return consuuid(xtime,nodeid,clockid,buf);
@@ -937,7 +958,7 @@ U8_EXPORT u8_uuid freshuuid(u8_uuid uuid)
 {
   struct U8_XTIME buf; long long nanotick;
   if (clockid<0) clockid=u8_random(256*4*16);
-  if (u8_uuid_node<0) u8_uuid_node=generate_nodeid();
+  if (u8_uuid_node<0) u8_uuid_node=generate_nodeid(0);
   u8_now(&buf);
   nanotick=122192928000000000LL+
     (((unsigned long long)buf.u8_tick)*10000000)+
