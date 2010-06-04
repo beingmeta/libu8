@@ -512,6 +512,7 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
   char *tzstart;
   int pos[]={-1,4,7,10,13,16,19,20}, nsecs=0, n_elts;
   if (strchr(s,'/')) return (time_t) -1;
+  memset(xtp,0,sizeof(struct U8_XTIME));
   n_elts=sscanf(s,"%04u-%02hhu-%02hhuT%02hhu:%02hhu:%02hhu.%u",
 		&xtp->u8_year,&xtp->u8_mon,
 		&xtp->u8_mday,&xtp->u8_hour,
@@ -652,6 +653,7 @@ time_t u8_rfc822_to_xtime(u8_string s,struct U8_XTIME *xtp)
   char tzspec[128], dow[128], mon[128];
   int n_elts;
   if (strchr(s,'/')) return (time_t) -1;
+  memset(xtp,0,sizeof(struct U8_XTIME));
   if (isdigit(*s)) 
     n_elts=sscanf(s,"%hhd %s %d %hhd:%hhd:%hhd %s",
 		  &xtp->u8_mday,(char *)&mon,
