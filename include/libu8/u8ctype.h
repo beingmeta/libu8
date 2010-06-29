@@ -104,6 +104,11 @@ U8_EXPORT int u8_base_char(unsigned int ch);
     ((u8_getcharinfo(c)) == U8_MARK)))
 /** Returns 1 if its argument is whitespace unicode point. **/
 #define u8_isspace(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_SEPARATOR))
+/** Returns 1 if its argument is whitespace unicode point. **/
+#define u8_ishspace(c)                            \
+  ((c>=0) &&                                      \
+   ((c==' ')||(c=='\t')||(c==0x1680)||(c==0x180e) \
+    ((c>=0x2000)&&(c<0x200b))))
 /** Returns 1 if its argument is a standard control character. **/
 #define u8_isctrl(c) ((c>=0) && ((c<0x20) || ((c>0x7e) && (c<0x9f))))
 /** Returns 1 if its argument is an alphanumeric unicode point. **/
