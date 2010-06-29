@@ -104,7 +104,7 @@ U8_EXPORT int u8_base_char(unsigned int ch);
     ((u8_getcharinfo(c)) == U8_MARK)))
 /** Returns 1 if its argument is whitespace unicode point. **/
 #define u8_isspace(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_SEPARATOR))
-/** Returns 1 if its argument is whitespace unicode point. **/
+/** Returns 1 if its argument is horizontal whitespace unicode point. **/
 #define u8_ishspace(c)                            \
   ((c>=0) &&                                      \
    ((c==' ')||(c=='\t')||(c==0x1680)||(c==0x180e) \
