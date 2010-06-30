@@ -107,8 +107,14 @@ U8_EXPORT int u8_base_char(unsigned int ch);
 /** Returns 1 if its argument is horizontal whitespace unicode point. **/
 #define u8_ishspace(c)                            \
   ((c>=0) &&                                      \
-   ((c==' ')||(c=='\t')||(c==0x1680)||(c==0x180e) \
+   ((c==' ')||(c=='\t')||(c==0x1680)||(c==0x180e)|| \
     ((c>=0x2000)&&(c<0x200b))))
+/** Returns 1 if its argument is horizontal whitespace unicode point. **/
+#define u8_isvspace(c)                            \
+  ((c>=0) &&                                      \
+   ((c=='\n')||(c=='\r')||(c==0x0c)||(c==0x0b)||  \
+    (c==0x1C)||(c==0x1D)||(c==0x1E)||(c==0x1F)||  \
+    (c==0x85)||(c==0x2029)))
 /** Returns 1 if its argument is a standard control character. **/
 #define u8_isctrl(c) ((c>=0) && ((c<0x20) || ((c>0x7e) && (c<0x9f))))
 /** Returns 1 if its argument is an alphanumeric unicode point. **/
