@@ -118,8 +118,15 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
       if ((code == 'd') || (code == 'i') ||
 	  (code == 'u') || (code == 'o') ||
 	  (code == 'x')) {
-	int i=va_arg(*args,int);
-	sprintf(buf,cmd,i);}
+	if (strstr(cmd,"ll")) {
+	  long long i=va_arg(*args,long long);
+	  sprintf(buf,cmd,i);}
+	else if (strstr(cmd,"l")) {
+	  long i=va_arg(*args,long);
+	  sprintf(buf,cmd,i);}
+	else {
+	  int i=va_arg(*args,int);
+	  sprintf(buf,cmd,i);}}
       else if ((code == 'f') || (code == 'g') || (code == 'e')) {
 	double f=va_arg(*args,double);
 	sprintf(buf,cmd,f);}
