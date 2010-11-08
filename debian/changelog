@@ -2,5 +2,5 @@ libu8 (2.0.0-1) unstable; urgency=low
 
   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
 
- -- haase <kh@beingmeta.com>  Tue,  3 Apr 2007 21:00:35 -0400
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Tue,  3 Apr 2007 21:00:35 -0400
 
