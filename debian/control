@@ -1,6 +1,6 @@
 Source: libu8
 Priority: optional
-Maintainer: Kenneth Haase <kh@beingmeta.com>
+Maintainer: Kenneth Benefiel Haase <kh@beingmeta.com>
 Build-Depends: debhelper (>= 5), autotools-dev, doxygen
 Standards-Version: 3.7.2
 Section: libs
