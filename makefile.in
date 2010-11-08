@@ -27,19 +27,20 @@ MKSO		= $(CC) $(CFLAGS) $(XCFLAGS) -shared $(LDFLAGS) $(XLDFLAGS) $(LIBS)
 MACLIBTOOL	= $(CC) -dynamiclib -single_module $(LDFLAGS) $(LIBS)
 LIBU8SVN	=  https://svn.libu8.org/svnroot/libu8/trunk
 
-COMMON_HEADERS=\
+LIBU8_HEADERS=\
 	include/libu8/config.h include/libu8/threading.h \
 	include/libu8/libu8.h include/libu8/u8contour.h \
 	include/libu8/u8streamio.h include/libu8/u8stringfns.h \
 	include/libu8/u8ctype.h include/libu8/u8convert.h \
 	include/libu8/u8crypto.h
-
 LIBU8_SOURCES=\
   libu8.c streamio.c printf.c logging.c exceptions.c  ctype.c stringfns.c \
   libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c \
   digestfns.c cryptofns.c pathfns.c filefns.c fileio.c \
   libu8io.c xfiles.c convert.c filestring.c bytebuf.c \
   tests/latin1u8.c tests/u8recode.c tests/u8xrecode.c tests/echosrv.c
+COMMON_HEADERS= $(LIBU8_HEADERS) include/libu8/revision.h
+
 LIBU8CORE_OBJECTS=libu8.o streamio.o printf.o  contour.o logging.o \
                   ctype.o exceptions.o stringfns.o bytebuf.o
 LIBU8FNS_OBJECTS=libu8fns.o netfns.o srvfns.o \
@@ -127,6 +128,11 @@ libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a lib/libu8data.a \
 
 syslog_libs: lib/libu8syslog.a lib/libu8syslog.@shared_suffix@
 
+include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+	if test -f etc/revision.h; \
+	then cp etc/revision.h include/libu8/revision.h; \
+	else echo "#define LIBU8_SVNREV \""`svnversion .`"\"" \
+		> include/libu8/revision.h; fi
 lib/libu8.a: $(LIBU8_OBJECTS)
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
 lib/libu8.@U8VERSION@.dylib: $(LIBU8_OBJECTS)
@@ -213,7 +219,8 @@ rpmtar: etc/libu8-@U8VERSION@.tar.gz
 rpms: etc/rpms.done
 debs: etc/debs.done
 
-etc/libu8-@U8VERSION@: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
+etc/libu8-@U8VERSION@: makefile.in configure makefile \
+		$(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	rm -rf etc/libu8-@U8VERSION@
 	svn export $(LIBU8SVN) etc/libu8-@U8VERSION@
 	echo "#define LIBU8_SVNREV \""`svnversion .`"\"" > etc/libu8-@U8VERSION@/include/libu8/revision.h
@@ -327,7 +334,7 @@ ENCODINGS=\
 
 # dependencies
 
-streamio.o printf.o logging.o exceptions.o chardata.o stringfns.o convert.o libu8.o: \
+streamio.o printf.o logging.o exceptions.o chardata.o stringfns.o convert.o libu8.o libu8io.c: \
   $(COMMON_HEADERS)
 ctype.o: $(COMMON_HEADERS) entities.h
 timefns.o: $(COMMON_HEADERS) include/libu8/u8timefns.h

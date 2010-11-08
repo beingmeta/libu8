@@ -22,6 +22,8 @@
     These functions provide miscellaneous functionality.
  **/
 
+#include "libu8/revision.h"
+
 #include "libu8/config.h"
 
 #if U8_LARGEFILES_ENABLED
@@ -128,7 +130,6 @@ typedef unsigned long u8_wideint;
 #else
 typedef unsigned int u8_wideint;
 #endif
-
 
 /* Load threading compatability libraries */
 #include "threading.h"
@@ -253,6 +254,9 @@ U8_EXPORT void u8_init_chardata_c(void) U8_LIBINIT_FN;
 U8_EXPORT void u8_initialize_u8stdio(void) U8_LIBINIT_FN;
 /** Initializes the messaging functions which use POSIX syslog. */
 U8_EXPORT void u8_initialize_u8syslog(void) U8_LIBINIT_FN;
+
+/* The current subversion revision */
+U8_EXPORT u8_string u8_svnrev;
 
 /* GETTEXT */
 

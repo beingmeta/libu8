@@ -50,6 +50,8 @@ U8_EXPORT void u8_init_printf_c(void);
 
 u8_condition u8_MallocFailed=_("Malloc failed");
 
+u8_string u8_svnrev=LIBU8_SVNREV;
+
 static int u8_initialized=0;
 
 #define	LOG_EMERG	0	/* system is unusable */
