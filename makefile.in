@@ -237,9 +237,9 @@ etc/rpms32.done: etc/libu8-2.0.tar.gz
 	touch etc/rpms32.done
 
 etc/debs.done: etc/libu8-@U8VERSION@
-	mv etc/libu8-@U8VERSION@ etc/libu8-@U8VERSION@.$(U8RELEASE)
-	cd etc/libu8-@U8VERSION@.$(U8RELEASE); dpkg-buildpackage -rfakeroot
-	rm -rf etc/libu8-@U8VERSION@.$(U8RELEASE)
+	mv etc/libu8-@U8VERSION@ etc/libu8-@U8VERSION@
+	cd etc/libu8-@U8VERSION@; dpkg-buildpackage -rfakeroot
+	rm -rf etc/libu8-@U8VERSION@
 
 # Installation targets
 
