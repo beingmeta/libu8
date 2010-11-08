@@ -237,7 +237,6 @@ etc/rpms32.done: etc/libu8-2.0.tar.gz
 	touch etc/rpms32.done
 
 etc/debs.done: etc/libu8-@U8VERSION@
-	mv etc/libu8-@U8VERSION@ etc/libu8-@U8VERSION@
 	cd etc/libu8-@U8VERSION@; dpkg-buildpackage -rfakeroot
 	rm -rf etc/libu8-@U8VERSION@
 
@@ -334,7 +333,7 @@ ENCODINGS=\
 
 # dependencies
 
-streamio.o printf.o logging.o exceptions.o chardata.o stringfns.o convert.o libu8.o libu8io.c: \
+streamio.o printf.o logging.o exceptions.o chardata.o stringfns.o convert.o libu8.o libu8io.o: \
   $(COMMON_HEADERS)
 ctype.o: $(COMMON_HEADERS) entities.h
 timefns.o: $(COMMON_HEADERS) include/libu8/u8timefns.h
