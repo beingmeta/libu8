@@ -200,7 +200,7 @@ U8_EXPORT time_t u8_file_atime(u8_string filename)
     return fileinfo.st_atime;}
 }
 
-U8_EXPORT mode_t u8_file_mode(u8_string filename)
+U8_EXPORT int u8_file_mode(u8_string filename)
 {
   char *lpath=u8_localpath(filename);
   struct stat fileinfo;
@@ -213,17 +213,17 @@ U8_EXPORT mode_t u8_file_mode(u8_string filename)
     return fileinfo.st_mode;}
 }
 
-U8_EXPORT off_t u8_file_size(u8_string filename)
+U8_EXPORT ssize_t u8_file_size(u8_string filename)
 {
   char *lpath=u8_localpath(filename);
   struct stat fileinfo;
   if (stat(lpath,&fileinfo)<0) {
-    u8_graberr(-1,"u8_file_mode",u8_strdup(filename));
+    u8_graberr(-1,"u8_file_size",u8_strdup(filename));
     u8_free(lpath);
-    return (time_t) -1;}
+    return (ssize_t) -1;}
   else {
     u8_free(lpath);
-    return fileinfo.st_size;}
+    return (ssize_t) fileinfo.st_size;}
 }
 
 U8_EXPORT u8_string u8_file_owner(u8_string filename)

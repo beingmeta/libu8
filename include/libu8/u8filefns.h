@@ -75,13 +75,13 @@ U8_EXPORT time_t u8_file_atime(u8_string filename);
     @param filename a utf-8 pathname
     @returns mode_t
 **/
-U8_EXPORT mode_t u8_file_mode(u8_string filename);
+U8_EXPORT int u8_file_mode(u8_string filename);
 
 /** Returns the size (in bytes) of a file
     @param filename a utf-8 pathname
     @returns an off_t value
 **/
-U8_EXPORT off_t u8_file_size(u8_string filename);
+U8_EXPORT ssize_t u8_file_size(u8_string filename);
 
 /** Returns the owner of a file (as a string)
     @param filename a utf-8 pathname
