@@ -35,13 +35,21 @@
 #define	LOG_DEBUG	7	/* debug-level messages */
 #endif
 
-/* Common mistypes, might as well define them */
+/* Our own little addition */
+#ifndef LOG_DETAIL
+#define LOG_DETAIL 8
+#endif
+
+/* Common mistypes/misremembers/mnemonics, might as well define them */
 #define LOG_WARN LOG_WARNING
 #define LOG_NOTIFY LOG_NOTICE
 #define LOG_ERROR LOG_ERR
 #define LOG_CRITICAL LOG_CRIT
 #define LOG_EMERGENCY LOG_EMERG
 #define LOG_DBG LOG_DEBUG
+#define LOG_DETAILS LOG_DETAIL
+#define LOG_DETAILED LOG_DETAIL
+
 
 /* This is the overall log level and messages with with priorities
    above this should not produced output. */

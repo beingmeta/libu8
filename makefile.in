@@ -32,7 +32,7 @@ LIBU8_HEADERS=\
 	include/libu8/libu8.h include/libu8/u8contour.h \
 	include/libu8/u8streamio.h include/libu8/u8stringfns.h \
 	include/libu8/u8ctype.h include/libu8/u8convert.h \
-	include/libu8/u8crypto.h
+	include/libu8/u8crypto.h include/libu8/u8logging.h
 LIBU8_SOURCES=\
   libu8.c streamio.c printf.c logging.c exceptions.c  ctype.c stringfns.c \
   libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c \
