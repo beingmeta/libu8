@@ -134,7 +134,8 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	string=va_arg(*args,char *);
 	/* A - modifer on s indicates that the string arg should be freed
 	   after use. */
-	if (strchr(cmd,'-')) to_free=string;}
+	if (string==NULL) string="(null)";
+	else if (strchr(cmd,'-')) to_free=string;}
       else if (code == 'm') {
 	/* The m conversion is like s but passes its argument through the
 	   message catalog. */
@@ -146,8 +147,7 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	string=u8_printf_handlers[(int)code]
 	  (s,cmd,buf,PRINTF_CHUNK_SIZE,args);
       else return u8_reterr(u8_BadPrintFormat,"u8_do_printf",u8_strdup(cmd));
-      if (string == NULL) u8_puts(s,"NULL");
-      else u8_puts(s,string);
+      if (string == NULL) {} else u8_puts(s,string);
       if (to_free) u8_free(to_free);}
     fmt=strchr(scan,'%');}
   u8_puts(s,scan); /* At the end, output the tail of the format string */
