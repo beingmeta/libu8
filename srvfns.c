@@ -226,10 +226,11 @@ static u8_client pop_task(struct U8_SERVER *server)
     server->n_tasks--;}
   server->n_trans++;
   curtime=u8_microtime();
-  server->waitsum=server->waitsum+(curtime-task->queued);
-  server->waitcount++;
+  if (task) {
+    server->waitsum=server->waitsum+(curtime-task->queued);
+    server->waitcount++;
+    task->started=curtime;}
   u8_unlock_mutex(&(server->lock));
-  task->started=curtime;
   return task;
 }
 
