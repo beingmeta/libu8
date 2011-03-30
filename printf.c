@@ -146,7 +146,7 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	string=u8_printf_handlers[(int)code]
 	  (s,cmd,buf,PRINTF_CHUNK_SIZE,args);
       else return u8_reterr(u8_BadPrintFormat,"u8_do_printf",u8_strdup(cmd));
-      if (string == NULL) {}
+      if (string == NULL) u8_puts(s,"NULL");
       else u8_puts(s,string);
       if (to_free) u8_free(to_free);}
     fmt=strchr(scan,'%');}
