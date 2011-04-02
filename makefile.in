@@ -231,7 +231,6 @@ etc/libu8-@U8VERSION@: makefile.in configure makefile \
 etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	make etc/libu8-@U8VERSION@
 	tar -czvf $@ -C etc libu8-@U8VERSION@
-	rm -rf etc/libu8-@U8VERSION@
 
 etc/rpms.done: etc/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
