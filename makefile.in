@@ -168,7 +168,7 @@ lib/libu8data.dll: $(LIBU8DATA_OBJECTS) lib/libu8.dll lib/libu8fns.dll
 lib/libu8io.a: $(LIBU8IO_OBJECTS)
 lib/libu8io@suffix@.so.@U8VERSION@: $(LIBU8IO_OBJECTS)
 lib/libu8io.@U8VERSION@.dylib: $(LIBU8IO_OBJECTS) \
-	lib/libu8.dylib lib/libu8fns.dylib lib
+	lib/libu8.dylib lib/libu8fns.dylib
 lib/libu8io.dll: $(LIBU8IO_OBJECTS) lib/libu8.dll lib/libu8fns.dll
 
 lib/libu8stdio.a: $(LIBU8STDIO_OBJECTS)
