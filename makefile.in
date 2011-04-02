@@ -131,7 +131,7 @@ syslog_libs: lib/libu8syslog.a lib/libu8syslog.@shared_suffix@
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	if test -f etc/revision.h; \
 	then cp etc/revision.h include/libu8/revision.h; \
-	else echo "#define LIBU8_SVNREV \""`svnversion .`"\"" \
+	else echo "#define LIBU8_SVNREV \""`git describe`"\"" \
 		> include/libu8/revision.h; fi
 lib/libu8.a: $(LIBU8_OBJECTS)
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
