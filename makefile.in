@@ -8,7 +8,6 @@ LDFLAGS   = @LDFLAGS@ $(EFENCE)
 LIBS      = @LIBS@ $(EFENCE) -lm
 U8VERSION = @U8VERSION@
 U8MINOR   = @U8MINOR@
-U8RELEASE = `svnversion .`
 
 DESTDIR		=
 prefix		= @prefix@
@@ -25,7 +24,6 @@ MKSTATIC	= @MKSTATIC@
 MKSO		= $(CC) $(CFLAGS) $(XCFLAGS) -shared $(LDFLAGS) $(XLDFLAGS) $(LIBS)
 #MACLIBTOOL	= libtool -dynamic -single_module $(LDFLAGS) $(LIBS)
 MACLIBTOOL	= $(CC) -dynamiclib -single_module $(LDFLAGS) $(LIBS)
-LIBU8SVN	=  https://svn.libu8.org/svnroot/libu8/trunk
 
 LIBU8_HEADERS=\
 	include/libu8/config.h include/libu8/threading.h \
@@ -135,6 +133,7 @@ syslog_libs: lib/libu8syslog.a lib/libu8syslog.@shared_suffix@
 
 lib: 
 	if test ! -d lib; then mkdir lib; fi
+
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	if test -f etc/revision.h; \
 	then cp etc/revision.h include/libu8/revision.h; \
@@ -187,9 +186,6 @@ docs: docs/man/man3/libu8.h.3
 docs/man/man3/libu8.h.3:
 	doxygen docs/doxygen.cfg
 
-REVNUM: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
-	svnversion . > REVNUM
-
 clean: 
 	$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* 
 	$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
@@ -228,8 +224,10 @@ debs: etc/debs.done
 etc/libu8-@U8VERSION@: makefile.in configure makefile \
 		$(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	rm -rf etc/libu8-@U8VERSION@
-	svn export $(LIBU8SVN) etc/libu8-@U8VERSION@
-	echo "#define LIBU8_SVNREV \""`svnversion .`"\"" > etc/libu8-@U8VERSION@/include/libu8/revision.h
+	git archive --prefix=libu8-@U8VERSION@/ \
+	            -o etc/libu8-@U8VERSION@.tar HEAD
+	cd etc; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	echo "#define LIBU8_SVNREV \""`git describe`"\"" > etc/libu8-@U8VERSION@/include/libu8/revision.h
 etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	make etc/libu8-@U8VERSION@
 	tar -czvf $@ -C etc libu8-@U8VERSION@
