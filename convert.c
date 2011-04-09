@@ -21,6 +21,7 @@ static char versionid[] MAYBE_UNUSED =
 #include "libu8/libu8io.h"
 #include "libu8/u8stringfns.h"
 #include "libu8/u8filefns.h"
+#include "libu8/u8ctype.h"
 #include <stdio.h>
 #include <ctype.h>
 
@@ -428,25 +429,22 @@ U8_EXPORT int u8_set_default_encoding(char *name)
 U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *buf)
 {
   u8_byte *code_start, *code_end, codename[128];
-  if ((code_start=strstr(buf,"coding:"))) {
-    if ((code_end=strstr(code_start,";")) &&
-	((code_end-code_start)<128)) {
-      code_start=code_start+7;
-      while ((code_start<code_end) && (isspace(*code_end)))
-	code_end++;
-      strncpy(codename,code_start,code_end-code_start);
-      codename[code_end-code_start]='\0';
-      return u8_get_encoding(codename);}}
-  if ((code_start=strstr(buf,"charset="))) {
-    code_start=code_start+8; code_end=code_start;
-    if (ispunct(*code_end)) code_end++;
-    while ((code_end<(code_start+128))&&
-	   ((*code_end=='-')||(isalnum(*code_end))))
-      code_end++;
-    strncpy(codename,code_start,code_end-code_start);
-    codename[code_end-code_start]='\0';
-    return u8_get_encoding(codename);}
-  return NULL;
+  if ((code_start=strstr(buf,"coding:"))) 
+    code_start=code_start+7;
+  else if ((code_start=strstr(buf,"charset=")))
+    code_start=code_start+8;
+  else return NULL;
+  {
+    u8_byte *scan=code_start; int c=u8_sgetc(&scan);
+    while (u8_isspace(c)) {
+      code_start=scan; c=u8_sgetc(&scan);}
+    if (c<0) return NULL;
+    code_end=scan;
+    while ((c>0)&&(!(u8_isspace(c)))) {
+      code_end=scan;  c=u8_sgetc(&scan);}}
+  strncpy(codename,code_start,code_end-code_start);
+  codename[code_end-code_start]='\0';
+  return u8_get_encoding(codename);
 }
 
 /** Charset primitives **/
