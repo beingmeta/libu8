@@ -440,7 +440,7 @@ U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *buf)
       code_start=scan; c=u8_sgetc(&scan);}
     if (c<0) return NULL;
     code_end=scan;
-    while ((c>0)&&(!(u8_isspace(c)))) {
+    while ((c>0)&&((u8_isalnum(c))||(c=='-')||(c=='_')||(c=='.'))) {
       code_end=scan;  c=u8_sgetc(&scan);}}
   strncpy(codename,code_start,code_end-code_start);
   codename[code_end-code_start]='\0';
