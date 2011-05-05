@@ -296,6 +296,23 @@ u8_string u8_string_append(u8_string first_string,...)
 }
 
 U8_EXPORT
+/* u8_decompose:
+    Arguments: a UTF-8 string 
+    Returns: the decomposed string representation
+*/
+u8_string u8_decompose(u8_string string)
+{
+  struct U8_OUTPUT out; u8_byte *scan=string; int c;
+  U8_INIT_OUTPUT(&out,512);
+  while ((c=u8_sgetc(&scan))>0) {
+    if (c<0x80) u8_putc(&out,c);
+    u8_string str=u8_decompose_char(c);
+    if (str) u8_puts(&out,str);
+    else u8_putc(&out,c);}
+  return out.u8_outbuf;
+}
+
+U8_EXPORT
 /* u8_string_append:
     Arguments: a series of strings, terminated by a NULL pointer
     Returns: the concatenation of the strings

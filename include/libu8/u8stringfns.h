@@ -39,12 +39,20 @@ U8_EXPORT int u8_utf8warn;
 **/
 U8_EXPORT u8_string u8_upcase(u8_string string);
 
-/** Returns a lower version of a UTF-8 string.
+/** Returns a lowercase version of a UTF-8 string.
     @param string a UTF-8 string
     @returns a UTF-8 string with all uppercase characters
       converted to lowercase.
 **/
 U8_EXPORT u8_string u8_downcase(u8_string string);
+
+/** Returns a decomposed version of a UTF-8 string.
+    @param string a UTF-8 string
+    @returns a UTF-8 string with all composed characters
+      broken down
+      
+**/
+U8_EXPORT u8_string u8_decompose(u8_string string);
 
 /** Appends together any number of UTF-8 strings
     This takes any number of UTF-8 strings, finishing with
