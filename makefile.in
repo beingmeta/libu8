@@ -340,6 +340,7 @@ ENCODINGS=\
 streamio.o printf.o logging.o exceptions.o chardata.o stringfns.o convert.o libu8.o libu8io.o: \
   $(COMMON_HEADERS)
 ctype.o: $(COMMON_HEADERS) entities.h
+cityhash.o: $(COMMON_HEADERS) include/libu8/cityhash.h
 timefns.o: $(COMMON_HEADERS) include/libu8/u8timefns.h
 rusage.o: $(COMMON_HEADERS) include/libu8/u8rusage.h
 printf.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8printf.h
