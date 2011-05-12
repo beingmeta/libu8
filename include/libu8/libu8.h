@@ -122,6 +122,47 @@
 /* This is for sockets */
 typedef long u8_connection;
 
+#if (SIZEOF_INT == 4)
+typedef unsigned int u8_int4;
+#elif (SIZEOF_LONG == 4)
+typedef unsigned long u8_int4;
+#elif (SIZEOF_SHORT == 4)
+typedef unsigned short u8_int4;
+#elif (SIZEOF_LONG_LONG == 4)
+typedef unsigned long long u8_int4;
+#else
+typedef unsigned int u8_int4;
+#endif
+
+#if (SIZEOF_INT == 2)
+typedef unsigned int u8_int2;
+#elif (SIZEOF_LONG == 2)
+typedef unsigned long u8_int2;
+#elif (SIZEOF_SHORT == 2)
+typedef unsigned short u8_int2;
+#else
+typedef unsigned short u8_int2;
+#endif
+
+#if (SIZEOF_INT == 8)
+typedef unsigned int u8_int8;
+#elif (SIZEOF_LONG == 8)
+typedef unsigned long u8_int8;
+#elif (SIZEOF_LONG_LONG == 8)
+typedef unsigned long long u8_int8;
+#elif (SIZEOF_SHORT == 2)
+typedef unsigned short u8_int8;
+#else
+typedef unsigned short u8_int2;
+#endif
+
+#if (SIZEOF_LONG_LONG == 16)
+typedef unsigned long long u8_int16;
+#else
+typedef struct U8_INT16 {
+  u8_int8 first; u8_int8 second;} u8_int16;
+#endif
+
 /* Wide ints are the smallest ints as big as a pointer */
 #if (SIZEOF_LONG_LONG == SIZEOF_VOID_P)
 typedef unsigned long long u8_wideint;
