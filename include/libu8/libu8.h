@@ -172,6 +172,9 @@ typedef unsigned long u8_wideint;
 typedef unsigned int u8_wideint;
 #endif
 
+U8_EXPORT u8_int16 u8_cityhash128(const unsigned char *s,size_t len);
+U8_EXPORT u8_int8 u8_cityhash64(const unsigned char *s,size_t len);
+
 /* Load threading compatability libraries */
 #include "threading.h"
 
