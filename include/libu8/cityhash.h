@@ -51,7 +51,7 @@ typedef u8_int4 uint32;
 typedef u8_int8 uint64;
 typedef u8_int16 uint128;
 
-static uint128 make_uint128(uint32 first,uint32 second)
+static uint128 make_uint128(uint64 first,uint64 second)
 {
   struct U8_INT16 result;
   result.first=first;
