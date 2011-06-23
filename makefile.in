@@ -81,7 +81,7 @@ tests/latin1u8: tests/latin1u8.c lib/libu8stdio.a lib/libu8core.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 tests/getentity: tests/getentity.c lib/libu8stdio.a lib/libu8core.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
-tests/echosrv: tests/echosrv.c lib/libu8stdio.a lib/libu8fns.a lib/libu8core.a 
+tests/echosrv: tests/echosrv.c  lib/libu8fns.a lib/libu8stdio.a lib/libu8core.a 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 tests/echosrv2: tests/echosrv.c lib/libu8.a 
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
