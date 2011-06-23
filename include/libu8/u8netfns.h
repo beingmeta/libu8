@@ -138,7 +138,6 @@ U8_EXPORT u8_string u8_canonical_addr(u8_string spec);
     @param spec (a utf-8 string of the form port\@host)
     @param addrp a pointer to a pointer to a utf-8 string, in
       which is deposited identifying information for the host contacted
-    @param timeout the number of milliseconds to wait
     @returns a u8_connection (int) which is a socket_id
 **/
 U8_EXPORT u8_connection u8_connect_x(u8_string spec,u8_string *addrp);
@@ -177,7 +176,7 @@ U8_EXPORT int u8_set_nodelay(u8_connection conn,int flag);
     @param flag (whether the connection should block on I/O)
     @returns 1 if successful
 **/
-U8_EXPORT int u8_set_blocking(u8_connection fd,int flag);
+U8_EXPORT int u8_set_blocking(u8_connection conn,int flag);
 
 /** Returns a human readable string representation of a sockaddr structure.
     @param sockaddr a pointer to a sockaddr struct.
@@ -192,6 +191,7 @@ U8_EXPORT u8_string u8_sockaddr_string(struct sockaddr *sockaddr);
      @param id a utf-8 string identifying the connection, passed to u8_connect
      @param reserve an int indicating the maximum number of open connections 
        to keep in reserve
+     @param init how many initial connections to create
      @returns a pointer to a connpool, either as passed in or mallocd.
  **/
 U8_EXPORT u8_connpool
@@ -200,7 +200,7 @@ U8_EXPORT u8_connpool
 /** Returns a connection (an int socket id) from a given connection block.
     This opens a new connection if needed but will use existing connections
      which have been passed in with u8_return_connection.
-     @param a pointer to a connection block structure
+     @param cb a pointer to a connection block structure
      @returns a u8_connection (integer socket id)
  **/
 U8_EXPORT u8_connection u8_get_connection(u8_connpool cb);

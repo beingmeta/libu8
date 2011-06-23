@@ -92,6 +92,7 @@ typedef struct U8_XTIME *u8_xtime;
       @param prec a u8_tmprec value indicating the precision of the timestamp
       @param nsecs the number of nanoseconds  after the indicated second
       @param tzoff the timezone offset to use in populating the structure
+      @param dstoff the daylight savings time offset to use
     When the tick value is negative (referring to the current time),
       the precision argument is bumped down to the available precision.
     The nsecs argument may be ignored based on the precision argument.
@@ -247,43 +248,43 @@ U8_EXPORT
 /**
    Gets a 16-byte UUID based on the time and MAC address
    Arguments: none
-   @param an xtime structure
-   @param a 48-bit node id, -1 means use the default
-   @param a clock id, -1 means make one up
-   @param a (possibly NULL) 16-byte buffer to use/return
+   @param stime an xtime structure
+   @param nodeid a 48-bit node id, -1 means use the default
+   @param clockid a clock id, -1 means make one up
+   @param buf a (possibly NULL) 16-byte buffer to use/return
    @returns an array of 16 bytes
  */
 u8_uuid u8_consuuid(struct U8_XTIME *xtime,long long nodeid,short clockid,
-		     u8_uuid);
+		    u8_uuid buf);
 
 U8_EXPORT
 /**
    Gets a 16-byte UUID based on the time and MAC address
-   @param a (possibly NULL) 16-byte buffer to use/return
+   @param buf a (possibly NULL) 16-byte buffer to use/return
    @returns an array of 16 bytes
  */
-u8_uuid u8_getuuid(u8_uuid);
+u8_uuid u8_getuuid(u8_uuid buf);
 
 
 U8_EXPORT
 /**
    Gets the text representation of a 16-byte UUID
    based on the time and MAC address
-   @param a UUID
-   @param a (possibly NULL) string buffer
+   @param uuid a UUID
+   @param strbuf a (possibly NULL) string buffer
    @returns a UTF-8 (actually, ASCII) string
  */
-u8_string u8_uuidstring(u8_uuid,u8_byte *);
+u8_string u8_uuidstring(u8_uuid uuid,u8_byte *strbuf);
 
 U8_EXPORT
 /**
    Converts a text representation of a UUID into a UUID
    Arguments: a string
-   @param a UTF-8 string
-   @param a (possibly NULL) 16-byte buffer to use/return
+   @param string a UTF-8 string
+   @param uuid a (possibly NULL) 16-byte buffer to use/return
    @returns an array of 16 bytes
  */
-u8_uuid u8_parseuuid(u8_string s,u8_uuid);
+u8_uuid u8_parseuuid(u8_string string,u8_uuid uuid);
 
 
 U8_EXPORT

@@ -108,7 +108,7 @@ U8_EXPORT int u8_set_default_encoding(char *name);
     @param data (a buffer of data)
     @returns an encoding if a known named encoding occurs inn the data
 **/
-U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *buf);
+U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *data);
 
 /** Converts @a n bytes of text encoded with @a enc to the stream @a out.
     Scans @a n bytes from @a scan up to @a end or a NUL, converting
@@ -222,7 +222,7 @@ U8_EXPORT char *u8_read_quoted_printable(char *start,char *end,int *sizep);
     Returns an array of bytes based on the hexadecmial encoding of
      @a len bytes starting at @a data, depositing the length into @a sizep.
     If the length is negative, it is computed by calling strlen() on the data.
-    @param data a pointer into a string to convert
+    @param start a pointer into a string to convert
     @param len where to stop converting
     @param sizep a pointer to an int.
     @returns a pointer to an array of bytes

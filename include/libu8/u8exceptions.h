@@ -83,7 +83,7 @@ U8_EXPORT u8_exception u8_push_exception
      exception is popped.
     The condition is copied from the current exception or
      is EmptyExceptionStack otherwise.
-   @param context a utf-8 context string (a const string)
+   @param cxt a utf-8 context string (a const string)
    @param details a utf-8 string detailing the error, or NULL
    @param xdata a void pointer to additional data describing
                   the error or its context
@@ -167,13 +167,13 @@ U8_EXPORT u8_exception u8_make_exception
    @param full 1/0 indicating whether to free the whole stack
    @returns an exception structure, or NULL
 **/
-U8_EXPORT u8_exception u8_free_exception(u8_exception,int);
+U8_EXPORT u8_exception u8_free_exception(u8_exception ex,int full);
 
 /** Sets the current error state and returns an error value (-1)
     The condition and context are constant strings, but the details
      string should be mallocd.
-   @param condition a utf-8 condition string (u8_condition)
-   @param context a utf-8 context string (a const string)
+   @param c a utf-8 condition string (u8_condition)
+   @param cxt a utf-8 context string (a const string)
    @param details a utf-8 string detailing the error, or NULL
    @returns -1
 **/

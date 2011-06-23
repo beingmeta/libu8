@@ -83,22 +83,22 @@ typedef int (*u8_logfn)(int loglevel,u8_condition condition,u8_string message);
      Whether and where this produces output depends on how the
       program is linked and configured.
    @param priority an (int [-1,7]) priority level
-   @param condition a string describing the condition (possibly NULL)
+   @param c a string describing the condition (possibly NULL)
    @param message the content of the message to be emmited
    @returns 1 if the call actually produced output somewhere
 **/      
-U8_EXPORT int u8_logger(int loglevel,u8_condition c,u8_string message);
+U8_EXPORT int u8_logger(int priority,u8_condition c,u8_string message);
 
 /** Possibly formats a log message for an (optional) condition.
      Whether and where this produces output depends on how the
       program is linked and configured.
    @param priority an (int [-1,7]) priority level
-   @param condition a string describing the condition (possibly NULL)
+   @param c a string describing the condition (possibly NULL)
    @param format_string a utf-8 printf-like format string
    @param ... arguments for the format string
    @returns 1 if the call actually produced output somewhere
 **/      
-U8_EXPORT int u8_log(int loglevel,u8_condition c,u8_string format_string,...);
+U8_EXPORT int u8_log(int priority,u8_condition c,u8_string format_string,...);
 U8_EXPORT u8_logfn u8_set_logfn(u8_logfn);
 U8_EXPORT int u8_message(u8_string format_string,...);
 
