@@ -57,7 +57,7 @@ TESTBIN=tests/u8recode tests/latin1u8 tests/u8xrecode tests/getentity \
 STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
 
-all: testbin @TAGS@ libs @I18N@
+all: @TAGS@ libs @I18N@ testbin
 debug:
 	make XCFLAGS="-O0" all
 fresh:
