@@ -52,7 +52,7 @@ You probably don't need it.
 
 %build
 %configure --prefix=/usr
-make %{?_smp_mflags}
+make
 
 
 %install
