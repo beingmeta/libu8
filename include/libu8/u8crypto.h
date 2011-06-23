@@ -29,8 +29,8 @@
     @param len the number of bytes in the data buffer (or -1)
     @param result a result buffer (at least 20 bytes) or NULL
     @returns the MD5 hash of the provided data
-  If @var len is negative, strlen() is called on the input data.
-  If @var result is NULL, a buffer of appropriate size is created with malloc()
+  If @a len is negative, strlen() is called on the input data.
+  If @a result is NULL, a buffer of appropriate size is created with malloc()
 **/
 U8_EXPORT unsigned char *u8_md5
   (unsigned char *data,int len,unsigned char *result);
@@ -40,8 +40,8 @@ U8_EXPORT unsigned char *u8_md5
     @param len the number of bytes in the data buffer (or -1)
     @param result a result buffer (at least 20 bytes) or NULL
     @returns the SHA1 hash of the provided data
-  If @var len is negative, strlen() is called on the input data.
-  If @var result is NULL, a buffer of appropriate size is created with malloc()
+  If @a len is negative, strlen() is called on the input data.
+  If @a result is NULL, a buffer of appropriate size is created with malloc()
 **/
 U8_EXPORT unsigned char *u8_sha1
   (unsigned char *data,int len,unsigned char *result);
@@ -53,9 +53,9 @@ U8_EXPORT unsigned char *u8_sha1
     @param len     the number of bytes in the data buffer (or -1)
     @param result  a result buffer (at least 20 bytes) or NULL
     @returns the SHA1 hash of the provided data
-  If @var len or @var key_len is negative, strlen() is called on the
+  If @a len or @a key_len is negative, strlen() is called on the
     corresponding input buffers;
-  If @var result is NULL, a buffer of appropriate size is created with malloc()
+  If @a result is NULL, a buffer of appropriate size is created with malloc()
 **/
 U8_EXPORT unsigned char *u8_hmac_sha1
   (unsigned char *key,int key_len,
@@ -69,7 +69,7 @@ U8_EXPORT u8_condition u8_UnknownCipherNID;
 
 /** Returns a packet (vector) of N random bytes, for keys, algorithm seeds, etc
     @param len     the length of the byte vector to generate
-    @returns a malloc'd packet of length @var len initialized with random values
+    @returns a malloc'd packet of length @a len initialized with random values
 **/
 U8_EXPORT unsigned char *u8_random_vector(int len);
 
@@ -84,7 +84,7 @@ U8_EXPORT void u8_init_crypto(void);
     @param key		a byte vector containing the decryption key
     @param keylen	the length (in bytes) of the key vector
     @param outlen	a pointer to a size_t to store the output length
-    @returns a decrypted packet of data whose length is deposited in @var outlen
+    @returns a decrypted packet of data whose length is deposited in @a outlen
 **/
 U8_EXPORT unsigned char *u8_decrypt
   (unsigned char *input,size_t len,
@@ -100,7 +100,7 @@ U8_EXPORT unsigned char *u8_decrypt
     @param keylen	the length (in bytes) of the key vector
     @param outlen	a pointer to a size_t to store the output length
     @returns an encrypted packet of data whose length is
-        deposited in @var outlen
+        deposited in @a outlen
 **/
 U8_EXPORT unsigned char *u8_encrypt
   (unsigned char *input,size_t len,

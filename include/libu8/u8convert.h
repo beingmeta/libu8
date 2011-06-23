@@ -199,7 +199,7 @@ U8_EXPORT u8_string u8_mime_convert(char *start,char *end);
 U8_EXPORT unsigned char *u8_read_base64(char *start,char *end,int *sizep);
 
 /** Converts a byte vector into a BASE64 ASCII representation.
-    Returns an array of characters encoding the sequence of @var len bytes
+    Returns an array of characters encoding the sequence of @a len bytes
     starting at @a data, storing the length of this representation in @a sizep.
     @param data  a pointer into a byte array
     @param len   the number of bytes in the array
@@ -231,7 +231,7 @@ U8_EXPORT unsigned char *u8_read_base16(char *start,int len,int *sizep);
 
 /** Converts a byte vector into a BASE64 (hexadecimal) ASCII representation.
     Returns a NUL-terminated array of characters encoding the sequence
-    of @var len bytes starting at @a data.
+    of @a len bytes starting at @a data.
     @param data  a pointer into a byte array
     @param len   the number of bytes in the array
     @returns a pointer to an ASCII character string
