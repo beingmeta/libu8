@@ -698,7 +698,7 @@ void u8_xtime_to_rfc822(u8_output ss,struct U8_XTIME *xtp)
 	  month_names[asgmt.u8_mon],
 	  (asgmt.u8_year),
 	  asgmt.u8_hour,asgmt.u8_min,asgmt.u8_sec);
-  u8_printf(ss,"%s GMT",buf);
+  u8_printf(ss,"%s +0000",buf);
 }
 
 /* printf handling for time related values */
