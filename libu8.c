@@ -49,6 +49,7 @@ U8_EXPORT void u8_init_errors_c(void);
 U8_EXPORT void u8_init_printf_c(void);
 
 u8_condition u8_MallocFailed=_("Malloc failed");
+u8_condition u8_NotImplemented=_("Function not available");
 
 u8_string u8_svnrev=LIBU8_SVNREV;
 
