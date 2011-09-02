@@ -148,7 +148,11 @@ U8_EXPORT u8_string u8_dirname(u8_string path)
   u8_string copy=u8_valid_copy(path);
   if (copy) {
     u8_byte *dirend=strrchr(copy,'/');
-    if (dirend) {*dirend='\0'; return copy;}
+    if ((dirend)&&(dirend[1]=='\0')) {
+      /* If the slash is at the end of the string,
+	 use the next one. */
+      *dirend='\0'; dirend=strrchr(copy,'/');}
+    if (dirend) {dirend[1]='\0'; return copy;}
     else return copy;}
   else return NULL;
 }
