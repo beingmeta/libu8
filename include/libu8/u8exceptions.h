@@ -228,7 +228,7 @@ U8_EXPORT void u8_graberr(int num,u8_string cxt,u8_string details);
    @param details a utf-8 string detailing the error, or NULL
    @returns void
 **/
-U8_EXPORT void u8_seterr(u8_condition condition,u8_context context,u8_string details);
+U8_EXPORT U8_NOINLINE void u8_seterr(u8_condition condition,u8_context context,u8_string details);
 
 /** Gets the current error state.
    This retrieves the current error state and stores it in designated locations.

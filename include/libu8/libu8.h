@@ -68,9 +68,13 @@
 #endif
 
 #if __GNUC__
+#define U8_INLINE __attribute__ ((inline))
+#define U8_NOINLINE __attribute__ ((noinline))
 #define MAYBE_UNUSED __attribute__ ((unused))
 #define U8_INLINE_FCN static __attribute__ ((unused))
 #else
+#define U8_INLINE
+#define U8_NOINLINE
 #define MAYBE_UNUSED
 #define U8_INLINE_FCN static
 #endif
