@@ -333,6 +333,27 @@ U8_EXPORT u8_string u8_svnrev;
 #define u8_malloc_struct(sname) ((struct sname *)(malloc(sizeof(struct sname))))
 #define u8_malloc_array(n,t) ((t *)(malloc(n*sizeof(t))))
 
+/** Allocates and zero-clears a block of memory
+   @param sz the number of bytes to allocate
+   @returns void *
+**/
+U8_EXPORT void *u8_mallocz(size_t sz);
+
+/** Reallocates a block of memory, zero clearing any new parts
+   @param sz the number of bytes to allocate
+   @returns void *
+**/
+U8_EXPORT void *u8_reallocz(void *ptr,size_t sz,size_t osz);
+
+/** Copies a block of memory into a larger block, zero clearing any new parts
+   @param sz the number of bytes to allocate
+   @returns void *
+**/
+U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz);
+
+#define u8_allocz(t) ((t *)(u8_mallocz(sizeof(t))))
+#define u8_allocz_n(n,t) ((t *)(u8_mallocz(sizeof(t)*(n))))
+
 /* strdup */
 
 #if HAVE_STRDUP

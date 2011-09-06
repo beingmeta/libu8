@@ -285,6 +285,43 @@ U8_EXPORT void u8_set_error_handler
   /* error_handler=h; */
 }
 
+/* Allocation + memset */
+
+U8_EXPORT void *u8_mallocz(size_t n)
+{
+  void *ptr=u8_malloc(n);
+  if (!(ptr)) {
+    u8_seterr(u8_MallocFailed,"u8_mallocz",NULL);
+    return NULL;} 
+  memset(ptr,0,n);
+  return ptr;
+}
+
+U8_EXPORT void *u8_reallocz(void *ptr,size_t n,size_t oldsz)
+{
+  void *nptr=((ptr)?(realloc(ptr,n)):(malloc(n)));
+  if (!(nptr)) {
+    u8_seterr(u8_MallocFailed,"u8_reallocz",NULL);
+    return ptr;} 
+  if (ptr==NULL) memset(nptr,0,n);
+  else if (n>oldsz) memset(nptr+oldsz,0,(n-oldsz));
+  else {}
+  return ptr;
+}
+
+U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz)
+{
+  void *nptr=u8_malloc(n);
+  if (!(nptr)) {
+    u8_seterr(u8_MallocFailed,"u8_mallocz",NULL);
+    return NULL;} 
+  if (ptr==NULL) memset(nptr,0,n);
+  else {
+    memcpy(nptr,ptr,osz);
+    memset(nptr,0,n-osz);}
+  return ptr;
+}
+
 /* Thread initialization */
 
 #if (U8_THREADS_ENABLED)
