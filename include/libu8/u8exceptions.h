@@ -55,6 +55,25 @@ U8_EXPORT __thread u8_exception u8_current_exception;
 U8_EXPORT u8_exception u8_current_exception;
 #endif
 
+/** Creates a new exception
+    Returns the current exception, pushing it onto the dynamic
+     exception stack.
+    The condition and context are constant strings, the details
+     should be a mallocd string.  xdata and freefn can be NULL.
+     if freefn is provided, it is called on xdata when the
+     exception is popped.
+   @param condition a utf-8 condition string (u8_condition)
+   @param context a utf-8 context string (a const string)
+   @param details a utf-8 string detailing the error, or NULL
+   @param xdata a void pointer to additional data describing
+                  the error or its context
+   @param freefn a function to call on the xdata when freeing it
+   @returns an exception structure
+**/
+U8_EXPORT U8_NOINLINE u8_exception u8_new_exception
+  (u8_condition c,u8_context cxt,u8_string details,
+   void *xdata,void (*freefn)(void *));
+
 /** Pushes an exception
     Sets the current exception, pushing it onto the dynamic
      exception stack.
@@ -70,7 +89,7 @@ U8_EXPORT u8_exception u8_current_exception;
    @param freefn a function to call on the xdata when freeing it
    @returns an exception structure
 **/
-U8_EXPORT u8_exception u8_push_exception
+U8_EXPORT U8_NOINLINE u8_exception u8_push_exception
   (u8_condition condition,u8_context context,u8_string details,
    void *xdata,void (*freefn)(void *));
 
@@ -90,7 +109,7 @@ U8_EXPORT u8_exception u8_push_exception
    @param freefn a function to call on the xdata when freeing it
    @returns an exception structure
 **/
-U8_EXPORT u8_exception u8_extend_exception
+U8_EXPORT U8_NOINLINE u8_exception u8_extend_exception
   (u8_context cxt,u8_string details,void *xdata,void (*freefn)(void *));
 
 /** Pops the exception stack
@@ -100,7 +119,7 @@ U8_EXPORT u8_exception u8_extend_exception
      was pushed.
    @returns an exception structure, the new current exception (possibly NULL)
 **/
-U8_EXPORT u8_exception u8_pop_exception(void);
+U8_EXPORT U8_NOINLINE u8_exception u8_pop_exception(void);
 
 /** Returns the root of the current error state
      This climbs the u8x_prev hierachy and returns the
@@ -152,7 +171,7 @@ U8_EXPORT u8_exception u8_restore_exception(u8_exception ex);
    @param freefn a function to call on the xdata when freeing it
    @returns an exception structure
 **/
-U8_EXPORT u8_exception u8_make_exception
+U8_EXPORT U8_NOINLINE u8_exception u8_make_exception
   (u8_condition condition,u8_context context,u8_string details,
    void *xdata,void (*freefn)(void *));
 
@@ -177,14 +196,15 @@ U8_EXPORT u8_exception u8_free_exception(u8_exception ex,int full);
    @param details a utf-8 string detailing the error, or NULL
    @returns -1
 **/
-U8_EXPORT int u8_reterr(u8_condition c,u8_context cxt,u8_string details);
+U8_EXPORT U8_NOINLINE int u8_reterr
+   (u8_condition c,u8_context cxt,u8_string details);
 
 /** Creates a new exception based on an existing one
      This creates a new exception whose previous pointer
      is an existing exception but provides new field.
    @returns an exception object
 **/
-U8_EXPORT u8_exception u8_errpush
+U8_EXPORT U8_NOINLINE u8_exception u8_errpush
    (u8_exception ex,u8_context cxt,u8_string details,
     void *xdata,void (*freefn)(void *));
 
