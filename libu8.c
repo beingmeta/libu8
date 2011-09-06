@@ -293,7 +293,7 @@ U8_EXPORT void *u8_mallocz(size_t n)
   if (!(ptr)) {
     u8_seterr(u8_MallocFailed,"u8_mallocz",NULL);
     return NULL;} 
-  memset(ptr,0,n);
+  memset(((unsigned char *)ptr),0,n);
   return ptr;
 }
 
@@ -303,23 +303,23 @@ U8_EXPORT void *u8_reallocz(void *ptr,size_t n,size_t oldsz)
   if (!(nptr)) {
     u8_seterr(u8_MallocFailed,"u8_reallocz",NULL);
     return ptr;} 
-  if (ptr==NULL) memset(nptr,0,n);
-  else if (n>oldsz) memset(nptr+oldsz,0,(n-oldsz));
+  if (ptr==NULL) memset(((unsigned char *)nptr),0,n);
+  else if (n>oldsz) memset(((unsigned char *)nptr)+oldsz,0,(n-oldsz));
   else {}
-  return ptr;
+  return nptr;
 }
 
 U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz)
 {
-  void *nptr=u8_malloc(n);
+  void *nptr=malloc(n);
   if (!(nptr)) {
     u8_seterr(u8_MallocFailed,"u8_mallocz",NULL);
     return NULL;} 
-  if (ptr==NULL) memset(nptr,0,n);
+  if (ptr==NULL) memset(((unsigned char *)nptr),0,n);
   else {
-    memcpy(nptr,ptr,osz);
-    memset(nptr,0,n-osz);}
-  return ptr;
+    memcpy(((unsigned char *)nptr),ptr,osz);
+    memset(((unsigned char *)nptr),0,n-osz);}
+  return nptr;
 }
 
 /* Thread initialization */
