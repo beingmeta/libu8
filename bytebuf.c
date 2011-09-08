@@ -44,7 +44,7 @@ U8_EXPORT int _u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
       unsigned int bufsize=(bb->u8_lim)-(bb->u8_buf);
       unsigned int newsize=
 	((bb->u8_growbuf==1)?(bufsize*2):(bufsize+bb->u8_growbuf));
-      unsigned char *newbuf=u8_realloc(bb->u8_ptr,newsize);
+      unsigned char *newbuf=u8_realloc(bb->u8_buf,newsize);
       if (newbuf) {
 	memset(newbuf+ptroff,0,newsize-ptroff);
 	bb->u8_buf=newbuf;
