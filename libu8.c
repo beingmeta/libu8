@@ -318,7 +318,7 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz)
   if (ptr==NULL) memset(((unsigned char *)nptr),0,n);
   else {
     memcpy(((unsigned char *)nptr),ptr,osz);
-    memset(((unsigned char *)nptr),0,n-osz);}
+    memset(((unsigned char *)nptr)+n,0,n-osz);}
   return nptr;
 }
 
