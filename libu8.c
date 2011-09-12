@@ -312,13 +312,14 @@ U8_EXPORT void *u8_reallocz(void *ptr,size_t n,size_t oldsz)
 U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz)
 {
   void *nptr=malloc(n);
+  unsigned char *cptr=(unsigned char *)nptr;
   if (!(nptr)) {
     u8_seterr(u8_MallocFailed,"u8_mallocz",NULL);
     return NULL;} 
-  if (ptr==NULL) memset(((unsigned char *)nptr),0,n);
+  if (ptr==NULL) memset(cptr,0,n);
   else {
-    memcpy(((unsigned char *)nptr),ptr,osz);
-    memset(((unsigned char *)nptr)+n,0,n-osz);}
+    memcpy(cptr,ptr,osz);
+    memset(cptr+osz,0,n-osz);}
   return nptr;
 }
 
