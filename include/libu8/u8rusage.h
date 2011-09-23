@@ -44,6 +44,12 @@ struct rusage { int noval;};
 **/
 U8_EXPORT int u8_getrusage(int who,struct rusage *r);
 
+/** Returns a string summarizing resource usage
+    @param r a pointer to an rusage struct.
+    @returns a malloc'd string
+**/
+U8_EXPORT u8_string u8_rusage_string(struct rusage *r);
+
 /** Returns the virtual memory size of the current process
     @returns virtual memory size in bytes, as an unsigned long
 **/

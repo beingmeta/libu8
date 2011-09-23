@@ -14,6 +14,8 @@
 */
 
 #include "libu8/libu8.h"
+#include "libu8/u8streamio.h"
+#include "libu8/u8printf.h"
 
 static char versionid[] MAYBE_UNUSED=
   "$Id$";
@@ -106,4 +108,36 @@ U8_EXPORT unsigned long u8_memusage()
 #else
   return procfs_memusage();
 #endif
+}
+
+U8_EXPORT u8_string u8_rusage_string(struct rusage *r)
+{
+  struct U8_OUTPUT out;
+  U8_INIT_OUTPUT(&out,256);
+  u8_printf(&out,"total=%f",
+	    ((double)(r->ru_utime.tv_sec))+
+	    ((double)(r->ru_stime.tv_sec))+
+	    (((double)(r->ru_utime.tv_usec))/1000000)+
+	    (((double)(r->ru_stime.tv_usec))/1000000));
+  u8_printf(&out,",user=%f",
+	    ((double)(r->ru_utime.tv_sec))+
+	    (((double)(r->ru_utime.tv_usec))/1000000));
+  u8_printf(&out,",system=%f",
+	    ((double)(r->ru_stime.tv_sec))+
+	    (((double)(r->ru_stime.tv_usec))/1000000));
+  if (r->ru_maxrss) u8_printf(&out,",maxrss=%ld",r->ru_maxrss);
+  if (r->ru_ixrss) u8_printf(&out,",ixrss=%ld",r->ru_ixrss);
+  if (r->ru_idrss) u8_printf(&out,",idrss=%ld",r->ru_idrss);
+  if (r->ru_isrss) u8_printf(&out,",isrss=%ld",r->ru_isrss);
+  if (r->ru_minflt) u8_printf(&out,",minflt=%ld",r->ru_minflt);
+  if (r->ru_majflt) u8_printf(&out,",majflt=%ld",r->ru_majflt);
+  if (r->ru_nswap) u8_printf(&out,",nswap=%ld",r->ru_nswap);
+  if (r->ru_inblock) u8_printf(&out,",inblock=%ld",r->ru_inblock);
+  if (r->ru_oublock) u8_printf(&out,",oublock=%ld",r->ru_oublock);
+  if (r->ru_msgsnd) u8_printf(&out,",msgsnd=%ld",r->ru_msgsnd);
+  if (r->ru_msgrcv) u8_printf(&out,",msgrcv=%ld",r->ru_msgrcv);
+  if (r->ru_nsignals) u8_printf(&out,",nsignals=%ld",r->ru_nsignals);
+  if (r->ru_nvcsw) u8_printf(&out,",vcsw=%ld",r->ru_nvcsw);
+  if (r->ru_nivcsw) u8_printf(&out,",ivcsw=%ld",r->ru_nivcsw);
+  return out.u8_outbuf;
 }
