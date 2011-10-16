@@ -53,11 +53,14 @@ LIBU8SYSLOG_OBJECTS=u8syslog.o
 LIBU8_OBJECTS=$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8SYSLOG_OBJECTS)
 TESTBIN=tests/u8recode tests/latin1u8 tests/u8xrecode tests/getentity \
 	tests/echosrv
+DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
+	tests/dynamic/u8xrecode tests/dynamic/getentity \
+	tests/dynamic/echosrv
 
 STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
 
-all: @TAGS@ libs @I18N@ testbin
+all: @TAGS@ libs @I18N@ testbin dytestbin
 debug:
 	make XCFLAGS="-O0" all
 fresh:
@@ -75,8 +78,11 @@ dbginstall:
 
 %.o: %.c
 	$(CC) $(CFLAGS) -o $@ -c $<
-tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a lib/libu8stdio.a lib/libu8core.a 
+tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a \
+         lib/libu8stdio.a lib/libu8core.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+tests/dynamic/%: tests/%.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -L../lib -lu8 -lu8io $(LIBS)
 
 lib/%@suffix@.a:
 	make lib
@@ -113,6 +119,7 @@ $(LIBINSTALLDIR)/%@suffix@.dylib: \
 	ln -sf $(shell basename $<) $@
 
 testbin: $(TESTBIN)
+dytestbin: $(DYTESTBIN)
 
 TAGS: tests/*.c include/libu8/*.h *.c
 	etags tests/*.c include/libu8/*.h *.c
