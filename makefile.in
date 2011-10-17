@@ -82,7 +82,7 @@ tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a \
          lib/libu8stdio.a lib/libu8core.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
 tests/dynamic/%: tests/%.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -L../lib -lu8 -lu8io $(LIBS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -Llib -lu8 -lu8io $(LIBS)
 
 lib/%@suffix@.a:
 	make lib
@@ -192,6 +192,10 @@ clean:
 	$(CLEAN) docs/man/man3/* docs/html/* docs/rtf/* docs/latex/*
 	$(CLEAN) tests/getentity tests/latin1u8 tests/u8recode tests/u8xrecode
 	$(CLEAN) tests/echosrv
+	$(CLEAN) tests/dynamic/getentity tests/dynamic/latin1u8
+	$(CLEAN) tests/dynamic/u8recode tests/dynamic/u8xrecode
+	$(CLEAN) tests/dynamic/echosrv
+
 tidy: 
 	$(CLEAN) *~ tests/*~ include/libu8/*~
 distclean: clean

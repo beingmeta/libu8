@@ -1,4 +1,4 @@
-DYTEST="LD_LIBRARY_PATH=../libs DYLD_LIBRARY_PATH=../libs ./dynamic/"
+DYTEST="LD_LIBRARY_PATH=../../libs DYLD_LIBRARY_PATH=../../libs ./dynamic/"
 DOTEST=./
 
 tests:
