@@ -22,6 +22,10 @@ static char versionid[] MAYBE_UNUSED=
 #include "libu8/u8streamio.h"
 #include "libu8/u8printf.h"
 
+#if HAVE_LIBINTL_H
+#include <libintl.h>
+#endif
+
 #include <stdarg.h>
 
 #ifndef PRINTF_CHUNK_SIZE
@@ -62,7 +66,9 @@ U8_EXPORT
  Records the text domain for message translation by u8_printf.
 */
 void u8_register_textdomain(char *domain)
-a(struct U8_TEXTDOMAIN)
+{
+}
+
 U8_EXPORT
 /* u8_register_xlatefn:
    Arguments: a translation function
@@ -70,7 +76,9 @@ U8_EXPORT
  Adds a translation function to the lookup list.
 */
 void u8_register_xlatefn(u8_xlatefn fn)
-a(struct U8_TEXTDOMAIN)
+{
+}
+
 U8_EXPORT
 /* u8_getmessage:
    Arguments: a string

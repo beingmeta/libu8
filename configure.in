@@ -149,13 +149,14 @@ AC_CHECK_FUNCS(syslog,syslog_target="syslog_libs",syslog_target="")
 # OpenSSL checks
 AC_CHECK_HEADERS(openssl/hmac.h)
 AC_CHECK_HEADERS(openssl/sha.h)
-AC_CHECK_LIB(crypto,SHA1_Init)
-AC_CHECK_LIB(crypto,EVP_get_cipherbyname)
 AC_CHECK_LIB(crypto,EVP_CIPHER_CTX_init)
 
-AC_CHECK_FUNCS(EVP_get_cipherbyname EVP_CIPHER_CTX_init)
+AC_CHECK_FUNCS(EVP_get_cipherbyname EVP_CIPHER_CTX_init SHA1_Init)
 
-AC_ARG_WITH(i18n,--with[out]-i18n built and install message catalogs,,with_i18n="no")
+AC_CHECK_HEADERS(libintl.h)
+AC_CHECK_FUNCS(gettext,[doi18n="yes"])
+
+AC_ARG_WITH(i18n,--with[out]-i18n built and install message catalogs,,with_i18n="yes")
 if test $with_i18n = "yes"; then
   AC_CHECK_FUNCS(gettext,[doi18n="yes"])
 fi

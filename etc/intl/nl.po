@@ -7,218 +7,278 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libu8 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-18 20:16-0500\n"
+"POT-Creation-Date: 2011-10-17 08:51-0400\n"
 "PO-Revision-Date: 2005-03-04 21:43-0500\n"
 "Last-Translator: Kenneth Haase <kh@beingmeta.com>\n"
 "Language-Team: Dutch <nl@li.org>\n"
+"Language: nl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: contour.c:11
+#: bytebuf.c:26
+msgid "overflow of fixed byte buffer"
+msgstr ""
+
+#: contour.c:20
 msgid "Bad Dynamic Contour"
 msgstr ""
 
-#: convert.c:20
+#: convert.c:30
 msgid "Encoding can't represent character"
 msgstr "karakter niet gedefinieerd in Karaktercodering"
 
-#: convert.c:21
+#: convert.c:31
 msgid "Can't find named encoding"
 msgstr ""
 
-#: convert.c:187
+#: convert.c:32
+msgid "Bad hexadecimal representation"
+msgstr ""
+
+#: convert.c:198
 #, c-format
 msgid "Text encoding `%s' already exists"
 msgstr "Karaktercodering %s bestaat reeds"
 
-#: exceptions.c:18
+#: cryptofns.c:30
+msgid "bad crypto key value"
+msgstr ""
+
+#: cryptofns.c:31
+msgid "bad crypto init value"
+msgstr ""
+
+#: cryptofns.c:32
+msgid "internal libcrypto error"
+msgstr ""
+
+#: cryptofns.c:33 cryptofns.c:34
+msgid "Unknown cipher name"
+msgstr ""
+
+#: exceptions.c:27
 msgid "Unknown error"
 msgstr ""
 
-#: exceptions.c:19
+#: exceptions.c:28
 msgid "Attempt to pop an empty exception stack"
 msgstr ""
 
-#: filefns.c:353
+#: filefns.c:367
 msgid "No directory lists"
 msgstr ""
 
-#: filestring.c:21
+#: filestring.c:30
 msgid "Can't open file for reading"
 msgstr "kan niet openen voor lezen"
 
-#: libu8.c:141
+#: libu8.c:55
+msgid "Malloc failed"
+msgstr ""
+
+#: libu8.c:56
+msgid "Function not available"
+msgstr ""
+
+#: libu8.c:168
 msgid "RANDOMIZE"
 msgstr ""
 
-#: libu8.c:227
+#: libu8.c:254
 msgid "No dynamic loading of libraries"
 msgstr ""
 
-#: libu8.c:228
+#: libu8.c:255
 msgid "Call to DLOPEN failed"
 msgstr ""
 
-#: logging.c:26
+#: libu8.c:361
+msgid "Too many thread init fns"
+msgstr ""
+
+#: libu8.c:411
+msgid "Too many thread exit fns"
+msgstr ""
+
+#: logging.c:33
 msgid "Emergency!!!"
 msgstr ""
 
-#: logging.c:26
+#: logging.c:33
 msgid "Alert!!"
 msgstr ""
 
-#: logging.c:26
+#: logging.c:33
 msgid "Critical"
 msgstr ""
 
-#: logging.c:26
+#: logging.c:33
 msgid "Error"
 msgstr ""
 
-#: logging.c:26
+#: logging.c:33
 msgid "Warning"
 msgstr ""
 
-#: logging.c:27
+#: logging.c:34
 msgid "Note"
 msgstr ""
 
-#: logging.c:27
+#: logging.c:34
 msgid "Info"
 msgstr ""
 
-#: logging.c:27
+#: logging.c:34
 msgid "Debug"
 msgstr ""
 
-#: netfns.c:33
+#: netfns.c:42
 msgid "Internal error"
 msgstr ""
 
-#: netfns.c:34
+#: netfns.c:43
 msgid "Socket timeout"
 msgstr ""
 
-#: netfns.c:36
+#: netfns.c:44
+msgid "Cannot connect to server"
+msgstr ""
+
+#: netfns.c:46
 msgid "No UNIX domain (file) sockets"
 msgstr ""
 
-#: netfns.c:37
+#: netfns.c:47
 msgid "Unknown host"
 msgstr ""
 
-#: netfns.c:51
+#: netfns.c:84
 msgid "network error"
 msgstr ""
 
-#: netfns.c:52
+#: netfns.c:85
 msgid "Bad port specification"
 msgstr ""
 
-#: netfns.c:558 netfns.c:560 netfns.c:601
+#: netfns.c:636 netfns.c:638 netfns.c:713
 msgid "Connection not in block"
 msgstr ""
 
-#: printf.c:22
+#: netfns.c:741
+#, c-format
+msgid "(%s/%d/%d) Failed to reconnect after %d attempts"
+msgstr ""
+
+#: netfns.c:744
+#, c-format
+msgid "(%s/%d/%d) Reconnected at %d after %d attempts"
+msgstr ""
+
+#: printf.c:35
 msgid "u8_printf: Bad format code"
 msgstr "Ongeldige «printf» karakter"
 
-#: rusage.c:52
+#: rusage.c:66
 msgid "no OS support"
 msgstr ""
 
-#: srvfns.c:26
+#: srvfns.c:35
 msgid "Closed connection"
 msgstr ""
 
-#: srvfns.c:27
+#: srvfns.c:36
 msgid "Shutting down server"
 msgstr ""
 
-#: srvfns.c:28
+#: srvfns.c:37
 msgid "New server port"
 msgstr ""
 
-#: srvfns.c:29
+#: srvfns.c:38
 msgid "New connection"
 msgstr ""
 
-#: srvfns.c:30
+#: srvfns.c:39
 msgid "Rejected connection"
 msgstr ""
 
-#: srvfns.c:31
+#: srvfns.c:40
 msgid "Client request"
 msgstr ""
 
-#: srvfns.c:351
+#: srvfns.c:382
 msgid "sockopt"
 msgstr ""
 
-#: srvfns.c:369
+#: srvfns.c:400
 msgid "invalid sockaddr"
 msgstr ""
 
-#: srvfns.c:569
+#: srvfns.c:601
 #, c-format
 msgid "Failed accept on socket %d"
 msgstr ""
 
-#: streamio.c:25
+#: streamio.c:34
 msgid "Unexpected EOD"
 msgstr "voortijdig einde van data"
 
-#: streamio.c:26
+#: streamio.c:35
 msgid "Invalid UTF-8 encoded text"
 msgstr "Ongeldige UTF-8-geëncodeerde tekst"
 
-#: streamio.c:27
+#: streamio.c:36
 msgid "Invalid Unicode Character"
 msgstr "ongeldige Unicode karakter"
 
-#: streamio.c:28
+#: streamio.c:37
 msgid "UNGETC error"
 msgstr "UNGETC een karakter ongeldige"
 
-#: streamio.c:29
+#: streamio.c:38
 msgid "No zero-length string streams"
 msgstr "Ongeldige buffergroote"
 
-#: streamio.c:141
+#: streamio.c:150
 #, c-format
 msgid "Unexpected continuation byte: 0x%2x"
 msgstr ""
 
-#: streamio.c:152
+#: streamio.c:161
 #, c-format
 msgid "Illegal UTF-8 byte: 0x%2x"
 msgstr ""
 
-#: streamio.c:176
+#: streamio.c:185
 #, c-format
 msgid "Truncated UTF-8 sequence: 0x%s"
 msgstr ""
 
-#: xfiles.c:31
+#: u8stdio.c:40
+#, fuzzy
+msgid "STDIO error"
+msgstr "UNGETC een karakter ongeldige"
+
+#: xfiles.c:40
 #, fuzzy
 msgid "XFILE does not allow positioning"
 msgstr "Ongeldige zoekoperatie"
 
-#: xfiles.c:32
+#: xfiles.c:41
 msgid "XFILE only allows writing"
 msgstr "kan niet lezen"
 
-#: xfiles.c:33
+#: xfiles.c:42
 msgid "XFILE only allows reading"
 msgstr "kan niet schrijven"
 
-#: xfiles.c:35
+#: xfiles.c:44
 msgid "Invalid buffer size for xfile"
 msgstr ""
 
-#: xfiles.c:36
+#: xfiles.c:45
 msgid "Stream XBUF is static"
 msgstr ""
 

@@ -34,6 +34,10 @@ static char versionid[] MAYBE_UNUSED=
 #include <sys/time.h>
 #endif
 
+#if HAVE_LIBINTL_H
+#include <libintl.h>
+#endif
+
 #ifndef MAX_THREADINITFNS
 #define MAX_THREADINITFNS 128
 #endif

@@ -208,6 +208,9 @@
 #undef HAVE_BUILTIN_EXPECT
 
 /* Define if we are using NLS */
+#undef HAVE_LIBINTL_H
+
+/* Define if we are using NLS */
 #undef HAVE_GETTEXT
 
 /* Define if we have the mallinfo function */
