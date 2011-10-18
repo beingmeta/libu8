@@ -89,7 +89,7 @@ lib/%@suffix@.a:
 	$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
 	make lib
-	$(MKSO) -Wl,-soname=$(@F) -Llib -lu8 -o $@ $^
+	$(MKSO) -Wl,-soname=$(@F) -Llib -o $@ $^ -lu8 $(LIBS)
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	make lib
 	ln -sf $(<F) $@
@@ -145,7 +145,7 @@ lib/libu8.@U8VERSION@.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
 # Avoid recursive reference
 lib/libu8@suffix@.so.@U8VERSION@:
-	$(MKSO) -Wl,-soname=$(@F) -o $@ $^
+	$(MKSO) -Wl,-soname=$(@F) -Llib -o $@ $^ $(LIBS)
 
 lib/libu8core.a: $(LIBU8CORE_OBJECTS)
 lib/libu8core@suffix@.so.@U8VERSION@: $(LIBU8CORE_OBJECTS)
