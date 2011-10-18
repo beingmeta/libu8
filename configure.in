@@ -173,6 +173,8 @@ AC_CHECK_LIB(dl,dlopen)
 AC_ARG_ENABLE(threads,--en/disable-threads Enable multi-threading,,enable_threads=$threads_default)
 if test $enable_threads = "yes"; then
   AX_PTHREAD()
+  LIBS="$PTHREAD_LIBS $LIBS"
+  CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
   AC_DEFINE(U8_THREADS_ENABLED,1)
 else
   AC_DEFINE(U8_THREADS_ENABLED,0)
