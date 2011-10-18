@@ -4675,191 +4675,6 @@ _ACEOF
 
 
 
-for ac_header in sys/stat.h unistd.h pwd.h fcntl.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-for ac_header in sys/socket.h sys/select.h sys/un.h netdb.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-for ac_header in netinet/in.h netinet/tcp.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-for ac_header in dirent.h sys/ndir.h sys/dir.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-for ac_header in sys/timeb.h dlfcn.h malloc.h sys/malloc.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-for ac_header in time.h sys/time.h uuid/uuid.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-for ac_header in sys/resource.h resource.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-for ac_func in getrusage mallinfo
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
-# For OS X
-for ac_header in CommonCrypto/CommonDigest.h CommonCrypto/CommonHMAC.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-for ac_func in CCHmacInit
-do :
-  ac_fn_c_check_func "$LINENO" "CCHmacInit" "ac_cv_func_CCHmacInit"
-if test "x$ac_cv_func_CCHmacInit" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_CCHMACINIT 1
-_ACEOF
-
-fi
-done
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uuid_generate_time in -luuid" >&5
-$as_echo_n "checking for uuid_generate_time in -luuid... " >&6; }
-if ${ac_cv_lib_uuid_uuid_generate_time+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-luuid  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char uuid_generate_time ();
-int
-main ()
-{
-return uuid_generate_time ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_uuid_uuid_generate_time=yes
-else
-  ac_cv_lib_uuid_uuid_generate_time=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_uuid_uuid_generate_time" >&5
-$as_echo "$ac_cv_lib_uuid_uuid_generate_time" >&6; }
-if test "x$ac_cv_lib_uuid_uuid_generate_time" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBUUID 1
-_ACEOF
-
-  LIBS="-luuid $LIBS"
-
-fi
-
-for ac_func in uuid_generate_time
-do :
-  ac_fn_c_check_func "$LINENO" "uuid_generate_time" "ac_cv_func_uuid_generate_time"
-if test "x$ac_cv_func_uuid_generate_time" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_UUID_GENERATE_TIME 1
-_ACEOF
-
-fi
-done
-
-
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
 $as_echo_n "checking for ANSI C header files... " >&6; }
 if ${ac_cv_header_stdc+:} false; then :
@@ -5013,6 +4828,113 @@ if test $ac_cv_header_stat_broken = yes; then
 $as_echo "#define STAT_MACROS_BROKEN 1" >>confdefs.h
 
 fi
+
+
+for ac_header in sys/stat.h unistd.h pwd.h fcntl.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/socket.h sys/select.h sys/un.h netdb.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in netinet/in.h netinet/tcp.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in dirent.h sys/ndir.h sys/dir.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/timeb.h dlfcn.h malloc.h sys/malloc.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in sys/resource.h resource.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_func in getrusage mallinfo
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+
+# Time support
+
+for ac_header in time.h sys/time.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether time.h and sys/time.h may both be included" >&5
 $as_echo_n "checking whether time.h and sys/time.h may both be included... " >&6; }
@@ -5182,6 +5104,8 @@ fi
 rm -f conftest*
 
 
+# Particular functions
+
 for ac_func in isatty fstat
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
@@ -5265,6 +5189,7 @@ fi
 done
 
 
+# Syslog
 for ac_func in syslog
 do :
   ac_fn_c_check_func "$LINENO" "syslog" "ac_cv_func_syslog"
@@ -5279,90 +5204,7 @@ fi
 done
 
 
-# OpenSSL checks
-for ac_header in openssl/hmac.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "openssl/hmac.h" "ac_cv_header_openssl_hmac_h" "$ac_includes_default"
-if test "x$ac_cv_header_openssl_hmac_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_OPENSSL_HMAC_H 1
-_ACEOF
-
-fi
-
-done
-
-for ac_header in openssl/sha.h
-do :
-  ac_fn_c_check_header_mongrel "$LINENO" "openssl/sha.h" "ac_cv_header_openssl_sha_h" "$ac_includes_default"
-if test "x$ac_cv_header_openssl_sha_h" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_OPENSSL_SHA_H 1
-_ACEOF
-
-fi
-
-done
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EVP_CIPHER_CTX_init in -lcrypto" >&5
-$as_echo_n "checking for EVP_CIPHER_CTX_init in -lcrypto... " >&6; }
-if ${ac_cv_lib_crypto_EVP_CIPHER_CTX_init+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_check_lib_save_LIBS=$LIBS
-LIBS="-lcrypto  $LIBS"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char EVP_CIPHER_CTX_init ();
-int
-main ()
-{
-return EVP_CIPHER_CTX_init ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_lib_crypto_EVP_CIPHER_CTX_init=yes
-else
-  ac_cv_lib_crypto_EVP_CIPHER_CTX_init=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-LIBS=$ac_check_lib_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_crypto_EVP_CIPHER_CTX_init" >&5
-$as_echo "$ac_cv_lib_crypto_EVP_CIPHER_CTX_init" >&6; }
-if test "x$ac_cv_lib_crypto_EVP_CIPHER_CTX_init" = xyes; then :
-  cat >>confdefs.h <<_ACEOF
-#define HAVE_LIBCRYPTO 1
-_ACEOF
-
-  LIBS="-lcrypto $LIBS"
-
-fi
-
-
-for ac_func in EVP_get_cipherbyname EVP_CIPHER_CTX_init SHA1_Init
-do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-done
-
-
+# Internationalization
 for ac_header in libintl.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "libintl.h" "ac_cv_header_libintl_h" "$ac_includes_default"
@@ -5867,6 +5709,185 @@ else
 $as_echo "no" >&6; }
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+# OS X crypto
+for ac_header in CommonCrypto/CommonDigest.h CommonCrypto/CommonHMAC.h
+do :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+
+done
+
+for ac_func in CCHmacInit
+do :
+  ac_fn_c_check_func "$LINENO" "CCHmacInit" "ac_cv_func_CCHmacInit"
+if test "x$ac_cv_func_CCHmacInit" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_CCHMACINIT 1
+_ACEOF
+
+fi
+done
+
+
+# OpenSSL crypto
+for ac_header in openssl/hmac.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "openssl/hmac.h" "ac_cv_header_openssl_hmac_h" "$ac_includes_default"
+if test "x$ac_cv_header_openssl_hmac_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_OPENSSL_HMAC_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in openssl/sha.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "openssl/sha.h" "ac_cv_header_openssl_sha_h" "$ac_includes_default"
+if test "x$ac_cv_header_openssl_sha_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_OPENSSL_SHA_H 1
+_ACEOF
+
+fi
+
+done
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for EVP_CIPHER_CTX_init in -lcrypto" >&5
+$as_echo_n "checking for EVP_CIPHER_CTX_init in -lcrypto... " >&6; }
+if ${ac_cv_lib_crypto_EVP_CIPHER_CTX_init+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lcrypto  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char EVP_CIPHER_CTX_init ();
+int
+main ()
+{
+return EVP_CIPHER_CTX_init ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_crypto_EVP_CIPHER_CTX_init=yes
+else
+  ac_cv_lib_crypto_EVP_CIPHER_CTX_init=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_crypto_EVP_CIPHER_CTX_init" >&5
+$as_echo "$ac_cv_lib_crypto_EVP_CIPHER_CTX_init" >&6; }
+if test "x$ac_cv_lib_crypto_EVP_CIPHER_CTX_init" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBCRYPTO 1
+_ACEOF
+
+  LIBS="-lcrypto $LIBS"
+
+fi
+
+for ac_func in EVP_get_cipherbyname EVP_CIPHER_CTX_init SHA1_Init
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+_ACEOF
+
+fi
+done
+
+
+# UUID functions
+for ac_header in uuid/uuid.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "uuid/uuid.h" "ac_cv_header_uuid_uuid_h" "$ac_includes_default"
+if test "x$ac_cv_header_uuid_uuid_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_UUID_UUID_H 1
+_ACEOF
+
+fi
+
+done
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for uuid_generate_time in -luuid" >&5
+$as_echo_n "checking for uuid_generate_time in -luuid... " >&6; }
+if ${ac_cv_lib_uuid_uuid_generate_time+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-luuid  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char uuid_generate_time ();
+int
+main ()
+{
+return uuid_generate_time ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_uuid_uuid_generate_time=yes
+else
+  ac_cv_lib_uuid_uuid_generate_time=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_uuid_uuid_generate_time" >&5
+$as_echo "$ac_cv_lib_uuid_uuid_generate_time" >&6; }
+if test "x$ac_cv_lib_uuid_uuid_generate_time" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBUUID 1
+_ACEOF
+
+  LIBS="-luuid $LIBS"
+
+fi
+
+for ac_func in uuid_generate_time
+do :
+  ac_fn_c_check_func "$LINENO" "uuid_generate_time" "ac_cv_func_uuid_generate_time"
+if test "x$ac_cv_func_uuid_generate_time" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_UUID_GENERATE_TIME 1
+_ACEOF
+
+fi
+done
+
 
 ac_config_files="$ac_config_files makefile docs/makefile"
 
