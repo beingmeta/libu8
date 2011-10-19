@@ -133,7 +133,7 @@ U8_EXPORT
  Marks the client's current task as done, updating server data structures
  appropriately, and ending by closing the client close function.
  If a busy client is closed, it has its U8_CLIENT_CLOSING flag set.
- This tells the server loop to call the close function when the client
+ This tells the event loop to call the close function when the client
  server function actually returns.
 */
 void u8_client_close(u8_client cl)
@@ -243,12 +243,12 @@ static int push_task(struct U8_SERVER *server,u8_client cl)
   return 1;
 }
 
-static void *serve_client_loop(void *thread_arg)
+static void *event_loop(void *thread_arg)
 {
   struct U8_SERVER *server=(struct U8_SERVER *)thread_arg;
   /* Check for additional thread init functions */
   while (1) {
-    u8_client cl; int dobreak=0;
+    u8_client cl; int dobreak=0; int result=0;
     /* Check that this thread's init functions are up to date */
     u8_threadcheck();
     cl=pop_task(server);
@@ -256,15 +256,35 @@ static void *serve_client_loop(void *thread_arg)
       cl->n_trans++;
       if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
 	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
-	u8_log(LOG_DEBUG,ClientRequest,"Got request from %s[%d]",cl->idstring,cl->n_trans);
-      server->servefn(cl); /* int result= */
-      if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
-	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
-	u8_log(LOG_DEBUG,ClientRequest,"Completed request for %s[%d]",cl->idstring,cl->n_trans);
-      if (server->flags&U8_SERVER_CLOSED) dobreak=1;
-      if (cl->flags&U8_CLIENT_CLOSING)
-	finish_close_client(cl);
-      else u8_client_done(cl);
+	u8_log(LOG_DEBUG,ClientRequest,
+	       "Got request from %s[%d]",cl->idstring,cl->n_trans);
+      result=server->servefn(cl);
+      if (result<0) {
+	u8_exception ex=u8_current_exception;
+	while (ex) {
+	  u8_log(LOG_WARN,ClientRequest,
+		 "Error during request for %s[%d] (%s)",
+		 cl->idstring,cl->n_trans,u8_errstring(ex));
+	  ex=u8_pop_exception();}}
+      else if (result==0) {
+	/* Request is completed */
+	if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
+	    ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
+	  u8_log(LOG_INFO,ClientRequest,
+		 "Completed request for %s[%d]",cl->idstring,cl->n_trans);
+	if (server->flags&U8_SERVER_CLOSED) dobreak=1;
+	if (cl->flags&U8_CLIENT_CLOSING)
+	  finish_close_client(cl);
+	else u8_client_done(cl);}
+      else {
+	/* Request is not yet completed */
+	if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
+	    ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
+	  u8_log(LOG_DEBUG,ClientRequest,
+		 "Yield during request for %s[%d]",cl->idstring,cl->n_trans);
+	/* We need to handle the case where the request is not completed
+	   but the server is closing down.  Right now, we don't let the
+	   server loop exit until all the pending tasks have closed.  */}
       if (dobreak) break;}
     else if (server->flags&U8_SERVER_CLOSED) break;}
   u8_threadexit();
@@ -305,7 +325,7 @@ int u8_server_init(struct U8_SERVER *server,
   i=0; while (i < n_threads) {
 	 pthread_create(&(server->thread_pool[i]),
 			pthread_attr_default,
-			serve_client_loop,(void *)server);
+			event_loop,(void *)server);
 	 i++;}
 #endif
   return 1;
@@ -566,6 +586,9 @@ static int server_wait(fd_set *listening,int max_sockets,struct timeval *to)
   return select(max_sockets+1,listening,NULL_FDS,NULL_FDS,to);
 }
 
+/* This listens for connections and pushes tasks (unless we're not
+   threaded, in which case it dispatches to the servefn right
+   away).  */
 static int server_step(struct U8_SERVER *server)
 {
   fd_set listening;
@@ -635,6 +658,16 @@ static int server_step(struct U8_SERVER *server)
       i++;}
   u8_unlock_mutex(&(server->lock));
   return 0;
+}
+
+U8_EXPORT
+int u8_push_task(struct U8_SERVER *server,u8_client cl)
+{
+  int retval;
+  u8_lock_mutex(&(server->lock));
+  retval=push_task(server,cl);
+  u8_unlock_mutex(&(server->lock));
+  return retval;
 }
 
 U8_EXPORT

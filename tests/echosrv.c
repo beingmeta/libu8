@@ -53,7 +53,7 @@ static int echosrv_handle(u8_client ucl)
     retval=send(ucl->socket,inbuf,n_bytes,0);
     if (retval<0) return -1;
     strcpy(ec->lastin,inbuf);}
-  return 1;
+  return 0;
 }
 
 static int echosrv_close(u8_client ucl)
