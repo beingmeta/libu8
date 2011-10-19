@@ -150,15 +150,21 @@ AC_CHECK_FUNCS(getservbyname)
 # Syslog
 AC_CHECK_FUNCS(syslog,syslog_target="syslog_libs",syslog_target="")
 
+
 # Internationalization
 AC_CHECK_HEADERS(libintl.h)
-AC_CHECK_FUNCS(gettext,[doi18n="yes"])
+AC_CHECK_FUNCS(gettext,[libc_gettext="yes"])
+if test "x$libc_gettext" != "xyes"; then
+   AC_CHECK_LIB(intl,gettext)
+fi
+AC_CHECK_FUNCS(gettext,[do_i18n="yes"])
+if test "x$do_i18n" = "xyes"; then
+   AC_CHECK_FUNCS(textdomain bindtextdomain bindtextdomain_codeset)
+fi
 
 AC_ARG_WITH(i18n,--with[out]-i18n built and install message catalogs,,with_i18n="yes")
-if test $with_i18n = "yes"; then
-  AC_CHECK_FUNCS(gettext,[doi18n="yes"])
-fi
-if test $doi18n = "yes"; then
+
+if test "x$doi18n" = "yes" && test "x$with_i18n" = "xyes"; then
   I18N="i18n"
   INSTALLI18N="install-i18n"
 fi

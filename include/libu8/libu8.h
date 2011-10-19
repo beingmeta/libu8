@@ -308,14 +308,22 @@ U8_EXPORT u8_string u8_svnrev;
 
 /* GETTEXT */
 
-#if HAVE_GETTEXT
+#if ((defined(HAVE_GETTEXT))&&(HAVE_GETTEXT))
 #define u8_gettext(d,x) ((d==NULL) ? (gettext(x)) : (dgettext(d,x)))
 #else
 #define u8_gettext(d,x) (x)
-#define bindtextdomain(Package, Directory)
-#define bind_textdomain_codeset(Package, Directory)
-#define textdomain(Domain)
 #endif
+
+#if (!((defined(HAVE_TEXTDOMAIN))&&(HAVE_TEXTDOMAIN)))
+#define textdomain(domain)
+#endif
+#if (!((defined(HAVE_BINDTEXTDOMAIN))&&(HAVE_BINDTEXTDOMAIN)))
+#define bindtextdomain(domain,dir)
+#endif
+#if (!((defined(HAVE_BINDTEXTDOMAIN_CODESET))&&(HAVE_BINDTEXTDOMAIN_CODESET)))
+#define bindtextdomain_codeset(domain,dir)
+#endif
+
 #define _(x) (x)
 #define N_(x) x
 

@@ -213,6 +213,15 @@
 /* Define if we are using NLS */
 #undef HAVE_GETTEXT
 
+/* Define if we can bind the textdomain */
+#undef HAVE_TEXTDOMAIN
+
+/* Define if we can bind the textdomain */
+#undef HAVE_BINDTEXTDOMAIN
+
+/* Define if we can bind the textdomain */
+#undef HAVE_BINDTEXTDOMAIN_CODESET
+
 /* Define if we have the mallinfo function */
 #undef HAVE_MALLINFO
 

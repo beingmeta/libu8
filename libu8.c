@@ -426,7 +426,7 @@ U8_EXPORT int u8_initialize()
   u8_init_errors_c();
   u8_init_printf_c();
   bindtextdomain("libu8msg",NULL);
-  bind_textdomain_codeset("libu8msg","utf-8");
+  bindtextdomain_codeset("libu8msg","utf-8");
 
 #if U8_THREADS_ENABLED
   u8_init_mutex(&threadinitfns_lock);
