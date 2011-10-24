@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: libu8 1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-10-17 08:51-0400\n"
+"POT-Creation-Date: 2011-10-19 09:48-0400\n"
 "PO-Revision-Date: 2005-03-04 22:15-0500\n"
 "Last-Translator: Kenneth Haase <kh@beingmeta.com>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -208,15 +208,15 @@ msgstr ""
 msgid "Client request"
 msgstr ""
 
-#: srvfns.c:382
+#: srvfns.c:402
 msgid "sockopt"
 msgstr ""
 
-#: srvfns.c:400
+#: srvfns.c:420
 msgid "invalid sockaddr"
 msgstr ""
 
-#: srvfns.c:601
+#: srvfns.c:624
 #, c-format
 msgid "Failed accept on socket %d"
 msgstr ""
