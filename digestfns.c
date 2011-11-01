@@ -655,12 +655,12 @@ U8_EXPORT unsigned char *u8_hmac_sha256
    unsigned char *data,int data_len,
    unsigned char *result,int *result_len)
 {
-  unsigned int buflen=20;
+  unsigned int buflen=32;
   unsigned char *digestbuf=((result==NULL) ? (u8_malloc(buflen)) : (result));
   if (key_len<0) key_len=strlen(key);
   if (data_len<0) data_len=strlen(data);
   CCHmac(kCCHmacAlgSHA256,key,key_len,data,data_len,digestbuf);
-  if (result_len) *result_len=20;
+  if (result_len) *result_len=32;
   return digestbuf;
 }
 #elif HAVE_OPENSSL_HMAC_H

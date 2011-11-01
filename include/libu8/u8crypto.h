@@ -46,6 +46,17 @@ U8_EXPORT unsigned char *u8_md5
 U8_EXPORT unsigned char *u8_sha1
   (unsigned char *data,int len,unsigned char *result);
 
+/** Returns the SHA-256 hash (32 bytes) of a data buffer
+    @param data a pointer to a data buffer
+    @param len the number of bytes in the data buffer (or -1)
+    @param result a result buffer (at least 20 bytes) or NULL
+    @returns the SHA1 hash of the provided data
+  If @a len is negative, strlen() is called on the input data.
+  If @a result is NULL, a buffer of appropriate size is created with malloc()
+**/
+U8_EXPORT unsigned char *u8_sha256
+  (unsigned char *data,int len,unsigned char *result);
+
 /** Returns a signed HMAC-SHA1 signature (20 bytes) of a data buffer
     @param key     a pointer to a key buffer
     @param key_len the length of the key buffer in bytes (or -1)
@@ -58,6 +69,27 @@ U8_EXPORT unsigned char *u8_sha1
   If @a result is NULL, a buffer of appropriate size is created with malloc()
 **/
 U8_EXPORT unsigned char *u8_hmac_sha1
+  (unsigned char *key,int key_len,
+   unsigned char *data,int data_len,
+   unsigned char *result,int *result_len);
+
+U8_EXPORT u8_condition u8_BadCryptoKey;
+U8_EXPORT u8_condition u8_InternalCryptoError;
+U8_EXPORT u8_condition u8_UnknownCipher;
+U8_EXPORT u8_condition u8_UnknownCipherNID;
+
+/** Returns a signed HMAC-SHA256 signature (32 bytes) of a data buffer
+    @param key     a pointer to a key buffer
+    @param key_len the length of the key buffer in bytes (or -1)
+    @param data    a pointer to a data buffer
+    @param len     the number of bytes in the data buffer (or -1)
+    @param result  a result buffer (at least 32 bytes) or NULL
+    @returns the SHA1 hash of the provided data
+  If @a len or @a key_len is negative, strlen() is called on the
+    corresponding input buffers;
+  If @a result is NULL, a buffer of appropriate size is created with malloc()
+**/
+U8_EXPORT unsigned char *u8_hmac_sha256
   (unsigned char *key,int key_len,
    unsigned char *data,int data_len,
    unsigned char *result,int *result_len);
