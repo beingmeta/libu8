@@ -602,13 +602,13 @@ U8_EXPORT unsigned char *u8_sha1
 U8_EXPORT unsigned char *u8_sha224
   (unsigned char *data,int len,unsigned char *result)
 {
-  u8_raise("SHA224 not available");
+  u8_seterr("SHA224 not available","u8_sha224",NULL);
   return NULL;
 }
 U8_EXPORT unsigned char *u8_sha256
   (unsigned char *data,int len,unsigned char *result)
 {
-  u8_raise("SHA224 not available");
+  u8_seterr("SHA224 not available","u8_sha256",NULL);
   return NULL;
 }
 #endif
