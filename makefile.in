@@ -239,7 +239,7 @@ etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(
 etc/rpms.done: etc/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
 
-etc/rpms32.done: etc/libu8-2.0.tar.gz
+etc/rpms32.done: etc/libu8-@U8VERSION@.tar.gz
 	CC='gcc -m32' rpmbuild --target x86 --nodeps -ta etc/libu8-@U8VERSION@.tar.gz &&\
 	touch etc/rpms32.done
 
