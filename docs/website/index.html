@@ -1,0 +1,49 @@
+<html>
+<head>
+<title>LIBU8: Polyglottal Programming in C</title>
+<link rel='stylesheet' type='text/css'
+      href='http://static.beingmeta.com/fdjt/fdjt.css'/>
+<link rel='stylesheet' type='text/css'
+      href='http://static.beingmeta.com/fdjt/misc.css'/>
+<style>
+  body { 
+   font-family: sans,sans-serif; font-size: 17px;
+   background-color: ivory; 
+   margin-left: 10%; margin-right: 10%;
+   margin-bottom: 20px; margin-top: 5px;}
+  p div { margin-top: 3px; margin-bottom: 3px;}
+</style>
+</head>
+<body>
+<h1 id="PAGEHEAD">
+  LIBU*<span class="tld">.org</span>
+  <div class="subtitle">Polyglottal Programming in <tt>C</tt></div>
+</h1>
+
+<p><span class="inhead">libu8</span> is a portable C library for
+polyglottal programming.  The philosophy behind libu8 is providing
+general internal data representations and support conversion to and
+from local encodings or conventions.  For instance, libu8 supports
+programmatic manipulation of UTF-8 strings and conversion of those
+strings to and from various external encodings.  This contrasts with
+the approach of the standard C library, where a user or application
+<em>locale</em> controls the internal representation used for
+strings.</p>
+
+<p>The core libraries of libu8 provide for scanning, generating, and
+manipulating utf-8 strings, including stream-based I/O, converstion
+to/from other character sets, and character type information.  The
+libraries also provide simple portable system facilities for accessing
+the run-time environment, signalling and catching exceptions (based on
+<tt>setjmp</tt>), generating formatted output (i.e. <tt>printf</tt>),
+and logging program events.  Another library layer provides for
+socket-based streaming I/O and portable network functionality.</p>
+
+<p>libu8 is licensed under the LGPL (V2.1) and GPL (V2) and the
+subversion repository can be browsed here.  In the near future, we
+will be providing packaged releases of libu8 in various binary
+formats.</p>
+
+<p><span class="inhead">Enjoy!</span></p>
+</body>
+</html>
