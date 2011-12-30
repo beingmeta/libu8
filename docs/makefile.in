@@ -18,3 +18,9 @@ clean:
 
 install: $(MANFILES)
 	$(INSTALL) $(MANFILES) $(MANDIR)
+
+publish:
+	s3cmd put website/index.html s3://www.libu8.org/ --mime-type='text/html'
+	s3cmd put html/*.html s3://www.libu8.org/docs/ --mime-type='text/html'
+	s3cmd put html/*.png s3://www.libu8.org/docs/ --mime-type='image/png'
+	s3cmd put html/*.css s3://www.libu8.org/docs/ --mime-type='text/css'
