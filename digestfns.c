@@ -669,7 +669,8 @@ U8_EXPORT unsigned char *u8_hmac_sha256
    unsigned char *data,int data_len,
    unsigned char *result,int *result_len)
 {
-  unsigned char *digestbuf=((result==NULL) ? (u8_malloc(20)) : (result));
+  unsigned int buflen=32;
+  unsigned char *digestbuf=((result==NULL) ? (u8_malloc(buflen)) : (result));
   
   return HMAC(EVP_sha256(),(const void *)key,key_len,
 	      data,data_len,digestbuf,result_len);
