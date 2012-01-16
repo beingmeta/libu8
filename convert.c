@@ -818,7 +818,7 @@ unsigned char *u8_read_base64(char *from,char *to,int *sizep)
 
 #define hexweight(c) \
   ((U8_EXPECT_TRUE(isxdigit(c))) ? \
-   ((isdigit(c)) ? (c-'0') : (isupper(c)) ? (c-'A') : (c-'a')) : \
+   ((isdigit(c)) ? (c-'0') : (isupper(c)) ? ((c-'A')+10) : ((c-'a')+10)) : \
    (-1))
 
 U8_EXPORT
