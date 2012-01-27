@@ -101,7 +101,7 @@ fi
 
 case $gcc_version in
   4*)
-   CFLAGS="-Wno-pointer-sign -Wimplicit $CFLAGS"
+   CFLAGS="-Wno-pointer-sign -Wimplicit -fno-strict-aliasing $CFLAGS"
   ;;
 esac
 
