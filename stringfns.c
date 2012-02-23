@@ -288,10 +288,11 @@ U8_EXPORT
 u8_string u8_string_append(u8_string first_string,...)
 {
   struct U8_OUTPUT out; va_list args; u8_string each;
-  U8_INIT_OUTPUT(&out,512);
   va_start(args,first_string);
-  u8_puts(&out,first_string);
-  while ((each=va_arg(args,u8_string))) u8_puts(&out,each);
+  U8_INIT_OUTPUT(&out,512);
+  if (first_string) {u8_puts(&out,first_string);}
+  while ((each=va_arg(args,u8_string))) {
+    if (each) u8_puts(&out,each);}
   return out.u8_outbuf;
 }
 

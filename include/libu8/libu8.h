@@ -79,6 +79,14 @@
 #define U8_INLINE_FCN static
 #endif
 
+#ifndef EXIT_SUCCESS
+#define EXIT_SUCCESS 0
+#endif
+
+#ifndef EXIT_FAILURE
+#define EXIT_FAILURE -1
+#endif
+
 /* Checking constructor attributes */
 
 #if HAVE_CONSTRUCTOR_ATTRIBUTES
