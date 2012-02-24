@@ -293,6 +293,7 @@ u8_string u8_string_append(u8_string first_string,...)
   if (first_string) {u8_puts(&out,first_string);}
   while ((each=va_arg(args,u8_string))) {
     if (each) u8_puts(&out,each);}
+  va_end(args);
   return out.u8_outbuf;
 }
 

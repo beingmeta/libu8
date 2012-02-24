@@ -189,8 +189,11 @@ u8_string u8_mkstring(u8_string format_string,...)
   U8_INIT_OUTPUT(&out,128);
   va_start(args,format_string);
   if ((retval=u8_do_printf(&out,format_string,&args))<0) {
+    va_end(args);
     u8_free(out.u8_outbuf); return NULL;}
-  else return out.u8_outbuf;
+  else {
+    va_end(args);
+    return out.u8_outbuf;}
 }
 
 static u8_string default_printf_handler
