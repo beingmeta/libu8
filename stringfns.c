@@ -292,7 +292,7 @@ u8_string u8_string_append(u8_string first_string,...)
   U8_INIT_OUTPUT(&out,512);
   if (first_string) {u8_puts(&out,first_string);}
   while ((each=va_arg(args,u8_string))) {
-    if (each) u8_puts(&out,each);}
+    if (each[0]) u8_puts(&out,each);}
   va_end(args);
   return out.u8_outbuf;
 }
@@ -315,8 +315,8 @@ u8_string u8_decompose(u8_string string)
 }
 
 U8_EXPORT
-/* u8_string_append:
-    Arguments: a series of strings, terminated by a NULL pointer
+/* u8_string_subst:
+    Arguments: returns a copy of its argument with all occurrences of one string replaced with another
     Returns: the concatenation of the strings
 */
 u8_string u8_string_subst(u8_string input,u8_string key,u8_string replace)
