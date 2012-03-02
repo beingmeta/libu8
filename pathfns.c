@@ -95,12 +95,14 @@ U8_EXPORT char *u8_localpath(u8_string path)
 U8_EXPORT u8_string u8_mkpath(u8_string dir,u8_string base)
 {
   int dirlen=strlen(dir), baselen=strlen(base), need_slash=0;
-  u8_string result;
-  if ((dir>0) && (dir[dirlen-1]!='/')) need_slash=1;
-  result=u8_malloc(dirlen+baselen+1+need_slash);
+  u8_string result; unsigned int newlen=dirlen+baselen+1+need_slash;
+  newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
+  if ((dirlen>0) && (dir[dirlen-1]!='/')) need_slash=1;
+  result=u8_malloc(newlen);
   strcpy(result,dir);
-  if (need_slash) strcat(result+dirlen,"/");
-  strcat(result+dirlen,base);
+  if (need_slash) {
+    result[dirlen]='/'; strcpy(result+dirlen+1,base);}
+  else strcpy(result+dirlen,base);
   return result;
 }
 
@@ -183,10 +185,13 @@ u8_string u8_realpath(u8_string path,u8_string wd)
 {
   u8_string abspath=u8_abspath(path,wd); 
   if (abspath) {
-    char rpath[PATH_MAX], *result=realpath(abspath,rpath);
+    char *result=realpath(abspath,NULL);
     if (result) {
+      u8_string u8ified=u8_fromlibc(result);
       u8_free(abspath);
-      return u8_fromlibc(result);}
+      if (result==u8ified) return result;
+      u8_free(result);
+      return u8ified;}
     else return abspath;}
   else return NULL;
 }

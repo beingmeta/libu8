@@ -46,14 +46,17 @@ int _u8_charoffset(u8_string s,u8_byteoff i)
 
 u8_string _u8_strdup(u8_string s)
 {
-  int len=strlen(s);
-  u8_string nstring=u8_malloc(len+1);
+  int len=strlen(s); int newlen=len+1;
+  newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
+  u8_string nstring=u8_malloc(newlen);
   strncpy(nstring,s,len); nstring[len]='\0';
   return nstring;
 }
 u8_string u8_strndup(u8_string s,int len)
 {
-  u8_string nstring=u8_malloc(len+1);
+  int newlen=len+1;
+  newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
+  u8_string nstring=u8_malloc(newlen);
   strncpy(nstring,s,len); nstring[len]='\0';
   return nstring;
 }
@@ -112,7 +115,9 @@ u8_string u8_slice(u8_byte *start,u8_byte *end)
   if (end<start) return NULL;
   else if (end-start>65536*8) return NULL;
   else {
-    u8_string slice=u8_malloc((end-start)+1);
+    unsigned int newlen=(end-start)+1; u8_string slice;
+    newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
+    slice=u8_malloc(newlen);
     strncpy(slice,start,(end-start));
     slice[end-start]='\0';
     return slice;}
@@ -336,32 +341,4 @@ u8_string u8_string_subst(u8_string input,u8_string key,u8_string replace)
     return out.u8_outbuf;}
 }
 
-
-/* The CVS log for this file
-   $Log: stringfns.c,v $
-   Revision 1.12  2005/12/17 14:19:03  haase
-   Handle NULs in utf8 strlen
 
-   Revision 1.11  2005/08/21 19:02:43  haase
-   Made functions work with largefiles
-
-   Revision 1.10  2005/05/21 00:26:46  haase
-   Fix u8_ispunct to include SYMBOL and MARK
-
-   Revision 1.9  2005/04/02 16:15:20  haase
-   Rationalized stringfns/stringio divide and made u8_valid_copy treat invalid utf8 as latin1
-
-   Revision 1.8  2005/03/04 04:02:02  haase
-   Various cleanups and minor reorganizations
-
-   Revision 1.7  2005/02/15 02:38:03  haase
-   Various fixes discovered during integration into eFramerD.
-
-   Revision 1.6  2005/02/15 00:00:50  haase
-   Reorganized libu8 to make xfiles work more cleanly
-
-   Revision 1.5  2005/02/12 03:38:47  haase
-   Added copyrights and in-file CVS info
-
-
-*/
