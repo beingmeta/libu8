@@ -38,7 +38,7 @@ u8_string u8_loglevels[9]={
 
 int u8_loglevel=U8_DEFAULT_LOGLEVEL;
 int u8_stdout_loglevel=U8_DEFAULT_STDOUT_LOGLEVEL;
-int u8_stderr_loglevel=U8_DEFAULT_STDOUT_LOGLEVEL;
+int u8_stderr_loglevel=U8_DEFAULT_STDERR_LOGLEVEL;
 int u8_syslog_loglevel=U8_DEFAULT_SYSLOG_LOGLEVEL;
 
 static u8_logfn logfn=NULL;
