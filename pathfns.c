@@ -189,7 +189,7 @@ u8_string u8_realpath(u8_string path,u8_string wd)
     if (result) {
       u8_string u8ified=u8_fromlibc(result);
       u8_free(abspath);
-      if (result==u8ified) return result;
+      if (((u8_string)result)==u8ified) return result;
       u8_free(result);
       return u8ified;}
     else return abspath;}
