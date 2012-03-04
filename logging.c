@@ -66,7 +66,7 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
 	      c,message);
     else fprintf(stdout,"[%s %s: %s]\n",
 		 prefix,u8_loglevels[loglevel],message);}
-  if (loglevel<=u8_stdout_loglevel) {
+  if (loglevel<=u8_stderr_loglevel) {
     if (c)
       fprintf(stderr,"[%s %s (%s): %s]\n",
 	      prefix,u8_loglevels[loglevel],
