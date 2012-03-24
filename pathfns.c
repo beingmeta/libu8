@@ -94,10 +94,11 @@ U8_EXPORT char *u8_localpath(u8_string path)
 
 U8_EXPORT u8_string u8_mkpath(u8_string dir,u8_string base)
 {
-  int dirlen=strlen(dir), baselen=strlen(base), need_slash=0;
-  u8_string result; unsigned int newlen=dirlen+baselen+1+need_slash;
+  u8_string result;
+  int dirlen=strlen(dir), baselen=strlen(base);
+  int need_slash=(((dirlen>0) && (dir[dirlen-1]!='/'))?(1):(0));
+  unsigned int newlen=dirlen+baselen+1+need_slash;
   newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
-  if ((dirlen>0) && (dir[dirlen-1]!='/')) need_slash=1;
   result=u8_malloc(newlen);
   strcpy(result,dir);
   if (need_slash) {
