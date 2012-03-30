@@ -29,8 +29,9 @@ U8_EXPORT u8_condition
 
 U8_EXPORT int u8_utf8warn;
 
-#include <stdio.h>
 #include <stdarg.h>
+
+int sprintf(char *str,const char *fmt,...);
 
 /** Returns an uppercase version of a UTF-8 string.
     @param string a UTF-8 string
