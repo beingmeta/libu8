@@ -31,8 +31,6 @@ U8_EXPORT int u8_utf8warn;
 
 #include <stdarg.h>
 
-int sprintf(char *str,const char *fmt,...);
-
 /** Returns an uppercase version of a UTF-8 string.
     @param string a UTF-8 string
     @returns a UTF-8 string with all lowercase characters
@@ -155,6 +153,8 @@ U8_EXPORT u8_string u8_convert_crlfs(u8_byte *s);
 
 U8_EXPORT int _u8_sgetc(u8_byte **sptr);
 
+static char hexchars[]="0123456789ABCDEF";
+
 #if U8_INLINE_IO
 /** Returns a Unicode code point from a pointer to a pointer to UTF-8 string.
     This advances the pointer to the next encoded character.
@@ -190,7 +190,12 @@ static int u8_sgetc(u8_byte **sptr)
       if (u8_utf8warn) {
 	char buf[256];
 	int j=0; buf[0]='\0'; while (j<size) {
-	  char tmp[8]; sprintf(tmp,"%2x",start[j]);
+	  char tmp[8]; int val=start[j];
+	  unsigned char hi=(val>>4)&0xF;
+	  unsigned char lo=val&0xF;
+	  tmp[0]=hexchars[hi];
+	  tmp[1]=hexchars[lo];
+	  tmp[2]='\0';
 	  if (j>0) strcat(buf," ");
 	  strcat(buf,tmp); j++;}
 	u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: 0x%s"),buf);}
