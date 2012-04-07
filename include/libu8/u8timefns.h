@@ -50,9 +50,10 @@
 
 /** Identifies the precision for a timestamp, ranging from u8_year to
     u8_femtosecond.  Precisions finer than u8_nanosecond are not currently
-    effective and on many platforms precisions finer than microseconds
+    effective and on many platforms, precisions finer than microseconds
     are not generally significant. **/
 typedef enum u8_timestamp_precision {
+  u8_maxtmprec=0,
   u8_year=1, u8_month=2, u8_day=3, u8_hour=4, u8_minute=5, u8_second=6,
   u8_millisecond=7, u8_microsecond=8, u8_nanosecond=9,
   u8_picosecond=10, u8_femtosecond=11} u8_tmprec;

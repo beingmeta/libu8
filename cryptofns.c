@@ -49,7 +49,7 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
 
 #if HAVE_EVP_CIPHER_CTX_INIT
 
-U8_EXPORT size_t u8_cryptic
+U8_EXPORT ssize_t u8_cryptic
   (int do_encrypt,char *cname,
    unsigned char *key,int keylen,
    unsigned char *iv,int ivlen,
@@ -130,7 +130,7 @@ U8_EXPORT unsigned char *u8_encrypt
    char *cipher,unsigned char *key,size_t keylen,
    size_t *result_len)
 {
-  size_t bytecount;
+  ssize_t bytecount;
   struct U8_BYTEBUF in, out;
   unsigned char *outbuf=u8_malloc(2*len);
   in.u8_direction=u8_input_buffer;
@@ -151,7 +151,7 @@ U8_EXPORT unsigned char *u8_decrypt
    char *cipher,unsigned char *key,size_t keylen,
    size_t *result_len)
 {
-  size_t bytecount;
+  ssize_t bytecount;
   struct U8_BYTEBUF in, out;
   unsigned char *outbuf=u8_malloc(2*len);
   in.u8_direction=u8_input_buffer;

@@ -163,7 +163,7 @@ U8_EXPORT u8_xtime u8_init_xtime
       return NULL;}
     tick=tv.tv_sec;
     xt->u8_nsecs=tv.tv_usec*1000;
-    if (prec<0) xt->u8_prec=u8_microsecond;
+    if (prec==u8_maxtmprec) xt->u8_prec=u8_microsecond;
 #elif HAVE_FTIME
     struct timeb tb;
     if (ftime(&tb)<0) {
@@ -171,12 +171,12 @@ U8_EXPORT u8_xtime u8_init_xtime
       return NULL;}
     tick=tb.time;
     xt->u8_nsecs=tb.millitm*1000000;
-    if (prec<0) xt->u8_prec=u8_millisecond;
+    if (prec==u8_maxtmprec) xt->u8_prec=u8_millisecond;
 #else
     if ((tick=time(NULL))<0) {
       u8_graberr(errno,"u8_xlocaltime/time",NULL);
       return NULL;}
-    if (prec<0) xt->u8_prec=u8_second;
+    if (prec==u8_maxtmprec) xt->u8_prec=u8_second;
 #endif
   }
 
@@ -201,7 +201,7 @@ U8_EXPORT u8_xtime u8_init_xtime
   /* Set the real time and the offset */
   xt->u8_tick=tick; xt->u8_tzoff=tzoff; xt->u8_dstoff=dstoff;
   /* Initialize the precision */
-  if (prec<0) prec=u8_second;
+  if (prec==u8_maxtmprec) prec=u8_second;
   xt->u8_prec=prec;
   /* Don't have redundant nanoseconds */
   if (xt->u8_prec<=u8_second) xt->u8_nsecs=0;
@@ -223,7 +223,7 @@ U8_EXPORT u8_xtime u8_local_xtime
       return NULL;}
     tick=tv.tv_sec;
     xt->u8_nsecs=tv.tv_usec*1000;
-    if ((prec<0) || (prec>u8_microsecond))
+    if ((prec==u8_maxtmprec) || (prec>u8_microsecond))
       prec=u8_microsecond;
 #elif HAVE_FTIME
     struct timeb tb;
@@ -232,7 +232,7 @@ U8_EXPORT u8_xtime u8_local_xtime
       return NULL;}
     tick=tb.time;
     xt->u8_nsecs=tb.millitm*1000000;
-    if ((prec<0) || (prec>u8_millisecond))
+    if ((prec==u8_maxtmprec) || (prec>u8_millisecond))
       prec=u8_millisecond;
 #else
     if ((tick=time(NULL))<0) {
@@ -274,7 +274,7 @@ U8_EXPORT u8_xtime u8_local_xtime
   xt->u8_tzoff=0;
 #endif
   /* Initialize the precision */
-  if (prec<0) prec=u8_second;
+  if (prec==u8_maxtmprec) prec=u8_second;
   xt->u8_prec=prec;
   /* Don't have redundant nanoseconds */
   if (xt->u8_prec<=u8_second) xt->u8_nsecs=0;
@@ -535,7 +535,7 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
   else tzstart=s+pos[n_elts];
   /* Handle our own little extension of IS9601 to separate
      out DST and TZ offsets */
-  if ((tzstart=="+") || (tzstart=="-")) {
+  if ((tzstart[0]=='+') || (tzstart[0]=='-')) {
     int dsign=1;
     char *dststart=strchr(tzstart+1,'+');
     if (dststart==NULL) {
@@ -574,7 +574,7 @@ void u8_xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt)
 	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
 	    xt->u8_hour);
     break;
-  case u8_minute:
+  case u8_minute: case u8_maxtmprec:
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d",
 	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
 	    xt->u8_hour,xt->u8_min);
