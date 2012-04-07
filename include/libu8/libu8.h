@@ -162,10 +162,10 @@ typedef unsigned int u8_int8;
 typedef unsigned long u8_int8;
 #elif (SIZEOF_LONG_LONG == 8)
 typedef unsigned long long u8_int8;
-#elif (SIZEOF_SHORT == 2)
+#elif (SIZEOF_SHORT == 8)
 typedef unsigned short u8_int8;
 #else
-typedef unsigned short u8_int2;
+typedef unsigned long long u8_int8;
 #endif
 
 #if (SIZEOF_LONG_LONG == 16)
