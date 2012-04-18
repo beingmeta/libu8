@@ -590,25 +590,20 @@ void u8_xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt)
 	    xt->u8_hour,xt->u8_min,xt->u8_sec,
 	    xt->u8_nsecs/1000000); break;
   case u8_microsecond:
-    sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%03d",
+    sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%06d",
 	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
 	    xt->u8_hour,xt->u8_min,xt->u8_sec,
 	    xt->u8_nsecs/1000); break;
-  case u8_nanosecond:
+  case u8_nanosecond: case u8_picosecond: case u8_femtosecond:
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%09d",
 	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
 	    xt->u8_hour,xt->u8_min,xt->u8_sec,
 	    xt->u8_nsecs); break;
-  case u8_picosecond:
-    sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%012d",
+  default:
+    sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d",
 	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
-	    xt->u8_hour,xt->u8_min,xt->u8_sec,
-	    xt->u8_nsecs); break;
-  case u8_femtosecond:
-    sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%015d",
-	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
-	    xt->u8_hour,xt->u8_min,xt->u8_sec,
-	    xt->u8_nsecs); break;}
+	    xt->u8_hour,xt->u8_min,xt->u8_sec);
+    break;}
   if ((xt->u8_tzoff) ||  (xt->u8_dstoff)) {
     int off=xt->u8_tzoff+xt->u8_dstoff;
     char *sign=((off<0) ? "-" : "+");
