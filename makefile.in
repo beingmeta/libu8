@@ -222,6 +222,11 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 # Packaging targets
 
 rpmtar: etc/libu8-@U8VERSION@.tar.gz
+cleanrpms: 
+	rm -rf etc/rpms.done etc/libu8-?.?.tar.gz etc/libu8-?.?
+freshrpms: 
+	rm -rf etc/rpms.done etc/libu8-?.?.tar.gz etc/libu8-?.?
+	make rpms
 rpms: etc/rpms.done
 debs: etc/debs.done
 
