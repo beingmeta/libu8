@@ -85,6 +85,19 @@ U8_EXPORT int u8_reconnect_wait1;
 U8_EXPORT int u8_reconnect_wait;
 U8_EXPORT int u8_reconnect_tries;
 
+/** Parses a variety of host/port syntaxes
+    @param the address specification (a utf-8 string)
+    @param a pointer to the port number (an int for the family, e.g. )
+    @param a buffer to hold the host address
+    @param the length of the buffer
+    @returns the hostname for TCP/IP addresses or the filename
+       for filesystem domain addresses; puts a port number in *portp*,
+       storing zero for filesystem domain addresses and -1 for an error
+       (also returns NULL)
+**/
+U8_EXPORT u8_string u8_parse_addr
+   (u8_string spec,int *portp,u8_byte *result,ssize_t buflen);
+
 /** Returns the configured name of the current host.
     @returns a utf-8 string describing the current host
 **/

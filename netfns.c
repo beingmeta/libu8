@@ -115,7 +115,7 @@ U8_EXPORT u8_string u8_sockaddr_string(struct sockaddr *s)
 #if HAVE_SYS_UN_H
   else if (s->sa_family==AF_UNIX) {
     struct sockaddr_un *unaddr=(struct sockaddr_un *)s;
-    return u8_mkstring("%s@",unaddr->sun_path);}
+    return u8_mkstring("%s@unix",unaddr->sun_path);}
 #endif
 #ifdef AF_INET6
   else if (s->sa_family==AF_INET6) {
@@ -346,46 +346,74 @@ U8_EXPORT char **u8_lookup_host
 
 /* Make connections */
 
+U8_EXPORT u8_string u8_parse_addr
+    (u8_string spec,int *portp,u8_byte *result,ssize_t buflen)
+{
+  u8_byte *split=strchr(spec,'@');
+  if ((result==NULL)||(buflen<0)) {
+    buflen=strlen(spec); result=u8_malloc(buflen); }
+  if (split==spec) {
+    *portp=0; strcpy(result,spec+1);
+    return result;}
+  else if (split) {
+    u8_byte _portspec[32], *portspec;
+    if ((split-spec)>31) 
+      portspec=u8_malloc(1+(split-spec));
+    else portspec=_portspec;
+    strncpy(portspec,spec,split-spec); portspec[split-spec]='\0';
+    *portp=u8_get_portno(portspec);
+    if (portspec!=_portspec) u8_free(portspec);
+    if (buflen>(split-spec)) result=u8_malloc(1+(split-spec));
+    strncpy(result,spec,split-spec); result[split-spec]='\0';
+    return result;}
+  else if (split=strrchr(spec,':')) {
+    *portp=u8_get_portno(split+1);
+    if (buflen<(split-spec)) {
+      buflen=(split-spec)+1; result=u8_malloc(buflen);}
+    strncpy(result,spec,split-spec);
+    if (result[split-spec-1]==':')
+      /* Accept a double colon before the port number, in case the address
+	 portion is an IPV6 numeric address. */
+      result[split-spec-1]='\0';
+    else result[split-spec]='\0';
+    return result;}
+  else return NULL;
+}
+
 U8_EXPORT u8_string u8_canonical_addr(u8_string spec)
 {
-  u8_byte *at=strchr(spec,'@');
-  if (at==spec) return u8_strdup(at+1);
-  else {
-    u8_string primary, result;
-    u8_byte _portspec[32], *portspec; int portno;
-    if (at-spec>31) 
-      portspec=u8_malloc(1+(at-spec));
-    else portspec=_portspec;
-    strncpy(portspec,spec,at-spec); portspec[at-spec]='\0';
-    portno=u8_get_portno(portspec);
-    primary=u8_host_primary(at+1);
-    result=u8_mkstring("%d@%s",portno,primary);
-    if (portspec != _portspec) u8_free(portspec);
-    u8_free(primary);
-    return result;}
+  u8_byte _hostname[128], *hostname=_hostname; int portno;
+  u8_string result;
+  hostname=u8_parse_addr(spec,&portno,hostname,128);
+  if (strchr(hostname,':'))
+    result=u8_mkstring("%s::%d",hostname,portno);
+  else result=u8_mkstring("%s:%d",hostname,portno);
+  if (hostname!=_hostname) u8_free(hostname);
+  return result;
 }
 
 U8_EXPORT u8_connection u8_connect_x(u8_string spec,u8_string *addrp)
 {
-  long socket_id; u8_byte *at=strchr(spec,'@');
-  if (at) {
+  u8_byte _hostname[128], *hostname=_hostname; int portno=-1;
+  long socket_id;
+  hostname=u8_parse_addr(spec,&portno,hostname,128);
+  if (portno<0) return (u8_connection)-1;
+  else if (!(hostname)) return (u8_connection)-1;
+  else if (portno) {
     struct sockaddr_in sockaddr;
     u8_byte portspec[64];
-    int portno, addr_len, family=AF_INET;
+    int addr_len, family=AF_INET;
     /* Lookup the host */
-    char **addrs=u8_lookup_host(at+1,&addr_len,&family), **scan=addrs;
-    if (addrs==NULL) return -1;
-    else if (at-spec>63) {
-      u8_free(addrs);
-      return u8_reterr(u8_BadPortSpec,"u8_connect",u8_strdup(spec));}
-    /* Interpret the port */
-    strncpy(portspec,spec,at-spec); portspec[at-spec]='\0';
-    portno=u8_get_portno(portspec);
+    char **addrs=u8_lookup_host(hostname,&addr_len,&family), **scan=addrs;
+    if (addrs==NULL) {
+      if (hostname!=_hostname) u8_free(hostname);
+      return -1;}
     /* Get a socket */
     if ((socket_id=socket(family,SOCK_STREAM,0))<0) {
       u8_graberr(-1,"u8_connect:socket",u8_strdup(spec));
       u8_free(addrs);
-      return -1;}
+      if (hostname!=_hostname) u8_free(hostname);
+      return (u8_connection)-1;}
 #if 0
     if (timeout>0) {
       struct timeval tv;
@@ -404,31 +432,36 @@ U8_EXPORT u8_connection u8_connect_x(u8_string spec,u8_string *addrp)
 	if (*scan==NULL) {
 	  close(socket_id);
 	  u8_free(addrs);
+	  if (hostname!=_hostname) u8_free(hostname);
 	  u8_graberr(-1,"u8_connect:connect",u8_strdup(spec));
-	  return -1;}
+	  return (u8_connection)-1;}
 	else errno=0; /* Try the next address */
       else {
 	if (addrp) *addrp=u8_sockaddr_string((struct sockaddr *)&sockaddr);
+	if (hostname!=_hostname) u8_free(hostname);
 	u8_free(addrs);
-	return socket_id;}}
+	return (u8_connection)socket_id;}}
     u8_free(addrs);
-    return -1;}
+    if (hostname!=_hostname) u8_free(hostname);
+    return (u8_connection)-1;}
   else {
 #if HAVE_SYS_UN_H
     struct sockaddr_un sockaddr;
     if ((socket_id=socket(PF_LOCAL,SOCK_STREAM,0))<0) {
       u8_graberr(-1,"u8_connect:socket",u8_strdup(spec));
+      if (hostname!=_hostname) u8_free(hostname);
       return -1;}
     sockaddr.sun_family=AF_UNIX;
-    strcpy(sockaddr.sun_path,spec);
+    strcpy(sockaddr.sun_path,hostname);
     if (connect(socket_id,saddr(sockaddr),sizeof(struct sockaddr_un))<0) {
       close(socket_id);
       u8_graberr(-1,"u8_connect:connect",u8_strdup(spec));
-      return -1;}
-    else return socket_id;
+      if (hostname!=_hostname) u8_free(hostname);
+      return (u8_connection)-1;}
+    else return (u8_connection)socket_id;
 #else
-  u8_seterr(NoFileSockets,"u8_connect",NULL);
-  return -1;
+    u8_seterr(NoFileSockets,"u8_connect",NULL);
+    return (u8_connection)-1;
 #endif
   }
 }

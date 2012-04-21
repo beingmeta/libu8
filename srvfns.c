@@ -475,20 +475,20 @@ static struct U8_SERVER_INFO *find_server
 static int add_server_from_spec(struct U8_SERVER *server,u8_string spec)
 {
   if ((strchr(spec,'/')) ||
-      ((strchr(spec,'@')==NULL) && (strchr(spec,'.'))))
+      ((strchr(spec,'@')==NULL) &&
+       (strchr(spec,':')==NULL) &&
+       (strchr(spec,'.'))))
     return u8_add_server(server,spec,-1);
+  else if (((strchr(spec,'@'))==NULL)&&((strchr(spec,':'))==NULL)) {
+    /* Spec is just a port */
+    int portno=u8_get_portno(spec);
+    return u8_add_server(server,NULL,u8_get_portno(spec));}
   else {
-    u8_byte *at=strchr(spec,'@');
-    u8_byte portspec[64]; int portno;
-    if (at==NULL)
-      return u8_add_server(server,NULL,u8_get_portno(spec));
-    else if (at-spec>63)
+    int portno=-1;
+    u8_byte _hostname[128], *hostname=u8_parse_addr(spec,&portno,_hostname,128);
+    if ((!(hostname))||(portno<0))
       return u8_reterr(u8_BadPortSpec,"add_server_from_spec",u8_strdup(spec));
-    strncpy(portspec,spec,at-spec); portspec[at-spec]='\0';
-    portno=u8_get_portno(portspec);
-    if (at[1]=='\0')
-      return u8_add_server(server,NULL,portno);
-    else return u8_add_server(server,at+1,portno);}
+    return u8_add_server(server,hostname,portno);}
 }
 
 U8_EXPORT
