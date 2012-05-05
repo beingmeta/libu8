@@ -24,6 +24,8 @@ static char versionid[] MAYBE_UNUSED=
 
 #include <ctype.h>
 
+static u8_condition BadEntityRef="bad entity reference";
+
 const struct U8_CHARINFO_TABLE *u8_extra_charinfo=NULL;
 
 static unsigned char basic_charinfo[]={
@@ -307,10 +309,13 @@ U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_byte **endp)
   u8_byte *end=*endp, *semi=entity_end(entity);
   if (semi==NULL) return -1;
   else if (*semi=='\0') {
+    u8_seterr(BadEntityRef,"u8_parse_entity",u8_strdup(entity));
     *endp=semi; return -1;}
   else if ((end) && (semi>end)) {
+    u8_seterr(BadEntityRef,"u8_parse_entity",u8_strdup(entity));
     *endp=NULL; return -1;}
   else if ((semi-entity)>15) {
+    u8_seterr(BadEntityRef,"u8_parse_entity",u8_strdup(entity));
     *endp=NULL; return -1;}
   if (*entity=='#') {
     u8_byte *start; int base;
@@ -324,6 +329,9 @@ U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_byte **endp)
     codepoint=u8_entity2code(buf);}
   if (codepoint>0) {
     *endp=semi+1; return codepoint;}
-  else {*endp=NULL; return -1;}
+  else {
+    *endp=NULL;
+    u8_seterr(BadEntityRef,"u8_parse_entity",u8_strdup(buf));
+    return -1;}
 }
 

@@ -358,8 +358,8 @@ int u8_get_entity(struct U8_INPUT *f)
     u8_byte *start=f->u8_inptr, *end=NULL;
     int code=u8_parse_entity(start,&end);
     if ((code<0) && (end) && (f->u8_fillfn)) {
-      /* If end was set, that meant it got to the end,
-	 so we call the u8_fillfn and try again. */
+      /* If code<0 and end was set, that meant it got started but
+	 didn't finish, so we call the u8_fillfn and try again. */
       f->u8_fillfn(f);
       code=u8_parse_entity(start,&end);}
     else {}
