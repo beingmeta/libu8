@@ -89,6 +89,25 @@ U8_EXPORT ssize_t u8_file_size(u8_string filename);
 **/
 U8_EXPORT u8_string u8_file_owner(u8_string filename);
 
+/* Making directories */
+
+/** Makes a directory with a particular mode
+    This handles conversion to the local character set.
+    @param a utf-8 pathname
+    @returns int: 0 if the directory already existed, 1
+      if it was created, and -1 on error
+ **/
+U8_EXPORT int u8_mkdir(u8_string dirname,mode_t mode);
+
+/** Makes all the containg directories for a pathname
+    This handles conversion to the local character set.
+    @param a utf-8 pathname
+    @returns int: -1 on error or the number of directories
+      actually created
+ **/
+U8_EXPORT int u8_mkdirs(u8_string pathname,mode_t mode);
+
+
 /* Searching for files */
 
 /** Finds a file meeting certain criteria on a complex search path.

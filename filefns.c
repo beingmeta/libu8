@@ -323,6 +323,44 @@ U8_EXPORT int u8_linkfile(u8_string from,u8_string to)
 }
 #endif
 
+/* Making directories */
+
+U8_EXPORT int u8_mkdir(u8_string name,mode_t mode)
+{
+  if (u8_directoryp(name)) return 0;
+  else {
+    const char *localized=u8_localpath(name);
+    int retval=mkdir(localized,mode);
+    u8_free((void *)localized);
+    if (retval<0) return retval; else return 1;}
+}
+
+static int mkdirs(u8_string dirname,mode_t mode)
+{
+  if ((dirname[0]=='\0')||
+      ((dirname[0]=='/')&&(dirname[1]=='\0')))
+    return 0;
+  else if (u8_directoryp(dirname)) return 0;
+  else {
+    u8_string parent=u8_dirname(dirname);
+    int made=mkdirs(parent,mode), retval;
+    if (made<0) return made;
+    else retval=u8_mkdir(dirname,mode);
+    if (retval<0) return retval;
+    else return made+retval;}
+}
+
+U8_EXPORT int u8_mkdirs(u8_string arg,mode_t mode)
+{
+  int len=strlen(arg);
+  u8_string dirname=
+    ((arg[len-1]=='/')?(u8_strdup(arg)):
+     (u8_dirname(arg)));
+  int retval=mkdirs(dirname,mode);
+  u8_free(dirname);
+  return retval;
+}
+
 /* Scanning directories */
 
 #define JUST_FILES 1
