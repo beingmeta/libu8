@@ -366,7 +366,7 @@ U8_EXPORT u8_string u8_parse_addr
     if (buflen>(split-spec)) result=u8_malloc(1+(split-spec));
     strncpy(result,spec,split-spec); result[split-spec]='\0';
     return result;}
-  else if (split=strrchr(spec,':')) {
+  else if ((split=strrchr(spec,':'))) {
     *portp=u8_get_portno(split+1);
     if (buflen<(split-spec)) {
       buflen=(split-spec)+1; result=u8_malloc(buflen);}
