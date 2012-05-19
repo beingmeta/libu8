@@ -361,6 +361,17 @@ U8_EXPORT int u8_mkdirs(u8_string arg,mode_t mode)
   return retval;
 }
 
+U8_EXPORT int u8_rmdir(u8_string arg)
+{
+  if (u8_directoryp(arg)) {
+    const char *localized=u8_localpath(arg);
+    int retval=rmdir(localized);
+    if (arg!=localized) u8_free(localized);
+    if (retval<0) return retval;
+    else return 1;}
+  else return 0;
+}
+
 /* Scanning directories */
 
 #define JUST_FILES 1

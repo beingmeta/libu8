@@ -107,6 +107,15 @@ U8_EXPORT int u8_mkdir(u8_string dirname,mode_t mode);
  **/
 U8_EXPORT int u8_mkdirs(u8_string pathname,mode_t mode);
 
+/** Removes a directory, which must be empty
+    This handles conversion to the local character set and uses
+    the rmdir() system call.
+    @param a utf-8 pathname
+    @returns int: 1 if the directory actually existed, 0
+      if it didn't, and -1 on error
+ **/
+U8_EXPORT int u8_rmdir(u8_string dirname);
+
 
 /* Searching for files */
 
