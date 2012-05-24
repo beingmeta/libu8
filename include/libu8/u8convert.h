@@ -55,6 +55,11 @@ struct U8_TEXT_ENCODING {
   struct U8_TEXT_ENCODING *next;};
 typedef struct U8_TEXT_ENCODING *u8_encoding;
 
+U8_EXPORT u8_encoding utf8_encoding;
+U8_EXPORT u8_encoding ascii_encoding;
+U8_EXPORT u8_encoding latin0_encoding;
+U8_EXPORT u8_encoding latin1_encoding;
+
 /** Defines a new text encoding.
        Encodings are specified by either a mapping vector or conversion
        functions.  If an encoding already exists with the particular
