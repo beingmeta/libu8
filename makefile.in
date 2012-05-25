@@ -76,30 +76,30 @@ dbginstall:
 	make XCFLAGS="-O0" all
 	sudo make install
 
-
 %.o: %.c
-	$(CC) $(CFLAGS) -o $@ -c $<
+	@$(CC) $(CFLAGS) -o $@ -c $<
+	@echo CC $@ $<
 tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a \
          lib/libu8stdio.a lib/libu8core.a
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+	@echo CC_STATIC_EXE $@ $<
 tests/dynamic/%: tests/%.c
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -Llib -lu8 -lu8io $(LIBS)
+	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -Llib -lu8 -lu8io $(LIBS)
+	@echo CC_DYNAMIC_EXE $@ $<
 
 lib/%@suffix@.a:
-	make lib
-	$(MKSTATIC) $@ $^
+	@$(MKSTATIC) $@ $^
+	@echo MKSTATIC $@
 lib/%@suffix@.so.@U8VERSION@:
-	make lib
-	$(MKSO) -Wl,-soname=$(@F) -Llib -o $@ $^ -lu8 $(LIBS)
+	@$(MKSO) -Wl,-soname=$(@F) -Llib -o $@ $^ -lu8 $(LIBS)
+	@echo MKSO $@
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
-	make lib
-	ln -sf $(<F) $@
+	@ln -sf $(<F) $@
 lib/%@suffix@.@U8VERSION@.dylib:
-	make lib
-	$(MACLIBTOOL) -install_name $(@F) -o $@ $^
+	@$(MACLIBTOOL) -install_name $(@F) -o $@ $^
+	@echo MACLIBTOOL $@
 lib/%@suffix@.dylib: lib/%@suffix@.@U8VERSION@.dylib
-	make lib
-	ln -sf $(<F) $@
+	@ln -sf $(<F) $@
 
 $(LIBINSTALLDIR)/%.a: lib/%.a
 	$(INSTALL) -d $(LIBINSTALLDIR)
@@ -132,9 +132,6 @@ libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a lib/libu8data.a \
 
 syslog_libs: lib/libu8syslog.a lib/libu8syslog.@shared_suffix@
 
-lib: 
-	if test ! -d lib; then mkdir lib; fi
-
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	if test -f etc/revision.h; \
 	then cp etc/revision.h include/libu8/revision.h; \
@@ -146,7 +143,8 @@ lib/libu8.@U8VERSION@.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
 # Avoid recursive reference
 lib/libu8@suffix@.so.@U8VERSION@:
-	$(MKSO) -Wl,-soname=$(@F) -Llib -o $@ $^ $(LIBS)
+	@$(MKSO) -Wl,-soname=$(@F) -Llib -o $@ $^ $(LIBS)
+	@echo MKSO $@
 
 lib/libu8core.a: $(LIBU8CORE_OBJECTS)
 lib/libu8core@suffix@.so.@U8VERSION@: $(LIBU8CORE_OBJECTS)
@@ -154,7 +152,8 @@ lib/libu8core.@U8VERSION@.dylib: $(LIBU8CORE_OBJECTS)
 lib/libu8core.dll: $(LIBU8CORE_OBJECTS)
 # Avoid recursive reference
 lib/libu8core@suffix@.so.@U8VERSION@:
-	$(MKSO) -Wl,-soname=$(@F) -o $@ $^
+	@$(MKSO) -Wl,-soname=$(@F) -o $@ $^
+	@echo MKSO $@
 
 lib/libu8fns.a: $(LIBU8FNS_OBJECTS)
 lib/libu8fns@suffix@.so.@U8VERSION@: $(LIBU8FNS_OBJECTS)
@@ -188,14 +187,18 @@ docs/man/man3/libu8.h.3:
 	doxygen docs/doxygen.cfg
 
 clean: 
-	$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* 
-	$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
-	$(CLEAN) docs/man/man3/* docs/html/* docs/rtf/* docs/latex/*
-	$(CLEAN) tests/getentity tests/latin1u8 tests/u8recode tests/u8xrecode
-	$(CLEAN) tests/echosrv
-	$(CLEAN) tests/dynamic/getentity tests/dynamic/latin1u8
-	$(CLEAN) tests/dynamic/u8recode tests/dynamic/u8xrecode
-	$(CLEAN) tests/dynamic/echosrv
+	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* 
+	@$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
+	@echo "Cleaned up libraries"
+	@$(CLEAN) docs/man/man3/* docs/html/* docs/rtf/* docs/latex/*
+	@echo "Cleaned up docs"
+	@$(CLEAN) tests/getentity tests/latin1u8 tests/u8recode tests/u8xrecode
+	@$(CLEAN) tests/echosrv
+	@echo "Cleaned up static test executables"
+	@$(CLEAN) tests/dynamic/getentity tests/dynamic/latin1u8
+	@$(CLEAN) tests/dynamic/u8recode tests/dynamic/u8xrecode
+	@$(CLEAN) tests/dynamic/echosrv
+	@echo "Cleaned up dynamic test executables"
 
 tidy: 
 	$(CLEAN) *~ tests/*~ include/libu8/*~
