@@ -160,12 +160,27 @@ U8_EXPORT u8_string u8_code2entity(int code);
     It parses an entity name, returning the
      corresponding code and storing the end of the entity (after the
      trailing semicolon (';')) in @a endp.  If @a endp is NULL,
-     the end result is not stored.
+     the end result is not stored.  If the string does not point to
+     a valid entity reference, -1 is returned.
     @param entity a pointer into a UTF-8 string
     @param endp a pointer to a location to store the end of the entity
     @returns a unicode code point
 **/
 U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_byte **endp);
+
+/** Parses a unicode entity name from a string, recording the endpoint.
+    This version sets an error when an entity cannot be processed.
+    This is handed a pointer to a UTF-8 string (@a entity) just
+      after the entity escape character ampersand ('&').
+    It parses an entity name, returning the
+     corresponding code and storing the end of the entity (after the
+     trailing semicolon (';')) in @a endp.  If @a endp is NULL,
+     the end result is not stored.
+    @param entity a pointer into a UTF-8 string
+    @param endp a pointer to a location to store the end of the entity
+    @returns a unicode code point
+**/
+U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_byte **endp);
 
 /** Sets the character information for a particular code point.
     @param n a Unicode code point

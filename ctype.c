@@ -308,6 +308,30 @@ U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_byte **endp)
   u8_byte buf[16];
   u8_byte *end=*endp, *semi=entity_end(entity);
   if (semi==NULL) return -1;
+  else if (*semi=='\0') {*endp=semi; return -1;}
+  else if ((end) && (semi>end)) {*endp=NULL; return -1;}
+  else if ((semi-entity)>15) {*endp=NULL; return -1;}
+  if (*entity=='#') {
+    u8_byte *start; int base;
+    if (entity[1]=='x') {
+      start=entity+2; base=16;}
+    else {start=entity+1; base=10;}
+    strncpy(buf,start,semi-start); buf[semi-start]='\0';
+    codepoint=strtol(buf,NULL,base);}
+  else {
+    strncpy(buf,entity,semi-entity); buf[semi-entity]='\0';
+    codepoint=u8_entity2code(buf);}
+  if (codepoint>0) {
+    *endp=semi+1; return codepoint;}
+  else {*endp=NULL; return -1;}
+}
+
+U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_byte **endp)
+{
+  int codepoint;
+  u8_byte buf[16];
+  u8_byte *end=*endp, *semi=entity_end(entity);
+  if (semi==NULL) return -1;
   else if (*semi=='\0') {
     u8_seterr(BadEntityRef,"u8_parse_entity",u8_strdup(entity));
     *endp=semi; return -1;}
