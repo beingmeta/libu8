@@ -341,13 +341,14 @@ static int mkdirs(u8_string dirname,mode_t mode)
       ((dirname[0]=='/')&&(dirname[1]=='\0')))
     return 0;
   else if (u8_directoryp(dirname)) return 0;
-  else {
+  else if (strchr(dirname,'/')) {
     u8_string parent=u8_dirname(dirname);
     int made=mkdirs(parent,mode), retval;
     if (made<0) return made;
     else retval=u8_mkdir(dirname,mode);
     if (retval<0) return retval;
     else return made+retval;}
+  else return u8_mkdir(dirname,mode);
 }
 
 U8_EXPORT int u8_mkdirs(u8_string arg,mode_t mode)
