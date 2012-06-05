@@ -601,7 +601,7 @@ static int server_step(struct U8_SERVER *server)
   timeout=((server->n_busy) ? (&_timeout) : (NULL));
   u8_unlock_mutex(&(server->lock));
   /* Wait for activity on one of your open sockets */
-  while ((retval=server_wait(&listening,max_socket,&_timeout)) == 0) {
+  while ((retval=server_wait(&listening,max_socket,timeout)) == 0) {
     if (retval<0) return retval;
     u8_lock_mutex(&(server->lock));
     listening=server->listening;
