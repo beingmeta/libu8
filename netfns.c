@@ -349,9 +349,9 @@ U8_EXPORT char **u8_lookup_host
 U8_EXPORT u8_string u8_parse_addr
     (u8_string spec,int *portp,u8_byte *result,ssize_t buflen)
 {
-  u8_byte *split=strchr(spec,'@');
+  u8_byte *split=strchr(spec,'@'); int len=strlen(spec);
   if ((result==NULL)||(buflen<0)) {
-    buflen=strlen(spec); result=u8_malloc(buflen); }
+    buflen=len; result=u8_malloc(buflen); }
   if (split==spec) {
     *portp=0; strcpy(result,spec+1);
     return result;}
@@ -363,10 +363,15 @@ U8_EXPORT u8_string u8_parse_addr
     strncpy(portspec,spec,split-spec); portspec[split-spec]='\0';
     *portp=u8_get_portno(portspec);
     if (portspec!=_portspec) u8_free(portspec);
-    if (buflen>(split-spec)) result=u8_malloc(1+(split-spec));
-    strncpy(result,spec,split-spec); result[split-spec]='\0';
+    if (buflen>(split-spec)) result=u8_malloc(len-(split-spec));
+    strncpy(result,split+1,len-(split-spec)); result[len-(split-spec)]='\0';
     return result;}
   else if ((split=strrchr(spec,':'))) {
+    /* We search backwards for the colon because we want to handle
+       IPv6 addresses with double colons separating octets (?) */
+    if ((split[1]=='\0')||((split>spec)&&(split[-1]==':'))) {
+      *portp=0; strcpy(result,spec+1);
+      return result;}
     *portp=u8_get_portno(split+1);
     if (buflen<(split-spec)) {
       buflen=(split-spec)+1; result=u8_malloc(buflen);}
