@@ -219,14 +219,15 @@ static u8_client pop_task(struct U8_SERVER *server)
   u8_lock_mutex(&(server->lock));
   while ((server->n_tasks == 0) && ((server->flags&U8_SERVER_CLOSED)==0)) 
     u8_condvar_wait(&(server->empty),&(server->lock));
-  if (server->n_tasks) {
+  if (server->flags&U8_SERVER_CLOSED) {}
+  else if (server->n_tasks) {
     task=server->queue[0];
     memmove(&(server->queue[0]),&(server->queue[1]),
 	    sizeof(void *)*(server->n_tasks-1));
     server->n_tasks--;}
-  server->n_trans++;
-  curtime=u8_microtime();
+  else {}
   if (task) {
+    server->n_trans++; curtime=u8_microtime();
     server->waitsum=server->waitsum+(curtime-task->queued);
     server->waitcount++;
     task->started=curtime;}
@@ -334,38 +335,55 @@ int u8_server_init(struct U8_SERVER *server,
 U8_EXPORT
 int u8_server_shutdown(struct U8_SERVER *server)
 {
-  int i=0, max_socket;
+  int i=0, max_socket, n_servers=server->n_servers;
+  int n_errs=0, idle_clients=0;
   u8_lock_mutex(&server->lock);
   max_socket=server->socket_max;
   if (server->flags&U8_SERVER_CLOSED) return 0;
   server->flags=server->flags|U8_SERVER_CLOSED;
   /* Close all the server sockets */
-  while (i<server->n_servers) {
+  u8_log(LOG_WARN,ServerShutdown,"Closed %d listening socket(s)",n_servers);
+  while (i<n_servers) {
     struct U8_SERVER_INFO *info=&(server->server_info[i++]);
-    int sock=info->socket;
+    int sock=info->socket, retval;
     FD_CLR(sock,&(server->servers));
     FD_CLR(sock,&(server->listening));
-    close(sock);
-    if (server->flags&U8_SERVER_LOG_LISTEN)
-      u8_log(LOG_INFO,ServerShutdown,"Closed socket %d listening at %s",
+    retval=close(sock);
+    if (retval<0) {
+      u8_log(LOG_WARN,ServerShutdown,
+	     "Error (%s) closing socket %d listening at %s",
+	     strerror(errno),sock,info->idstring);
+      n_errs++;}
+    else if (server->flags&U8_SERVER_LOG_LISTEN)
+      u8_log(LOG_NOTICE,ServerShutdown,"Closed socket %d listening at %s",
 	     sock,info->idstring);
     if (info->idstring) u8_free(info->idstring);
     if (info->addr) u8_free(info->addr);
     info->idstring=NULL; info->addr=NULL; info->socket=-1;}
+  if (n_errs)
+    u8_log(LOG_WARN,ServerShutdown,
+	   "Closed %d listening socket(s) with %d errors",
+	   n_servers,n_errs);
+  else u8_log(LOG_NOTICE,ServerShutdown,"Closed %d listening socket(s)",
+	      n_servers);
   if (server->server_info) {
     u8_free(server->server_info);
     server->server_info=NULL;}
   /* Close all the idle client sockets and mark all the busy clients closed */
   i=0; while (i<max_socket) {
-    if (FD_ISSET(i,&(server->clients)))
-      client_close(server->socketmap[i]);
+    if (FD_ISSET(i,&(server->clients))) {
+      client_close(server->socketmap[i]); idle_clients++;}
     i++;}
+  u8_log(LOG_NOTICE,ServerShutdown,"Closed %d idle client socket(s)",
+	 idle_clients);
 #if U8_THREADS_ENABLED
   /* The busy clients will decrement server->n_busy when they're finished.
      We wait for this to happen, sleeping for one second intervals. */
   u8_condvar_broadcast(&server->empty);
   u8_unlock_mutex(&server->lock); sleep(1);
   if (server->n_busy) {
+    /* Wait for the busy connections to finish.
+       Should this wait around somehow? */
     u8_lock_mutex(&server->lock); 
     while (server->n_busy) {
       u8_unlock_mutex(&server->lock);
