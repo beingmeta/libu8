@@ -21,8 +21,7 @@
 
 #ifndef LIBU8_FILEIO_H
 #define LIBU8_FILEIO_H 1
-#define LIBU8_FILEIO_H_VERSION \
-        "$Id$"
+#define LIBU8_FILEIO_H_VERSION __FILE__
 
 #include <stdio.h>
 #include <time.h>

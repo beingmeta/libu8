@@ -23,8 +23,7 @@
 
 #ifndef LIBU8_U8STREAMIO_H
 #define LIBU8_U8STREAMIO_H 1
-#define LIBU8_U8STREAMIO_H_VERSION \
-        "$Id$"
+#define LIBU8_U8STREAMIO_H_VERSION __FILE__
 
 /* String input */
 

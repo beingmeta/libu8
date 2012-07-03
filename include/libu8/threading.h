@@ -15,8 +15,7 @@
 
 #ifndef LIBU8_THREADING_H
 #define LIBU8_THREADING_H 1
-#define LIBU8_THREADING_H_VERSION \
-        "$Id$"
+#define LIBU8_THREADING_H_VERSION __FILE__
 
 /* Portable threading */
 

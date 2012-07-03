@@ -21,8 +21,9 @@ typedef unsigned int u8uint;
 #define WORDS_BIGENDIAN 0
 #endif
 
-static char versionid[] MAYBE_UNUSED=
-  "$Id$";
+#ifndef _FILEINFO
+#define _FILEINFO __FILE__
+#endif
 
 #include "libu8/u8streamio.h"
 #include "libu8/u8printf.h"

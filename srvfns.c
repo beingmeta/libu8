@@ -15,8 +15,9 @@
 
 #include "libu8/libu8.h"
 
-static char versionid[] MAYBE_UNUSED=
-  "$Id$";
+#ifndef _FILEINFO
+#define _FILEINFO __FILE__
+#endif
 
 #ifndef MAX_BACKLOG
 #define MAX_BACKLOG 16

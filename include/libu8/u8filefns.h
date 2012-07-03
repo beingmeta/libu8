@@ -15,8 +15,7 @@
 
 #ifndef LIBU8_U8FILEFNS_H
 #define LIBU8_U8FILEFNS_H 1
-#define LIBU8_U8FILEFNS_H_VERSION \
-        "$Id$"
+#define LIBU8_U8FILEFNS_H_VERSION __FILE__
 
 /** \file u8filefns.h
     These functions access the metadata for local files.

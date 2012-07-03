@@ -24,8 +24,9 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 
-static char versionid[] MAYBE_UNUSED=
-  "$Id: digestfns.c 11 2009-05-08 20:46:29Z haase $";
+#ifndef _FILEINFO
+#define _FILEINFO __FILE__
+#endif
 
 u8_condition u8_BadCryptoKey=_("bad crypto key value");
 u8_condition u8_BadCryptoInit=_("bad crypto init value");

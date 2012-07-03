@@ -17,8 +17,9 @@
 
 #include "libu8/libu8.h"
 
-static char versionid[] MAYBE_UNUSED=
-  "$Id$";
+#ifndef _FILEINFO
+#define _FILEINFO __FILE__
+#endif
 
 #include "libu8/u8streamio.h"
 #include "libu8/u8ctype.h"

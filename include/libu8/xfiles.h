@@ -15,8 +15,7 @@
 
 #ifndef LIBU8_XFILES_H
 #define LIBU8_XFILES_H 1
-#define LIBU8_XFILES_H_VERSION \
-        "$Id$"
+#define LIBU8_XFILES_H_VERSION __FILE__
 
 U8_EXPORT u8_condition u8_nopos, u8_nowrite, u8_no_read;
 

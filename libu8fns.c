@@ -15,8 +15,9 @@
 
 #include "libu8/libu8.h"
 
-static char versionid[] MAYBE_UNUSED=
-  "$Id$";
+#ifndef _FILEINFO
+#define _FILEINFO __FILE__
+#endif
 
 U8_EXPORT void u8_init_timefns_c(void);
 U8_EXPORT void u8_init_filefns_c(void);

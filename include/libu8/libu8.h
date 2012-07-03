@@ -15,8 +15,7 @@
 
 #ifndef LIBU8_LIBU8_H
 #define LIBU8_LIBU8_H 1
-#define LIBU8_LIBU8_H_VERSION \
-        "$Id$"
+#define LIBU8_LIBU8_H_VERSION __FILE__
 
 /** \file libu8.h
     These functions provide miscellaneous functionality.

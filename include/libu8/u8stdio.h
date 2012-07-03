@@ -15,8 +15,7 @@
 
 #ifndef LIBU8_STDIO_H
 #define LIBU8_STDIO_H 1
-#define LIBU8_STDIO_H_VERSION \
-        "$Id$"
+#define LIBU8_STDIO_H_VERSION __FILE__
 
 #include <stdio.h>
 #include <stdarg.h>

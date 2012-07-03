@@ -15,8 +15,7 @@
 
 #ifndef LIBU8_LIBU8IO_H
 #define LIBU8_LIBU8IO_H 1
-#define LIBU8_LIBU8IO_H_VERSION \
-        "$Id$"
+#define LIBU8_LIBU8IO_H_VERSION __FILE__
 
 #include "libu8/libu8.h"
 #include "libu8/u8streamio.h"

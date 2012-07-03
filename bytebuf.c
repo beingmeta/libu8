@@ -18,8 +18,9 @@
 #include "libu8/libu8.h"
 #include "libu8/u8bytebuf.h"
 
-static char versionid[] MAYBE_UNUSED=
-  "$Id: stringfns.c 21 2009-10-19 14:58:16Z haase $";
+#ifndef _FILEINFO
+#define _FILEINFO __FILE__
+#endif
 
 /* Byte buffers */
 

@@ -23,8 +23,7 @@
 
 #ifndef LIBU8_U8PATHFNS_H
 #define LIBU8_U8PATHFNS_H 1
-#define LIBU8_U8PATHFNS_H_VERSION \
-        "$Id$"
+#define LIBU8_U8PATHFNS_H_VERSION __FILE__
 
 /** Gets the current working directory.
     Converts its result from the local encoding to utf-8

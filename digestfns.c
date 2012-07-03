@@ -2,8 +2,9 @@
 #include "libu8/u8crypto.h"
 #include <string.h>
 
-static char versionid[] MAYBE_UNUSED=
-  "$Id$";
+#ifndef _FILEINFO
+#define _FILEINFO __FILE__
+#endif
 
 #if HAVE_OPENSSL_HMAC_H
 #include <openssl/hmac.h>

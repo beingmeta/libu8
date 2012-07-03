@@ -23,8 +23,7 @@
 
 #ifndef LIBU8_RUSAGE_H
 #define LIBU8_RUSAGE_H 1
-#define LIBU8_RUSAGE_H_VERSION \
-        "$Id$"
+#define LIBU8_RUSAGE_H_VERSION __FILE__
 
 #if (!(HAVE_GETRUSAGE))
 struct rusage { int noval;};

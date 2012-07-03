@@ -22,8 +22,7 @@
 
 #ifndef LIBU8_CTYPE_H
 #define LIBU8_CTYPE_H 1
-#define LIBU8_CTYPE_H_VERSION \
-        "$Id$"
+#define LIBU8_CTYPE_H_VERSION __FILE__
 
 #define U8_LOWER_LETTER 1
 #define U8_UPPER_LETTER 2
