@@ -419,6 +419,24 @@ static void threadexit_atexit()
   u8_threadexit();
 }
 
+/* Recording source file information */
+
+static struct U8_SOURCE_FILE_RECORD *source_files=NULL;
+
+U8_EXPORT void u8_register_source_file(u8_string s)
+{
+  struct U8_SOURCE_FILE_RECORD *rec=
+    u8_alloc(struct U8_SOURCE_FILE_RECORD);
+  rec->filename=s; rec->next=source_files;
+  source_files=rec;
+}
+U8_EXPORT void u8_for_source_files(void (*f)(u8_string s,void *),void *data)
+{
+  struct U8_SOURCE_FILE_RECORD *scan=source_files;
+  while (scan) {
+    f(scan->filename,data); scan=scan->next;}
+}
+
 /* Initialization */
 
 U8_EXPORT int u8_initialize()

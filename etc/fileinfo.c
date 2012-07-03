@@ -252,7 +252,14 @@ int main(int argc,char *argv[])
     memset(&modtime_buf,0,sizeof(struct tm));
     memset(digest,0,sizeof(digest));
     modtime=gmtime_r(&mtime,&modtime_buf);
+    if ((*filename=='.')&&(filename[1]=='/')) filename=filename+2;
     if (*filename=='/') {
+      int name_len=strlen(filename);
+      abspath=malloc(name_len+1);
+      strncpy(abspath,filename,name_len);
+      abspath[name_len]='\0';
+      abs_len=name_len;}
+    else if ((root)&&(strcmp(root,".")==0)) {
       int name_len=strlen(filename);
       abspath=malloc(name_len+1);
       strncpy(abspath,filename,name_len);

@@ -36,6 +36,8 @@ AC_SUBST(suffix)
 AC_SUBST(install_shared)
 AC_SUBST(syslog_target)
 AC_SUBST(archflags)
+AC_SUBST(definefileinfo)
+AC_SUBST(versionsh)
 AC_SUBST(I18N)
 AC_SUBST(INSTALLI18N)
 
@@ -164,10 +166,18 @@ fi
 
 AC_ARG_WITH(i18n,--with[out]-i18n built and install message catalogs,,with_i18n="yes")
 
-if test "x$doi18n" = "yes" && test "x$with_i18n" = "xyes"; then
+if test "x$doi18n" = "xyes" && test "x$with_i18n" = "xyes"; then
   I18N="i18n"
   INSTALLI18N="install-i18n"
 fi
+
+AC_ARG_WITH(fileinfo,--with[out]-fileinfo record fileinfo (SHA1 and mtime),,with_fileinfo="yes")
+if test "x$withfileinfo" = "xyes" ; then
+   definefileinfo="-D_FILEINFO=\"\\\"`./fileinfo ./$< .`\\\"\""
+   versionsh="include/libu8/versions.h"
+fi
+
+
 
 AC_ARG_WITH(tcmalloc,--with[out]-tcmalloc Use the Google malloc library,,with_tcmalloc="no")
 if test $with_tcmalloc = "yes"; then

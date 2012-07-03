@@ -452,6 +452,18 @@ U8_EXPORT void u8_init_syslog(void);
 
 #include "u8contour.h"
 
+/* Recording source files */
+
+/* File and module recording */
+
+typedef struct U8_SOURCE_FILE_RECORD {
+  u8_string filename;
+  struct U8_SOURCE_FILE_RECORD *next;} U8_SOURCE_FILE_RECORD;
+typedef struct U8_SOURCE_FILE_RECORD *u8_source_file_record;
+
+U8_EXPORT void u8_register_source_file(u8_string s);
+U8_EXPORT void u8_for_source_files(void (*f)(u8_string s,void *),void *data);
+
 #endif /* ndef LIBU8_LIBU8_H */
 
 

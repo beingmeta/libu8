@@ -77,7 +77,7 @@ dbginstall:
 	sudo make install
 
 %.o: %.c
-	@$(CC) $(CFLAGS) -o $@ -c $<
+	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo CC $@ $<
 tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a \
          lib/libu8stdio.a lib/libu8core.a
@@ -131,6 +131,9 @@ libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a lib/libu8data.a \
       lib/libu8stdio.@shared_suffix@ @syslog_target@
 
 syslog_libs: lib/libu8syslog.a lib/libu8syslog.@shared_suffix@
+
+./fileinfo: etc/fileinfo.c
+	$(CC) -o ./fileinfo etc/fileinfo.c
 
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	if test -f etc/revision.h; \
