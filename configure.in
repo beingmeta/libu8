@@ -177,8 +177,6 @@ if test "x$withfileinfo" = "xyes" ; then
    versionsh="include/libu8/versions.h"
 fi
 
-
-
 AC_ARG_WITH(tcmalloc,--with[out]-tcmalloc Use the Google malloc library,,with_tcmalloc="no")
 if test $with_tcmalloc = "yes"; then
   AC_CHECK_LIB(tcmalloc,malloc)
