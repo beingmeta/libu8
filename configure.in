@@ -20,6 +20,8 @@ syslog_target="syslog_libs"
 suffix=""
 have_constructor_attributes="yes"
 archflags=""
+definefileinfo=""
+versionsh=""
 
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADER(include/libu8/config.h)
@@ -171,10 +173,10 @@ if test "x$doi18n" = "xyes" && test "x$with_i18n" = "xyes"; then
   INSTALLI18N="install-i18n"
 fi
 
-AC_ARG_WITH(fileinfo,--with[out]-fileinfo record fileinfo (SHA1 and mtime),,with_fileinfo="yes")
-if test "x$withfileinfo" = "xyes" ; then
-   definefileinfo="-D_FILEINFO=\"\\\"`./fileinfo ./$< .`\\\"\""
-   versionsh="include/libu8/versions.h"
+AC_ARG_WITH(fileinfo,--with[out]-fileinfo record fileinfo,,with_fileinfo="yes")
+if test "x$with_fileinfo" = "xyes" ; then
+   definefileinfo="-D_FILEINFO=\"\\\"\`./fileinfo ./$< .\`\\\"\""
+   versionsh="include/framerd/versions.h"
 fi
 
 AC_ARG_WITH(tcmalloc,--with[out]-tcmalloc Use the Google malloc library,,with_tcmalloc="no")

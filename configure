@@ -663,6 +663,7 @@ install_shared
 syslog_target
 archflags
 definefileinfo
+versionsh
 I18N
 INSTALLI18N
 build
@@ -1292,7 +1293,7 @@ Optional Packages:
 --with-encodings-dir pathname
 --without-arch build with particular --arch flags
 --without-i18n built and install message catalogs
---without-fileinfo record fileinfo (SHA1 and mtime)
+--without-fileinfo record fileinfo
 --without-tcmalloc Use the Google malloc library
 --without-tls Force use of threadlocal storage
 
@@ -1854,6 +1855,8 @@ syslog_target="syslog_libs"
 suffix=""
 have_constructor_attributes="yes"
 archflags=""
+definefileinfo=""
+versionsh=""
 
 ac_aux_dir=
 for ac_dir in etc "$srcdir"/etc; do
@@ -1887,6 +1890,7 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 ac_config_headers="$ac_config_headers include/libu8/config.h"
+
 
 
 
@@ -9082,11 +9086,10 @@ else
   with_fileinfo="yes"
 fi
 
-if test "x$withfileinfo" = "xyes" ; then
-   definefileinfo="-D_FILEINFO=\"\\\"`./fileinfo ./$< .`\\\"\""
+if test "x$with_fileinfo" = "xyes" ; then
+   definefileinfo="-D_FILEINFO=\"\\\"\`./fileinfo ./$< .\`\\\"\""
+   versionsh="include/framerd/versions.h"
 fi
-
-
 
 
 # Check whether --with-tcmalloc was given.
@@ -11893,6 +11896,7 @@ install_shared!$install_shared$ac_delim
 syslog_target!$syslog_target$ac_delim
 archflags!$archflags$ac_delim
 definefileinfo!$definefileinfo$ac_delim
+versionsh!$versionsh$ac_delim
 I18N!$I18N$ac_delim
 INSTALLI18N!$INSTALLI18N$ac_delim
 build!$build$ac_delim
@@ -11931,7 +11935,7 @@ LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 85; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 86; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
