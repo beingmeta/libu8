@@ -55,7 +55,6 @@ U8_EXPORT void u8_init_printf_c(void);
 
 U8_EXPORT void u8_init_streamio_c(void);
 U8_EXPORT void u8_init_contour_c(void);
-U8_EXPORT void u8_init_logging_c(void);
 U8_EXPORT void u8_init_ctype_c(void);
 U8_EXPORT void u8_init_stringfns_c(void);
 U8_EXPORT void u8_init_bytebuf_c(void);
@@ -456,6 +455,8 @@ U8_EXPORT void u8_for_source_files(void (*f)(u8_string s,void *),void *data)
 
 /* Initialization */
 
+U8_EXPORT void u8_initialize_logging(void);
+
 U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
@@ -467,7 +468,7 @@ U8_EXPORT int u8_initialize()
 
   u8_init_streamio_c();
   u8_init_contour_c();
-  u8_init_logging_c();
+  u8_initialize_logging();
   u8_init_ctype_c();
   u8_init_stringfns_c();
   u8_init_bytebuf_c();

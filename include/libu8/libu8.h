@@ -443,10 +443,10 @@ U8_EXPORT u8_string u8_getenv(u8_string varname);
 **/
 U8_EXPORT double u8_elapsed_time(void);
 
-/** Initializes syslog
+/** Initializes logging
     @returns void
 **/ 
-U8_EXPORT void u8_init_syslog(void);
+U8_EXPORT void u8_initialize_logging(void);
 
 /* Contours */
 

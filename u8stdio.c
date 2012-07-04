@@ -36,7 +36,7 @@
 #endif
 
 U8_EXPORT void u8_check_stdio(void);
-U8_EXPORT void u8_init_syslog(void);
+U8_EXPORT void u8_initialize_logging(void);
 
 u8_condition stdio_error=_("STDIO error");
 
@@ -48,7 +48,7 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
   u8_string prefix=u8_message_prefix(buf,512);
 #if HAVE_SYSLOG
   if ((priority>=0) && (priority<=u8_syslog_loglevel)) {
-    if (u8_syslog_initialized==0) u8_init_syslog();
+    if (u8_logging_initialized==0) u8_initialize_logging();
     syslog(priority,"%s",msg);}
   else {}
 #endif
@@ -180,7 +180,7 @@ static void notice(u8_string msg)
   else fprintf(stdout,"[%s]\n",msg);
 #if HAVE_SYSLOG
   if (use_syslog>1) {
-    if (u8_syslog_initialized==0) u8_init_syslog();
+    if (u8_logging_initialized==0) u8_initialize_logging();
     syslog(LOG_NOTICE,msg);}
 #endif
   fflush(stdout);
@@ -192,7 +192,7 @@ static void warn(u8_string msg)
   u8_string prefix=u8_message_prefix(buf,512);
 #if HAVE_SYSLOG
   if (use_syslog>1) {
-    if (u8_syslog_initialized==0) u8_init_syslog();
+    if (u8_logging_initialized==0) u8_initialize_logging();
     syslog(LOG_WARNING,"%s",msg);}
   else {}
 #endif
@@ -298,7 +298,7 @@ U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 
 U8_EXPORT void u8_initialize_u8stdio()
 {
+  u8_register_source_file(_FILEINFO);
   u8_set_error_handler(raisefn);
   u8_set_logfn(stdio_logger);
-  u8_register_source_file(_FILEINFO);
 }

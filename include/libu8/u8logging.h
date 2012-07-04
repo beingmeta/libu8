@@ -52,7 +52,7 @@
 
 /* This is the overall log level and messages with with priorities
    above this should not produced output. */
-U8_EXPORT int u8_loglevel, u8_syslog_initialized;
+U8_EXPORT int u8_loglevel, u8_logging_initialized;
 #define U8_DEFAULT_LOGLEVEL LOG_NOTICE
 
 /* When logging to stdio, these dtermine which errors go to
@@ -74,7 +74,7 @@ U8_EXPORT u8_string u8_loglevels[];
 U8_EXPORT int u8_log_show_date, u8_log_show_elapsed;
 U8_EXPORT int u8_log_show_procinfo, u8_log_show_threadinfo;
 /* Whether or not syslog has been initialized. */
-U8_EXPORT int u8_syslog_initialized;
+U8_EXPORT int u8_logging_initialized;
 
 typedef int (*u8_logfn)(int loglevel,u8_condition condition,u8_string message);
 

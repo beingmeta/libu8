@@ -119,34 +119,6 @@ U8_EXPORT int u8_message(u8_string format_string,...)
   return retval;
 }
 
-/* Using syslog if it's there */
-
-#if HAVE_SYSLOG
-static u8_mutex syslog_init_lock;
-
-int u8_syslog_initialized=0;
-
-U8_EXPORT void u8_init_logging_c()
-{
-  u8_string app;
-  u8_lock_mutex(&syslog_init_lock);
-  if (u8_syslog_initialized) {
-    u8_unlock_mutex(&syslog_init_lock);
-    return;}
-  app=u8_appid();
-  openlog(app,LOG_PID|LOG_CONS|LOG_NDELAY|LOG_PERROR,LOG_DAEMON);
-  u8_syslog_initialized=1;
-  u8_unlock_mutex(&syslog_init_lock);
-  u8_register_source_file(_FILEINFO);
-}
-#else
-U8_EXPORT void u8_init_logging_c()
-{
-  u8_syslog_initialized=1;
-  u8_register_source_file(_FILEINFO);
-}
-#endif
-
 /* Figuring out the prefix for log messages */
 
 U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
@@ -189,6 +161,35 @@ U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
   else return NULL;
   return buf;
 }
+
+/* Using syslog if it's there */
+
+#if HAVE_SYSLOG
+static u8_mutex logging_init_lock;
+
+int u8_logging_initialized=0;
+
+U8_EXPORT void u8_initialize_logging()
+{
+  u8_string app;
+  u8_lock_mutex(&logging_init_lock);
+  if (u8_logging_initialized) {
+    u8_unlock_mutex(&logging_init_lock);
+    return;}
+  app=u8_appid();
+  openlog(app,LOG_PID|LOG_CONS|LOG_NDELAY|LOG_PERROR,LOG_DAEMON);
+  u8_logging_initialized=1;
+  u8_unlock_mutex(&logging_init_lock);
+  u8_register_source_file(_FILEINFO);
+}
+#else
+U8_EXPORT void u8_initialize_logging()
+{
+  if (u8_logging_initialized) return;
+  u8_logging_initialized=1;
+  u8_register_source_file(_FILEINFO);
+}
+#endif
 
 
 

@@ -31,7 +31,7 @@ U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
 {
   u8_byte buf[512];
   if (priority>u8_loglevel) return 0;
-  if (u8_syslog_initialized==0) u8_init_syslog();
+  if (u8_logging_initialized==0) u8_initialize_logging();
   u8_string prefix=u8_message_prefix(buf,512);
   if ((prefix) && (c))
     syslog(priority,"%s (%s) %s",prefix,c,message);
@@ -65,7 +65,7 @@ static void raisefn(u8_condition ex,u8_context cxt,u8_string details)
   else if (cxt)
     u8_printf(&out,"Aborting due to %m@%s",ex,cxt);
   else u8_printf(&out,"Aborting due to %m",ex);
-  if (u8_syslog_initialized==0) u8_init_syslog();
+  if (u8_logging_initialized==0) u8_initialize_logging();
   syslog(LOG_ALERT,"%s",out.u8_outbuf);
   exit(1);
 }
@@ -74,7 +74,7 @@ static void raisefn(u8_condition ex,u8_context cxt,u8_string details)
 static void message(u8_string msg)
 {
   u8_byte buf[512];
-  if (u8_syslog_initialized==0) u8_init_syslog();
+  if (u8_logging_initialized==0) u8_initialize_logging();
   u8_string prefix=u8_message_prefix(buf,512);
   if (prefix)
     syslog(LOG_INFO,"%s %s",prefix,msg);
@@ -84,7 +84,7 @@ static void message(u8_string msg)
 static void notice(u8_string msg)
 {
   u8_byte buf[512];
-  if (u8_syslog_initialized==0) u8_init_syslog();
+  if (u8_logging_initialized==0) u8_initialize_logging();
   u8_string prefix=u8_message_prefix(buf,512);
   if (prefix)
     syslog(LOG_NOTICE,"%s %s",prefix,msg);
@@ -94,7 +94,7 @@ static void notice(u8_string msg)
 static void warn(u8_string msg)
 {
   u8_byte buf[512];
-  if (u8_syslog_initialized==0) u8_init_syslog();
+  if (u8_logging_initialized==0) u8_initialize_logging();
   u8_string prefix=u8_message_prefix(buf,512);
   if (prefix)
     syslog(LOG_WARNING,"%s %s",prefix,msg);
@@ -104,7 +104,7 @@ static void warn(u8_string msg)
 
 /* Initialization functions */
 
-U8_EXPORT void u8_init_syslog()
+U8_EXPORT void u8_initialize_syslog()
 {
   u8_string app=u8_appid();
   if (app==NULL) app="daemon";
