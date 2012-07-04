@@ -481,3 +481,11 @@ U8_EXPORT u8_int8 u8_cityhash64(const unsigned char *s,size_t len)
 {
   return CityHash64(s,len);
 }
+
+/* Initialization function (just records file info) */
+
+U8_EXPORT void u8_init_cityhash_c()
+{
+  u8_register_source_file(_FILEINFO);
+}
+

@@ -118,3 +118,10 @@ U8_EXPORT void *u8_contour_realloc(u8_contour c,void *ptr,size_t new_size)
   /* Should this err or warn? */
   return u8_realloc(ptr,new_size);
 }
+
+/* Initialization function (just records source file info) */
+
+U8_EXPORT void u8_init_contour_c()
+{
+  u8_register_source_file(_FILEINFO);
+}

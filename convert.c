@@ -998,4 +998,7 @@ void u8_init_convert_c()
   latin1_encoding=u8_get_encoding("LATIN-1");
   latin0_encoding=u8_get_encoding("LATIN-0");
   default_encoding=u8_get_encoding("UTF-8");
+
+  u8_register_source_file(_FILEINFO);
+
 }

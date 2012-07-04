@@ -737,4 +737,5 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
 U8_EXPORT void u8_init_srvfns_c()
 {
   FD_ZERO(NULL_FDS);
+  u8_register_source_file(_FILEINFO);
 }

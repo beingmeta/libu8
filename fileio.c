@@ -224,5 +224,6 @@ U8_EXPORT void u8_init_fileio_c()
 #if U8_THREADS_ENABLED
   u8_init_mutex(&subscription_lock);
 #endif
+  u8_register_source_file(_FILEINFO);
 }
 

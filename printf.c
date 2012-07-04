@@ -219,4 +219,5 @@ U8_EXPORT void u8_init_printf_c()
 #if ((U8_THREADS_ENABLED) && (HAVE_GETTEXT))
   u8_init_mutex(&textdomains_lock);
 #endif
+  u8_register_source_file(_FILEINFO);
 }

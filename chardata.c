@@ -8223,4 +8223,5 @@ static short big_chardata[]={
 U8_EXPORT void u8_init_chardata_c()
 {
   u8_set_charinfo(0x10000,big_charinfo,big_chardata);
+  u8_register_source_file(_FILEINFO);
 }

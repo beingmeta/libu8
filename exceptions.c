@@ -334,7 +334,7 @@ U8_EXPORT void u8_graberr(int num,u8_string cxt,u8_string details)
 
 /* Initialization */
 
-U8_EXPORT void u8_init_errors_c()
+U8_EXPORT void u8_init_exceptions_c()
 {
   int i=0; while (i<U8_ERRNO_MAP_SIZE) errno_map[i++]=NULL;
 
@@ -345,5 +345,7 @@ U8_EXPORT void u8_init_errors_c()
 #if ((U8_THREADS_ENABLED) && (!(HAVE_STRERROR_R)))
   u8_init_mutex(&strerror_lock);
 #endif
+
+  u8_register_source_file(_FILEINFO);
 }
 

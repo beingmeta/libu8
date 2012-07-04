@@ -360,3 +360,9 @@ U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_byte **endp)
     return -1;}
 }
 
+/* Initialization function (just records source file info) */
+
+U8_EXPORT void u8_init_ctype_c()
+{
+  u8_register_source_file(_FILEINFO);
+}

@@ -126,7 +126,7 @@ static u8_mutex syslog_init_lock;
 
 int u8_syslog_initialized=0;
 
-U8_EXPORT void u8_init_syslog()
+U8_EXPORT void u8_init_logging_c()
 {
   u8_string app;
   u8_lock_mutex(&syslog_init_lock);
@@ -137,11 +137,13 @@ U8_EXPORT void u8_init_syslog()
   openlog(app,LOG_PID|LOG_CONS|LOG_NDELAY|LOG_PERROR,LOG_DAEMON);
   u8_syslog_initialized=1;
   u8_unlock_mutex(&syslog_init_lock);
+  u8_register_source_file(_FILEINFO);
 }
 #else
-U8_EXPORT void u8_init_syslog()
+U8_EXPORT void u8_init_logging_c()
 {
   u8_syslog_initialized=1;
+  u8_register_source_file(_FILEINFO);
 }
 #endif
 

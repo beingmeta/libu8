@@ -142,3 +142,10 @@ U8_EXPORT u8_string u8_rusage_string(struct rusage *r)
   if (r->ru_nivcsw) u8_printf(&out,",ivcsw=%ld",r->ru_nivcsw);
   return out.u8_outbuf;
 }
+
+/* Initialization function (just records source file info) */
+
+U8_EXPORT void u8_init_rusage_c()
+{
+  u8_register_source_file(_FILEINFO);
+}

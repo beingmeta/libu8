@@ -83,3 +83,8 @@ U8_EXPORT u8_string u8_filestring(u8_string filename,u8_string encname)
     return out.u8_outbuf;}
   else return (u8_string) buf;
 }
+
+U8_EXPORT void u8_init_filestring_c()
+{
+  u8_register_source_file(_FILEINFO);
+}

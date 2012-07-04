@@ -66,3 +66,9 @@ U8_EXPORT int u8_bbwriter(unsigned char *buf,int len,struct U8_BYTEBUF *bb)
   return u8_bufwrite(bb,buf,len);
 }
 
+/* Initialization function (just records source file info) */
+
+U8_EXPORT void u8_init_bytebuf_c()
+{
+  u8_register_source_file(_FILEINFO);
+}

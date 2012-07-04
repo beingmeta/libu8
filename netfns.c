@@ -1193,4 +1193,5 @@ U8_EXPORT void u8_init_netfns_c()
   u8_init_mutex(&connpools_lock);
   u8_init_mutex(&netfns_lock);
 #endif
+  u8_register_source_file(_FILEINFO);
 }

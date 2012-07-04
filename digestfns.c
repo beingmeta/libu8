@@ -686,3 +686,8 @@ U8_EXPORT unsigned char *u8_hmac_sha256
   return NULL;
 }
 #endif
+
+U8_EXPORT void u8_init_digestfns_c()
+{
+  u8_register_source_file(_FILEINFO);
+}

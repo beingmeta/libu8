@@ -24,12 +24,27 @@ U8_EXPORT void u8_init_filefns_c(void);
 U8_EXPORT void u8_init_netfns_c(void);
 U8_EXPORT void u8_init_srvfns_c(void);
 
+U8_EXPORT void u8_init_pathfns_c(void);
+U8_EXPORT void u8_init_fileio_c(void);
+U8_EXPORT void u8_init_rusage_c(void);
+U8_EXPORT void u8_init_digestfns_c(void);
+U8_EXPORT void u8_init_cryptofns_c(void);
+
 U8_EXPORT int u8_initialize_fns()
 {
+  u8_register_source_file(_FILEINFO);
+
   u8_init_timefns_c();
   u8_init_filefns_c();
   u8_init_netfns_c();
   u8_init_srvfns_c();
+
+  u8_init_pathfns_c();
+  u8_init_fileio_c();
+  u8_init_rusage_c();
+  u8_init_digestfns_c();
+  u8_init_cryptofns_c();
+
   return 8069;
 }
 

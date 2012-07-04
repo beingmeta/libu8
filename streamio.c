@@ -462,3 +462,10 @@ int u8_close(U8_STREAM *stream)
     return u8_close_output((U8_OUTPUT *)stream);
   else return u8_close_input((U8_INPUT *)stream);
 }
+
+/* Initialization function (just records source file info) */
+
+U8_EXPORT void u8_init_streamio_c()
+{
+  u8_register_source_file(_FILEINFO);
+}

@@ -104,7 +104,7 @@ U8_EXPORT u8_condition u8_UnknownCipherNID;
 **/
 U8_EXPORT unsigned char *u8_random_vector(int len);
 
-U8_EXPORT void u8_init_crypto(void);
+U8_EXPORT void u8_init_cryptofns_c(void);
 
 /** Decrypts a packet which was encrypted with a particular
        key using a particular named cipher. Cipher names are 

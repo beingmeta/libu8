@@ -23,32 +23,18 @@
 
 U8_EXPORT void u8_init_convert_c(void);
 U8_EXPORT void u8_init_xfiles_c(void);
+U8_EXPORT void u8_init_filestring_c(void);
 
-static int io_init_done=0;
+static int u8io_init_done=0;
 
 U8_EXPORT int u8_initialize_io()
 {
-  if (io_init_done) return io_init_done;
-  else io_init_done=8069;
+  if (u8io_init_done) return u8io_init_done;
+  else u8io_init_done=8069;
+  u8_register_source_file(_FILEINFO);
   u8_init_convert_c();
   u8_init_xfiles_c();
-  return io_init_done;
+  u8_init_filestring_c();
+  return u8io_init_done;
 }
 
-
-/* The CVS log for this file
-   $Log: libu8io.c,v $
-   Revision 1.5  2005/03/11 14:40:55  haase
-   Fix include references
-
-   Revision 1.4  2005/02/22 16:41:41  haase
-   Added automatic flushing and closing of xfiles
-
-   Revision 1.3  2005/02/16 02:29:36  haase
-   Various fixes to get library init functions working
-
-   Revision 1.2  2005/02/12 03:38:47  haase
-   Added copyrights and in-file CVS info
-
-
-*/

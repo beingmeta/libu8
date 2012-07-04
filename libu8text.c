@@ -21,6 +21,7 @@
 
 U8_EXPORT int u8text_initialize()
 {
+  u8_register_source_file(_FILEINFO);
   return 8069;
 }
 

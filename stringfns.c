@@ -342,4 +342,11 @@ u8_string u8_string_subst(u8_string input,u8_string key,u8_string replace)
     return out.u8_outbuf;}
 }
 
+
+/* Initialization function (just records source file info) */
+
+U8_EXPORT void u8_init_stringfns_c()
+{
+  u8_register_source_file(_FILEINFO);
+}
 

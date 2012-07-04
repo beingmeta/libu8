@@ -50,8 +50,16 @@
 
 void perror(const char *s);
 
-U8_EXPORT void u8_init_errors_c(void);
+U8_EXPORT void u8_init_exceptions_c(void);
 U8_EXPORT void u8_init_printf_c(void);
+
+U8_EXPORT void u8_init_streamio_c(void);
+U8_EXPORT void u8_init_contour_c(void);
+U8_EXPORT void u8_init_logging_c(void);
+U8_EXPORT void u8_init_ctype_c(void);
+U8_EXPORT void u8_init_stringfns_c(void);
+U8_EXPORT void u8_init_bytebuf_c(void);
+U8_EXPORT void u8_init_cityhash_c(void);
 
 u8_condition u8_MallocFailed=_("Malloc failed");
 u8_condition u8_NotImplemented=_("Function not available");
@@ -451,8 +459,20 @@ U8_EXPORT void u8_for_source_files(void (*f)(u8_string s,void *),void *data)
 U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
-  u8_init_errors_c();
-  u8_init_printf_c();
+
+  u8_register_source_file(_FILEINFO);
+
+  u8_init_printf_c(); /* Does something */
+  u8_init_exceptions_c();  /* Does something */
+
+  u8_init_streamio_c();
+  u8_init_contour_c();
+  u8_init_logging_c();
+  u8_init_ctype_c();
+  u8_init_stringfns_c();
+  u8_init_bytebuf_c();
+  u8_init_cityhash_c();
+
   bindtextdomain("libu8msg",NULL);
   bindtextdomain_codeset("libu8msg","utf-8");
 

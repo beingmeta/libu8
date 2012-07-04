@@ -104,12 +104,13 @@ static void warn(u8_string msg)
 
 /* Initialization functions */
 
-U8_EXPORT void u8_initialize_syslog()
+U8_EXPORT void u8_init_syslog()
 {
   u8_string app=u8_appid();
   if (app==NULL) app="daemon";
   openlog(app,LOG_PID|LOG_CONS|LOG_NDELAY,LOG_DAEMON);
   u8_set_error_handler(raisefn);
   u8_set_logfn(syslog_logger);
+  u8_register_source_file(_FILEINFO);
 }
 

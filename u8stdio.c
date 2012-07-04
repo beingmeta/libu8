@@ -300,4 +300,5 @@ U8_EXPORT void u8_initialize_u8stdio()
 {
   u8_set_error_handler(raisefn);
   u8_set_logfn(stdio_logger);
+  u8_register_source_file(_FILEINFO);
 }

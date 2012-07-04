@@ -435,4 +435,5 @@ U8_EXPORT u8_string *u8_getdirs(u8_string dirname,int fullpath)
 
 U8_EXPORT void u8_init_filefns_c()
 {
+  u8_register_source_file(_FILEINFO);
 }

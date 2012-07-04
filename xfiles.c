@@ -451,4 +451,5 @@ U8_EXPORT void u8_init_xfiles_c()
   u8_init_mutex(&xfile_registry_lock);
 #endif
   atexit(u8_close_xfiles);
+  u8_register_source_file(_FILEINFO);
 }
