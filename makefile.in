@@ -76,7 +76,7 @@ dbginstall:
 	make XCFLAGS="-O0" all
 	sudo make install
 
-%.o: %.c
+%.o: %.c ./fileinfo
 	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo CC $@ $<
 tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a \
