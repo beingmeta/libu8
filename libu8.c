@@ -422,19 +422,28 @@ static void threadexit_atexit()
 /* Recording source file information */
 
 static struct U8_SOURCE_FILE_RECORD *source_files=NULL;
+static int n_source_files=0;
+static u8_mutex source_registry_lock;
 
 U8_EXPORT void u8_register_source_file(u8_string s)
 {
   struct U8_SOURCE_FILE_RECORD *rec=
     u8_alloc(struct U8_SOURCE_FILE_RECORD);
+  u8_lock_mutex(&source_registry_lock);
   rec->filename=s; rec->next=source_files;
-  source_files=rec;
+  source_files=rec; n_source_files++;
+  u8_unlock_mutex(&source_registry_lock);
 }
 U8_EXPORT void u8_for_source_files(void (*f)(u8_string s,void *),void *data)
 {
-  struct U8_SOURCE_FILE_RECORD *scan=source_files;
-  while (scan) {
-    f(scan->filename,data); scan=scan->next;}
+  u8_lock_mutex(&source_registry_lock); {
+    int i=0, n=n_source_files;
+    u8_string *files=u8_alloc_n(n,u8_string), *write=files;
+    struct U8_SOURCE_FILE_RECORD *scan=source_files;
+    while (scan) {*write++=scan->filename; scan=scan->next;}
+    u8_unlock_mutex(&source_registry_lock);
+    while (i<n) {f(files[i++],data);}
+    u8_free(files);}
 }
 
 /* Initialization */
@@ -449,6 +458,7 @@ U8_EXPORT int u8_initialize()
 
 #if U8_THREADS_ENABLED
   u8_init_mutex(&threadinitfns_lock);
+  u8_init_mutex(&source_registry_lock);
 #if (!((HAVE_THREAD_STORAGE_CLASS) && (!(U8_FORCE_TLS))))
   u8_new_threadkey(&u8_initlevel_key,NULL);
 #endif
