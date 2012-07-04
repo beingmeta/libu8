@@ -129,6 +129,11 @@ U8_EXPORT void u8_init_cryptofns_c()
   u8_register_source_file(_FILEINFO);
 }
 
+U8_EXPORT void u8_init_cryptofns()
+{
+  u8_init_cryptofns_c();
+}
+
 #endif
 
 
