@@ -116,8 +116,14 @@ U8_EXPORT ssize_t u8_cryptic
 		     details);}
 }
 
+static int cryptofns_init=0;
+
 U8_EXPORT void u8_init_cryptofns_c()
 {
+  if (cryptofns_init) return;
+
+  cryptofns_init=1;
+
   OpenSSL_add_all_algorithms();
 
   u8_register_source_file(_FILEINFO);
