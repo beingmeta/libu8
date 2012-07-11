@@ -204,7 +204,7 @@ static void finish_close_client(u8_client cl)
     server->n_busy--;
     cur=u8_microtime();
     server->runsum=server->runsum+(cur-cl->started);
-    server->runcount++;
+    server->runcount++; cl->started=-1;
     u8_unlock_mutex(&(server->lock));
     server->closefn(cl);
     if (cl->server->flags&U8_SERVER_LOG_CONNECT)
@@ -231,6 +231,7 @@ static u8_client pop_task(struct U8_SERVER *server)
     server->n_trans++; curtime=u8_microtime();
     server->waitsum=server->waitsum+(curtime-task->queued);
     server->waitcount++;
+    task->queued=-1;
     task->started=curtime;}
   u8_unlock_mutex(&(server->lock));
   return task;
