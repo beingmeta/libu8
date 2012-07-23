@@ -228,36 +228,36 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 
 # Packaging targets
 
-rpmtar: etc/libu8-@U8VERSION@.tar.gz
+rpmtar: dist/libu8-@U8VERSION@.tar.gz
 cleanrpms: 
-	rm -rf etc/rpms.done etc/libu8-?.?.tar.gz etc/libu8-?.?
+	rm -rf dist/rpms.done dist/libu8-?.?.tar.gz dist/libu8-?.?
 freshrpms: 
-	rm -rf etc/rpms.done etc/libu8-?.?.tar.gz etc/libu8-?.?
+	rm -rf dist/rpms.done dist/libu8-?.?.tar.gz dist/libu8-?.?
 	make rpms
-rpms: etc/rpms.done
-debs: etc/debs.done
+rpms: dist/rpms.done
+debs: dist/debs.done
 
-etc/libu8-@U8VERSION@: makefile.in configure makefile \
+dist/libu8-@U8VERSION@: makefile.in configure makefile \
 		$(LIBU8_SOURCES) $(LIBU8_HEADERS)
-	rm -rf etc/libu8-@U8VERSION@
+	rm -rf dist/libu8-@U8VERSION@
 	git archive --prefix=libu8-@U8VERSION@/ \
-	            -o etc/libu8-@U8VERSION@.tar HEAD
-	cd etc; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
-	echo "#define LIBU8_SVNREV \""`git describe`"\"" > etc/libu8-@U8VERSION@/include/libu8/revision.h
-etc/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
-	make etc/libu8-@U8VERSION@
-	tar -czvf $@ -C etc libu8-@U8VERSION@
+	            -o dist/libu8-@U8VERSION@.tar HEAD
+	cd dist; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	echo "#define LIBU8_SVNREV \""`git describe`"\"" > dist/libu8-@U8VERSION@/include/libu8/revision.h
+dist/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
+	make dist/libu8-@U8VERSION@
+	tar -czvf $@ -C dist libu8-@U8VERSION@
 
-etc/rpms.done: etc/libu8-@U8VERSION@.tar.gz
-	@buildrpm@ ${RPMFLAGS} --nodeps -ta etc/libu8-@U8VERSION@.tar.gz && touch etc/rpms.done
+dist/rpms.done: dist/libu8-@U8VERSION@.tar.gz
+	@buildrpm@ ${RPMFLAGS} --nodeps -ta dist/libu8-@U8VERSION@.tar.gz && touch dist/rpms.done
 
-etc/rpms32.done: etc/libu8-@U8VERSION@.tar.gz
-	CC='gcc -m32' rpmbuild ${RPMFLAGS} --target x86 --nodeps -ta etc/libu8-@U8VERSION@.tar.gz &&\
-	touch etc/rpms32.done
+dist/rpms32.done: dist/libu8-@U8VERSION@.tar.gz
+	CC='gcc -m32' rpmbuild ${RPMFLAGS} --target x86 --nodeps -ta dist/libu8-@U8VERSION@.tar.gz &&\
+	touch dist/rpms32.done
 
-etc/debs.done: etc/libu8-@U8VERSION@
-	cd etc/libu8-@U8VERSION@; dpkg-buildpackage -rfakeroot
-	rm -rf etc/libu8-@U8VERSION@
+dist/debs.done: dist/libu8-@U8VERSION@
+	cd dist/libu8-@U8VERSION@; dpkg-buildpackage -rfakeroot
+	rm -rf dist/libu8-@U8VERSION@
 
 # Installation targets
 
