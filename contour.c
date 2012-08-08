@@ -19,9 +19,9 @@
 
 u8_condition u8_BadDynamicContour=_("Bad Dynamic Contour");
 
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
 u8_tld_key u8_dynamic_contour_key;
-#elif (HAVE_THREAD_STORAGE_CLASS)
+#elif (U8_USE__THREAD)
 __thread u8_contour u8_dynamic_contour;
 #else
 u8_contour u8_dynamic_contour;

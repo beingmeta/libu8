@@ -416,6 +416,25 @@ U8_INLINE_FCN int u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f)
 #define u8_getn _u8_getn
 #endif
 
+/* Default output Ports */
+
+U8_EXPORT void u8_set_global_output(u8_output out);
+U8_EXPORT U8_OUTPUT *u8_get_default_output(void);
+
+U8_EXPORT u8_output u8_global_output;
+#if (U8_USE_TLS)
+U8_EXPORT u8_tld_key u8_default_output_key;
+#define u8_current_output (u8_get_default_output())
+#elif (U8_USE__THREAD)
+U8_EXPORT __thread u8_output u8_default_output;
+#define u8_current_output \
+  ((u8_default_output)?(u8_default_output):(u8_global_output))
+#else
+U8_EXPORT u8_output u8_default_output;
+#define u8_current_output \
+  ((u8_default_output)?(u8_default_output):(u8_global_output))
+#endif
+
 /* Other functions */
 
 /** Reads and interprets an XML character entity from @a in.

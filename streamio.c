@@ -463,6 +463,57 @@ int u8_close(U8_STREAM *stream)
   else return u8_close_input((U8_INPUT *)stream);
 }
 
+/* Default output ports */
+
+u8_output u8_global_output=NULL;
+
+U8_EXPORT void u8_set_global_output(u8_output out)
+{
+  u8_global_output=out;
+}
+
+#if U8_USE_TLS
+u8_tld_key u8_default_output_key;
+U8_EXPORT U8_OUTPUT *u8_get_default_output()
+{
+  U8_OUTPUT *f=(U8_OUTPUT *)u8_tld_get(u8_default_output_key);
+  if (f) return f;
+  else return u8_global_output;
+}
+U8_EXPORT void u8_set_default_output(U8_OUTPUT *f)
+{
+  if (f==u8_global_output)
+    u8_tld_set(u8_default_output_key,NULL);
+  else u8_tld_set(u8_default_output_key,f);
+}
+#elif U8_USE__THREAD
+__thread U8_OUTPUT *u8_default_output;
+U8_EXPORT U8_OUTPUT *u8_get_default_output()
+{
+  if (u8_default_output) return u8_default_output;
+  else return u8_global_output;
+}
+U8_EXPORT void u8_set_default_output(U8_OUTPUT *f)
+{
+  if (f==u8_global_output)
+    u8_default_output=NULL;
+  else u8_default_output=f;
+}
+#else
+U8_OUTPUT *u8_default_output=NULL;
+U8_EXPORT U8_OUTPUT *u8_get_default_output()
+{
+  if (default_output) return u8_default_output;
+  else return u8_global_output;
+}
+U8_EXPORT void u8_set_default_output(U8_OUTPUT *f)
+{
+  if (f==u8_global_output)
+    default_output=NULL;
+  else default_output=f;
+}
+#endif
+
 /* Initialization function (just records source file info) */
 
 U8_EXPORT void u8_init_streamio_c()

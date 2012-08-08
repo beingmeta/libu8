@@ -28,9 +28,9 @@
 static u8_condition UnknownError=_("Unknown error");
 static u8_condition EmptyExceptionStack=_("Attempt to pop an empty exception stack");
 
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
 u8_tld_key u8_current_exception_key;
-#elif (HAVE_THREAD_STORAGE_CLASS)
+#elif (U8_USE__THREAD)
 __thread u8_exception u8_current_exception;
 #else
 u8_exception u8_current_exception;
@@ -76,7 +76,7 @@ U8_EXPORT u8_exception u8_push_exception
     newex=u8_make_exception(c,cxt,details,xdata,freefn);
     newex->u8x_prev=current;}
   else newex=u8_new_exception(c,cxt,details,xdata,freefn);
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
   u8_tld_set(u8_current_exception_key,newex);
 #else
   u8_current_exception=newex;
@@ -92,7 +92,7 @@ U8_EXPORT u8_exception u8_extend_exception
   u8_condition c=((current) ? (current->u8x_cond) : (EmptyExceptionStack));
   newex=u8_make_exception(c,cxt,details,xdata,freefn);
   newex->u8x_prev=current;
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
   u8_tld_set(u8_current_exception_key,newex);
 #else
   u8_current_exception=newex;
@@ -125,7 +125,7 @@ U8_EXPORT u8_exception u8_pop_exception()
     (current->u8x_free_xdata)(current->u8x_xdata);
   prev=current->u8x_prev;
   memset(current,0,sizeof(struct U8_EXCEPTION));
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
   u8_tld_set(u8_current_exception_key,prev);
 #else
   u8_current_exception=prev;
@@ -150,7 +150,7 @@ U8_EXPORT int u8_exception_stacklen(u8_exception ex)
 U8_EXPORT u8_exception u8_erreify()
 {
   u8_exception ex=u8_current_exception;
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
   u8_tld_set(u8_current_exception_key,NULL);
 #else
   u8_current_exception=NULL;
@@ -162,7 +162,7 @@ U8_EXPORT u8_exception u8_restore_exception(u8_exception ex)
 {
   struct U8_EXCEPTION *current=u8_current_exception;
   if (current==NULL) {
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
     u8_tld_set(u8_current_exception_key,ex);
 #else
     u8_current_exception=ex;
@@ -338,7 +338,7 @@ U8_EXPORT void u8_init_exceptions_c()
 {
   int i=0; while (i<U8_ERRNO_MAP_SIZE) errno_map[i++]=NULL;
 
-#if ((U8_THREADS_ENABLED) && ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS))))
+#if ((U8_THREADS_ENABLED) && (U8_USE_TLS))
   u8_new_threadkey(&u8_current_exception_key,NULL);
 #endif
   

@@ -45,10 +45,10 @@ typedef struct U8_EXCEPTION {
   struct U8_EXCEPTION *u8x_prev;} U8_EXCEPTION;
 typedef struct U8_EXCEPTION *u8_exception;
 
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
 U8_EXPORT u8_tld_key u8_current_exception_key;
 #define u8_current_exception ((u8_exception)(u8_tld_get(u8_current_exception_key)))
-#elif (HAVE_THREAD_STORAGE_CLASS)
+#elif (U8_USE__THREAD)
 U8_EXPORT __thread u8_exception u8_current_exception;
 #else
 U8_EXPORT u8_exception u8_current_exception;

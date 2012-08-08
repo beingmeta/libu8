@@ -107,10 +107,10 @@ U8_EXPORT int u8_n_contour_types;
    global variable if there aren't any pthreads.
    It is pushed onto a stack when created.*/
 
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
 U8_EXPORT u8_tld_key u8_dynamic_contour_key;
 #define u8_dynamic_contour ((u8_contour)(u8_tld_get(u8_dynamic_contour_key)))
-#elif (HAVE_THREAD_STORAGE_CLASS)
+#elif (U8_USE__THREAD)
 U8_EXPORT __thread u8_contour u8_dynamic_contour;
 #else
 U8_EXPORT u8_contour u8_dynamic_contour;
@@ -203,7 +203,7 @@ static void u8_push_contour(u8_contour contour)
   contour->u8c_depth=((prev) ? (1+(prev->u8c_depth)) : (1));
   contour->u8c_outer_contour=prev;
   
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
   u8_tld_set(u8_dynamic_contour_key,contour);
 #else
   u8_dynamic_contour=contour;
@@ -227,7 +227,7 @@ static void u8_pop_contour(u8_contour contour)
   while (i<n) {u8_free(blocks[i]);  i++;}
   ctype=U8_CONTOUR_TYPE(contour);
   next=contour->u8c_outer_contour;
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
   u8_tld_set(u8_dynamic_contour_key,next);
 #else
   u8_dynamic_contour=next;
@@ -248,7 +248,7 @@ static void u8_throw_contour(u8_contour contour)
   i=0; n=cur->u8c_n_blocks; blocks=cur->u8c_blocks;
   while (i<n) {u8_free(blocks[i]);  i++;}
   next=contour->u8c_outer_contour;
-#if ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#if (U8_USE_TLS)
   u8_tld_set(u8_dynamic_contour_key,next);
 #else
   u8_dynamic_contour=next;

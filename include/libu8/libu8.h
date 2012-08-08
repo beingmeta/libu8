@@ -201,14 +201,32 @@ U8_EXPORT int u8_threadexit(void);
 U8_EXPORT int u8_n_threadinits;
 U8_EXPORT int u8_n_threadexitfns;
 
-#if ((U8_THREADS_ENABLED) && (HAVE_THREAD_STORAGE_CLASS) && (!(U8_FORCE_TLS)))
-  U8_EXPORT __thread int u8_initlevel;
-  #define u8_getinitlevel() (u8_initlevel)
-  #define u8_setinitlevel(n) u8_initlevel=(n);
+#if (!(U8_THREADS_ENABLED))
+#define U8_USE_TLS 0
+#define U8_USE__THREAD 0
+#elif ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#define U8_USE_TLS 1
+#define U8_USE__THREAD 0
+#elif (HAVE_THREAD_STORAGE_CLASS)
+#define U8_USE_TLS 0
+#define U8_USE__THREAD 1
 #else
-  U8_EXPORT u8_tld_key u8_initlevel_key;
-  #define u8_getinitlevel() ((int) ((u8_wideint)(u8_tld_get(u8_initlevel_key))))
-  #define u8_setinitlevel(n) u8_tld_set(u8_initlevel_key,((void *)n))
+#define U8_USE_TLS 1
+#define U8_USE_TLS 0
+#endif
+
+#if (U8_USE__THREAD)
+U8_EXPORT __thread int u8_initlevel;
+#define u8_getinitlevel() (u8_initlevel)
+#define u8_setinitlevel(n) u8_initlevel=(n);
+#elif (U8_USE_TLS)
+U8_EXPORT u8_tld_key u8_initlevel_key;
+#define u8_getinitlevel() ((int) ((u8_wideint)(u8_tld_get(u8_initlevel_key))))
+#define u8_setinitlevel(n) u8_tld_set(u8_initlevel_key,((void *)n))
+#else
+U8_EXPORT int u8_initlevel;
+#define u8_getinitlevel() (u8_initlevel)
+#define u8_setinitlevel(n) u8_initlevel=(n);
 #endif
 
 #define u8_threadcheck() \
@@ -451,8 +469,6 @@ U8_EXPORT void u8_initialize_logging(void);
 /* Contours */
 
 #include "u8contour.h"
-
-/* Recording source files */
 
 /* File and module recording */
 

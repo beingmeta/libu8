@@ -343,10 +343,12 @@ static int n_threadexitfns=0;
 static u8_threadexitfn threadexitfns[MAX_THREADEXITFNS];
 static u8_threadinitfn threadinitfns[MAX_THREADINITFNS];
 static u8_mutex threadinitfns_lock;
-#if ((HAVE_THREAD_STORAGE_CLASS) && (!(U8_FORCE_TLS)))
+#if (U8_USE__THREAD)
 __thread int u8_initlevel=0;
-#else
+#elif (U8_USE_TLS)
 u8_tld_key u8_initlevel_key;
+#else
+int u8_initlevel=0;
 #endif
 #endif
 
@@ -480,7 +482,7 @@ U8_EXPORT int u8_initialize()
 #if U8_THREADS_ENABLED
   u8_init_mutex(&threadinitfns_lock);
   u8_init_mutex(&source_registry_lock);
-#if (!((HAVE_THREAD_STORAGE_CLASS) && (!(U8_FORCE_TLS))))
+#if (U8_USE_TLS)
   u8_new_threadkey(&u8_initlevel_key,NULL);
 #endif
 #endif
