@@ -62,19 +62,37 @@ STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
 
 all: @TAGS@ libs @I18N@ testbin dytestbin
+
+# Handy targets
+
 debug:
 	make XCFLAGS="-O0" all
 fresh:
 	make clean; make all
+freshdebug:
+	make clean; make XCFLAGS="-O0" all
 dbg:
 	make clean; make XCFLAGS="-O0" all
+
+# configure/autoconf stuff
+
+makefile: makefile.in config.status
+	./config.status
+./config.status: configure
+	./config.status --recheck
+configure: configure.in
+	autoconf
+
 # Makes everything and then sudoes install.  Keeps build files non-root
+
 suinstall:
 	make all
 	sudo make install
 dbginstall:
 	make XCFLAGS="-O0" all
 	sudo make install
+
+# Make rules
 
 %.o: %.c ./fileinfo
 	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
