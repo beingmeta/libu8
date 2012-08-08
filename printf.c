@@ -113,7 +113,8 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
   while (fmt) {
     unsigned char cmd[16]; int i=0, code; u8_string to_free=NULL;
     /* First, output everything leading up to the % sign */
-    u8_putn(s,scan,fmt-scan); scan=fmt;
+    if (fmt>scan) {
+      u8_putn(s,scan,fmt-scan); scan=fmt;}
     /* Read the percent sign */
     cmd[i++]=*scan++;
     /* Read in the format code */

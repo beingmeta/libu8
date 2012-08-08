@@ -223,6 +223,7 @@ U8_INLINE_FCN int u8_putc(struct U8_OUTPUT *f,int c)
 **/
 U8_INLINE_FCN int u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 {
+  if (U8_EXPECT_FALSE(len==0)) return 0;
   if ((f->u8_outptr+len+1>=f->u8_outlim) && (f->u8_flushfn)) 
     f->u8_flushfn(f);
   if (f->u8_outptr+len+1>=f->u8_outlim) 

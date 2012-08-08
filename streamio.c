@@ -124,7 +124,8 @@ U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int ch)
 }
 U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 {
-  if ((f->u8_outptr+len+1>=f->u8_outlim) && (f->u8_flushfn)) 
+  if (U8_EXPECT_FALSE(len==0)) return 0;
+  else if ((f->u8_outptr+len+1>=f->u8_outlim) && (f->u8_flushfn)) 
     f->u8_flushfn(f);
   if (f->u8_outptr+len+1>=f->u8_outlim) 
     u8_grow_stream(f,len);
@@ -515,7 +516,15 @@ U8_EXPORT void u8_reset_default_output(U8_OUTPUT *f)
 
 /* Initialization function (just records source file info) */
 
+static int streamio_init_done=0;
+
 U8_EXPORT void u8_init_streamio_c()
 {
+  if (streamio_init_done) return;
+  else streamio_init_done=1;
+#if (U8_USE_TLS)
+  u8_new_threadkey(&u8_default_output_key,NULL);
+#endif
+
   u8_register_source_file(_FILEINFO);
 }
