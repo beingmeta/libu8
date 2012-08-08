@@ -83,6 +83,12 @@ makefile: makefile.in config.status
 configure: configure.in
 	autoconf
 
+# Fileinfo gets version-related information about a file to pass in
+# with -D
+
+./fileinfo: etc/fileinfo.c
+	$(CC) -o ./fileinfo etc/fileinfo.c
+
 # Makes everything and then sudoes install.  Keeps build files non-root
 
 suinstall:
@@ -149,9 +155,6 @@ libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a lib/libu8data.a \
       lib/libu8stdio.@shared_suffix@ @syslog_target@
 
 syslog_libs: lib/libu8syslog.a lib/libu8syslog.@shared_suffix@
-
-./fileinfo: etc/fileinfo.c
-	$(CC) -o ./fileinfo etc/fileinfo.c
 
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	if test -f etc/revision.h; \
