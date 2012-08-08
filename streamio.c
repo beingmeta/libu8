@@ -482,12 +482,20 @@ U8_EXPORT U8_OUTPUT *u8_get_default_output()
 }
 U8_EXPORT void u8_set_default_output(U8_OUTPUT *f)
 {
-  if (f==u8_global_output)
+  u8_tld_set(u8_default_output_key,f);
+}
+U8_EXPORT void u8_reset_default_output(U8_OUTPUT *f)
+{
+  if ((f)&&(f==u8_global_output))
     u8_tld_set(u8_default_output_key,NULL);
   else u8_tld_set(u8_default_output_key,f);
 }
-#elif U8_USE__THREAD
+#else
+#if U8_USE__THREAD
 __thread U8_OUTPUT *u8_default_output;
+#else
+U8_OUTPUT *u8_default_output=NULL;
+#endif
 U8_EXPORT U8_OUTPUT *u8_get_default_output()
 {
   if (u8_default_output) return u8_default_output;
@@ -495,22 +503,13 @@ U8_EXPORT U8_OUTPUT *u8_get_default_output()
 }
 U8_EXPORT void u8_set_default_output(U8_OUTPUT *f)
 {
-  if (f==u8_global_output)
+  u8_default_output=f;
+}
+U8_EXPORT void u8_reset_default_output(U8_OUTPUT *f)
+{
+  if ((f)&&(f===u8_global_output))
     u8_default_output=NULL;
   else u8_default_output=f;
-}
-#else
-U8_OUTPUT *u8_default_output=NULL;
-U8_EXPORT U8_OUTPUT *u8_get_default_output()
-{
-  if (default_output) return u8_default_output;
-  else return u8_global_output;
-}
-U8_EXPORT void u8_set_default_output(U8_OUTPUT *f)
-{
-  if (f==u8_global_output)
-    default_output=NULL;
-  else default_output=f;
 }
 #endif
 

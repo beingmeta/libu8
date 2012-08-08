@@ -418,11 +418,44 @@ U8_INLINE_FCN int u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f)
 
 /* Default output ports */
 
+/** Sets the global output stream to @a out.  This is
+    used as the default when a thread doesn't specify
+    a default output stream.
+    @param out a pointer to a U8_OUTPUT stream
+**/
 U8_EXPORT void u8_set_global_output(u8_output out);
+
+/** Sets the default output stream (for the current thread) to @a out.
+    @param out a pointer to a U8_OUTPUT stream
+**/
 U8_EXPORT void u8_set_default_output(u8_output out);
+
+/** Resets the default output stream (for the current thread) to @a out.
+    If @a out is the same as u8_global_output, this clears the thread-local
+    output stream value (so that changes to u8_global_output will change
+    this threads default output stream).
+    @param out a pointer to a U8_OUTPUT stream
+**/
+U8_EXPORT void u8_reset_default_output(u8_output out);
+
+/** Gets the default output stream for the current thread.
+    This defaults to u8_global_output.
+    @returns a pointer to a U8_OUTPUT structure
+**/
 U8_EXPORT U8_OUTPUT *u8_get_default_output(void);
 
+/** This variable is the global output stream
+    (a pointer to a U8_OUTPUT structure or equivalent)
+**/
 U8_EXPORT u8_output u8_global_output;
+
+/** This macro (which looks like a variable) refers to the
+    default output for the current thread or the global output
+    (when no thread default has been defined).
+**/
+#define u8_current_output u8_global_output
+#undef u8_current_output
+
 #if (U8_USE_TLS)
 U8_EXPORT u8_tld_key u8_default_output_key;
 #define u8_current_output (u8_get_default_output())
