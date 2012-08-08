@@ -490,7 +490,7 @@ U8_EXPORT void u8_reset_default_output(U8_OUTPUT *f)
     u8_tld_set(u8_default_output_key,NULL);
   else u8_tld_set(u8_default_output_key,f);
 }
-#else
+#else /* Assume single threaded */
 #if U8_USE__THREAD
 __thread U8_OUTPUT *u8_default_output;
 #else
@@ -507,7 +507,7 @@ U8_EXPORT void u8_set_default_output(U8_OUTPUT *f)
 }
 U8_EXPORT void u8_reset_default_output(U8_OUTPUT *f)
 {
-  if ((f)&&(f===u8_global_output))
+  if ((f)&&(f==u8_global_output))
     u8_default_output=NULL;
   else u8_default_output=f;
 }
