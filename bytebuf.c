@@ -37,7 +37,7 @@ U8_EXPORT int _u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
       bb->u8_buf=bb->u8_ptr=buf;
       bb->u8_lim=buf+bufsize;}
     else return u8_reterr(u8_MallocFailed,"u8_bufwrite",NULL);}
-  else if (((bb->u8_ptr)+len)>=(bb->u8_lim))
+  else if (((bb->u8_ptr)+len)>=(bb->u8_lim)) {
     if (bb->u8_growbuf==0) 
       return u8_reterr(u8_FixedBufOverflow,"u8_bufwrite",NULL);
     else {
@@ -51,7 +51,7 @@ U8_EXPORT int _u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
 	bb->u8_buf=newbuf;
 	bb->u8_ptr=newbuf+ptroff;
 	bb->u8_lim=newbuf+newsize;}
-      else return u8_reterr(u8_MallocFailed,"u8_bufwrite",NULL);}
+      else return u8_reterr(u8_MallocFailed,"u8_bufwrite",NULL);}}
   memcpy(bb->u8_ptr,buf,len);
   bb->u8_ptr=bb->u8_ptr+len;
   return len;

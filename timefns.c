@@ -837,10 +837,10 @@ U8_EXPORT u8_uuid u8_consuuid
   if (xtime==NULL) {
     u8_now(&timebuf); xtime=&timebuf;}
   if (clockid<0) clockid=u8_random(256*4*16);
-  if (nodeid<0)
+  if (nodeid<0) {
     if (u8_uuid_node<0) 
       nodeid=generate_nodeid(0);
-    else nodeid=u8_uuid_node;
+    else nodeid=u8_uuid_node;}
   if (u8_uuid_node<0) u8_uuid_node=nodeid;
   return consuuid(xtime,nodeid,clockid,buf);
 }
