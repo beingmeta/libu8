@@ -416,9 +416,10 @@ U8_INLINE_FCN int u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f)
 #define u8_getn _u8_getn
 #endif
 
-/* Default output Ports */
+/* Default output ports */
 
 U8_EXPORT void u8_set_global_output(u8_output out);
+U8_EXPORT void u8_set_default_output(u8_output out);
 U8_EXPORT U8_OUTPUT *u8_get_default_output(void);
 
 U8_EXPORT u8_output u8_global_output;
