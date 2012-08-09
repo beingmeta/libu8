@@ -11,6 +11,8 @@ MKSTATIC="\$(LD) -r -o"
 I18N=""
 INSTALLI18N=""
 TAGS="TAGS"
+DOCS="docs"
+INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
 doi18n="no"
 install_shared="install-so"
@@ -22,6 +24,7 @@ have_constructor_attributes="yes"
 archflags=""
 definefileinfo=""
 versionsh=""
+doxygen="doxygen"
 
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADER(include/libu8/config.h)
@@ -42,6 +45,9 @@ AC_SUBST(definefileinfo)
 AC_SUBST(versionsh)
 AC_SUBST(I18N)
 AC_SUBST(INSTALLI18N)
+AC_SUBST(doxygen)
+AC_SUBST(DOCS)
+AC_SUBST(INSTALLDOCS)
 
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
@@ -76,10 +82,15 @@ else
 fi
 
 AC_CHECK_PROGS(etags,etags,"na")
+AC_CHECK_PROGS(doxygen,doxygen,"na")
 AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","na")
 
 if test $etags = "na"; then
    TAGS=""
+fi
+if test $doxygen = "na"; then
+   DOCS=""
+   INSTALLDOCS=""
 fi
 
 gcc_version=`gcc -dumpversion`

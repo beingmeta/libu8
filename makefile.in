@@ -22,6 +22,7 @@ CLEAN		= @CLEAN@
 INSTALL		= @INSTALL@
 RANLIB		= @RANLIB@
 MKSTATIC	= @MKSTATIC@
+DOXYGEN		= @doxygen@
 MKSO		= $(CC) $(CFLAGS) $(XCFLAGS) -shared $(LDFLAGS) $(XLDFLAGS) $(LIBS)
 #MACLIBTOOL	= libtool -dynamic -single_module $(LDFLAGS) $(LIBS)
 MACLIBTOOL	= $(CC) -dynamiclib -single_module $(LDFLAGS) $(LIBS)
@@ -61,7 +62,7 @@ DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
 STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
 
-all: @TAGS@ libs @I18N@ testbin dytestbin
+all: @TAGS@ libs @I18N@ testbin dytestbin @DOCS@
 
 # Handy targets
 
@@ -205,10 +206,10 @@ lib/libu8syslog@suffix@.so.@U8VERSION@: $(LIBU8SYSLOG_OBJECTS)
 lib/libu8syslog.@U8VERSION@.dylib: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dylib
 lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
 
-docs: docs/man/man3/libu8.h.3
+docs: docs/doxygen.done
 
-docs/man/man3/libu8.h.3:
-	doxygen docs/doxygen.cfg
+docs/doxygen.done: $(LIBU8_HEADERS)
+	$(DOXYGEN) docs/doxygen.cfg && touch docs/doxygen.done
 
 clean: 
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* 
@@ -291,7 +292,8 @@ dist/debs.done: dist/libu8-@U8VERSION@
 
 # Installation targets
 
-install: install-libs install-headers install-encodings @INSTALLI18N@
+install: install-libs install-headers install-encodings \
+	@INSTALLI18N@ @INSTALLDOCS@
 
 install-libs: install-static-libs @install_shared@
 
@@ -305,7 +307,7 @@ install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
 $(DESTDIR)@prefix@/share/libu8/encodings:
 	$(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
 
-install-docs: docs
+install-docs: docs/doxygen.done
 	$(INSTALL) -d $(MANDIR)/man3
 	$(INSTALL) docs/man/man3/* $(MANDIR)/man3
 
