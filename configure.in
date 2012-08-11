@@ -24,7 +24,7 @@ have_constructor_attributes="yes"
 archflags=""
 definefileinfo=""
 versionsh=""
-doxygen="doxygen"
+doxygen=""
 
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADER(include/libu8/config.h)
@@ -81,14 +81,14 @@ else
   SHARED_LIB=
 fi
 
-AC_CHECK_PROGS(etags,etags,"na")
-AC_CHECK_PROGS(doxygen,doxygen,"na")
+AC_CHECK_PROGS(etags,"etags","na")
+AC_CHECK_PROGS(doxygen,"doxygen","na")
 AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","na")
 
 if test $etags = "na"; then
    TAGS=""
 fi
-if test $doxygen = "na"; then
+if test "x$doxygen" = "xna"; then
    DOCS=""
    INSTALLDOCS=""
 fi
