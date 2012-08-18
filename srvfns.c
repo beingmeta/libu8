@@ -107,6 +107,29 @@ static int sockaddr_samep(struct sockaddr *s1,struct sockaddr *s2)
    reserved for used by the server. */
 
 U8_EXPORT
+/* u8_client_init:
+    Arguments: a pointer to a client
+    Returns: void
+ Initializes the client structure.
+ @arg client a pointer to a client stucture, or NULL if one is to be consed
+ @arg len the length of the structure, as allocated or to be consed
+ @arg sock a socket (or -1) for the client
+ @arg server the server of which the client will be a part
+ Returns: a pointer to a client structure, consed if not provided.
+*/
+u8_client u8_client_init(u8_client client,size_t len,u8_socket sock,
+			 u8_server srv)
+{
+  if (!(client)) client=u8_malloc(len);
+  memset(client,0,len);
+  client->socket=sock;
+  client->server=srv;
+  if ((srv->flags)&U8_SERVER_ASYNC)
+    client->flags=client->flags|U8_CLIENT_ASYNC;
+  return client;
+}
+
+U8_EXPORT
 /* u8_client_done:
     Arguments: a pointer to a client
     Returns: void
@@ -255,41 +278,65 @@ static void *event_loop(void *thread_arg)
     /* Check that this thread's init functions are up to date */
     u8_threadcheck();
     cl=pop_task(server);
-    if (cl) {
+    if ((!(cl))&&(server->flags&U8_SERVER_CLOSED)) break;
+    else if (!(cl)) {/* Why'd you wake me up? */ continue;}
+    else if ((cl->async)&&(cl->off<cl->len)) {
+      /* We're in the middle of reading or writing a chunk of data */
+      size_t delta;
+      if (cl->writing)
+	delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
+      else delta=read(cl->socket,cl->buf+cl->off,cl->len-cl->off);
+      /* if (delta<0) {} */
+      if (delta>0) cl->off=cl->off+delta;
+      /* If we've still got data to read/write, we continue,
+	 otherwise, we fall through */
+      if (cl->off<cl->len) {
+	/* Keep listening */
+	FD_SET(cl->socket,&server->listening);
+	continue;}
+      else cl->async=0;}
+    else cl->async=0;
+    if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
+	((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
+      u8_log(LOG_DEBUG,ClientRequest,
+	     "Handling activity from %s[%d]",cl->idstring,cl->n_trans);
+    /* When the servefn is called, cl->async=0 and there are three
+       possible states:
+       1. no asynchrony is going on (buf is NULL)
+       2. buf is full (and the read/write is complete) and either
+       ...a. we were reading (cl->writing==0) or
+       ...b. we were writing (cl->writing==1)
+    */
+    result=server->servefn(cl);
+    if (result<0) {
+      u8_exception ex=u8_current_exception;
+      while (ex) {
+	u8_log(LOG_WARN,ClientRequest,
+	       "Error during activity on %s[%d] (%s)",
+	       cl->idstring,cl->n_trans,u8_errstring(ex));
+	ex=u8_pop_exception();}}
+    else if (result==0) {
+      /* Request is completed */
       cl->n_trans++;
       if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
 	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
+	u8_log(LOG_INFO,ClientRequest,
+	       "Completed transaction with %s[%d]",cl->idstring,cl->n_trans);
+      if (server->flags&U8_SERVER_CLOSED) dobreak=1;
+      if (cl->flags&U8_CLIENT_CLOSING)
+	finish_close_client(cl);
+      else u8_client_done(cl);
+      cl->buf=NULL; cl->off=cl->len=cl->buflen=0;}
+    else {
+      /* Request is not yet completed */
+      if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
+	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
 	u8_log(LOG_DEBUG,ClientRequest,
-	       "Got request from %s[%d]",cl->idstring,cl->n_trans);
-      result=server->servefn(cl);
-      if (result<0) {
-	u8_exception ex=u8_current_exception;
-	while (ex) {
-	  u8_log(LOG_WARN,ClientRequest,
-		 "Error during request for %s[%d] (%s)",
-		 cl->idstring,cl->n_trans,u8_errstring(ex));
-	  ex=u8_pop_exception();}}
-      else if (result==0) {
-	/* Request is completed */
-	if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
-	    ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
-	  u8_log(LOG_INFO,ClientRequest,
-		 "Completed request for %s[%d]",cl->idstring,cl->n_trans);
-	if (server->flags&U8_SERVER_CLOSED) dobreak=1;
-	if (cl->flags&U8_CLIENT_CLOSING)
-	  finish_close_client(cl);
-	else u8_client_done(cl);}
-      else {
-	/* Request is not yet completed */
-	if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
-	    ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
-	  u8_log(LOG_DEBUG,ClientRequest,
-		 "Yield during request for %s[%d]",cl->idstring,cl->n_trans);
-	/* We need to handle the case where the request is not completed
-	   but the server is closing down.  Right now, we don't let the
-	   server loop exit until all the pending tasks have closed.  */}
-      if (dobreak) break;}
-    else if (server->flags&U8_SERVER_CLOSED) break;}
+	       "Yield during request for %s[%d]",cl->idstring,cl->n_trans);
+      /* We need to handle the case where the request is not completed
+	 but the server is closing down.  Right now, we don't let the
+	 server loop exit until all the pending tasks have closed.  */}
+    if (dobreak) break;}
   u8_threadexit();
   return NULL;
 }
@@ -298,7 +345,8 @@ static void *event_loop(void *thread_arg)
 U8_EXPORT
 int u8_server_init(struct U8_SERVER *server,
 		   int maxback,int max_tasks,int n_threads,
-		   u8_client (*acceptfn)(int,struct sockaddr *,int),
+		   u8_client (*acceptfn)(u8_server,u8_socket,
+					 struct sockaddr *,size_t),
 		   int (*servefn)(u8_client),
 		   int (*closefn)(u8_client))
 {
@@ -645,7 +693,7 @@ static int server_step(struct U8_SERVER *server)
 	i++; errno=0; continue;}
       else {
 	u8_client new_client=server->acceptfn
-	  (sock,(struct sockaddr *)addrbuf,addrlen);
+	  (server,sock,(struct sockaddr *)addrbuf,addrlen);
 	if (new_client) {
 	  u8_string idstring=
 	    u8_sockaddr_string((struct sockaddr *)addrbuf);

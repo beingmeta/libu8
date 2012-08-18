@@ -131,7 +131,7 @@
 #endif
 
 /* This is for sockets */
-typedef long u8_connection;
+typedef long u8_socket;
 
 #if (SIZEOF_INT == 4)
 typedef unsigned int u8_int4;
