@@ -163,7 +163,7 @@ U8_EXPORT
 void u8_client_close(u8_client cl)
 {
   if ((cl->flags&U8_CLIENT_CLOSED)==0) {
-    U8_SERVER *server=cl->server; int sock=cl->socket;
+    U8_SERVER *server=cl->server; u8_socket sock=cl->socket;
     u8_lock_mutex(&(server->lock));
     /* Catch race conditions */
     if (cl->flags&U8_CLIENT_CLOSED) {
@@ -191,7 +191,7 @@ void u8_client_close(u8_client cl)
 static void client_close(u8_client cl)
 {
   if ((cl->flags&U8_CLIENT_CLOSED)==0) {
-    U8_SERVER *server=cl->server; int sock=cl->socket;
+    U8_SERVER *server=cl->server; u8_socket sock=cl->socket;
     server->socketmap[sock]=NULL;
     FD_CLR(sock,&server->clients);
     FD_CLR(sock,&server->listening);
@@ -213,7 +213,7 @@ static void client_close(u8_client cl)
 static void finish_close_client(u8_client cl)
 {
   if ((cl->flags&U8_CLIENT_CLOSED)==0) {
-    U8_SERVER *server=cl->server; int sock=cl->socket;
+    U8_SERVER *server=cl->server; u8_socket sock=cl->socket;
     /* We grab idstring, because our code allocated it but we will use it
        only after the closefn has freed the client object. */
     u8_string idstring=cl->idstring;
@@ -395,7 +395,7 @@ int u8_server_shutdown(struct U8_SERVER *server)
   u8_log(LOG_WARN,ServerShutdown,"Closed %d listening socket(s)",n_servers);
   while (i<n_servers) {
     struct U8_SERVER_INFO *info=&(server->server_info[i++]);
-    int sock=info->socket, retval;
+    u8_socket sock=info->socket, retval;
     FD_CLR(sock,&(server->servers));
     FD_CLR(sock,&(server->listening));
     retval=close(sock);
@@ -454,7 +454,7 @@ int u8_server_shutdown(struct U8_SERVER *server)
 
 /* Opening various kinds of servers */
 
-static void init_server_socket(int socket_id)
+static void init_server_socket(u8_socket socket_id)
 {
 #if WIN32
   unsigned long nonblocking=1;
@@ -473,7 +473,7 @@ static void init_server_socket(int socket_id)
 
 static int open_server_socket(struct sockaddr *sockaddr,int maxbacklog)
 {
-  int socket_id=-1, on=1, addrsize, family;
+  u8_socket socket_id=-1, on=1, addrsize, family;
   if (sockaddr->sa_family==AF_INET) {
     family=AF_INET; addrsize=sizeof(struct sockaddr_in);}
 #ifdef AF_INET6
@@ -507,7 +507,7 @@ static int open_server_socket(struct sockaddr *sockaddr,int maxbacklog)
 }
 
 static struct U8_SERVER_INFO *add_server
-  (struct U8_SERVER *server,int sock,struct sockaddr *addr)
+  (struct U8_SERVER *server,u8_socket sock,struct sockaddr *addr)
 {
   u8_server_info info;
   if (server->server_info==NULL) {
@@ -582,7 +582,7 @@ int u8_add_server(struct U8_SERVER *server,char *hostname,int port)
       u8_log(LOG_NOTICE,NewServer,"Already listening at %s",hostname);
       u8_free(addr); return 0;}
     else {
-      int sock=open_server_socket(addr,server->max_backlog);
+      u8_socket sock=open_server_socket(addr,server->max_backlog);
       if (sock<0) {
 	u8_free(addr);
 	return -1;}
@@ -606,7 +606,7 @@ int u8_add_server(struct U8_SERVER *server,char *hostname,int port)
 	  u8_free(sockaddr); addrs++;}
 	else {
 	  struct U8_SERVER_INFO *info;
-	  int sock=open_server_socket(sockaddr,server->max_backlog);
+	  u8_socket sock=open_server_socket(sockaddr,server->max_backlog);
 	  if (sock>=0) {
 	    info=add_server(server,sock,sockaddr);
 	    if (info) info->idstring=u8_sockaddr_string(sockaddr);
@@ -626,7 +626,7 @@ int u8_add_server(struct U8_SERVER *server,char *hostname,int port)
 
 static int add_client(struct U8_SERVER *server,u8_client client)
 {
-  int sock=client->socket;
+  u8_socket sock=client->socket;
   if (sock<0) return sock;
   if (sock>=server->socket_lim) {
     int new_lim=((sock/64)+1)*64;

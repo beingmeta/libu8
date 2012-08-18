@@ -23,6 +23,8 @@
      model.
  **/
 
+typedef struct U8_SERVER *u8_server;
+
 #define U8_CLIENT_BUSY 1
 #define U8_CLIENT_CLOSING 2
 #define U8_CLIENT_CLOSED 4
@@ -30,16 +32,14 @@
 #define U8_CLIENT_ASYNC 16
 #define U8_CLIENT_FLAG_MAX 16
 
-typedef struct U8_SERVER *u8_server;
-
 #define U8_CLIENT_FIELDS             \
-  u8_socket socket;              \
+  u8_socket socket;                  \
   unsigned int flags, n_trans;       \
   long long queued, started;         \
   u8_string idstring;                \
   unsigned char *buf;                \
   size_t off, len, buflen;           \
-  unsigned int async:1, writing:1; \
+  unsigned int async:1, writing:1;   \
   struct U8_SERVER *server
 
 /** struct U8_CLIENT
@@ -115,7 +115,7 @@ typedef struct U8_SERVER {
   int n_busy; /* How many clients are currently busy */
   int n_accepted; /* How many connections have been accepted to date */
   int n_trans; /* How many transactions have been initiated to date */
-  int socket_max; /* Largest open socket */
+  u8_socket socket_max; /* Largest open socket */
   int socket_lim; /* The size of socketmap */
   /* Tracking wait times */
   long long waitsum; int waitcount;
