@@ -23,6 +23,8 @@
      model.
  **/
 
+typedef struct U8_SERVER *u8_server;
+
 #define U8_CLIENT_BUSY 1
 #define U8_CLIENT_CLOSING 2
 #define U8_CLIENT_CLOSED 4
@@ -30,7 +32,7 @@
 #define U8_CLIENT_FLAG_MAX 8
 
 #define U8_CLIENT_FIELDS           \
-  int socket;                      \
+  u8_socket socket;                      \
   unsigned int flags, n_trans;     \
   long long queued, started;       \
   u8_string idstring;              \
@@ -43,12 +45,23 @@
      debugging, and the server field is the server (a U8_SERVER struct)
      to which the client is connected. **/
 typedef struct U8_CLIENT {
-  int socket;
+  u8_socket socket;
   unsigned int flags, n_trans;
   long long queued, started;
   u8_string idstring;
   struct U8_SERVER *server;} U8_CLIENT;
 typedef struct U8_CLIENT *u8_client;
+
+/* u8_client_init:
+ Initializes the client structure.
+ @param client a pointer to a client stucture, or NULL if one is to be consed
+ @param len the length of the structure, as allocated or to be consed
+ @param sock a socket (or -1) for the client
+ @param srv a pointer to the server launching the client
+ Returns: a pointer to a client structure, consed if not provided.
+*/
+U8_EXPORT u8_client u8_client_init(u8_client client,size_t len,
+				   u8_socket sock,u8_server srv);
 
 /** Forces a client to be closed.
      @param cl a pointer to a U8_CLIENT struct
@@ -75,7 +88,7 @@ U8_EXPORT void u8_client_done(u8_client cl);
      to listen for new connections. 
 **/
 typedef struct U8_SERVER_INFO {
-  int socket; u8_string idstring;
+  u8_socket socket; u8_string idstring;
   struct sockaddr *addr;} U8_SERVER_INFO;
 typedef struct U8_SERVER_INFO *u8_server_info;
 
@@ -93,14 +106,14 @@ typedef struct U8_SERVER {
   int n_busy; /* How many clients are currently busy */
   int n_accepted; /* How many connections have been accepted to date */
   int n_trans; /* How many transactions have been initiated to date */
-  int socket_max; /* Largest open socket */
+  u8_socket socket_max; /* Largest open socket */
   int socket_lim; /* The size of socketmap */
   /* Tracking wait times */
   long long waitsum; int waitcount;
   /* Tracking run times */
   long long runsum; int runcount;
   /* Handling functions */
-  u8_client (*acceptfn)(int sock,struct sockaddr *,int);
+  u8_client (*acceptfn)(u8_server,u8_socket sock,struct sockaddr *,int);
   int (*servefn)(u8_client);
   int (*closefn)(u8_client);
   /* Miscellaneous data */
@@ -117,10 +130,10 @@ typedef struct U8_SERVER {
   u8_client *queue;
 #endif
 } U8_SERVER;
-typedef struct U8_SERVER *u8_server;
 
 U8_EXPORT int u8_server_init(struct U8_SERVER *,int,int,int,
-			     u8_client (*acceptfn)(int,struct sockaddr *,int),
+			     u8_client (*acceptfn)(u8_server,u8_socket,
+						   struct sockaddr *,int),
 			     int (*servefn)(u8_client),
 			     int (*closefn)(u8_client));
 

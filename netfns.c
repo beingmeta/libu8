@@ -398,13 +398,13 @@ U8_EXPORT u8_string u8_canonical_addr(u8_string spec)
   return result;
 }
 
-U8_EXPORT u8_connection u8_connect_x(u8_string spec,u8_string *addrp)
+U8_EXPORT u8_socket u8_connect_x(u8_string spec,u8_string *addrp)
 {
   u8_byte _hostname[128], *hostname=_hostname; int portno=-1;
   long socket_id;
   hostname=u8_parse_addr(spec,&portno,hostname,128);
-  if (portno<0) return (u8_connection)-1;
-  else if (!(hostname)) return (u8_connection)-1;
+  if (portno<0) return ((u8_socket)(-1));
+  else if (!(hostname)) return ((u8_socket)(-1));
   else if (portno) {
     struct sockaddr_in sockaddr;
     u8_byte portspec[64];
@@ -419,7 +419,7 @@ U8_EXPORT u8_connection u8_connect_x(u8_string spec,u8_string *addrp)
       u8_graberr(-1,"u8_connect:socket",u8_strdup(spec));
       u8_free(addrs);
       if (hostname!=_hostname) u8_free(hostname);
-      return (u8_connection)-1;}
+      return ((u8_socket)(-1));}
 #if 0
     if (timeout>0) {
       struct timeval tv;
@@ -440,16 +440,16 @@ U8_EXPORT u8_connection u8_connect_x(u8_string spec,u8_string *addrp)
 	  u8_free(addrs);
 	  if (hostname!=_hostname) u8_free(hostname);
 	  u8_graberr(-1,"u8_connect:connect",u8_strdup(spec));
-	  return (u8_connection)-1;}
+	  return ((u8_socket)(-1));}
 	else errno=0; /* Try the next address */
       else {
 	if (addrp) *addrp=u8_sockaddr_string((struct sockaddr *)&sockaddr);
 	if (hostname!=_hostname) u8_free(hostname);
 	u8_free(addrs);
-	return (u8_connection)socket_id;}}
+	return (u8_socket)socket_id;}}
     u8_free(addrs);
     if (hostname!=_hostname) u8_free(hostname);
-    return (u8_connection)-1;}
+    return ((u8_socket)(-1));}
   else {
 #if HAVE_SYS_UN_H
     struct sockaddr_un sockaddr;
@@ -463,21 +463,21 @@ U8_EXPORT u8_connection u8_connect_x(u8_string spec,u8_string *addrp)
       close(socket_id);
       u8_graberr(-1,"u8_connect:connect",u8_strdup(spec));
       if (hostname!=_hostname) u8_free(hostname);
-      return (u8_connection)-1;}
-    else return (u8_connection)socket_id;
+      return ((u8_socket)(-1));}
+    else return (u8_socket)socket_id;
 #else
     u8_seterr(NoFileSockets,"u8_connect",NULL);
-    return (u8_connection)-1;
+    return ((u8_socket)(-1));
 #endif
   }
 }
 
-U8_EXPORT u8_connection u8_connect(u8_string spec)
+U8_EXPORT u8_socket u8_connect(u8_string spec)
 {
   return u8_connect_x(spec,NULL);
 }
 
-U8_EXPORT int u8_set_nodelay(u8_connection c,int flag)
+U8_EXPORT int u8_set_nodelay(u8_socket c,int flag)
 {
   int retval=setsockopt
     (c,IPPROTO_TCP,TCP_NODELAY,(void *) &flag,sizeof(int));
@@ -522,8 +522,8 @@ U8_EXPORT u8_connpool
   cp->u8cp_n_open=0;
   cp->u8cp_n_inuse=0;
   cp->u8cp_n_waiting=0;
-  cp->u8cp_inuse=u8_alloc_n(cap,u8_connection);
-  cp->u8cp_free=u8_alloc_n(cap,u8_connection);
+  cp->u8cp_inuse=u8_alloc_n(cap,u8_socket);
+  cp->u8cp_free=u8_alloc_n(cap,u8_socket);
   cp->u8cp_reconnect_wait1=-1;
   cp->u8cp_reconnect_wait=-1;
   cp->u8cp_reconnect_tries=-1;
@@ -536,7 +536,7 @@ U8_EXPORT u8_connpool
     while (i<init) {
       int conn=u8_connect(id);
       if (conn<0) {
-	u8_connection *opened=cp->u8cp_free;
+	u8_socket *opened=cp->u8cp_free;
 	int j=0, lim=cp->u8cp_n_open;
 	u8_graberr(errno,"u8_init_connblock",cp->u8cp_id);
 	while (j<lim) {
@@ -560,10 +560,10 @@ static int grow_connpool(u8_connpool cp,int newcap,int newinit)
   u8_lock_mutex(&(cp->u8cp_lock));
   CPDBG2(cp,"(%s/%d/%d) growing connection pool to %d/%d",newinit,newcap);
   if (newcap>cp->u8cp_cap) {
-    u8_connection *newfree, *newinuse;
-    newfree=u8_realloc_n(cp->u8cp_free,newcap,u8_connection);
+    u8_socket *newfree, *newinuse;
+    newfree=u8_realloc_n(cp->u8cp_free,newcap,u8_socket);
     if (newfree) cp->u8cp_free=newfree;
-    newinuse=u8_realloc_n(cp->u8cp_inuse,newcap,u8_connection);
+    newinuse=u8_realloc_n(cp->u8cp_inuse,newcap,u8_socket);
     if (newinuse) cp->u8cp_inuse=newinuse;
     if ((newfree==NULL) || (newinuse==NULL)) {
       u8_graberr(errno,"grow_connpool",cp->u8cp_id);
@@ -577,7 +577,7 @@ static int grow_connpool(u8_connpool cp,int newcap,int newinit)
   if (newinit>cp->u8cp_n_open) {
     int have=cp->u8cp_n_open, need=newinit-have;
     while (have<need) {
-      u8_connection c=u8_connect(cp->u8cp_id);
+      u8_socket c=u8_connect(cp->u8cp_id);
       if (c<0) {
 	u8_graberr(errno,"grow_connpool",u8_strdup(cp->u8cp_id));
 	u8_unlock_mutex(&(cp->u8cp_lock));
@@ -587,14 +587,14 @@ static int grow_connpool(u8_connpool cp,int newcap,int newinit)
   return cp->u8cp_cap;
 }
 
-U8_EXPORT u8_connection u8_get_connection(u8_connpool cp)
+U8_EXPORT u8_socket u8_get_connection(u8_connpool cp)
 {
-  u8_connection retval=-1;
+  u8_socket retval=-1;
   u8_lock_mutex(&(cp->u8cp_lock));
   CPDBG0(cp,"(%s/%d/%d) Getting connection");
   if (cp->u8cp_reserve<1) {
     /* If we're not really maintaining a pool, just connect. */
-    u8_connection c;
+    u8_socket c;
     if ((c=u8_connect(cp->u8cp_id))<0) {
       u8_unlock_mutex(&(cp->u8cp_lock));
       return c;}
@@ -652,7 +652,7 @@ U8_EXPORT u8_connection u8_get_connection(u8_connpool cp)
 }
 
 /* Returns a connection to the pool, possibly discarding it. */
-static u8_connection return_connection(u8_connpool cp,u8_connection c,int discard)
+static u8_socket return_connection(u8_connpool cp,u8_socket c,int discard)
 {
   u8_lock_mutex(&(cp->u8cp_lock));
   CPDBG1(cp,"(%s/%d/%d) Freeing (returning) connection %d",c);
@@ -665,7 +665,7 @@ static u8_connection return_connection(u8_connpool cp,u8_connection c,int discar
     int retval=-1;
     int n_open=cp->u8cp_n_open, n_inuse=cp->u8cp_n_inuse;
     int n_free=n_open-n_inuse;
-    u8_connection *scan=cp->u8cp_inuse, *limit=scan+n_inuse;
+    u8_socket *scan=cp->u8cp_inuse, *limit=scan+n_inuse;
     /* Find the connection */
     while (scan<limit) if (*scan==c) break; else scan++;
     if (scan>=limit) {
@@ -679,7 +679,7 @@ static u8_connection return_connection(u8_connpool cp,u8_connection c,int discar
       return -1;}
     CPDBG2(cp,"(%s/%d/%d) Found connection %d at %d",c,scan-cp->u8cp_inuse);
     /* Move the inuse records down */
-    memmove(scan,scan+1,sizeof(u8_connection)*(limit-(scan+1)));
+    memmove(scan,scan+1,sizeof(u8_socket)*(limit-(scan+1)));
     /* Bump the inuse pointer */
     cp->u8cp_n_inuse--;
     CPDBG1(cp,"(%s/%d/%d) Removed %d from inuse",c);
@@ -739,13 +739,13 @@ static u8_connection return_connection(u8_connpool cp,u8_connection c,int discar
 #if 0
 /* Was used for reconnection on failed connections */
 /* Now implemented in terms of return/get connection */
-static u8_connection replace_connection(u8_connpool cp,u8_connection oldc,u8_connection newc)
+static u8_socket replace_connection(u8_connpool cp,u8_socket oldc,u8_socket newc)
 {
   int retval=-1;
   u8_lock_mutex(&(cp->u8cp_lock));
   {
     int n_open=cp->u8cp_n_open, n_inuse=cp->u8cp_n_inuse, n_free=n_open-n_inuse;
-    u8_connection *scan=cp->u8cp_inuse, *limit=scan+n_inuse, newc=-1;
+    u8_socket *scan=cp->u8cp_inuse, *limit=scan+n_inuse, newc=-1;
     /* Find the connection */
     while (scan<limit) if (*scan==oldc) break; else scan++;
     if (scan>=limit) {
@@ -760,7 +760,7 @@ static u8_connection replace_connection(u8_connpool cp,u8_connection oldc,u8_con
 }
 #endif
 
-U8_EXPORT u8_connection u8_reconnect(u8_connpool cp,u8_connection c)
+U8_EXPORT u8_socket u8_reconnect(u8_connpool cp,u8_socket c)
 {
   int retry_count=0;
   int retry_wait=(((cp->u8cp_reconnect_wait)>=0) ? (cp->u8cp_reconnect_wait) : (u8_reconnect_wait));
@@ -785,12 +785,12 @@ U8_EXPORT u8_connection u8_reconnect(u8_connpool cp,u8_connection c)
   return c;
 }
 
-U8_EXPORT u8_connection u8_return_connection(u8_connpool cp,u8_connection c)
+U8_EXPORT u8_socket u8_return_connection(u8_connpool cp,u8_socket c)
 {
   return return_connection(cp,c,0);
 }
 
-U8_EXPORT u8_connection u8_discard_connection(u8_connpool cp,u8_connection c)
+U8_EXPORT u8_socket u8_discard_connection(u8_connpool cp,u8_socket c)
 {
   return return_connection(cp,c,1);
 }
@@ -1179,7 +1179,7 @@ int u8_smtp(char *mailhost,char *maildomain,
 
 /* Setting flags */
 
-U8_EXPORT int u8_set_blocking(u8_connection fd,int flag)
+U8_EXPORT int u8_set_blocking(u8_socket fd,int flag)
 {
   if (flag) return (!((set_doblock(fd))&(O_NONBLOCK)));
   else return ((set_noblock(fd))&(O_NONBLOCK));

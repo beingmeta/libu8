@@ -70,8 +70,8 @@ typedef struct U8_CONNPOOL {
   int u8cp_reconnect_wait1; /* how long to wait before starting to try to reconnect */
   int u8cp_reconnect_wait; /* how long to wait between reconnect attempts */
   int u8cp_reconnect_tries; /* how many reconnect attempts to make */
-  u8_connection *u8cp_inuse; /* array of all sockets in use */
-  u8_connection *u8cp_free;  /* array of all sockets available to use */
+  u8_socket *u8cp_inuse; /* array of all sockets in use */
+  u8_socket *u8cp_free;  /* array of all sockets available to use */
   struct U8_CONNPOOL *u8cp_next;
   } *u8_connpool;
 
@@ -150,15 +150,15 @@ U8_EXPORT u8_string u8_canonical_addr(u8_string spec);
     @param spec (a utf-8 string of the form port\@host)
     @param addrp a pointer to a pointer to a utf-8 string, in
       which is deposited identifying information for the host contacted
-    @returns a u8_connection (int) which is a socket_id
+    @returns a u8_socket (int) which is a socket_id
 **/
-U8_EXPORT u8_connection u8_connect_x(u8_string spec,u8_string *addrp);
+U8_EXPORT u8_socket u8_connect_x(u8_string spec,u8_string *addrp);
 
 /** Opens a socket to a specified port and host
     @param spec (a utf-8 string of the form port\@host)
-    @returns a u8_connection (int) which is a socket_id
+    @returns a u8_socket (int) which is a socket_id
 **/
-U8_EXPORT u8_connection u8_connect(u8_string spec);
+U8_EXPORT u8_socket u8_connect(u8_string spec);
 
 /** Returns a unique identifer for the current session.
      This is based on a pid, a hostname, and the time at which
@@ -177,18 +177,18 @@ U8_EXPORT int u8_get_portno(u8_string portspec);
 
 /** Sets whether a connection delays output to fill packets
      (the Nagle algorithm)
-    @param conn (a u8_connection, an int socket id)
+    @param conn (a u8_socket, an int socket id)
     @param flag (whether the connection should delay output)
     @returns 1 if successful
 **/
-U8_EXPORT int u8_set_nodelay(u8_connection conn,int flag);
+U8_EXPORT int u8_set_nodelay(u8_socket conn,int flag);
 
 /** Sets whether I/O on the connection blocks
-    @param conn (a u8_connection, an int socket id)
+    @param conn (a u8_socket, an int socket id)
     @param flag (whether the connection should block on I/O)
     @returns 1 if successful
 **/
-U8_EXPORT int u8_set_blocking(u8_connection conn,int flag);
+U8_EXPORT int u8_set_blocking(u8_socket conn,int flag);
 
 /** Returns a human readable string representation of a sockaddr structure.
     @param sockaddr a pointer to a sockaddr struct.
@@ -213,9 +213,9 @@ U8_EXPORT u8_connpool
     This opens a new connection if needed but will use existing connections
      which have been passed in with u8_return_connection.
      @param cb a pointer to a connection block structure
-     @returns a u8_connection (integer socket id)
+     @returns a u8_socket (integer socket id)
  **/
-U8_EXPORT u8_connection u8_get_connection(u8_connpool cb);
+U8_EXPORT u8_socket u8_get_connection(u8_connpool cb);
 
 /** Returns a connection to a connection block.
     This adds the connection argument back to the queue of connections
@@ -226,10 +226,10 @@ U8_EXPORT u8_connection u8_get_connection(u8_connpool cb);
     Zero is returned if the connection was closed (and discarded), -1 on an error,
        and otherwise the connection itself is returned.
      @param cb a pointer to a connection block structure
-     @param c a u8_connection (integer socket id)
-     @returns a u8_connection (integer socket id)
+     @param c a u8_socket (integer socket id)
+     @returns a u8_socket (integer socket id)
  **/
-U8_EXPORT u8_connection u8_return_connection(u8_connpool cb,u8_connection c);
+U8_EXPORT u8_socket u8_return_connection(u8_connpool cb,u8_socket c);
 
 /** Discards a connection received from a connection block.
     This removes the connection argument from the queue of connections
@@ -241,17 +241,17 @@ U8_EXPORT u8_connection u8_return_connection(u8_connpool cb,u8_connection c);
     Zero is returned if the connection was closed and no new connection made,
      -1 is returned on error, and otherwise the new connection is returned.
      @param cb a pointer to a connection block structure
-     @param c a u8_connection (integer socket id)
-     @returns a u8_connection (integer socket id)
+     @param c a u8_socket (integer socket id)
+     @returns a u8_socket (integer socket id)
  **/
-U8_EXPORT u8_connection u8_discard_connection(u8_connpool cb,u8_connection c);
+U8_EXPORT u8_socket u8_discard_connection(u8_connpool cb,u8_socket c);
 
 /** Reopens a connection from a connection block, replacing it in the block.
     The new connection (socket) is returned or -1 if there is an error.
      @param cb a pointer to a connection block structure
-     @param c a u8_connection (integer socket id)
+     @param c a u8_socket (integer socket id)
  **/
-U8_EXPORT u8_connection u8_reconnect(u8_connpool cb,u8_connection c);
+U8_EXPORT u8_socket u8_reconnect(u8_connpool cb,u8_socket c);
 
 /** Returns a connection block structure initialized with a
      particular connection id and a reserve count.  This registers

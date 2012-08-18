@@ -20,7 +20,8 @@ struct ECHO_CONN {
   char lastin[256];};
 
 
-static u8_client echosrv_accept(int sock,struct sockaddr *addr,int len)
+static u8_client echosrv_accept(u8_server srv,u8_socket sock,
+				struct sockaddr *addr,int len)
 {
   /* We'll accept anything without checking addr (which is who is
      connecting to us). */
