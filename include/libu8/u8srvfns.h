@@ -37,9 +37,9 @@ typedef struct U8_SERVER *u8_server;
   unsigned int flags, n_trans;       \
   long long queued, started;         \
   u8_string idstring;                \
+  unsigned int async:1, writing:1;   \
   unsigned char *buf;                \
   size_t off, len, buflen;           \
-  unsigned int async:1, writing:1;   \
   struct U8_SERVER *server
 
 /** struct U8_CLIENT
@@ -69,6 +69,7 @@ typedef struct U8_CLIENT *u8_client;
  Returns: a pointer to a client structure, consed if not provided.
 */
 U8_EXPORT u8_client u8_client_init(u8_client client,size_t len,
+				   struct sockaddr *addrbuf,size_t addrlen,
 				   u8_socket sock,u8_server srv);
 
 /** Forces a client to be closed.

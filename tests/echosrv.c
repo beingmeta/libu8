@@ -26,11 +26,12 @@ static u8_client echosrv_accept
 {
   /* We'll accept anything without checking addr (which is who is
      connecting to us). */
-  struct ECHO_CONN *consed=u8_alloc(struct ECHO_CONN);
-  memset(consed,0,sizeof(struct ECHO_CONN));
-  consed->socket=sock; 
+  struct ECHO_CONN *consed=
+    (struct ECHO_CONN *)
+    u8_client_init(NULL,sizeof(struct ECHO_CONN),
+		   (struct sockaddr *)addr,addr_len,
+		   sock,srv);
   u8_set_nodelay(sock,1);
-  consed->idstring=u8_sockaddr_string(addr);
   u8_message("Accepted connection from %s",consed->idstring);
   return (u8_client) consed;
 }
