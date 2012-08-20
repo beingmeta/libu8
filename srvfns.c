@@ -125,6 +125,14 @@ u8_client u8_client_init(u8_client client,size_t len,
   memset(client,0,len);
   client->socket=sock;
   client->server=srv;
+#if 0
+  client->flags=0; client->n_trans=0;
+  client->queued=client->started=0;
+  client->async=0; client->writing=0;
+  client->ownsbuf=0; client->grows=0;
+  client->buf=NULL;
+#endif
+  client->off=client->len=client->buflen=client->delta=0;
   if ((srv->flags)&U8_SERVER_ASYNC)
     client->flags=client->flags|U8_CLIENT_ASYNC;
   return client;
@@ -334,8 +342,10 @@ static void *event_loop(void *thread_arg)
       if (server->flags&U8_SERVER_CLOSED) dobreak=1;
       if (cl->flags&U8_CLIENT_CLOSING) {
 	finish_close_client(cl); closed=1;}
-      else u8_client_done(cl);
-      cl->buf=NULL; cl->off=cl->len=cl->buflen=0;}
+      else {
+	u8_client_done(cl);
+	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
+	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}}
     else if ((cl->async)&&(cl->buf!=NULL)) {
       /* The execution queued some input or output */
       size_t delta;
