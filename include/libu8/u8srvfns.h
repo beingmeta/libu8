@@ -38,8 +38,9 @@ typedef struct U8_SERVER *u8_server;
   long long queued, started;         \
   u8_string idstring;                \
   unsigned int async:1, writing:1;   \
+  unsigned int ownsbuf:1, grows:1;   \
   unsigned char *buf;                \
-  size_t off, len, buflen;           \
+  size_t off, len, buflen, delta;    \
   struct U8_SERVER *server
 
 /** struct U8_CLIENT
@@ -55,8 +56,9 @@ typedef struct U8_CLIENT {
   long long queued, started;
   u8_string idstring;
   unsigned int async:1, writing:1;
+  unsigned int ownsbuf:1, grows:1;
   unsigned char *buf;
-  size_t off, len, buflen;
+  size_t off, len, buflen, delta;
   struct U8_SERVER *server;} U8_CLIENT;
 typedef struct U8_CLIENT *u8_client;
 
@@ -127,6 +129,7 @@ typedef struct U8_SERVER {
 			struct sockaddr *,size_t);
   int (*servefn)(u8_client);
   int (*closefn)(u8_client);
+  int (*readyfn)(u8_client);
   /* Miscellaneous data */
   void *serverdata;
   /* We don't handle non-threaded right now. */
@@ -136,9 +139,10 @@ typedef struct U8_SERVER {
   /* n_tasks is the number of waiting requests in ->queue.
      max_tasks is the space available in ->queue
      n_threads is the number of threads in the pool */
-  int n_tasks, max_tasks, n_threads, max_backlog;
+  int n_queued, max_queued, n_threads, max_backlog;
   pthread_t *thread_pool;
   u8_client *queue;
+  int queue_len, queue_head, queue_tail;
 #endif
 } U8_SERVER;
 

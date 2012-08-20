@@ -184,6 +184,7 @@ void u8_client_close(u8_client cl)
       server->closefn(cl);
       if (cl->server->flags&U8_SERVER_LOG_CONNECT)
 	u8_log(LOG_INFO,ClosedClient,"Closed #%d for %s",sock,idstring);
+      if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
       u8_free(idstring);
       u8_free(cl);}}
 }
@@ -205,6 +206,7 @@ static void client_close(u8_client cl)
       server->closefn(cl);
       if (cl->server->flags&U8_SERVER_LOG_CONNECT)
 	u8_log(LOG_INFO,ClosedClient,"Closed #%d for %s",sock,idstring);
+      if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
       u8_free(idstring);
       u8_free(cl);}}
 }
@@ -233,6 +235,7 @@ static void finish_close_client(u8_client cl)
     server->closefn(cl);
     if (cl->server->flags&U8_SERVER_LOG_CONNECT)
       u8_log(LOG_INFO,ClosedClient,"Closed #%d for %s",sock,idstring);
+    if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
     u8_free(idstring);
     u8_free(cl);}
 }
@@ -242,15 +245,13 @@ static u8_client pop_task(struct U8_SERVER *server)
 {
   u8_client task=NULL; long long curtime;
   u8_lock_mutex(&(server->lock));
-  while ((server->n_tasks == 0) && ((server->flags&U8_SERVER_CLOSED)==0)) 
+  while ((server->n_queued == 0) && ((server->flags&U8_SERVER_CLOSED)==0)) 
     u8_condvar_wait(&(server->empty),&(server->lock));
   if (server->flags&U8_SERVER_CLOSED) {}
-  else if (server->n_tasks) {
-    task=server->queue[0];
-    /* This could be more clever, to be constant in some way */
-    memmove(&(server->queue[0]),&(server->queue[1]),
-	    sizeof(void *)*(server->n_tasks-1));
-    server->n_tasks--;}
+  else if (server->n_queued) {
+    task=server->queue[server->queue_head++];
+    if (server->queue_head>=server->queue_len) server->queue_head=0;
+    server->n_queued--;}
   else {}
   if (task) {
     if (task->socket>0) {FD_CLR(task->socket,&(server->listening));}
@@ -265,8 +266,10 @@ static u8_client pop_task(struct U8_SERVER *server)
 
 static int push_task(struct U8_SERVER *server,u8_client cl)
 {
-  if (server->n_tasks >= server->max_tasks) return 0;
-  server->queue[server->n_tasks++]=cl;
+  if (server->n_queued >= server->max_queued) return 0;
+  server->queue[server->queue_tail++]=cl;
+  if (server->queue_tail>=server->queue_len) server->queue_tail=0;
+  server->n_queued++;
   cl->queued=u8_microtime(); cl->started=-1;
   u8_condvar_signal(&(server->empty));
   return 1;
@@ -373,7 +376,7 @@ static void *event_loop(void *thread_arg)
 
 U8_EXPORT
 int u8_server_init(struct U8_SERVER *server,
-		   int maxback,int max_tasks,int n_threads,
+		   int maxback,int max_queued,int n_threads,
 		   u8_client (*acceptfn)(u8_server,u8_socket,
 					 struct sockaddr *,size_t),
 		   int (*servefn)(u8_client),
@@ -395,8 +398,10 @@ int u8_server_init(struct U8_SERVER *server,
 #if U8_THREADS_ENABLED
   u8_init_mutex(&(server->lock));
   u8_init_condvar(&(server->empty)); u8_init_condvar(&(server->full));  
-  server->n_threads=n_threads; server->n_tasks=0; server->max_tasks=max_tasks;
-  server->queue=u8_alloc_n(max_tasks,u8_client);
+  server->n_threads=n_threads;
+  server->queue=u8_alloc_n(max_queued,u8_client);
+  server->n_queued=0; server->max_queued=max_queued;
+  server->queue_head=0; server->queue_tail=0; server->queue_len=max_queued;
   server->thread_pool=u8_alloc_n(n_threads,pthread_t);
   server->n_trans=0; /* Transaction count */
   server->n_accepted=0; /* Accept count (new clients) */
@@ -683,10 +688,44 @@ static int server_wait(fd_set *listening,int max_sockets,struct timeval *to)
   return select(max_sockets+1,listening,NULL_FDS,NULL_FDS,to);
 }
 
+static int server_accept(u8_server server,u8_socket i)
+{
+  /* If the activity is on the server socket, open a new socket */
+  char addrbuf[1024];
+  int addrlen=1024; u8_socket sock;
+  memset(addrbuf,0,1024);
+  sock=accept(i,(struct sockaddr *)addrbuf,&addrlen);
+  if (sock < 0) {
+    u8_log(LOG_ERR,u8_NetworkError,_("Failed accept on socket %d"),i);
+    errno=0;
+    return -1;}
+  else {
+    u8_client new_client=server->acceptfn
+      (server,sock,(struct sockaddr *)addrbuf,addrlen);
+    if (new_client) {
+      u8_string idstring=
+	((new_client->idstring)?(new_client->idstring):
+	 (u8_sockaddr_string((struct sockaddr *)addrbuf)));
+      server->n_accepted++;
+      if (server->flags&U8_SERVER_LOG_CONNECT) 
+	u8_log(LOG_INFO,NewClient,"Opened #%d for %s",
+	       sock,idstring);
+      if (!(new_client->idstring)) new_client->idstring=idstring;
+      add_client(server,new_client);
+      return 1;}
+    else if (server->flags&U8_SERVER_LOG_CONNECT) {
+      u8_string connid=
+	u8_sockaddr_string((struct sockaddr *)addrbuf);
+      u8_log(LOG_NOTICE,RejectedConnection,"Rejected connection from %s");
+      u8_free(connid);
+      return 0;}
+    else return 0;}
+}
+
 /* This listens for connections and pushes tasks (unless we're not
    threaded, in which case it dispatches to the servefn right
    away).  */
-static int server_step(struct U8_SERVER *server)
+static int server_listen(struct U8_SERVER *server)
 {
   fd_set listening;
   int i, max_socket, n_actions, retval;
@@ -712,33 +751,8 @@ static int server_step(struct U8_SERVER *server)
     if (!(FD_ISSET(i,&listening))) i++;
     else if (!(FD_ISSET(i,&server->listening))) i++;
     else if (FD_ISSET(i,&server->servers)) {
-      /* If the activity is on the server socket, open a new socket */
-      char addrbuf[1024];
-      int addrlen=1024, sock;
-      memset(addrbuf,0,1024);
-      sock=accept(i,(struct sockaddr *)addrbuf,&addrlen);
-      if (sock < 0) {
-	u8_log(LOG_ERR,u8_NetworkError,_("Failed accept on socket %d"),i);
-	i++; errno=0; continue;}
-      else {
-	u8_client new_client=server->acceptfn
-	  (server,sock,(struct sockaddr *)addrbuf,addrlen);
-	if (new_client) {
-	  u8_string idstring=
-	    ((new_client->idstring)?(new_client->idstring):
-	     (u8_sockaddr_string((struct sockaddr *)addrbuf)));
-	  server->n_accepted++;
-	  if (server->flags&U8_SERVER_LOG_CONNECT) 
-	    u8_log(LOG_INFO,NewClient,"Opened #%d for %s",
-		   sock,idstring);
-	  if (!(new_client->idstring)) new_client->idstring=idstring;
-	  add_client(server,new_client);
-	  n_actions++; i++;}
-	else if (server->flags&U8_SERVER_LOG_CONNECT) {
-	  u8_string connid=
-	    u8_sockaddr_string((struct sockaddr *)addrbuf);
-	  u8_log(LOG_NOTICE,RejectedConnection,"Rejected connection from %s");
-	  u8_free(connid);}}}
+      int retval=server_accept(server,i++);
+      if (retval<=0) continue;}
     else {
       u8_client client=server->socketmap[i];
       if (client==NULL) {
@@ -771,7 +785,7 @@ int u8_push_task(struct U8_SERVER *server,u8_client cl)
 U8_EXPORT
 void u8_server_loop(struct U8_SERVER *server)
 {
-  while ((server->flags&U8_SERVER_CLOSED)==0) server_step(server);
+  while ((server->flags&U8_SERVER_CLOSED)==0) server_listen(server);
 }
 
 /* Getting server status */
@@ -787,9 +801,9 @@ u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int buflen)
     (&out,
      "%s Config: %d/%d/%d threads/maxqueue/backlog; Clients: %d/%d/%d busy/active/ever; Requests: %d/%d/%d live/queued/total;\n",
      server->server_info->idstring,
-     server->n_threads,server->max_tasks,server->max_backlog,
+     server->n_threads,server->max_queued,server->max_backlog,
      server->n_busy,server->n_clients,server->n_accepted,
-     server->n_busy,server->n_tasks,server->n_trans);
+     server->n_busy,server->n_queued,server->n_trans);
   u8_unlock_mutex(&(server->lock));
   return out.u8_outbuf;
 }
@@ -804,9 +818,9 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
   u8_printf
     (&out,"%s\t%d\%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
      server->server_info->idstring,
-     server->n_threads,server->max_tasks,server->max_backlog,
+     server->n_threads,server->max_queued,server->max_backlog,
      server->n_busy,server->n_clients,server->n_accepted,
-     server->n_busy,server->n_tasks,server->n_trans);
+     server->n_busy,server->n_queued,server->n_trans);
   u8_unlock_mutex(&(server->lock));
   return out.u8_outbuf;
 }
