@@ -578,7 +578,6 @@ PACKAGE_BUGREPORT=
 
 ac_unique_file="include/libu8/libu8.h"
 ac_default_prefix=/usr
-ac_default_prefix=/usr/local
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -1864,7 +1863,7 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
-default_prefix="/usr"
+ac_prefix_default=/usr
 
 ac_aux_dir=
 for ac_dir in etc "$srcdir"/etc; do
@@ -2026,21 +2025,20 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
+
 case $target_os in
   linux*)
    cat >>confdefs.h <<\_ACEOF
 #define U8_RUSAGE_PROC_PATCH 1
 _ACEOF
 
-
    ;;
-  darwin*)
-   MKSTATIC="libtool -static -o "
+  zdarwin*)
+   MKSTATIC="libtool -static -o ";
 #   if test "x$CC" = "xgcc"; then LIBS="$LIBS -lgcc"; fi
-   shared_suffix="dylib"
-   install_shared="install-dylib"
-   ifmacosx=""
-
+   shared_suffix="dylib";
+   install_shared="install-dylib";
+   ifmacosx="";
    ;;
 esac
 

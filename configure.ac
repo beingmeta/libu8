@@ -25,8 +25,8 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
-default_prefix="/usr"
 
+AC_PREFIX_DEFAULT(/usr)
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADER(include/libu8/config.h)
 AC_CANONICAL_HOST
@@ -35,15 +35,13 @@ AC_CANONICAL_TARGET
 case $target_os in
   linux*)
    AC_DEFINE(U8_RUSAGE_PROC_PATCH,1)
-   AC_PREFIX_DEFAULT(/usr)
    ;;
-  darwin*)
-   MKSTATIC="libtool -static -o "
+  zdarwin*)
+   MKSTATIC="libtool -static -o ";
 #   if test "x$CC" = "xgcc"; then LIBS="$LIBS -lgcc"; fi
-   shared_suffix="dylib"
-   install_shared="install-dylib"
-   ifmacosx=""
-   AC_PREFIX_DEFAULT(/usr/local)
+   shared_suffix="dylib";
+   install_shared="install-dylib";
+   ifmacosx="";
    ;;
 esac  
 
