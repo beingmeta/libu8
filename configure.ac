@@ -36,7 +36,7 @@ case $target_os in
   linux*)
    AC_DEFINE(U8_RUSAGE_PROC_PATCH,1)
    ;;
-  zdarwin*)
+  darwin*)
    MKSTATIC="libtool -static -o ";
 #   if test "x$CC" = "xgcc"; then LIBS="$LIBS -lgcc"; fi
    shared_suffix="dylib";
