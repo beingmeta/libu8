@@ -125,7 +125,7 @@ long long u8_microtime()
   struct timeval now;
   if (gettimeofday(&now,NULL) < 0)
     return -1;
-  else return now.tv_sec*1000000+now.tv_usec;
+  else return (((long long)now.tv_sec)*1000000LL)+((long long)(now.tv_usec));
 #elif HAVE_FTIME
   /* We're going to settle for millisecond precision here. */
   struct timeb now;
