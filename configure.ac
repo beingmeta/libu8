@@ -25,10 +25,27 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
+default_prefix="/usr"
 
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADER(include/libu8/config.h)
-AC_PREFIX_DEFAULT(/usr/local)
+AC_CANONICAL_HOST
+AC_CANONICAL_TARGET
+
+case $target_os in
+  linux*)
+   AC_DEFINE(U8_RUSAGE_PROC_PATCH,1)
+   AC_PREFIX_DEFAULT(/usr)
+   ;;
+  darwin*)
+   MKSTATIC="libtool -static -o "
+#   if test "x$CC" = "xgcc"; then LIBS="$LIBS -lgcc"; fi
+   shared_suffix="dylib"
+   install_shared="install-dylib"
+   ifmacosx=""
+   AC_PREFIX_DEFAULT(/usr/local)
+   ;;
+esac  
 
 AC_SUBST(CLEAN)
 AC_SUBST(TAGS)
@@ -49,8 +66,6 @@ AC_SUBST(doxygen)
 AC_SUBST(DOCS)
 AC_SUBST(INSTALLDOCS)
 
-AC_CANONICAL_HOST
-AC_CANONICAL_TARGET
 AC_PROG_CC([cc gcc])
 AC_PROG_INSTALL
 AC_PROG_RANLIB
@@ -95,30 +110,17 @@ fi
 
 gcc_version=`gcc -dumpversion`
 
-case $host_os in
-  linux*)
-   AC_DEFINE(U8_RUSAGE_PROC_PATCH,1)
-   ;;
-  darwin*)
-   MKSTATIC="libtool -static -o "
-#   if test "x$CC" = "xgcc"; then LIBS="$LIBS -lgcc"; fi
-   shared_suffix="dylib"
-   install_shared="install-dylib"
-   ifmacosx=""
-   ;;
-esac  
+case $gcc_version in
+  4*)
+   CFLAGS="-Wno-pointer-sign -Wimplicit -fno-strict-aliasing $CFLAGS"
+  ;;
+esac
 
 if test $target = "i686-pc-mingw32"; then
    shared_suffix="dll"
    install_shared="install-dll"
    LIBS="$LIBS -lwsock32"
 fi
-
-case $gcc_version in
-  4*)
-   CFLAGS="-Wno-pointer-sign -Wimplicit -fno-strict-aliasing $CFLAGS"
-  ;;
-esac
 
 AC_DEFINE(FD_WORDS_ARE_ALIGNED,1)
 AC_TYPE_UID_T

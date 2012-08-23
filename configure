@@ -577,6 +577,7 @@ PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
 ac_unique_file="include/libu8/libu8.h"
+ac_default_prefix=/usr
 ac_default_prefix=/usr/local
 # Factoring default headers for most tests.
 ac_includes_default="\
@@ -651,6 +652,18 @@ LIBS
 build_alias
 host_alias
 target_alias
+build
+build_cpu
+build_vendor
+build_os
+host
+host_cpu
+host_vendor
+host_os
+target
+target_cpu
+target_vendor
+target_os
 CLEAN
 TAGS
 SHARED_LIB
@@ -669,18 +682,6 @@ INSTALLI18N
 doxygen
 DOCS
 INSTALLDOCS
-build
-build_cpu
-build_vendor
-build_os
-host
-host_cpu
-host_vendor
-host_os
-target
-target_cpu
-target_vendor
-target_os
 CC
 CFLAGS
 LDFLAGS
@@ -1863,6 +1864,7 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
+default_prefix="/usr"
 
 ac_aux_dir=
 for ac_dir in etc "$srcdir"/etc; do
@@ -1896,27 +1898,6 @@ ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
 ac_config_headers="$ac_config_headers include/libu8/config.h"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # Make sure we can run config.sub.
 $SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
@@ -2044,6 +2025,44 @@ test -n "$target_alias" &&
   test "$program_prefix$program_suffix$program_transform_name" = \
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
+
+case $target_os in
+  linux*)
+   cat >>confdefs.h <<\_ACEOF
+#define U8_RUSAGE_PROC_PATCH 1
+_ACEOF
+
+
+   ;;
+  darwin*)
+   MKSTATIC="libtool -static -o "
+#   if test "x$CC" = "xgcc"; then LIBS="$LIBS -lgcc"; fi
+   shared_suffix="dylib"
+   install_shared="install-dylib"
+   ifmacosx=""
+
+   ;;
+esac
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -3554,20 +3573,10 @@ fi
 
 gcc_version=`gcc -dumpversion`
 
-case $host_os in
-  linux*)
-   cat >>confdefs.h <<\_ACEOF
-#define U8_RUSAGE_PROC_PATCH 1
-_ACEOF
-
-   ;;
-  darwin*)
-   MKSTATIC="libtool -static -o "
-#   if test "x$CC" = "xgcc"; then LIBS="$LIBS -lgcc"; fi
-   shared_suffix="dylib"
-   install_shared="install-dylib"
-   ifmacosx=""
-   ;;
+case $gcc_version in
+  4*)
+   CFLAGS="-Wno-pointer-sign -Wimplicit -fno-strict-aliasing $CFLAGS"
+  ;;
 esac
 
 if test $target = "i686-pc-mingw32"; then
@@ -3575,12 +3584,6 @@ if test $target = "i686-pc-mingw32"; then
    install_shared="install-dll"
    LIBS="$LIBS -lwsock32"
 fi
-
-case $gcc_version in
-  4*)
-   CFLAGS="-Wno-pointer-sign -Wimplicit -fno-strict-aliasing $CFLAGS"
-  ;;
-esac
 
 cat >>confdefs.h <<\_ACEOF
 #define FD_WORDS_ARE_ALIGNED 1
@@ -11940,6 +11943,18 @@ LIBS!$LIBS$ac_delim
 build_alias!$build_alias$ac_delim
 host_alias!$host_alias$ac_delim
 target_alias!$target_alias$ac_delim
+build!$build$ac_delim
+build_cpu!$build_cpu$ac_delim
+build_vendor!$build_vendor$ac_delim
+build_os!$build_os$ac_delim
+host!$host$ac_delim
+host_cpu!$host_cpu$ac_delim
+host_vendor!$host_vendor$ac_delim
+host_os!$host_os$ac_delim
+target!$target$ac_delim
+target_cpu!$target_cpu$ac_delim
+target_vendor!$target_vendor$ac_delim
+target_os!$target_os$ac_delim
 CLEAN!$CLEAN$ac_delim
 TAGS!$TAGS$ac_delim
 SHARED_LIB!$SHARED_LIB$ac_delim
@@ -11958,18 +11973,6 @@ INSTALLI18N!$INSTALLI18N$ac_delim
 doxygen!$doxygen$ac_delim
 DOCS!$DOCS$ac_delim
 INSTALLDOCS!$INSTALLDOCS$ac_delim
-build!$build$ac_delim
-build_cpu!$build_cpu$ac_delim
-build_vendor!$build_vendor$ac_delim
-build_os!$build_os$ac_delim
-host!$host$ac_delim
-host_cpu!$host_cpu$ac_delim
-host_vendor!$host_vendor$ac_delim
-host_os!$host_os$ac_delim
-target!$target$ac_delim
-target_cpu!$target_cpu$ac_delim
-target_vendor!$target_vendor$ac_delim
-target_os!$target_os$ac_delim
 CC!$CC$ac_delim
 CFLAGS!$CFLAGS$ac_delim
 LDFLAGS!$LDFLAGS$ac_delim

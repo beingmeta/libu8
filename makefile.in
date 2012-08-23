@@ -81,7 +81,7 @@ makefile: makefile.in config.status
 	./config.status
 ./config.status: configure
 	./config.status --recheck
-configure: configure.in
+configure: configure.ac
 	autoconf
 
 # Fileinfo gets version-related information about a file to pass in
