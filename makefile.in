@@ -309,7 +309,7 @@ $(DESTDIR)@prefix@/share/libu8/encodings:
 
 install-docs: docs/doxygen.done
 	$(INSTALL) -d $(MANDIR)/man3
-	$(INSTALL) docs/man/man3/* $(MANDIR)/man3
+	$(INSTALL) docs/*.3S $(MANDIR)/man3
 
 install-static-libs: $(LIBINSTALLDIR)/libu8.a \
 		     $(LIBINSTALLDIR)/libu8io.a \
