@@ -17,6 +17,7 @@ clean:
 	docbook2man $^
 
 install: $(MANFILES)
+	$(INSTALL) -d $(MANDIR)/man3
 	$(INSTALL) $(MANFILES) $(MANDIR)
 
 publish:
