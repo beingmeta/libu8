@@ -428,6 +428,24 @@ static void threadexit_atexit()
   u8_threadexit();
 }
 
+/* Debugging malloc */
+
+static ssize_t max_malloc=-1;
+
+U8_EXPORT void *u8_dmalloc(size_t n_bytes)
+{
+  if ((max_malloc>0)&&(n_bytes>max_malloc))
+    _u8_dbg("dmalloc");
+  return malloc(n_bytes);
+}
+
+U8_EXPORT int _u8_dbg(u8_string s)
+{
+  int retval=0;
+  u8_log(LOG_CRIT,"In debugger: %s",s);
+  return retval;
+}
+
 /* Recording source file information */
 
 static struct U8_SOURCE_FILE_RECORD *source_files=NULL;

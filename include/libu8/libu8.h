@@ -352,19 +352,27 @@ U8_EXPORT u8_string u8_svnrev;
 #define _(x) (x)
 #define N_(x) x
 
+U8_EXPORT int _u8_dbg(u8_string s);
+
 /* Malloc */
 
-#define u8_malloc(sz) malloc(sz)
+U8_EXPORT void *u8_dmalloc(size_t);
+
+#ifndef U8_MALLOC
+#define U8_MALLOC malloc
+#endif
+
+#define u8_malloc(sz) U8_MALLOC(sz)
 #define u8_realloc(ptr,tosz) \
-  ((ptr==NULL) ? (malloc(tosz)) : (realloc(ptr,tosz)))
+  ((ptr==NULL) ? (U8_MALLOC(tosz)) : (realloc(ptr,tosz)))
 #define u8_free(ptr) free(ptr)
 
 #define u8_alloc(t) ((t *)(u8_malloc(sizeof(t))))
 #define u8_alloc_n(n,t) ((t *)(u8_malloc(sizeof(t)*(n))))
 #define u8_realloc_n(ptr,n,t) ((t *)(u8_realloc(ptr,sizeof(t)*(n))))
 
-#define u8_malloc_struct(sname) ((struct sname *)(malloc(sizeof(struct sname))))
-#define u8_malloc_array(n,t) ((t *)(malloc(n*sizeof(t))))
+#define u8_malloc_struct(sname) ((struct sname *)(U8_MALLOC(sizeof(struct sname))))
+#define u8_malloc_array(n,t) ((t *)(U8_MALLOC(n*sizeof(t))))
 
 /** Allocates and zero-clears a block of memory
    @param sz the number of bytes to allocate
