@@ -178,15 +178,15 @@ void u8_client_close(u8_client cl)
     if (cl->flags&U8_CLIENT_CLOSED) {
       u8_unlock_mutex(&(server->lock));
       return;}
-    server->socketmap[sock]=NULL;
-    FD_CLR(cl->socket,&server->clients);
-    FD_CLR(cl->socket,&server->listening);
-    server->n_clients--;
     if (cl->flags&U8_CLIENT_BUSY) {
       cl->flags=cl->flags|(U8_CLIENT_CLOSING);
       u8_unlock_mutex(&(server->lock));}
     else {
       u8_string idstring=cl->idstring;
+      server->socketmap[sock]=NULL;
+      FD_CLR(cl->socket,&server->clients);
+      FD_CLR(cl->socket,&server->listening);
+      server->n_clients--;
       cl->flags=cl->flags|U8_CLIENT_CLOSED;
       u8_unlock_mutex(&(server->lock));
       server->closefn(cl);
@@ -234,6 +234,10 @@ static void finish_close_client(u8_client cl)
     if (cl->flags&U8_CLIENT_CLOSED) {
       u8_unlock_mutex(&(server->lock));
       return;}
+    server->socketmap[sock]=NULL;
+    FD_CLR(cl->socket,&server->clients);
+    FD_CLR(cl->socket,&server->listening);
+    server->n_clients--;
     cl->flags=cl->flags&U8_CLIENT_CLOSED;
     server->n_busy--;
     cur=u8_microtime();
@@ -327,6 +331,10 @@ static void *event_loop(void *thread_arg)
     */
     if (result<0) {
       u8_exception ex=u8_current_exception;
+      if (cl->flags&U8_CLIENT_CLOSING) {
+	finish_close_client(cl); closed=1;
+	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
+	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       while (ex) {
 	u8_log(LOG_WARN,ClientRequest,
 	       "Error during activity on %s[%d] (%s)",
@@ -341,7 +349,9 @@ static void *event_loop(void *thread_arg)
 	       "Completed transaction with %s[%d]",cl->idstring,cl->n_trans);
       if (server->flags&U8_SERVER_CLOSED) dobreak=1;
       if (cl->flags&U8_CLIENT_CLOSING) {
-	finish_close_client(cl); closed=1;}
+	finish_close_client(cl); closed=1;
+	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
+	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       else {
 	u8_client_done(cl);
 	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
