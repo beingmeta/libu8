@@ -26,11 +26,12 @@
 typedef struct U8_SERVER *u8_server;
 
 #define U8_CLIENT_BUSY 1
-#define U8_CLIENT_CLOSING 2
-#define U8_CLIENT_CLOSED 4
-#define U8_CLIENT_LOG_TRANSACT 8
-#define U8_CLIENT_ASYNC 16
-#define U8_CLIENT_FLAG_MAX 16
+#define U8_CLIENT_ACTIVE 2
+#define U8_CLIENT_CLOSING 4
+#define U8_CLIENT_CLOSED 8
+#define U8_CLIENT_LOG_TRANSACT 16
+#define U8_CLIENT_ASYNC 32
+#define U8_CLIENT_FLAG_MAX 32
 
 #define U8_CLIENT_FIELDS             \
   u8_socket socket;                  \
@@ -108,7 +109,7 @@ typedef struct U8_SERVER_INFO *u8_server_info;
      This structure represents a server's state and connections.
 **/
 typedef struct U8_SERVER {
-  fd_set servers, clients, listening;
+  fd_set servers, clients, reading, writing;
   /* n_servers is the number of sockets being listened on,
      server_info describes each one. */
   int n_servers, flags; struct U8_SERVER_INFO *server_info;
@@ -195,5 +196,7 @@ U8_EXPORT u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int b
        to buflen
 **/
 U8_EXPORT u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen);
+
+U8_EXPORT int u8_select(fd_set *reading,fd_set *writing,int max);
 
 #endif /* U8_U8SRVFNS_H */
