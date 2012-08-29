@@ -126,13 +126,8 @@ u8_client u8_client_init(u8_client client,size_t len,
   memset(client,0,len);
   client->socket=sock;
   client->server=srv;
-#if 0
-  client->flags=0; client->n_trans=0;
-  client->queued=client->started=0;
-  client->async=0; client->writing=0;
-  client->ownsbuf=0; client->grows=0;
-  client->buf=NULL;
-#endif
+  client->started=client->queued=client->active=-1;
+  client->reading=client->writing=-1;
   client->off=client->len=client->buflen=client->delta=0;
   if ((srv->flags)&U8_SERVER_ASYNC)
     client->flags=client->flags|U8_CLIENT_ASYNC;
@@ -147,18 +142,19 @@ U8_EXPORT
  appropriately. */
 void u8_client_done(u8_client cl)
 {
-  if (cl->flags&U8_CLIENT_BUSY) {
-    U8_SERVER *server=cl->server; long long cur;
+  if (cl->started>0) {
+    U8_SERVER *server=cl->server;
     u8_lock_mutex(&(server->lock));
     server->n_busy--;
-    cl->writing=0;
-    FD_SET(cl->socket,&server->reading);
-    FD_CLR(cl->socket,&server->writing);
-    cl->flags=cl->flags&(~(U8_CLIENT_BUSY));
-    cur=u8_microtime();
-    server->runsum=server->runsum+(cur-cl->started);
-    server->runcount++;
-    cl->queued=-1; cl->started=-1;
+    cl->started=cl->active=cl->writing=-1;
+    if (cl->queued>0) {
+      u8_log(LOG_WARNING,"u8_client_done",
+	     "Finishing transaction on a queued client %lx (fd=%d) (%s)",
+	     (unsigned long long)cl,cl->socket,cl->idstring);
+      cl->queued=-1;}
+    if (cl->socket>0) {
+      FD_SET(cl->socket,&server->reading);
+      FD_CLR(cl->socket,&server->writing);}
     u8_unlock_mutex(&(server->lock));}
 }
 
@@ -181,16 +177,24 @@ void u8_client_close(u8_client cl)
     if (cl->flags&U8_CLIENT_CLOSED) {
       u8_unlock_mutex(&(server->lock));
       return;}
-    if (cl->flags&U8_CLIENT_BUSY) {
+    if (cl->started>0) {
+      /* The client is in the middle of something, so we let it
+	 finish. */
       cl->flags=cl->flags|(U8_CLIENT_CLOSING);
       u8_unlock_mutex(&(server->lock));}
     else {
       u8_string idstring=cl->idstring;
-      server->socketmap[sock]=NULL;
-      cl->writing=0;
-      FD_CLR(cl->socket,&server->clients);
-      FD_CLR(cl->socket,&server->reading);
-      FD_CLR(cl->socket,&server->writing);
+      cl->reading=cl->writing=cl->active=cl->writing=0;
+      if (cl->queued>0) {
+	u8_log(LOG_WARNING,"u8_client_done",
+	       "Closing a queued client %lx (fd=%d) (%s)",
+	       (unsigned long long)cl,cl->socket,cl->idstring);
+	cl->queued=-1;}
+      if (sock>0) {
+	server->socketmap[sock]=NULL;
+	FD_CLR(cl->socket,&server->clients);
+	FD_CLR(cl->socket,&server->reading);
+	FD_CLR(cl->socket,&server->writing);}
       server->n_clients--;
       cl->flags=cl->flags|U8_CLIENT_CLOSED;
       u8_unlock_mutex(&(server->lock));
@@ -202,23 +206,26 @@ void u8_client_close(u8_client cl)
       u8_free(cl);}}
 }
 
-/* This is the internal version used when shutting down a server. */
+/* This is the internal version used when shutting down a server.
+   We dont wait for anything. */
 static void client_close(u8_client cl)
 {
   if ((cl->flags&U8_CLIENT_CLOSED)==0) {
     U8_SERVER *server=cl->server; u8_socket sock=cl->socket;
-    server->socketmap[sock]=NULL;
-    cl->writing=0;
-    FD_CLR(sock,&server->clients);
-    FD_CLR(sock,&server->reading);
-    FD_CLR(sock,&server->writing);
+    cl->active=cl->reading=cl->started=cl->queued=cl->writing=0;
+    if (sock>0) {
+      server->socketmap[sock]=NULL;
+      FD_CLR(sock,&server->clients);
+      FD_CLR(sock,&server->reading);
+      FD_CLR(sock,&server->writing);}
     server->n_clients--;
-    if (cl->flags&U8_CLIENT_BUSY) {
+    if (cl->started>0) {
       cl->flags=cl->flags|(U8_CLIENT_CLOSING);}
     else {
       u8_string idstring=cl->idstring;
       cl->flags=cl->flags|U8_CLIENT_CLOSED;
       server->closefn(cl);
+      if (cl->socket>0) close(cl->socket);
       if (cl->server->flags&U8_SERVER_LOG_CONNECT)
 	u8_log(LOG_INFO,ClosedClient,"Closed #%d for %s",sock,idstring);
       if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
@@ -241,11 +248,17 @@ static void finish_close_client(u8_client cl)
     if (cl->flags&U8_CLIENT_CLOSED) {
       u8_unlock_mutex(&(server->lock));
       return;}
-    server->socketmap[sock]=NULL;
-    cl->writing=0;
-    FD_CLR(cl->socket,&server->clients);
-    FD_CLR(cl->socket,&server->reading);
-    FD_CLR(cl->socket,&server->writing);
+    cl->reading=cl->writing=cl->active=cl->writing=0;
+    if (cl->queued>0) {
+      u8_log(LOG_WARN,"u8_client_done",
+	     "Finishing close on a queued client %lx (fd=%d) (%s)",
+	     (unsigned long long)cl,cl->socket,cl->idstring);
+      cl->queued=-1;}
+    if (sock>0) {
+      server->socketmap[sock]=NULL;
+      FD_CLR(cl->socket,&server->clients);
+      FD_CLR(cl->socket,&server->reading);
+      FD_CLR(cl->socket,&server->writing);}
     server->n_clients--;
     cl->flags=cl->flags&U8_CLIENT_CLOSED;
     server->n_busy--;
@@ -264,7 +277,7 @@ static void finish_close_client(u8_client cl)
 #if U8_THREADS_ENABLED
 static u8_client pop_task(struct U8_SERVER *server)
 {
-  u8_client task=NULL; long long curtime;
+  u8_client task=NULL;
   u8_lock_mutex(&(server->lock));
   while ((server->n_queued == 0) && ((server->flags&U8_SERVER_CLOSED)==0)) 
     u8_condvar_wait(&(server->empty),&(server->lock));
@@ -274,15 +287,16 @@ static u8_client pop_task(struct U8_SERVER *server)
     if (server->queue_head>=server->queue_len) server->queue_head=0;
     server->n_queued--;}
   else {}
-  if ((task)&&((task->flags)&(U8_CLIENT_ACTIVE))) {
+  if ((task)&&((task->active>0))) {
+    /* This should probably never happen */
+    u8_log(LOG_CRIT,"pop_task(u8)","popping active task %lx (fd=%d) (%s)",
+	   task,task->socket,task->idstring);
     task->queued=-1; task=NULL;}
   else if (task) {
-    server->n_trans++; curtime=u8_microtime();
-    server->waitsum=server->waitsum+(curtime-task->queued);
-    server->waitcount++;
-    task->queued=-1;
-    task->flags=task->flags|U8_CLIENT_ACTIVE;
-    task->started=curtime;}
+    u8_utime curtime=u8_microtime();
+    task->queued=-1; task->active=curtime;
+    if (task->started<0) task->started=curtime;}
+  else {}
   u8_unlock_mutex(&(server->lock));
   return task;
 }
@@ -294,7 +308,7 @@ static int push_task(struct U8_SERVER *server,u8_client cl)
   server->queue[server->queue_tail++]=cl;
   if (server->queue_tail>=server->queue_len) server->queue_tail=0;
   server->n_queued++;
-  cl->queued=u8_microtime(); cl->started=-1;
+  cl->queued=u8_microtime(); cl->active=-1;
   u8_condvar_signal(&(server->empty));
   return 1;
 }
@@ -313,23 +327,22 @@ static void *event_loop(void *thread_arg)
 	(!(FD_ISSET(cl->socket,(&(server->clients)))))) {
       u8_log(LOG_ERR,BadSocket,"Bad socket value %d for %lx",
 	     cl->socket,(unsigned long)cl);
-      cl->flags=cl->flags&(~(U8_CLIENT_ACTIVE));
+      cl->active=-1;
       continue;}
     if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
 	((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
       u8_log(LOG_DEBUG,ClientRequest,
 	     "Handling activity from %s[%d]",cl->idstring,cl->n_trans);
     if ((!(cl))&&(server->flags&U8_SERVER_CLOSED)) {
-      cl->flags=cl->flags&(~(U8_CLIENT_ACTIVE));
+      cl->active=-1;
       break;}
-    else if (!(cl)) {/* Why'd you weak me up? */}
-    else if ((cl->async)&&(cl->off<cl->len)) {
+    else if (!(cl)) {cl->active=-1;}
+    else if (((cl->reading>0)||(cl->writing>0))&&(cl->off<cl->len)) {
       /* We're in the middle of reading or writing a chunk of data */
       size_t delta;
-      if (cl->writing)
+      if (cl->writing>0)
 	delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
       else delta=read(cl->socket,cl->buf+cl->off,cl->len-cl->off);
-      /* if (delta<0) {} */
       if (delta>0) cl->off=cl->off+delta;
       /* If we've still got data to read/write, we continue,
 	 otherwise, we fall through */
@@ -337,7 +350,7 @@ static void *event_loop(void *thread_arg)
 	/* Keep listening */
 	u8_lock_mutex(&server->lock);
 	if (cl->socket>0) {
-	  if (cl->writing) {
+	  if (cl->writing>0) {
 	    FD_SET(cl->socket,&server->writing);
 	    FD_CLR(cl->socket,&server->reading);}
 	  else {
@@ -345,10 +358,8 @@ static void *event_loop(void *thread_arg)
 	    FD_CLR(cl->socket,&server->writing);}}
 	u8_unlock_mutex(&server->lock);
 	result=1;}
-      else {
-	cl->async=0; result=server->servefn(cl);}}
-    else {
-      cl->async=0; result=server->servefn(cl);}
+      else result=server->servefn(cl);}
+    else result=server->servefn(cl);
     /* When the servefn is called, cl->async=0 and there are three
        possible states:
        1. no asynchrony is going on (buf is NULL)
@@ -369,7 +380,7 @@ static void *event_loop(void *thread_arg)
 	ex=u8_pop_exception();}}
     else if (result==0) {
       /* Request is completed */
-      cl->n_trans++;
+      cl->n_trans++; cl->started=-1;
       if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
 	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
 	u8_log(LOG_INFO,ClientRequest,
@@ -386,13 +397,12 @@ static void *event_loop(void *thread_arg)
 	u8_client_done(cl);
 	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}}
-    else if ((cl->async)&&(cl->buf!=NULL)) {
+    else if (((cl->reading>0)||(cl->writing>0))&&(cl->buf!=NULL)) {
       /* The execution queued some input or output */
       size_t delta;
-      if (cl->writing)
+      if (cl->writing>0)
 	delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
       else delta=read(cl->socket,cl->buf+cl->off,cl->len-cl->off);
-      /* if (delta<0) {} */
       if (delta>0) cl->off=cl->off+delta;
       /* If we've still got data to read/write, we continue,
 	 otherwise, we fall through */
@@ -400,30 +410,28 @@ static void *event_loop(void *thread_arg)
 	/* Keep listening */
 	u8_lock_mutex(&server->lock);
 	if (cl->socket>0) {
-	  if (cl->writing) {
+	  if (cl->writing>0) {
 	    FD_SET(cl->socket,&server->writing);
 	    FD_CLR(cl->socket,&server->reading);}
 	  else {
 	    FD_SET(cl->socket,&server->reading);
 	    FD_CLR(cl->socket,&server->writing);}}
 	u8_unlock_mutex(&server->lock);}
-      else {
-	/* We got all the data immediately, so push the next step. */
-	cl->async=0; push_task(server,cl);}}
+      else push_task(server,cl);}
     else {
       /* Request is not yet completed */
       if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
 	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
 	u8_log(LOG_DEBUG,ClientRequest,
 	       "Yield during request for %s[%d]",cl->idstring,cl->n_trans);
-      /* We need to handle the case where the request is not completed
+      cl->active=-1;
+     /* We need to handle the case where the request is not completed
 	 but the server is closing down.  Right now, we don't let the
 	 server loop exit until all the pending tasks have closed.  */}
     if (dobreak) break;
     if (!(closed)) {
       u8_lock_mutex(&server->lock);
       /* Start listening again (it was stopped by pop_task() */
-      cl->flags=cl->flags&(~(U8_CLIENT_ACTIVE));
       if (cl->socket>0) {
 	  if (cl->writing) {
 	    FD_SET(cl->socket,&server->writing);
@@ -830,9 +838,8 @@ static int server_listen(struct U8_SERVER *server)
 	     u8_log(LOG_ERR,u8_NetworkError,"Clientless socket %d!!!",i);
 	     i++; continue;}
 #if U8_THREADS_ENABLED
-	   if ((client->flags)&(U8_CLIENT_ACTIVE)) {}
+	   if (client->active>0) {}
 	   else if (push_task(server,client)) {
-	     client->flags=client->flags|U8_CLIENT_BUSY;
 	     n_actions++; server->n_busy++;
 	     FD_CLR(client->socket,&(server->reading));
 	     FD_CLR(client->socket,&(server->writing));}

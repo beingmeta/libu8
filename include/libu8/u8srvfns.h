@@ -25,23 +25,22 @@
 
 typedef struct U8_SERVER *u8_server;
 
-#define U8_CLIENT_BUSY 1
-#define U8_CLIENT_ACTIVE 2
-#define U8_CLIENT_CLOSING 4
-#define U8_CLIENT_CLOSED 8
-#define U8_CLIENT_LOG_TRANSACT 16
-#define U8_CLIENT_ASYNC 32
-#define U8_CLIENT_FLAG_MAX 32
+#define U8_CLIENT_OPEN 1
+#define U8_CLIENT_CLOSING 2
+#define U8_CLIENT_CLOSED 4
+#define U8_CLIENT_LOG_TRANSACT 8
+#define U8_CLIENT_ASYNC 16
+#define U8_CLIENT_FLAG_MAX 16
 
 #define U8_CLIENT_FIELDS             \
   u8_socket socket;                  \
   unsigned int flags, n_trans;       \
-  long long queued, started;         \
+  u8_utime started, queued, active;  \
+  u8_utime reading, writing;         \
   u8_string idstring;                \
-  unsigned int async:1, writing:1;   \
-  unsigned int ownsbuf:1, grows:1;   \
   unsigned char *buf;                \
   size_t off, len, buflen, delta;    \
+  unsigned int ownsbuf:1, grows:1;   \
   struct U8_SERVER *server
 
 /** struct U8_CLIENT
@@ -54,12 +53,12 @@ typedef struct U8_SERVER *u8_server;
 typedef struct U8_CLIENT {
   u8_socket socket;
   unsigned int flags, n_trans;
-  long long queued, started;
+  u8_utime started, queued, active;
+  u8_utime reading, writing;
   u8_string idstring;
-  unsigned int async:1, writing:1;
-  unsigned int ownsbuf:1, grows:1;
   unsigned char *buf;
   size_t off, len, buflen, delta;
+  unsigned int ownsbuf:1, grows:1;
   struct U8_SERVER *server;} U8_CLIENT;
 typedef struct U8_CLIENT *u8_client;
 
