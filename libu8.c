@@ -237,6 +237,36 @@ U8_EXPORT double u8_elapsed_time()
   }
 }
 
+/* Microsecond time */
+
+U8_EXPORT
+/** Returns the number of microseconds since the epoch.
+    This returns a value with whatever accuracy it can get.
+    @returns a long long counting microseconds
+*/
+u8_utime u8_microtime()
+{
+#if HAVE_GETTIMEOFDAY
+  struct timeval now;
+  if (gettimeofday(&now,NULL) < 0)
+    return -1;
+  else return (((long long)now.tv_sec)*1000000LL)+((long long)(now.tv_usec));
+#elif HAVE_FTIME
+  /* We're going to settle for millisecond precision here. */
+  struct timeb now;
+#if WIN32
+  /* In WIN32, ftime doesn't return an error value.
+     ?? We should really do something respectable here.*/
+  ftime(&now);
+#else 
+  if (ftime(&now) < 0) return -1;
+  else return now.time*1000000+now.millitm*1000;
+#endif
+#else
+  return ((int)time(NULL))*1000000;
+#endif
+}
+
 /* Environment access */
 
 U8_EXPORT

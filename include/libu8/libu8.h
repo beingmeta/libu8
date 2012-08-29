@@ -133,6 +133,9 @@
 /* This is for sockets */
 typedef long u8_socket;
 
+/* This is for microseconds since the epoch. */
+typedef long long u8_utime;
+
 #if (SIZEOF_INT == 4)
 typedef unsigned int u8_int4;
 #elif (SIZEOF_LONG == 4)
@@ -468,6 +471,13 @@ U8_EXPORT u8_string u8_getenv(u8_string varname);
     @returns a double indicating seconds
 **/
 U8_EXPORT double u8_elapsed_time(void);
+
+U8_EXPORT
+/** Returns the number of microseconds since the epoch.
+    This returns a value with whatever accuracy it can get.
+    @returns a long long counting microseconds
+*/
+long long u8_microtime(void);
 
 /** Initializes logging
     @returns void

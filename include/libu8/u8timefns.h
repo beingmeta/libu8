@@ -234,13 +234,6 @@ U8_EXPORT
 **/
 long long u8_millitime(void);
 
-U8_EXPORT
-/** Returns the number of microseconds since the epoch.
-    This returns a value with whatever accuracy it can get.
-    @returns a long long counting microseconds
-*/
-long long u8_microtime(void);
-
 typedef unsigned char U8_UUID[16];
 typedef unsigned char *u8_uuid;
 
