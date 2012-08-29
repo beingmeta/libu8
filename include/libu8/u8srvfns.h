@@ -34,13 +34,23 @@ typedef struct U8_SERVER *u8_server;
 
 #define U8_CLIENT_FIELDS                      \
   u8_socket socket;                           \
-  unsigned int flags, n_trans;                \
+  unsigned int flags, n_trans, n_errs;        \
   u8_utime started, queued, active;           \
   u8_utime reading, writing;                  \
   u8_string idstring;                         \
   unsigned char *buf;                         \
   size_t off, len, buflen, delta;             \
   unsigned int ownsbuf:1, grows:1;            \
+  /* Tracking total transaction time */       \
+  long long tsum, tsum2, tmax; int tcount;    \
+  /* Tracking total spent reading */          \
+  long long rsum, rsum2, rmax; int rcount;    \
+  /* Tracking total spent writing */          \
+  long long wsum, wsum2, wmax; int wcount;    \
+  /* Tracking total spent in event loop */    \
+  long long asum, asum2, amax; int acount;    \
+  /* Tracking total spent in handler */       \
+  long long xsum, xsum2, xmax; int xcount;    \
   int (*callback)(struct U8_CLIENT *,void *); \
   void *cbdata;                               \
   struct U8_SERVER *server
@@ -54,13 +64,23 @@ typedef struct U8_SERVER *u8_server;
      to which the client is connected. **/
 typedef struct U8_CLIENT {
   u8_socket socket;
-  unsigned int flags, n_trans;
+  unsigned int flags, n_trans, n_errs;
   u8_utime started, queued, active;
   u8_utime reading, writing;
   u8_string idstring;
   unsigned char *buf;
   size_t off, len, buflen, delta;
   unsigned int ownsbuf:1, grows:1;
+  /* Tracking total transaction time */
+  long long tsum, tsum2, tmax; int tcount;
+  /* Tracking total spent reading */
+  long long rsum, rsum2, rmax; int rcount;
+  /* Tracking total spent writing */
+  long long wsum, wsum2, wmax; int wcount;
+  /* Tracking total spent in event loop */
+  long long asum, asum2, amax; int acount;
+  /* Tracking total spent in handler */
+  long long xsum, xsum2, xmax; int xcount;
   int (*callback)(struct U8_CLIENT *,void *);
   void *cbdata;
   struct U8_SERVER *server;} U8_CLIENT;
@@ -122,6 +142,7 @@ typedef struct U8_SERVER {
   int n_busy; /* How many clients are currently busy */
   int n_accepted; /* How many connections have been accepted to date */
   int n_trans; /* How many transactions have been completed to date */
+  int n_errs; /* How many transactions yielded errors */
   u8_socket socket_max; /* Largest open socket */
   int socket_lim; /* The size of socketmap */
   /* Tracking total transaction time */
@@ -183,6 +204,31 @@ U8_EXPORT void u8_server_loop(struct U8_SERVER *server);
      @returns 1 if the server was newly and successfully closed
 **/
 U8_EXPORT int u8_server_shutdown(struct U8_SERVER *server);
+
+/* Server Status */
+
+typedef struct U8_SERVER_STATS {
+  int n_reqs, n_errs, n_complete;
+  /* Tracking total transaction time */
+  long long tsum, tsum2, tmax; int tcount;
+  /* Tracking total spent reading */
+  long long rsum, rsum2, rmax; int rcount;
+  /* Tracking total spent writing */
+  long long wsum, wsum2, wmax; int wcount;
+  /* Tracking total spent in event loop */
+  long long asum, asum2, amax; int acount;
+  /* Tracking total spent in handler */
+  long long xsum, xsum2, xmax; int xcount;}
+  U8_SERVER_STATS;
+typedef struct U8_SERVER_STATS *u8_server_stats;
+
+U8_EXPORT u8_server_stats u8_server_statistics(u8_server,struct U8_SERVER_STATS *);
+/** Returns activity statistics for a server
+     @param server a pointer to a U8_SERVER struct
+     @param stats a pointer to a U8_SERVER_STATS structure, or NULL
+     @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
+**/
+
 
 /** Returns a user readable string describing the server's status,
      including active and pending tasks, total transactions, etc.

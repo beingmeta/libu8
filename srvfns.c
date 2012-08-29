@@ -158,6 +158,10 @@ void u8_client_done(u8_client cl)
     u8_unlock_mutex(&(server->lock));}
 }
 
+/* Closing clients */
+
+static void update_server_stats(u8_client cl);
+
 U8_EXPORT
 /* u8_client_close:
     Arguments: a pointer to a client
@@ -197,6 +201,7 @@ void u8_client_close(u8_client cl)
 	FD_CLR(cl->socket,&server->writing);}
       server->n_clients--;
       cl->flags=cl->flags|U8_CLIENT_CLOSED;
+      update_server_stats(cl);
       u8_unlock_mutex(&(server->lock));
       server->closefn(cl);
       if (cl->server->flags&U8_SERVER_LOG_CONNECT)
@@ -263,10 +268,16 @@ static void finish_close_client(u8_client cl)
     cl->flags=cl->flags&U8_CLIENT_CLOSED;
     server->n_busy--;
     cur=u8_microtime(); ttime=cur-cl->started;
-    server->tsum=+ttime;
-    server->tsum2=+(ttime*ttime);
-    if (ttime>server->tmax) server->tmax=ttime;
-    server->tcount++;
+
+    /* Final update of client statistics */
+    cl->tsum=+ttime;
+    cl->tsum2=+(ttime*ttime);
+    if (ttime>cl->tmax) cl->tmax=ttime;
+    cl->tcount++;
+
+    /* Transfer them to the server */
+    update_server_stats(cl);
+
     cl->started=-1;
     u8_unlock_mutex(&(server->lock));
     server->closefn(cl);
@@ -275,6 +286,23 @@ static void finish_close_client(u8_client cl)
     if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
     u8_free(idstring);
     u8_free(cl);}
+}
+
+static void update_server_stats(u8_client cl)
+{
+  u8_server server=cl->server;
+  /* Transfer all the client statistics to the server */
+  server->tsum=+cl->tsum; server->tsum2=+cl->tsum2; server->tcount=+cl->tcount;
+  if (cl->tmax>server->tmax) server->tmax=cl->tmax;
+  server->asum=+cl->asum; server->asum2=+cl->asum2; server->acount=+cl->acount;
+  if (cl->amax>server->amax) server->amax=cl->amax;
+  server->rsum=+cl->rsum; server->rsum2=+cl->rsum2; server->rcount=+cl->rcount;
+  if (cl->rmax>server->rmax) server->rmax=cl->rmax;
+  server->wsum=+cl->wsum; server->wsum2=+cl->wsum2; server->wcount=+cl->wcount;
+  if (cl->wmax>server->wmax) server->wmax=cl->wmax;
+  server->xsum=+cl->xsum; server->xsum2=+cl->xsum2; server->xcount=+cl->xcount;
+  if (cl->xmax>server->xmax) server->xmax=cl->xmax;
+  server->n_errs=+cl->n_errs;
 }
 
 #if U8_THREADS_ENABLED
@@ -300,7 +328,7 @@ static u8_client pop_task(struct U8_SERVER *server)
     task->queued=-1; task->active=curtime;
     if (task->started<0) {
       task->started=curtime;
-      server->n_trans++;}}
+      task->n_trans++; server->n_trans++;}}
   else {}
   u8_unlock_mutex(&(server->lock));
   return task;
@@ -316,10 +344,10 @@ static int push_task(struct U8_SERVER *server,u8_client cl)
   if (cl->active>0) {
     u8_utime cur=u8_microtime();
     long long atime=cur-cl->active;
-    server->asum=+atime;
-    server->asum2=+(atime*atime);
-    if (atime>server->amax) server->amax=atime;
-    server->acount++;
+    cl->asum=+atime;
+    cl->asum2=+(atime*atime);
+    if (atime>cl->amax) cl->amax=atime;
+    cl->acount++;
     cl->queued=cur;
     cl->active=-1;}
   else cl->queued=u8_microtime(); 
@@ -378,30 +406,30 @@ static void *event_loop(void *thread_arg)
 	u8_utime cur=u8_microtime(); long long xtime;
 	if (cl->writing>0) {
 	  long long wtime=cur-cl->writing;
-	  server->wsum=+wtime;
-	  server->wsum2=+(wtime*wtime);
-	  if (wtime>server->wmax) server->wmax=wtime;
-	  server->wcount++;}
+	  cl->wsum=+wtime;
+	  cl->wsum2=+(wtime*wtime);
+	  if (wtime>cl->wmax) cl->wmax=wtime;
+	  cl->wcount++;}
 	else {
 	  long long rtime=cur-cl->reading;
-	  server->rsum=+rtime;
-	  server->rsum2=+(rtime*rtime);
-	  if (rtime>server->rmax) server->rmax=rtime;
-	  server->rcount++;}
+	  cl->rsum=+rtime;
+	  cl->rsum2=+(rtime*rtime);
+	  if (rtime>cl->rmax) cl->rmax=rtime;
+	  cl->rcount++;}
 	result=server->servefn(cl);
 	xtime=u8_microtime()-cur;
-	server->xsum=+xtime;
-	server->xsum2=+(xtime*xtime);
-	if (xtime>server->xmax) server->xmax=xtime;
-	server->xcount++;}}
+	cl->xsum=+xtime;
+	cl->xsum2=+(xtime*xtime);
+	if (xtime>cl->xmax) cl->xmax=xtime;
+	cl->xcount++;}}
     else {
       u8_utime cur=u8_microtime(); long long xtime;
       result=server->servefn(cl);
       xtime=u8_microtime()-cur;
-      server->xsum=+xtime;
-      server->xsum2=+(xtime*xtime);
-      if (xtime>server->xmax) server->xmax=xtime;
-      server->xcount++;}
+      cl->xsum=+xtime;
+      cl->xsum2=+(xtime*xtime);
+      if (xtime>cl->xmax) cl->xmax=xtime;
+      cl->xcount++;}
     /* When the servefn is called, cl->async=0 and there are three
        possible states:
        1. no asynchrony is going on (buf is NULL)
@@ -411,23 +439,26 @@ static void *event_loop(void *thread_arg)
     */
     if (result<0) {
       u8_exception ex=u8_current_exception;
-      if (cl->flags&U8_CLIENT_CLOSING) {
+      if (cl->flags&U8_CLIENT_CLOSED) {}
+      else if (cl->flags&U8_CLIENT_CLOSING) {
 	finish_close_client(cl); closed=1;
 	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
+      else u8_client_done(cl);
       while (ex) {
 	u8_log(LOG_WARN,ClientRequest,
 	       "Error during activity on %s[%d] (%s)",
 	       cl->idstring,cl->n_trans,u8_errstring(ex));
-	ex=u8_pop_exception();}}
+	ex=u8_pop_exception();}
+      cl->n_errs++;}
     else if (result==0) {
       u8_utime cur=u8_microtime();
       long long ttime=cur-cl->started;
       /* Request is completed */
-      server->tsum=+ttime;
-      server->tsum2=+(ttime*ttime);
-      if (ttime>server->tmax) server->tmax=ttime;
-      server->tcount++;
+      cl->tsum=+ttime;
+      cl->tsum2=+(ttime*ttime);
+      if (ttime>cl->tmax) cl->tmax=ttime;
+      cl->tcount++;
       cl->started=-1;
       if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
 	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
@@ -478,10 +509,10 @@ static void *event_loop(void *thread_arg)
     if (cl->active>0) {
       u8_utime cur=u8_microtime();
       long long atime=cur-cl->active;
-      server->asum=+atime;
-      server->asum2=+(atime*atime);
-      if (atime>server->amax) server->amax=atime;
-      server->acount++;
+      cl->asum=+atime;
+      cl->asum2=+(atime*atime);
+      if (atime>cl->amax) cl->amax=atime;
+      cl->acount++;
       cl->active=-1;}
     if (dobreak) break;
     if (!(closed)) {
@@ -923,6 +954,46 @@ void u8_server_loop(struct U8_SERVER *server)
 }
 
 /* Getting server status */
+
+U8_EXPORT u8_server_stats u8_server_statistics
+  (u8_server server,struct U8_SERVER_STATS *stats)
+{
+  int i=0, lim;
+  struct U8_CLIENT **clients;
+  if (stats==NULL) stats=u8_alloc(struct U8_SERVER_STATS);
+  u8_lock_mutex(&(server->lock));
+  stats->n_reqs=server->n_trans;
+  stats->n_errs=server->n_errs;
+  stats->n_complete=server->tcount;
+  stats->tsum=server->tsum; stats->tsum2=server->tsum2; stats->tcount=server->tcount;
+  if (server->tmax>stats->tmax) stats->tmax=server->tmax;
+  stats->asum=server->asum; stats->asum2=server->asum2; stats->acount=server->acount;
+  if (server->amax>stats->amax) stats->amax=server->amax;
+  stats->rsum=server->rsum; stats->rsum2=server->rsum2; stats->rcount=server->rcount;
+  if (server->rmax>stats->rmax) stats->rmax=server->rmax;
+  stats->wsum=server->wsum; stats->wsum2=server->wsum2; stats->wcount=server->wcount;
+  if (server->wmax>stats->wmax) stats->wmax=server->wmax;
+  stats->xsum=server->xsum; stats->xsum2=server->xsum2; stats->xcount=server->xcount;
+  if (server->xmax>stats->xmax) stats->xmax=server->xmax;
+  stats->n_errs=server->n_errs;
+  clients=server->socketmap; lim=server->socket_max;
+  while (i<lim) {
+    u8_client cl=clients[i++];
+    if (cl) {
+      stats->tsum=+cl->tsum; stats->tsum2=+cl->tsum2; stats->tcount=+cl->tcount;
+      if (cl->tmax>stats->tmax) stats->tmax=cl->tmax;
+      stats->asum=+cl->asum; stats->asum2=+cl->asum2; stats->acount=+cl->acount;
+      if (cl->amax>stats->amax) stats->amax=cl->amax;
+      stats->rsum=+cl->rsum; stats->rsum2=+cl->rsum2; stats->rcount=+cl->rcount;
+      if (cl->rmax>stats->rmax) stats->rmax=cl->rmax;
+      stats->wsum=+cl->wsum; stats->wsum2=+cl->wsum2; stats->wcount=+cl->wcount;
+      if (cl->wmax>stats->wmax) stats->wmax=cl->wmax;
+      stats->xsum=+cl->xsum; stats->xsum2=+cl->xsum2; stats->xcount=+cl->xcount;
+      if (cl->xmax>stats->xmax) stats->xmax=cl->xmax;
+      stats->n_errs=+cl->n_errs;}}
+  u8_unlock_mutex(&(server->lock));
+  return stats;
+}
 
 U8_EXPORT
 u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int buflen)
