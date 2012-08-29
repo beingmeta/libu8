@@ -32,15 +32,17 @@ typedef struct U8_SERVER *u8_server;
 #define U8_CLIENT_ASYNC 16
 #define U8_CLIENT_FLAG_MAX 16
 
-#define U8_CLIENT_FIELDS             \
-  u8_socket socket;                  \
-  unsigned int flags, n_trans;       \
-  u8_utime started, queued, active;  \
-  u8_utime reading, writing;         \
-  u8_string idstring;                \
-  unsigned char *buf;                \
-  size_t off, len, buflen, delta;    \
-  unsigned int ownsbuf:1, grows:1;   \
+#define U8_CLIENT_FIELDS                      \
+  u8_socket socket;                           \
+  unsigned int flags, n_trans;                \
+  u8_utime started, queued, active;           \
+  u8_utime reading, writing;                  \
+  u8_string idstring;                         \
+  unsigned char *buf;                         \
+  size_t off, len, buflen, delta;             \
+  unsigned int ownsbuf:1, grows:1;            \
+  int (*callback)(struct U8_CLIENT *,void *); \
+  void *cbdata;                               \
   struct U8_SERVER *server
 
 /** struct U8_CLIENT
@@ -59,6 +61,8 @@ typedef struct U8_CLIENT {
   unsigned char *buf;
   size_t off, len, buflen, delta;
   unsigned int ownsbuf:1, grows:1;
+  int (*callback)(struct U8_CLIENT *,void *);
+  void *cbdata;
   struct U8_SERVER *server;} U8_CLIENT;
 typedef struct U8_CLIENT *u8_client;
 
@@ -117,13 +121,19 @@ typedef struct U8_SERVER {
   int n_clients; /* Total number of live clients */
   int n_busy; /* How many clients are currently busy */
   int n_accepted; /* How many connections have been accepted to date */
-  int n_trans; /* How many transactions have been initiated to date */
+  int n_trans; /* How many transactions have been completed to date */
   u8_socket socket_max; /* Largest open socket */
   int socket_lim; /* The size of socketmap */
-  /* Tracking wait times */
-  long long waitsum; int waitcount;
-  /* Tracking run times */
-  long long runsum; int runcount;
+  /* Tracking total transaction time */
+  long long tsum, tsum2, tmax; int tcount;
+  /* Tracking total spent reading */
+  long long rsum, rsum2, rmax; int rcount;
+  /* Tracking total spent writing */
+  long long wsum, wsum2, wmax; int wcount;
+  /* Tracking total spent in event loop */
+  long long asum, asum2, amax; int acount;
+  /* Tracking total spent in handler */
+  long long xsum, xsum2, xmax; int xcount;
   /* Handling functions */
   u8_client (*acceptfn)(struct U8_SERVER *,u8_socket sock,
 			struct sockaddr *,size_t);
