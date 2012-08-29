@@ -488,7 +488,7 @@ static void *event_loop(void *thread_arg)
       u8_lock_mutex(&server->lock);
       /* Start listening again (it was stopped by pop_task() */
       if (cl->socket>0) {
-	  if (cl->writing) {
+	  if (cl->writing>0) {
 	    FD_SET(cl->socket,&server->writing);
 	    FD_CLR(cl->socket,&server->reading);}
 	  else {
