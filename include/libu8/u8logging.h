@@ -41,12 +41,23 @@
 
 /* Common mistypes/misremembers/mnemonics, might as well define them */
 #define LOG_WARN LOG_WARNING
+#define LOGWARN LOG_WARNING
 #define LOG_NOTIFY LOG_NOTICE
+#define LOGNOTIFY LOG_NOTICE
+#define LOGNOTICE LOG_NOTICE
 #define LOG_ERROR LOG_ERR
+#define LOGERR LOG_ERR
 #define LOG_CRITICAL LOG_CRIT
+#define LOGCRIT LOG_CRIT
 #define LOG_EMERGENCY LOG_EMERG
+#define LOG_PANIC LOG_EMERG
+#define LOGPANIC LOG_EMERG
 #define LOG_DBG LOG_DEBUG
+#define LOGDBG LOG_DEBUG
+#define LOGDEBUG LOG_DEBUG
 #define LOG_DETAILS LOG_DETAIL
+#define LOGDETAILS LOG_DETAIL
+#define LOGDETAIL LOG_DETAIL
 #define LOG_DETAILED LOG_DETAIL
 
 
