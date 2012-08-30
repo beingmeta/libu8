@@ -920,14 +920,14 @@ static int server_listen(struct U8_SERVER *server)
   u8_lock_mutex(&(server->lock));
   reading=server->reading; writing=server->writing; other=server->clients;
   max_socket=server->socket_max;
-  timeout=((server->n_busy) ? (&_timeout) : (NULL));
+  timeout=((server->n_clients) ? (&_timeout) : (NULL));
   u8_unlock_mutex(&(server->lock));
   /* Wait for activity on one of your open sockets */
   while ((retval=server_wait(&reading,&writing,&other,max_socket,timeout)) == 0) {
     if (retval<0) return retval;
     u8_lock_mutex(&(server->lock));
     reading=server->reading; writing=server->writing;
-    timeout=((server->n_busy) ? (&_timeout) : (NULL));
+    timeout=((server->n_clients) ? (&_timeout) : (NULL));
     _timeout.tv_usec=500; _timeout.tv_sec=0;
     u8_unlock_mutex(&(server->lock));
     if (server->flags&U8_SERVER_CLOSED) return 0;}
