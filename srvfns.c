@@ -868,10 +868,14 @@ static int server_wait(fd_set *reading,fd_set *writing,fd_set *other,
   return select(max_sockets+1,reading,writing,other,to);
 }
 
-U8_EXPORT int u8_select(fd_set *reading,fd_set *writing,int max)
+U8_EXPORT int u8_select(fd_set *reading,fd_set *writing,fd_set *other,int max)
 {
   struct timeval tv; tv.tv_sec=0; tv.tv_usec=0;
-  return select(max+1,reading,writing,NULL_FDS,&tv);
+  return select(max+1,
+		((reading==NULL)?(NULL_FDS):(reading)),
+		((writing==NULL)?(NULL_FDS):(writing)),
+		((other==NULL)?(NULL_FDS):(other)),
+		&tv);
 }
 
 static int server_accept(u8_server server,u8_socket i)
@@ -908,6 +912,13 @@ static int server_accept(u8_server server,u8_socket i)
     else return 0;}
 }
 
+static int socket_peek(u8_socket sock)
+{
+  char buf[5];
+  int retval=recv(sock,buf,1,MSG_PEEK);
+  return (retval>0);
+}
+
 /* This listens for connections and pushes tasks (unless we're not
    threaded, in which case it dispatches to the servefn right
    away).  */
@@ -926,51 +937,68 @@ static int server_listen(struct U8_SERVER *server)
   while ((retval=server_wait(&reading,&writing,&other,max_socket,timeout)) == 0) {
     if (retval<0) return retval;
     u8_lock_mutex(&(server->lock));
-    reading=server->reading; writing=server->writing;
+    reading=server->reading;
+    writing=server->writing;
+    other=server->clients;
     timeout=((server->n_clients) ? (&_timeout) : (NULL));
     _timeout.tv_usec=500; _timeout.tv_sec=0;
     u8_unlock_mutex(&(server->lock));
     if (server->flags&U8_SERVER_CLOSED) return 0;}
   /* Iterate over the range of sockets */
   u8_lock_mutex(&(server->lock));
-  i=0; while (i <= max_socket)
-	 if (!(((FD_ISSET(i,&reading))&&(FD_ISSET(i,&server->reading)))||
-	       ((FD_ISSET(i,&writing))&&(FD_ISSET(i,&server->writing)))||
-	       ((FD_ISSET(i,&other))&&(FD_ISSET(i,&server->clients)))))
-	   i++;
-	 else if (FD_ISSET(i,&server->servers)) {
-	   int retval=server_accept(server,i++);
-	   if (retval<=0) continue;}
-	 else if (((FD_ISSET(i,&reading))&&(FD_ISSET(i,&server->reading)))||
-		  ((FD_ISSET(i,&writing))&&(FD_ISSET(i,&server->writing)))) {
-	   u8_client client=server->socketmap[i];
-	   if (client==NULL) {
-	     u8_log(LOG_ERR,u8_NetworkError,"Clientless socket %d!!!",i);
-	     i++; continue;}
+  i=0; while (i <= max_socket) {
+    u8_client client=server->socketmap[i];
+    if (!(((FD_ISSET(i,&reading))&&(FD_ISSET(i,&server->reading)))||
+	  ((FD_ISSET(i,&writing))&&(FD_ISSET(i,&server->writing)))||
+	  ((FD_ISSET(i,&other))&&(FD_ISSET(i,&server->clients)))))
+      /* Nothing happened here */
+      i++;
+    else if (FD_ISSET(i,&server->servers)) {
+      /* We got a connection request */
+      int retval=server_accept(server,i++);
+      if (retval<=0) continue;}
+    else if (client==NULL) {
+      u8_log(LOG_ERR,u8_NetworkError,"Clientless socket %d!!!",i);
+      i++; continue;}
+    else if (client->active>0) {
+      i++; continue;}
+    else if ((FD_ISSET(i,&writing))&&(FD_ISSET(i,&server->writing))&&
+	     (client->writing>0)) {
 #if U8_THREADS_ENABLED
-	   if (client->active>0) {}
-	   else if (push_task(server,client)) {
-	     n_actions++;
-	     FD_CLR(client->socket,&(server->reading));
-	     FD_CLR(client->socket,&(server->writing));}
-	   else {}
-#else
-	   n_actions++;
-	   server->servefn(client);
+      if (push_task(server,client)) {
+	n_actions++;
+	FD_CLR(client->socket,&(server->reading));
+	FD_CLR(client->socket,&(server->writing));}
+      else {}
 #endif
-	   i++;}
-	 else {
-	   /* What else can go here (it doesn't seem to work for closed sockets) */
-	   char buf[5]; int rv; ssize_t retval;
-	   u8_client client=server->socketmap[i];
-	   if (client==NULL) {
-	     u8_log(LOG_ERR,u8_NetworkError,"Clientless socket %d!!!",i);
-	     i++; continue;}
-	   else u8_log(LOG_WARN,"other condition",
-		       "Checking if socket %d (%s) was closed",
-		       i,client->idstring);
-	   retval=recv(client->socket,buf,1,MSG_PEEK);
-	   if (retval<=0) u8_client_close(client);}
+      i++;}
+    else if (((FD_ISSET(i,&reading))&&
+	      (FD_ISSET(i,&server->reading)))) {
+#if U8_THREADS_ENABLED
+      if (!(socket_peek(client->socket))) {
+	/* No real data */
+#if 0
+	u8_log(LOG_WARN,"server_listen","SELECT cried wolf on %d",i);
+#endif
+	i++; continue;}
+      if (push_task(server,client)) {
+	n_actions++;
+	FD_CLR(client->socket,&(server->reading));
+	FD_CLR(client->socket,&(server->writing));}
+      else {}
+#else
+      n_actions++;
+      server->servefn(client);
+#endif
+      i++;}
+    else {
+      /* What else can go here (it doesn't seem to work for closed sockets) */
+      char buf[5]; int rv; ssize_t retval;
+      u8_log(LOG_WARN,"other condition",
+	     "Checking if socket %d (%s) was closed",
+	     i,client->idstring);
+      retval=recv(client->socket,buf,1,MSG_PEEK);
+      if (retval<=0) u8_client_close(client);}}
   u8_unlock_mutex(&(server->lock));
   return 0;
 }

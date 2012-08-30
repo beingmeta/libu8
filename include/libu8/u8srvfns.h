@@ -252,6 +252,13 @@ U8_EXPORT u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int b
 **/
 U8_EXPORT u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen);
 
-U8_EXPORT int u8_select(fd_set *reading,fd_set *writing,int max);
+/** Calls select function, useful for debugging
+     @param reading where to look for readability
+     @param writing where to look for writability
+     @param other where to look for other activity (?)
+     @param maxsock largest socket value
+     @returns the number of sockets with activity
+**/
+U8_EXPORT int u8_select(fd_set *reading,fd_set *writing,fd_set *other,int max);
 
 #endif /* U8_U8SRVFNS_H */
