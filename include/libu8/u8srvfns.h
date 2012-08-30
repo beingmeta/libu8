@@ -139,7 +139,7 @@ typedef struct U8_SERVER {
   /* This array maps socket numbers to clients */
   struct U8_CLIENT **socketmap;
   int n_clients; /* Total number of live clients */
-  int n_busy; /* How many clients are currently busy */
+  int n_busy; /* How many clients are currently busy (in the middle of transactions) */
   int n_accepted; /* How many connections have been accepted to date */
   int n_trans; /* How many transactions have been completed to date */
   int n_errs; /* How many transactions yielded errors */
@@ -208,7 +208,7 @@ U8_EXPORT int u8_server_shutdown(struct U8_SERVER *server);
 /* Server Status */
 
 typedef struct U8_SERVER_STATS {
-  int n_reqs, n_errs, n_complete;
+  int n_reqs, n_errs, n_complete, n_busy, n_active, n_reading, n_writing;
   /* Tracking total transaction time */
   long long tsum, tsum2, tmax; int tcount;
   /* Tracking total spent reading */
