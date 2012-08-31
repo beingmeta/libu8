@@ -406,6 +406,8 @@ static void *event_loop(void *thread_arg)
 	if (cl->writing>0)
 	  delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
 	else delta=read(cl->socket,cl->buf+cl->off,cl->len-cl->off);
+	u8_log(LOG_DEBUG,((cl->writing>0)?("Writing"):("Reading")),
+	       "Processed %d bytes for %d",delta,cl->socket);
 	if (delta>0) cl->off=cl->off+delta;}
       /* If we've still got data to read/write, we continue,
 	 otherwise, we fall through */
@@ -500,10 +502,12 @@ static void *event_loop(void *thread_arg)
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}}
     else if (((cl->reading>0)||(cl->writing>0))&&(cl->buf!=NULL)) {
       /* The execution queued some input or output */
-      size_t delta;
+      ssize_t delta;
       if (cl->writing>0)
-	delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
-      else delta=read(cl->socket,cl->buf+cl->off,cl->len-cl->off);
+	delta=write(cl->socket,cl->buf+cl->off,((size_t)(cl->len-cl->off)));
+      else delta=read(cl->socket,cl->buf+cl->off,((size_t)(cl->len-cl->off)));
+      u8_log(LOG_DEBUG,((cl->writing>0)?("Writing"):("Reading")),
+	     "Processed %d bytes for %d",delta,cl->socket);
       if (delta>0) cl->off=cl->off+delta;
       /* If we've still got data to read/write, we continue,
 	 otherwise, we fall through */
