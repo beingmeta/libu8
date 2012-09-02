@@ -32,6 +32,9 @@ typedef struct U8_SERVER *u8_server;
 #define U8_CLIENT_ASYNC 16
 #define U8_CLIENT_FLAG_MAX 16
 
+typedef struct U8_CLIENT *u8_client;
+typedef int (*u8_client_callback)(u8_client,void *);
+
 #define U8_CLIENT_FIELDS                      \
   u8_socket socket;                           \
   unsigned int flags, n_trans, n_errs;        \
@@ -51,8 +54,7 @@ typedef struct U8_SERVER *u8_server;
   long long asum, asum2, amax; int acount;    \
   /* Tracking total spent in handler */       \
   long long xsum, xsum2, xmax; int xcount;    \
-  int (*callback)(struct U8_CLIENT *,void *); \
-  void *cbdata;                               \
+  u8_client_callback callback; void *cbstate; \
   struct U8_SERVER *server
 
 /** struct U8_CLIENT
@@ -81,10 +83,9 @@ typedef struct U8_CLIENT {
   long long asum, asum2, amax; int acount;
   /* Tracking total spent in handler */
   long long xsum, xsum2, xmax; int xcount;
-  int (*callback)(struct U8_CLIENT *,void *);
-  void *cbdata;
+  u8_client_callback callback;
+  void *cbstate;
   struct U8_SERVER *server;} U8_CLIENT;
-typedef struct U8_CLIENT *u8_client;
 
 /* u8_client_init:
  Initializes the client structure.
@@ -135,7 +136,9 @@ typedef struct U8_SERVER {
   fd_set servers, clients, reading, writing;
   /* n_servers is the number of sockets being listened on,
      server_info describes each one. */
-  int n_servers, flags; struct U8_SERVER_INFO *server_info;
+  u8_string serverid;
+  int n_servers, flags;
+  struct U8_SERVER_INFO *server_info;
   /* This array maps socket numbers to clients */
   struct U8_CLIENT **socketmap;
   int n_clients; /* Total number of live clients */
@@ -159,6 +162,7 @@ typedef struct U8_SERVER {
   u8_client (*acceptfn)(struct U8_SERVER *,u8_socket sock,
 			struct sockaddr *,size_t);
   int (*servefn)(u8_client);
+  int (*donefn)(u8_client);
   int (*closefn)(u8_client);
   int (*readyfn)(u8_client);
   /* Miscellaneous data */
@@ -201,9 +205,10 @@ U8_EXPORT void u8_server_loop(struct U8_SERVER *server);
 /** Shuts down a server, stopping listening and closing all
      connections when completed.
      @param server a pointer to a U8_SERVER struct
+     @param grace how long (in us) to wait for active clients to finish
      @returns 1 if the server was newly and successfully closed
 **/
-U8_EXPORT int u8_server_shutdown(struct U8_SERVER *server);
+U8_EXPORT int u8_server_shutdown(struct U8_SERVER *server,int force);
 
 /* Server Status */
 

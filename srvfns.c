@@ -145,6 +145,12 @@ void u8_client_done(u8_client cl)
 {
   if (cl->started>0) {
     U8_SERVER *server=cl->server;
+    if (server->donefn) {
+      int retval=server->donefn(cl);
+      if (retval<0)
+	u8_log(LOG_ERR,"u8_client_done",
+	       "Error when closing client %lx (#%d) (%s)",
+	       (unsigned long long)cl,cl->socket,cl->idstring);}
     u8_lock_mutex(&(server->lock));
     server->n_busy--;
     if (cl->started>0) {
@@ -230,8 +236,9 @@ void u8_client_close(u8_client cl)
 
 /* This is the internal version used when shutting down a server.
    We dont wait for anything. */
-static void client_close(u8_client cl)
+static int client_close(u8_client cl)
 {
+  int retval=0;
   if ((cl->flags&U8_CLIENT_CLOSED)==0) {
     U8_SERVER *server=cl->server; u8_socket sock=cl->socket;
     cl->active=cl->reading=cl->started=cl->queued=cl->writing=-1;
@@ -246,18 +253,27 @@ static void client_close(u8_client cl)
     else {
       u8_string idstring=cl->idstring;
       cl->flags=cl->flags|U8_CLIENT_CLOSED;
-      server->closefn(cl);
-      if (cl->socket>0) close(cl->socket);
-      if (cl->server->flags&U8_SERVER_LOG_CONNECT)
+      if (server->closefn) retval=server->closefn(cl);
+      if (retval<0) {
+	u8_log(LOG_ERR,ClosedClient,
+	       "Error while closing %s client %d (%s)",
+	       server->serverid,socket,cl->idstring);}
+      if (cl->socket>0) retval=close(cl->socket);
+      if (retval<0) {
+	u8_log(LOG_ERR,ClosedClient,
+	       "Error while closing socket %d for %s client %d (%s)",
+	       sock,server->serverid,sock,cl->idstring);}
+      else if (cl->server->flags&U8_SERVER_LOG_CONNECT)
 	u8_log(LOG_INFO,ClosedClient,"Closed #%d for %s",sock,idstring);
       if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
+      server->socketmap[sock]=NULL;
       u8_free(idstring);
       u8_free(cl);}}
 }
 
 /* This is used when a transaction finishes and the socket has been
    closed during shutdown. */
-static void finish_close_client(u8_client cl)
+static void finish_client_close(u8_client cl)
 {
   if ((cl->flags&U8_CLIENT_CLOSED)==0) {
     U8_SERVER *server=cl->server; u8_socket sock=cl->socket;
@@ -283,7 +299,6 @@ static void finish_close_client(u8_client cl)
     server->n_clients--;
     cl->flags=cl->flags&U8_CLIENT_CLOSED;
     server->n_busy--;
-
     if (cl->started>0) {
       u8_utime cur=u8_microtime();
       long long ttime=cur-cl->started;
@@ -292,7 +307,7 @@ static void finish_close_client(u8_client cl)
       if (ttime>cl->tmax) cl->tmax=ttime;
       cl->tcount++;
       cl->started=-1;}
-
+    
     /* Transfer them to the server */
     update_server_stats(cl);
 
@@ -437,7 +452,12 @@ static void *event_loop(void *thread_arg)
 	  cl->rsum2+=(rtime*rtime);
 	  if (rtime>cl->rmax) cl->rmax=rtime;
 	  cl->rcount++;}
-	result=server->servefn(cl);
+	if (cl->callback) {
+	  void *state=cl->cbstate;
+	  u8_client_callback callback=cl->callback;
+	  cl->callback=NULL; cl->cbstate=NULL;
+	  result=callback(cl,state);}
+	else result=server->servefn(cl);
 	xtime=u8_microtime()-cur;
 	cl->xsum+=xtime;
 	cl->xsum2+=(xtime*xtime);
@@ -465,7 +485,7 @@ static void *event_loop(void *thread_arg)
 	     ((unsigned long)cl),cl->socket,cl->idstring,cl->n_trans);
       if (cl->flags&U8_CLIENT_CLOSED) {}
       else if (cl->flags&U8_CLIENT_CLOSING) {
-	finish_close_client(cl); closed=1;
+	finish_client_close(cl); closed=1;
 	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       else if (cl->active>0) u8_client_done(cl);
@@ -493,7 +513,7 @@ static void *event_loop(void *thread_arg)
 	closed=1; if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       else if (cl->flags&U8_CLIENT_CLOSING) {
-	finish_close_client(cl); closed=1;
+	finish_client_close(cl); closed=1;
 	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       else {
@@ -600,16 +620,17 @@ int u8_server_init(struct U8_SERVER *server,
 }
 
 U8_EXPORT
-int u8_server_shutdown(struct U8_SERVER *server)
+int u8_server_shutdown(struct U8_SERVER *server,int grace)
 {
   int i=0, max_socket, n_servers=server->n_servers;
-  int n_errs=0, idle_clients=0;
+  int n_errs=0, idle_clients=0, active_clients=0;
+  u8_utime deadline=u8_microtime()+grace;
   u8_lock_mutex(&server->lock);
   max_socket=server->socket_max;
   if (server->flags&U8_SERVER_CLOSED) return 0;
   server->flags=server->flags|U8_SERVER_CLOSED;
   /* Close all the server sockets */
-  u8_log(LOG_WARN,ServerShutdown,"Closed %d listening socket(s)",n_servers);
+  u8_log(LOG_WARN,ServerShutdown,"Closing %d listening socket(s)",n_servers);
   while (i<n_servers) {
     struct U8_SERVER_INFO *info=&(server->server_info[i++]);
     u8_socket sock=info->socket, retval;
@@ -638,11 +659,15 @@ int u8_server_shutdown(struct U8_SERVER *server)
     server->server_info=NULL;}
   /* Close all the idle client sockets and mark all the busy clients closed */
   i=0; while (i<max_socket) {
-    if (FD_ISSET(i,&(server->clients))) {
-      client_close(server->socketmap[i]); idle_clients++;}
+    if (FD_ISSET(i,&(server->clients)))
+      if (server->socketmap[i]->started<0) {
+	client_close(server->socketmap[i]);
+	idle_clients++;}
+      else active_clients++;
     i++;}
-  u8_log(LOG_NOTICE,ServerShutdown,"Closed %d idle client socket(s)",
-	 idle_clients);
+  u8_log(LOG_NOTICE,ServerShutdown,
+	 "Closed %d idle client socket(s), %d active clients left (n_busy=%d)",
+	 idle_clients,active_clients,server->n_busy);
 #if U8_THREADS_ENABLED
   /* The busy clients will decrement server->n_busy when they're finished.
      We wait for this to happen, sleeping for one second intervals. */
@@ -652,10 +677,22 @@ int u8_server_shutdown(struct U8_SERVER *server)
     /* Wait for the busy connections to finish.
        Should this wait around somehow? */
     u8_lock_mutex(&server->lock); 
-    while (server->n_busy) {
+    while ((server->n_busy)&&(u8_microtime()<deadline)) {
       u8_unlock_mutex(&server->lock);
       sleep(1);
       u8_lock_mutex(&server->lock);}}
+  if (server->n_busy) {
+    u8_log(LOG_CRIT,ServerShutdown,
+	   "Forcing %d active socket(s) closed after %dus",
+	   server->n_busy,grace);
+    n_errs=0; i=0; while (i<max_socket) {
+      if (FD_ISSET(i,&(server->clients)))
+	if (server->socketmap[i]->started>0) {
+	  int rv=client_close(server->socketmap[i]);
+	  if (rv<0)
+	    u8_log(LOG_ERR,ServerShutdown,
+		   "Error while closing client %d",i);}
+      i++;}}
 #endif
   u8_free(server->socketmap); server->socketmap=NULL;
 #if U8_THREADS_ENABLED  
