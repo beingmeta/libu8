@@ -210,7 +210,7 @@ U8_EXPORT void u8_server_loop(struct U8_SERVER *server);
 **/
 U8_EXPORT int u8_server_shutdown(struct U8_SERVER *server,int grace);
 
-/* U8_EXPORT int u8_test_socket(u8_socket sock); */
+U8_EXPORT int u8_test_socket(u8_socket sock);
 
 /* Server Status */
 
