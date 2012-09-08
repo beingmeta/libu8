@@ -30,6 +30,7 @@
 #include "libu8/u8timefns.h"
 #include <unistd.h>
 #include <limits.h>
+/* #include <poll.h> */
 
 static fd_set _NULL_FDS, *NULL_FDS=&_NULL_FDS;
 
@@ -929,6 +930,18 @@ U8_EXPORT int u8_select(fd_set *reading,fd_set *writing,fd_set *other,int max)
 		&tv);
 }
 
+#if 0
+U8_EXPORT int u8_test_socket(u8_socket sock)
+{
+  struct pollfd _fds[5], *fds=_fds; int rv=-1;
+  memset(&_fds,0,sizeof(_fds));
+  _fds[0].fd=sock;
+  _fds[0].events=POLLIN|POLLPRI|POLLOUT;
+  rv=poll(fds,1,5);
+  return ((int)(fds[0].revents));
+}
+#endif
+
 static int server_accept(u8_server server,u8_socket i)
 {
   /* If the activity is on the server socket, open a new socket */
@@ -965,8 +978,8 @@ static int server_accept(u8_server server,u8_socket i)
 
 static int socket_peek(u8_socket sock)
 {
-  char buf[5];
-  int retval=recv(sock,buf,1,MSG_PEEK);
+  unsigned char buf[5];
+  int retval=recv(sock,buf,1,MSG_PEEK), oretval=0;
   return (retval>0);
 }
 
@@ -978,8 +991,10 @@ static int server_listen(struct U8_SERVER *server)
   fd_set reading, writing, other;
   int i, max_socket, n_actions, retval;
   struct timeval _timeout, *timeout; 
+  memset(&_timeout,0,sizeof(_timeout));
   _timeout.tv_sec=0; _timeout.tv_usec=500;
   u8_lock_mutex(&(server->lock));
+  FD_ZERO(&reading); FD_ZERO(&writing); FD_ZERO(&other);
   reading=server->reading; writing=server->writing; other=server->clients;
   max_socket=server->socket_max;
   timeout=((server->n_clients) ? (&_timeout) : (NULL));
@@ -995,7 +1010,8 @@ static int server_listen(struct U8_SERVER *server)
     writing=server->writing;
     other=server->clients;
     timeout=((server->n_clients) ? (&_timeout) : (NULL));
-    _timeout.tv_usec=500; _timeout.tv_sec=0;
+    memset(&_timeout,0,sizeof(_timeout));
+    _timeout.tv_usec=5000; _timeout.tv_sec=0;
     u8_unlock_mutex(&(server->lock));
     if (server->flags&U8_SERVER_CLOSED) return 0;}
   /* Iterate over the range of sockets */
