@@ -137,7 +137,7 @@ typedef struct U8_SERVER {
   /* n_servers is the number of sockets being listened on,
      server_info describes each one. */
   u8_string serverid;
-  int n_servers, flags;
+  int n_servers, flags, shutdown;
   struct U8_SERVER_INFO *server_info;
   /* This array maps socket numbers to clients */
   struct U8_CLIENT **socketmap;
@@ -208,7 +208,7 @@ U8_EXPORT void u8_server_loop(struct U8_SERVER *server);
      @param grace how long (in us) to wait for active clients to finish
      @returns 1 if the server was newly and successfully closed
 **/
-U8_EXPORT int u8_server_shutdown(struct U8_SERVER *server,int force);
+U8_EXPORT int u8_server_shutdown(struct U8_SERVER *server,int grace);
 
 /* Server Status */
 

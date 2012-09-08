@@ -108,6 +108,8 @@ static int sockaddr_samep(struct sockaddr *s1,struct sockaddr *s2)
    The application conses client objects whose first few fields are
    reserved for used by the server. */
 
+static void init_server_socket(u8_socket socket_id);
+
 U8_EXPORT
 /* u8_client_init:
     Arguments: a pointer to a client
@@ -619,8 +621,7 @@ int u8_server_init(struct U8_SERVER *server,
   return 1;
 }
 
-U8_EXPORT
-int u8_server_shutdown(struct U8_SERVER *server,int grace)
+static int do_shutdown(struct U8_SERVER *server,int grace)
 {
   int i=0, max_socket, n_servers=server->n_servers;
   int n_errs=0, idle_clients=0, active_clients=0;
@@ -706,6 +707,13 @@ int u8_server_shutdown(struct U8_SERVER *server,int grace)
   return 1;
 }
 
+U8_EXPORT int u8_server_shutdown(struct U8_SERVER *server,int grace)
+{
+  if (grace)
+    server->shutdown=grace;
+  else server->shutdown=-1;
+}
+
 /* Opening various kinds of servers */
 
 static void init_server_socket(u8_socket socket_id)
@@ -716,9 +724,11 @@ static void init_server_socket(u8_socket socket_id)
   /* We set the server socket to be non-blocking */
 #if (defined(F_SETFL) && defined(O_NDELAY))
   fcntl(socket_id,F_SETFL,O_NDELAY);
-#elif (defined(F_SETFL) && defined(O_NONBLOCK))
+#endif
+#if (defined(F_SETFL) && defined(O_NONBLOCK))
   fcntl(socket_id,F_SETFL,O_NONBLOCK);
-#elif WIN32
+#endif
+#if WIN32
   ioctlsocket(socket_id,FIONBIO,&nonblocking);
 #else
   u8_log(LOG_WARN,_("sockopt"),"Can't set server socket to non-blocking");
@@ -977,6 +987,9 @@ static int server_listen(struct U8_SERVER *server)
   /* Wait for activity on one of your open sockets */
   while ((retval=server_wait(&reading,&writing,&other,max_socket,timeout)) == 0) {
     if (retval<0) return retval;
+    if (server->shutdown) {
+      do_shutdown(server,server->shutdown);
+      return 0;}
     u8_lock_mutex(&(server->lock));
     reading=server->reading;
     writing=server->writing;
@@ -989,6 +1002,9 @@ static int server_listen(struct U8_SERVER *server)
   u8_lock_mutex(&(server->lock));
   i=0; while (i <= max_socket) {
     u8_client client=server->socketmap[i];
+    if (server->shutdown) {
+      do_shutdown(server,server->shutdown);
+      return 0;}
     if (!(((FD_ISSET(i,&reading))&&(FD_ISSET(i,&server->reading)))||
 	  ((FD_ISSET(i,&writing))&&(FD_ISSET(i,&server->writing)))||
 	  ((FD_ISSET(i,&other))&&(FD_ISSET(i,&server->clients)))))
