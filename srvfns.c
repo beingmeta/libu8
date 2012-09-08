@@ -1049,10 +1049,9 @@ static int server_listen(struct U8_SERVER *server)
 	      (FD_ISSET(i,&server->reading)))) {
 #if U8_THREADS_ENABLED
       if (!(socket_peek(client->socket))) {
-	/* No real data */
-#if 0
-	u8_log(LOG_WARN,"server_listen","SELECT cried wolf on %d",i);
-#endif
+	/* No real data, so we close it (probably the other side closed)
+	   the connection. */
+	u8_client_close(client);
 	i++; continue;}
       if (push_task(server,client)) {
 	n_actions++;
