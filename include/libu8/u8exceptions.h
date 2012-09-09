@@ -235,7 +235,14 @@ U8_EXPORT u8_condition u8_strerror(int num);
    @param cxt a context string (a const utf-8 string) 
    @param details a details string (a malloc'd utf-8 string)
 **/
-U8_EXPORT void u8_graberr(int num,u8_string cxt,u8_string details);
+U8_EXPORT void u8_graberr(int num,u8_context cxt,u8_string details);
+
+/** Takes the current errno value (if non zero) and creates a libu8 error, 
+      given a particular context and details string.
+   @param cxt a context string (a const utf-8 string) 
+   @param details a details string (a malloc'd utf-8 string)
+**/
+U8_EXPORT void u8_graberrno(u8_context cxt,u8_string details);
 
 /* Legacy functions */
 
