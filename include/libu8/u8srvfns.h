@@ -103,13 +103,13 @@ U8_EXPORT u8_client u8_client_init(u8_client client,size_t len,
      @param cl a pointer to a U8_CLIENT struct
      @returns void
 **/
-U8_EXPORT void u8_client_close(u8_client cl);
+U8_EXPORT int u8_client_close(u8_client cl);
 #if U8_THREADS_ENABLED
 /** Declares that client is done with its request and can receive others
      @param cl a pointer to a U8_CLIENT struct
      @returns void
 **/
-U8_EXPORT void u8_client_done(u8_client cl);
+U8_EXPORT int u8_client_done(u8_client cl);
 #else
 #define u8_client_done(cl)
 #endif
