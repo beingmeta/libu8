@@ -406,6 +406,8 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz);
 #define u8_strdup(x) _u8_strdup(x)
 #endif
 
+#define u8s(x) ((U8_EXPECT_FALSE(x==NULL))?(NULL):(u8_strdup(x)))
+
 U8_EXPORT u8_string _u8_strdup(u8_string);
 U8_EXPORT u8_string u8_strndup(u8_string,int);
 
