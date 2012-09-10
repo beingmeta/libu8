@@ -9,6 +9,7 @@
 #include "libu8/u8srvfns.h"
 
 #define NTASKS 500
+#define NSOCKS 500
 #define NTHREADS 8
 #define MAXBACKLOG 20
 
@@ -76,7 +77,7 @@ int main(int argc,char *argv[])
   int i=0;
   struct U8_SERVER eserv;
   struct ECHO_SERVER_DATA *esd=u8_malloc(sizeof(struct ECHO_SERVER_DATA));
-  u8_server_init(&eserv,MAXBACKLOG,NTASKS,NTHREADS,
+  u8_server_init(&eserv,MAXBACKLOG,NTASKS,NTHREADS,NSOCKS,
 		 echosrv_accept,echosrv_handle,echosrv_close);
   esd->prefix=u8_fromlibc(argv[1]);
   eserv.serverdata=esd;

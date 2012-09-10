@@ -4812,7 +4812,7 @@ $as_echo "#define STAT_MACROS_BROKEN 1" >>confdefs.h
 fi
 
 
-for ac_header in sys/stat.h unistd.h pwd.h fcntl.h
+for ac_header in sys/stat.h unistd.h pwd.h fcntl.h poll.h sys/poll.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"

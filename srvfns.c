@@ -37,6 +37,7 @@
 #endif
 
 static u8_condition ClosedClient=_("Closed connection");
+static u8_condition IdleClient=_("Idle Client");
 static u8_condition ServerShutdown=_("Shutting down server");
 static u8_condition NewServer=_("New server port");
 static u8_condition NewClient=_("New connection");
@@ -46,6 +47,9 @@ static u8_condition BadSocket=_("Bad socket value");
 static u8_condition Inconsistency=_("Internal inconsistency");
 
 /* Prototypes for some static definitions */
+
+static int client_close_core(u8_client cl,int lock_server);
+static int finish_client_close(u8_client cl);
 
 static void update_client_stats(u8_client cl,long long cur,int done);
 static void update_server_stats(u8_client cl);
@@ -174,7 +178,7 @@ int u8_client_done(u8_client cl)
   if (cl->socket>0) {
     struct pollfd *pfd=&(server->sockets[clientid]);
     memset(pfd,0,sizeof(struct pollfd));
-    pfd->socket=-1;}
+    pfd->fd=-1;}
 
     u8_lock_mutex(&(server->lock));
     server->n_busy--;
@@ -202,6 +206,7 @@ U8_EXPORT
 */
 int u8_client_close(u8_client cl)
 {
+  U8_SERVER *server=cl->server;
   if ((cl->flags&U8_CLIENT_CLOSED)==0) {
     int retval;
     u8_lock_mutex(&(server->lock));
@@ -234,7 +239,7 @@ static int client_close_for_shutdown(u8_client cl)
 }
 
 /* This is used when a transaction finishes and the socket has been
-   closed during shutdown. */s
+   closed during shutdown. */
 static int client_close_core(u8_client cl,int lock_server)
 {
   U8_SERVER *server=cl->server;
@@ -243,24 +248,25 @@ static int client_close_core(u8_client cl,int lock_server)
   /* We grab idstring, because our code allocated it but we will use it
      only after the closefn has freed the client object. */
   u8_string idstring=cl->idstring;
+  long long cur=u8_microtime();
  
   /* Update run stats for one last time */
   if (cl->active>0) {
     long long interval=cur-cl->started;
     u8_log(LOG_WARN,"u8_client_done",
 	   "Closing active client @x%lx#%d/%d[%d](%s)",
-	   (unsigned long long)cl,cl->clientid,cl->socket,cl->idstring,cl->tcount);
-    update_client_states(cl,interval,1);
+	   (unsigned long long)cl,cl->clientid,cl->socket,cl->idstring,cl->stats.tcount);
+    update_client_stats(cl,interval,1);
     server->n_busy--;}
   if (cl->queued>0) {
     long long interval=cur-cl->started;
     u8_log(LOG_WARN,"u8_client_done",
 	   "Closing a queued client @x%lx#%d/%d[%d](%s)",
 	   ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
-    cl->qsum+=interval;
-    cl->qsum2+=(interval*interval);
-    if (interval>cl->qmax) cl->qmax=interval;
-    cl->qcount++;}
+    cl->stats.qsum+=interval;
+    cl->stats.qsum2+=(interval*interval);
+    if (interval>cl->stats.qmax) cl->stats.qmax=interval;
+    cl->stats.qcount++;}
     
   if (lock_server) u8_lock_mutex(&(server->lock));
 
@@ -269,7 +275,7 @@ static int client_close_core(u8_client cl,int lock_server)
   if (sock>0) {
     struct pollfd *pfd=&(cl->server->sockets[clientid]);
     memset(pfd,0,sizeof(struct pollfd));
-    pfd->socket=-1;}
+    pfd->fd=-1;}
   server->n_clients--;
   cl->flags=cl->flags&U8_CLIENT_CLOSED;
 
@@ -295,8 +301,9 @@ static int client_close_core(u8_client cl,int lock_server)
   return retval;
 }
 
-static int finish_close_client(u8_client cl)
+static int finish_client_close(u8_client cl)
 {
+  U8_SERVER *server=cl->server;
   if ((cl->flags&U8_CLIENT_CLOSED)==0) {
     int retval;
     u8_lock_mutex(&(server->lock));
@@ -312,55 +319,58 @@ static int finish_close_client(u8_client cl)
 
 static void update_client_stats(u8_client cl,long long cur,int done)
 {
+  long long interval=cur-cl->active;
   /* active stats */
-  cl->asum+=interval;
-  cl->asum2+=(interval*interval);
-  if (interval>cl->amax) cl->amax=interval;
-  cl->acount++;
+  cl->stats.asum+=interval;
+  cl->stats.asum2+=(interval*interval);
+  if (interval>cl->stats.amax) cl->stats.amax=interval;
+  cl->stats.acount++;
   /* read/write/execute */
   if (cl->writing) {
     interval=cur-cl->writing;
-    cl->wsum+=interval;
-    cl->wsum2+=(interval*interval);
-    if (interval>cl->wmax) cl->wmax=interval;
-    cl->wcount++;}
+    cl->stats.wsum+=interval;
+    cl->stats.wsum2+=(interval*interval);
+    if (interval>cl->stats.wmax) cl->stats.wmax=interval;
+    cl->stats.wcount++;}
   else if (cl->reading) {
     interval=cur-cl->reading;
-    cl->rsum+=interval;
-    cl->rsum2+=(interval*interval);
-    if (interval>cl->rmax) cl->rmax=interval;
-    cl->rcount++;}
+    cl->stats.rsum+=interval;
+    cl->stats.rsum2+=(interval*interval);
+    if (interval>cl->stats.rmax) cl->stats.rmax=interval;
+    cl->stats.rcount++;}
   else {
-    interval=cur-cl->reading;
-    cl->xsum+=interval;
-    cl->xsum2+=(interval*interval);
-    if (interval>cl->xmax) cl->xmax=interval;
-    cl->xcount++;}
+    interval=cur-cl->active;
+    cl->stats.xsum+=interval;
+    cl->stats.xsum2+=(interval*interval);
+    if (interval>cl->stats.xmax) cl->stats.xmax=interval;
+    cl->stats.xcount++;}
   if (done) {
     if (cl->started>0){
       interval=cur-cl->started;
-      cl->tsum+=interval;
-      cl->tsum2+=(interval*interval);
-      if (interval>cl->tmax) cl->tmax=interval;
-      cl->tcount++;}
-    else u8_log(LOG_WARN,"Finishing off inactive client @x%lx#%d/%d[%d](%s)",
-		((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);}
+      cl->stats.tsum+=interval;
+      cl->stats.tsum2+=(interval*interval);
+      if (interval>cl->stats.tmax) cl->stats.tmax=interval;
+      cl->stats.tcount++;}
+    else u8_log(LOG_WARN,IdleClient,
+		"Finishing off inactive client @x%lx#%d/%d[%d](%s)",
+		((unsigned long)cl),cl->clientid,cl->socket,
+		cl->n_trans,cl->idstring);}
 }
 
 static void update_server_stats(u8_client cl)
 {
   u8_server server=cl->server;
   /* Transfer all the client statistics to the server */
-  server->tsum+=cl->tsum; server->tsum2+=cl->tsum2; server->tcount+=cl->tcount;
-  if (cl->tmax>server->tmax) server->tmax=cl->tmax;
-  server->asum+=cl->asum; server->asum2+=cl->asum2; server->acount+=cl->acount;
-  if (cl->amax>server->amax) server->amax=cl->amax;
-  server->rsum+=cl->rsum; server->rsum2+=cl->rsum2; server->rcount+=cl->rcount;
-  if (cl->rmax>server->rmax) server->rmax=cl->rmax;
-  server->wsum+=cl->wsum; server->wsum2+=cl->wsum2; server->wcount+=cl->wcount;
-  if (cl->wmax>server->wmax) server->wmax=cl->wmax;
-  server->xsum+=cl->xsum; server->xsum2+=cl->xsum2; server->xcount+=cl->xcount;
-  if (cl->xmax>server->xmax) server->xmax=cl->xmax;
+  server->tsum+=cl->stats.tsum; server->tsum2+=cl->stats.tsum2; server->tcount+=cl->stats.tcount;
+  if (cl->stats.tmax>server->tmax) server->tmax=cl->stats.tmax;
+  server->asum+=cl->stats.asum; server->asum2+=cl->stats.asum2; server->acount+=cl->stats.acount;
+  if (cl->stats.amax>server->amax) server->amax=cl->stats.amax;
+  server->rsum+=cl->stats.rsum; server->rsum2+=cl->stats.rsum2; server->rcount+=cl->stats.rcount;
+  if (cl->stats.rmax>server->rmax) server->rmax=cl->stats.rmax;
+  server->wsum+=cl->stats.wsum; server->wsum2+=cl->stats.wsum2; server->wcount+=cl->stats.wcount;
+  if (cl->stats.wmax>server->wmax) server->wmax=cl->stats.wmax;
+  server->xsum+=cl->stats.xsum; server->xsum2+=cl->stats.xsum2; server->xcount+=cl->stats.xcount;
+  if (cl->stats.xmax>server->xmax) server->xmax=cl->stats.xmax;
   server->n_errs+=cl->n_errs;
 }
 
@@ -380,7 +390,7 @@ static u8_client pop_task(struct U8_SERVER *server)
   if ((task)&&((task->active>0))) {
     /* This should probably never happen */
     u8_log(LOG_CRIT,"pop_task(u8)","popping active task @x%lx#%d/%d[%d](%s)",
-	   ((unsigned long)task),task->taskientid,task->socket,
+	   ((unsigned long)task),task->clientid,task->socket,
 	   task->n_trans,task->idstring);
     task->queued=-1; task=NULL;}
   else if (task) {
@@ -405,10 +415,10 @@ static int push_task(struct U8_SERVER *server,u8_client cl)
   if (cl->active>0) {
     u8_utime cur=u8_microtime();
     long long atime=cur-cl->active;
-    cl->asum+=atime;
-    cl->asum2+=(atime*atime);
-    if (atime>cl->amax) cl->amax=atime;
-    cl->acount++;
+    cl->stats.asum+=atime;
+    cl->stats.asum2+=(atime*atime);
+    if (atime>cl->stats.amax) cl->stats.amax=atime;
+    cl->stats.acount++;
     cl->queued=cur;
     cl->active=-1;}
   else cl->queued=u8_microtime(); 
@@ -460,30 +470,31 @@ static void *event_loop(void *thread_arg)
 	u8_utime cur=u8_microtime(); long long xtime;
 	if (cl->writing>0) {
 	  long long wtime=cur-cl->writing;
-	  cl->wsum+=wtime;
-	  cl->wsum2+=(wtime*wtime);
-	  if (wtime>cl->wmax) cl->wmax=wtime;
-	  cl->wcount++;}
+	  cl->stats.wsum+=wtime;
+	  cl->stats.wsum2+=(wtime*wtime);
+	  if (wtime>cl->stats.wmax) cl->stats.wmax=wtime;
+	  cl->stats.wcount++;}
 	else {
 	  long long rtime=cur-cl->reading;
-	  cl->rsum+=rtime;
-	  cl->rsum2+=(rtime*rtime);
-	  if (rtime>cl->rmax) cl->rmax=rtime;
-	  cl->rcount++;}}}
+	  cl->stats.rsum+=rtime;
+	  cl->stats.rsum2+=(rtime*rtime);
+	  if (rtime>cl->stats.rmax) cl->stats.rmax=rtime;
+	  cl->stats.rcount++;}}}
     if (result>=0) {
+      long long xtime;
       cur=u8_microtime();
       if (cl->callback) {
-      void *state=cl->cbstate;
-      u8_client_callback callback=cl->callback;
-      cl->callback=NULL; cl->cbstate=NULL;
-      result=callback(cl,state);}
+	void *state=cl->cbstate;
+	u8_client_callback callback=cl->callback;
+	cl->callback=NULL; cl->cbstate=NULL;
+	result=callback(cl,state);}
       else result=server->servefn(cl);
       /* Record execution stats */
       xtime=u8_microtime()-cur;
-      cl->xsum+=xtime;
-      cl->xsum2+=(xtime*xtime);
-      if (xtime>cl->xmax) cl->xmax=xtime;
-      cl->xcount++;}
+      cl->stats.xsum+=xtime;
+      cl->stats.xsum2+=(xtime*xtime);
+      if (xtime>cl->stats.xmax) cl->stats.xmax=xtime;
+      cl->stats.xcount++;}
     if (result<0) {
       u8_exception ex=u8_current_exception;
       u8_log(LOG_ERR,"event_loop",
@@ -560,10 +571,10 @@ static void *event_loop(void *thread_arg)
 	 (how long the task has been active) */
       u8_utime cur=u8_microtime();
       long long atime=cur-cl->active;
-      cl->asum+=atime;
-      cl->asum2+=(atime*atime);
-      if (atime>cl->amax) cl->amax=atime;
-      cl->acount++;
+      cl->stats.asum+=atime;
+      cl->stats.asum2+=(atime*atime);
+      if (atime>cl->stats.amax) cl->stats.amax=atime;
+      cl->stats.acount++;
       cl->active=-1;
       if (dobreak) break;
       if (!(closed)) {
@@ -578,21 +589,21 @@ static void *event_loop(void *thread_arg)
 
 U8_EXPORT
 int u8_server_init(struct U8_SERVER *server,
-		   int maxback,int max_queued,int n_threads,int init_conns,
+		   int maxback,int max_queued,int n_threads,int delta,
 		   u8_client (*acceptfn)(u8_server,u8_socket,
 					 struct sockaddr *,size_t),
 		   int (*servefn)(u8_client),
 		   int (*closefn)(u8_client))
 {
   int i=0;
-  server->serverid=NULL; server->flags=0; server->init_conns=init_conns;
+  if (delta<=0) delta=1;
+  server->serverid=NULL; server->flags=0; server->delta=delta;
   server->server_info=NULL; server->n_servers=0;
-  server->clients=u8_alloc_n(init_conns,u8_client);
-  memset(server->clients,0,sizeof(u8_client)*init_conns);
-  server->n_clients=0; server->clients_len=init_conns; server->free_client=0;
-  server->sockets=u8_alloc_n(init_conns,struct pollfd); 
-  memset(server->sockets,0,sizeof(struct pollfd)*init_conns);
-  server->n_socks=0; server->sockets_len=init_conns;
+  server->clients=u8_alloc_n(delta,u8_client);
+  memset(server->clients,0,sizeof(u8_client)*delta);
+  server->n_clients=0; server->clients_len=delta;
+  server->sockets=u8_alloc_n(delta,struct pollfd); 
+  memset(server->sockets,0,sizeof(struct pollfd)*delta);
   server->max_backlog=((maxback<=0) ? (MAX_BACKLOG) : (maxback));
   server->acceptfn=acceptfn;
   server->servefn=servefn;
@@ -619,14 +630,18 @@ int u8_server_init(struct U8_SERVER *server,
 static int do_shutdown(struct U8_SERVER *server,int grace)
 {
   int i=0, max_socket, n_servers=server->n_servers;
-  int n_errs=0, idle_clients=0, active_clients=0;
-  u8_utime deadline=u8_microtime()+grace; struct pollfd *sockets;
+  int n_errs=0, idle_clients=0, active_clients=0, clients_len;
+  u8_utime deadline=u8_microtime()+grace;
+  struct pollfd *sockets; u8_client *clients;
   if (server->flags&U8_SERVER_CLOSED) return 0;
   u8_lock_mutex(&server->lock);
   if (server->flags&U8_SERVER_CLOSED) {
     u8_unlock_mutex(&server->lock);
     return 0;}
-  else sockets=server->sockets;
+  else {
+    sockets=server->sockets;
+    clients=server->clients;
+    clients_len=server->clients_len;}
   server->flags=server->flags|U8_SERVER_CLOSED;
   /* Close all the server sockets */
   u8_log(LOG_WARN,ServerShutdown,"Closing %d listening socket(s)",n_servers);
@@ -638,11 +653,11 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
     if (retval<0) {
       u8_log(LOG_WARN,ServerShutdown,
 	     "Error (%s) closing socket %d listening at %s",
-	     strerror(errno),sock,info->idstring);
+	     strerror(errno),socket,info->idstring);
       n_errs++;}
     else if (server->flags&U8_SERVER_LOG_LISTEN)
       u8_log(LOG_NOTICE,ServerShutdown,"Closed socket %d listening at %s",
-	     sock,info->idstring);
+	     socket,info->idstring);
     if (info->idstring) u8_free(info->idstring);
     if (info->addr) u8_free(info->addr);
     info->idstring=NULL; info->addr=NULL; info->socket=-1;}
@@ -660,7 +675,7 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
     u8_client client=clients[i];    
     if (client) {
       if (client->started<0) {
-	client_close(client);
+	client_close_for_shutdown(client);
 	clients[i]=NULL;
 	sockets[i].fd=-1;
 	sockets[i].events=0;
@@ -689,15 +704,16 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
     i=0; while (i<clients_len) {
       u8_client client=clients[i];    
       if (client) {
-	client_close(client);
+	client_close_for_shutdown(client);
 	clients[i]=NULL;
 	sockets[i].fd=-1;
 	sockets[i].events=0;
 	idle_clients++;}
       i++;}}
 #endif
-  u8_free(server->clients); server->clients=NULL; server->clients_len=0;
-  u8_free(server->sockets); server->sockets=NULL; server->sockets_len=0;
+  u8_free(server->clients); server->clients=NULL;
+  u8_free(server->sockets); server->sockets=NULL;
+  server->clients_len=0;
 #if U8_THREADS_ENABLED  
   u8_free(server->thread_pool); server->thread_pool=NULL;
   u8_free(server->queue); server->queue=NULL;
@@ -777,6 +793,8 @@ static int add_socket(struct U8_SERVER *server,u8_socket sock,short events)
 {
   u8_client *clients=server->clients;
   struct pollfd *sockets=server->sockets;
+  int clients_len=server->clients_len;
+  int delta=server->delta;
   if (sock<0) return sock;
   else if (server->free_slot==server->clients_len) {
     /* Grow the arrays if neccessary */
@@ -786,7 +804,7 @@ static int add_socket(struct U8_SERVER *server,u8_socket sock,short events)
     sockets=u8_realloc(sockets,sizeof(struct pollfd)*new_len);
     if ((clients)&&(sockets)) {
       memset(clients+clients_len,0,sizeof(u8_client)*delta);
-      memset(sockets+sockets_len,0,sizeof(struct pollfd)*delta);
+      memset(sockets+clients_len,0,sizeof(struct pollfd)*delta);
       server->clients=clients; server->sockets=sockets;
       server->clients_len=new_len;}
     else {
@@ -794,14 +812,14 @@ static int add_socket(struct U8_SERVER *server,u8_socket sock,short events)
       return -1;}}
   if (server->free_slot==server->max_slot) {
     int slot=server->free_slot;
-    struct pollfd *pfd=server->sockets[slot];
+    struct pollfd *pfd=&(server->sockets[slot]);
     memset(pfd,0,sizeof(struct pollfd));
     pfd->fd=sock; pfd->events=events;
     server->free_slot++; server->max_slot++;
     return slot;}
   else {
     int slot=server->free_slot, max_slot=server->max_slot;
-    struct pollfd *pfd=server->sockets[slot];
+    struct pollfd *pfd=&(server->sockets[slot]);
     int i=slot+1; while (i<max_slot) {
       if ((!(clients[i]))&&(sockets[i].fd<0)) break;}
     server->free_slot=i;
@@ -949,15 +967,15 @@ static int server_accept(u8_server server,u8_socket i)
     errno=0;
     return -1;}
   else {
-    u8_client new_client=server->acceptfn
+    u8_client cl=server->acceptfn
       (server,sock,(struct sockaddr *)addrbuf,addrlen);
-    if (new_client) {
+    if (cl) {
       u8_string idstring=
-	((new_client->idstring)?(new_client->idstring):
+	((cl->idstring)?(cl->idstring):
 	 (u8_sockaddr_string((struct sockaddr *)addrbuf)));
       server->n_accepted++;
-      if (!(new_client->idstring)) new_client->idstring=idstring;
-      add_client(server,new_client);
+      if (!(cl->idstring)) cl->idstring=idstring;
+      add_client(server,cl);
       if (server->flags&U8_SERVER_LOG_CONNECT) 
 	u8_log(LOG_INFO,NewClient,"Opened @x%lx#%d/%d[%d](%s)",
 	       ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
@@ -983,10 +1001,10 @@ static int socket_peek(u8_socket sock)
    away).  */
 static int server_listen(struct U8_SERVER *server)
 {
-  struct pollfd *sockets;
+  struct pollfd *sockets; u8_client *clients;
   int i, max_slot, n_actions, retval;
   /* Wait for activity on one of your open sockets */
-  while ((retval=poll(server->sockets,100)) == 0) {
+  while ((retval=poll(server->sockets,server->max_slot,100)) == 0) {
     if (retval<0) return retval;
     if (server->shutdown) {
       do_shutdown(server,server->shutdown);
@@ -997,18 +1015,19 @@ static int server_listen(struct U8_SERVER *server)
     return 0;}
   /* Iterate over the range of sockets */
   u8_lock_mutex(&(server->lock));
-  sockets=server->sockets; max_slot=server->max_slot;
+  sockets=server->sockets; clients=server->clients;
+  max_slot=server->max_slot;
   i=0; while (i <= max_slot) {
     u8_client client; short events;
     if (sockets[i].fd<0) {i++; continue;}
     else if (sockets[i].revents==0) {
       i++; continue;}
     else {
-      client=server->sockets[i];
+      client=clients[i];
       events=sockets[i].revents;}
     if ((client==NULL)&&(events&POLLIN)) 
       /* Server connection */
-      retval=server_accept(server,clients[i].fd);
+      retval=server_accept(server,sockets[i].fd);
     else if (client==NULL) {
       /* Error on server socket? */}
 #if U8_THREADS_ENABLED
@@ -1016,8 +1035,8 @@ static int server_listen(struct U8_SERVER *server)
       /* A thread is working on this client.  Don't touch it. */}
     else if (((events&POLLOUT)&&((client->writing)>0))||
 	     ((events&POLLIN)&&((client->reading)>0))) {
-      if (push_task(client)) {
-	sockets[i].events=sockets[i].events&(~(POLLIN||POLOUT));
+      if (push_task(server,client)) {
+	sockets[i].events=sockets[i].events&(~(POLLIN|POLLOUT));
 	n_actions++;}}
     else if (events&POLLIN) {
       if (!(socket_peek(client->socket))) {
@@ -1078,7 +1097,7 @@ U8_EXPORT u8_server_stats u8_server_statistics
   stats->xsum=server->xsum; stats->xsum2=server->xsum2; stats->xcount=server->xcount;
   stats->xmax=server->xmax;
   stats->n_errs=server->n_errs;
-  clients=server->socketmap; lim=server->socket_max;
+  clients=server->clients; lim=server->max_slot;
   while (i<lim) {
     u8_client cl=clients[i++];
     if (cl) {
@@ -1086,16 +1105,21 @@ U8_EXPORT u8_server_stats u8_server_statistics
       if (cl->active>0) stats->n_active++;
       if (cl->reading>0) stats->n_reading++;
       if (cl->writing>0) stats->n_writing++;      
-      stats->tsum+=cl->tsum; stats->tsum2+=cl->tsum2; stats->tcount+=cl->tcount;
-      if (cl->tmax>stats->tmax) stats->tmax=cl->tmax;
-      stats->asum+=cl->asum; stats->asum2+=cl->asum2; stats->acount+=cl->acount;
-      if (cl->amax>stats->amax) stats->amax=cl->amax;
-      stats->rsum+=cl->rsum; stats->rsum2+=cl->rsum2; stats->rcount+=cl->rcount;
-      if (cl->rmax>stats->rmax) stats->rmax=cl->rmax;
-      stats->wsum+=cl->wsum; stats->wsum2+=cl->wsum2; stats->wcount+=cl->wcount;
-      if (cl->wmax>stats->wmax) stats->wmax=cl->wmax;
-      stats->xsum+=cl->xsum; stats->xsum2+=cl->xsum2; stats->xcount+=cl->xcount;
-      if (cl->xmax>stats->xmax) stats->xmax=cl->xmax;
+      stats->tsum+=cl->stats.tsum; stats->tsum2+=cl->stats.tsum2;
+      stats->tcount+=cl->stats.tcount;
+      if (cl->stats.tmax>stats->tmax) stats->tmax=cl->stats.tmax;
+      stats->asum+=cl->stats.asum; stats->asum2+=cl->stats.asum2;
+      stats->acount+=cl->stats.acount;
+      if (cl->stats.amax>stats->amax) stats->amax=cl->stats.amax;
+      stats->rsum+=cl->stats.rsum; stats->rsum2+=cl->stats.rsum2;
+      stats->rcount+=cl->stats.rcount;
+      if (cl->stats.rmax>stats->rmax) stats->rmax=cl->stats.rmax;
+      stats->wsum+=cl->stats.wsum; stats->wsum2+=cl->stats.wsum2;
+      stats->wcount+=cl->stats.wcount;
+      if (cl->stats.wmax>stats->wmax) stats->wmax=cl->stats.wmax;
+      stats->xsum+=cl->stats.xsum; stats->xsum2+=cl->stats.xsum2;
+      stats->xcount+=cl->stats.xcount;
+      if (cl->stats.xmax>stats->xmax) stats->xmax=cl->stats.xmax;
       stats->n_errs+=cl->n_errs;}}
   u8_unlock_mutex(&(server->lock));
   return stats;

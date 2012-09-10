@@ -35,6 +35,21 @@ typedef struct U8_SERVER *u8_server;
 typedef struct U8_CLIENT *u8_client;
 typedef int (*u8_client_callback)(u8_client,void *);
 
+typedef struct U8_CLIENT_STATS {
+  /* Tracking total transaction time (clock time) */
+  long long tsum, tsum2, tmax; int tcount;
+  /* Tracking total spent in event loop (run time) */
+  long long asum, asum2, amax; int acount;
+  /* Tracking total spent queued (clock time) */
+  long long qsum, qsum2, qmax; int qcount;
+  /* Tracking total spent reading (clock time) */
+  long long rsum, rsum2, rmax; int rcount;
+  /* Tracking total spent writing (clock time) */
+  long long wsum, wsum2, wmax; int wcount;
+  /* Tracking total spent in handler (clock time) */
+  long long xsum, xsum2, xmax; int xcount;} U8_CLIENT_STATS;
+typedef struct U8_CLIENT_STATS *u8_client_stats;
+
 #define U8_CLIENT_FIELDS                                       \
     u8_socket socket;                                          \
     unsigned int clientid;                                     \
@@ -45,19 +60,7 @@ typedef int (*u8_client_callback)(u8_client,void *);
     unsigned char *buf;                                        \
     size_t off, len, buflen, delta;                            \
     unsigned int ownsbuf:1, grows:1;                           \
-    struct stats {                                             \
-      /* Tracking total transaction time (clock time) */       \
-      long long tsum, tsum2, tmax; int tcount;                 \
-      /* Tracking total spent in event loop (run time) */      \
-      long long asum, asum2, amax; int acount;                 \
-      /* Tracking total spent queued (clock time) */           \
-      long long qsum, qsum2, qmax; int qcount;                 \
-      /* Tracking total spent reading (clock time) */          \
-      long long rsum, rsum2, rmax; int rcount;                 \
-      /* Tracking total spent writing (clock time) */          \
-      long long wsum, wsum2, wmax; int wcount;                 \
-      /* Tracking total spent in handler (clock time) */       \
-      long long xsum, xsum2, xmax; int xcount;};               \
+    struct U8_CLIENT_STATS stats;                              \
     u8_client_callback callback;                               \
     void *cbstate;                                             \
     struct U8_SERVER *server
@@ -79,19 +82,7 @@ typedef int (*u8_client_callback)(u8_client,void *);
     unsigned char *buf;
     size_t off, len, buflen, delta;
     unsigned int ownsbuf:1, grows:1;
-    struct stats {
-      /* Tracking total transaction time (clock time) */
-      long long tsum, tsum2, tmax; int tcount;
-      /* Tracking total spent in event loop (run time) */
-      long long asum, asum2, amax; int acount;
-      /* Tracking total spent queued (clock time) */
-      long long qsum, qsum2, qmax; int qcount;
-      /* Tracking total spent reading (clock time) */
-      long long rsum, rsum2, rmax; int rcount;
-      /* Tracking total spent writing (clock time) */
-      long long wsum, wsum2, wmax; int wcount;
-      /* Tracking total spent in handler (clock time) */
-      long long xsum, xsum2, xmax; int xcount;};
+    struct U8_CLIENT_STATS stats;
     u8_client_callback callback;
     void *cbstate;
     struct U8_SERVER *server;} U8_CLIENT;
@@ -197,7 +188,7 @@ typedef struct U8_SERVER {
 #endif
 } U8_SERVER;
 
-U8_EXPORT int u8_server_init(struct U8_SERVER *,int,int,int,
+U8_EXPORT int u8_server_init(struct U8_SERVER *,int,int,int,int,
 			     u8_client (*acceptfn)(u8_server,u8_socket,
 						   struct sockaddr *,size_t),
 			     int (*servefn)(u8_client),
