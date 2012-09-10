@@ -100,11 +100,34 @@ U8_EXPORT u8_client u8_client_init(u8_client client,size_t len,
 				   struct sockaddr *addrbuf,size_t addrlen,
 				   u8_socket sock,u8_server srv);
 
-/** Forces a client to be closed.
-     @param cl a pointer to a U8_CLIENT struct
-     @returns void
-**/
+/* u8_client_close:
+    Arguments: a pointer to a client
+    Returns: int
+ Marks the client's current task as done, updating server data structures
+ appropriately, and ending by closing the client close function.
+ If a busy client is closed, it has its U8_CLIENT_CLOSING flag set.
+ This tells the event loop to finish closing the client when it actually
+ completes the current transaction.
+*/
 U8_EXPORT int u8_client_close(u8_client cl);
+
+/* u8_client_closed:
+    Arguments: a pointer to a client
+    Returns: int
+  Indicates that the other end has closed the connection.  This can generate
+    an indication of its own and then closes the client on this end
+*/
+U8_EXPORT int u8_client_closed(u8_client cl);
+
+/* u8_client_shutdown:
+    Arguments: a pointer to a client
+    Returns: int
+ Marks the client's current task as done, updating server data structures
+ appropriately, and ending by closing the client close function.
+ This will shutdown an active client.
+*/
+U8_EXPORT int u8_client_shutdown(u8_client cl);
+
 #if U8_THREADS_ENABLED
 /** Declares that client is done with its request and can receive others
      @param cl a pointer to a U8_CLIENT struct
