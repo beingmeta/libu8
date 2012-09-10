@@ -140,7 +140,7 @@ typedef struct U8_SERVER {
   u8_string serverid;
   /* Server-wide flags, whether we're shutting down, and
      how many connections to start with/grow by. */
-  int flags, shutdown, delta;
+  int flags, shutdown, init_clients, max_clients;
   /* The server addreses we're listening to for new connections */
   struct U8_SERVER_INFO *server_info; int n_servers;
   /* The connections (clients) we are currently serving */
@@ -173,7 +173,6 @@ typedef struct U8_SERVER {
   int (*servefn)(u8_client);
   int (*donefn)(u8_client);
   int (*closefn)(u8_client);
-  int (*readyfn)(u8_client);
   /* Miscellaneous data */
   void *serverdata;
   /* We don't handle non-threaded right now. */
@@ -190,10 +189,27 @@ typedef struct U8_SERVER {
 #endif
 } U8_SERVER;
 
-U8_EXPORT int u8_server_init(struct U8_SERVER *,int,int,int,int,
+/** Initializes a server
+     @param server a pointer to a U8_SERVER struct
+     @param init_clients how many clients to prepare for/grow by
+     @param n_threads how many threads to use for processing requests
+     @param maxback the maximum backlog on accepting connections
+     @param maxqueue the maximum number of events which can be queued
+     @param maxclients the maximum number of concurrent clients allowed (NYI)
+     @param acceptfn the function for accepting connections
+     @param servefn the function called to process data for a client
+     @param donefn the function called when data processing is done
+     @param closefn the function called when a client is closed
+     @returns int
+ This initializes a server object.  To actually start listening for
+  requests, u8_add_server must be called at least once.
+**/
+U8_EXPORT int u8_server_init(struct U8_SERVER *server,
+			     int init_clients,int n_threads,
+			     /* max_clients is currently ignored */
+			     int maxback,int maxqueue,int maxclients,
 			     u8_client (*acceptfn)(u8_server,u8_socket,
 						   struct sockaddr *,size_t),
-			     int (*readyfn)(u8_client),
 			     int (*servefn)(u8_client),
 			     int (*donefn)(u8_client),
 			     int (*closefn)(u8_client));

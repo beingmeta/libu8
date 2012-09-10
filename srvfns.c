@@ -48,7 +48,7 @@ static u8_condition Inconsistency=_("Internal inconsistency");
 
 /* Prototypes for some static definitions */
 
-static int client_close_core(u8_client cl,int lock_server);
+static int client_close_core(u8_client cl,int server_locked);
 static int finish_client_close(u8_client cl);
 
 static void update_client_stats(u8_client cl,long long cur,int done);
@@ -212,13 +212,15 @@ int u8_client_close(u8_client cl)
     if (cl->flags&U8_CLIENT_CLOSED) {
       u8_unlock_mutex(&(server->lock));
       return 0;}
-    retval=client_close_core(cl,0);
+    cl->flags|=U8_CLIENT_CLOSING;
     u8_unlock_mutex(&(server->lock));
+    retval=client_close_core(cl,0);
     return retval;}
   else {
     u8_log(LOG_WARN,"u8_client_close",
 	   "Closing already closed socket @x%lx#%d/%d[%d](%s)",
 	   ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
+    u8_unlock_mutex(&(server->lock));
     return 0;}
 }
 
@@ -232,13 +234,13 @@ static int client_close_for_shutdown(u8_client cl)
       /* It's in the middle of something, so we just flag it as closing. */
       cl->flags=cl->flags|(U8_CLIENT_CLOSING);
       return 0;}
-    else return client_close_core(cl,0);}
+    else return client_close_core(cl,1);}
   else return 0;
 }
 
 /* This is used when a transaction finishes and the socket has been
    closed during shutdown. */
-static int client_close_core(u8_client cl,int lock_server)
+static int client_close_core(u8_client cl,int server_locked)
 {
   U8_SERVER *server=cl->server;
   u8_socket sock=cl->socket;
@@ -266,28 +268,23 @@ static int client_close_core(u8_client cl,int lock_server)
     if (interval>cl->stats.qmax) cl->stats.qmax=interval;
     cl->stats.qcount++;}
     
-  if (lock_server) u8_lock_mutex(&(server->lock));
-
   cl->queued=cl->active=cl->reading=cl->writing=cl->started=-1;
 
   if (sock>0) {
     struct pollfd *pfd=&(cl->server->sockets[clientid]);
     memset(pfd,0,sizeof(struct pollfd));
     pfd->fd=-1;}
-  server->n_clients--;
   cl->flags=cl->flags&U8_CLIENT_CLOSED;
 
+  if (!(server_locked)) u8_lock_mutex(&(server->lock));
+  server->n_clients--;
   update_server_stats(cl);
-    
   server->clients[clientid]=NULL;
   /* If the newly empty slot is before the current free_slot,
      make it the free_slot. */
   if (clientid<server->free_slot) server->free_slot=clientid;
+  if (!(server_locked)) u8_unlock_mutex(&(server->lock));
 
-  /* Now we let the server go back to business and do client
-     specific closing stuff. */
-  if (lock_server) u8_unlock_mutex(&(server->lock));
-    
   retval=server->closefn(cl);
 
   if (cl->server->flags&U8_SERVER_LOG_CONNECT)
@@ -296,6 +293,7 @@ static int client_close_core(u8_client cl,int lock_server)
   if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
   u8_free(idstring);
   u8_free(cl);
+
   return retval;
 }
 
@@ -309,6 +307,7 @@ static int finish_client_close(u8_client cl)
     if (cl->flags&U8_CLIENT_CLOSED) {
       u8_unlock_mutex(&(server->lock));
       return 0;}
+    u8_unlock_mutex(&(server->lock));
     retval=client_close_core(cl,0);
     u8_unlock_mutex(&(server->lock));
     return retval;}
@@ -591,23 +590,25 @@ static void *event_loop(void *thread_arg)
 
 U8_EXPORT
 int u8_server_init(struct U8_SERVER *server,
-		   int maxback,int max_queued,int n_threads,int delta,
+		   int init_clients,int n_threads,
+		   /* max_clients is currently ignored */
+		   int maxback,int max_queued,int max_clients,
 		   u8_client (*acceptfn)(u8_server,u8_socket,
 					 struct sockaddr *,size_t),
-		   int (*readyfn)(u8_client),
 		   int (*servefn)(u8_client),
 		   int (*donefn)(u8_client),
 		   int (*closefn)(u8_client))
 {
   int i=0;
-  if (delta<=0) delta=1;
-  server->serverid=NULL; server->flags=0; server->delta=delta;
+  if (init_clients<=0) init_clients=1;
+  server->serverid=NULL; server->flags=0;
+  server->init_clients=init_clients; server->max_clients=max_clients;
   server->server_info=NULL; server->n_servers=0;
-  server->clients=u8_alloc_n(delta,u8_client);
-  memset(server->clients,0,sizeof(u8_client)*delta);
-  server->n_clients=0; server->clients_len=delta;
-  server->sockets=u8_alloc_n(delta,struct pollfd); 
-  memset(server->sockets,0,sizeof(struct pollfd)*delta);
+  server->clients=u8_alloc_n(init_clients,u8_client);
+  memset(server->clients,0,sizeof(u8_client)*init_clients);
+  server->n_clients=0; server->clients_len=init_clients;
+  server->sockets=u8_alloc_n(init_clients,struct pollfd); 
+  memset(server->sockets,0,sizeof(struct pollfd)*init_clients);
   server->free_slot=server->max_slot=0;
   server->max_backlog=((maxback<=0) ? (MAX_BACKLOG) : (maxback));
   server->acceptfn=acceptfn;
@@ -800,17 +801,17 @@ static int add_socket(struct U8_SERVER *server,u8_socket sock,short events)
   u8_client *clients=server->clients;
   struct pollfd *sockets=server->sockets;
   int clients_len=server->clients_len;
-  int delta=server->delta;
   if (sock<0) return sock;
   else if (server->free_slot==server->clients_len) {
     /* Grow the arrays if neccessary */
     int cur_len=server->clients_len;
-    int new_len=cur_len+server->delta;
+    int grow_by=server->init_clients;
+    int new_len=cur_len+grow_by;
     clients=u8_realloc(clients,sizeof(u8_client)*new_len);
     sockets=u8_realloc(sockets,sizeof(struct pollfd)*new_len);
     if ((clients)&&(sockets)) {
-      memset(clients+clients_len,0,sizeof(u8_client)*delta);
-      memset(sockets+clients_len,0,sizeof(struct pollfd)*delta);
+      memset(clients+clients_len,0,sizeof(u8_client)*grow_by);
+      memset(sockets+clients_len,0,sizeof(struct pollfd)*grow_by);
       server->clients=clients; server->sockets=sockets;
       server->clients_len=new_len;}
     else {
@@ -827,7 +828,8 @@ static int add_socket(struct U8_SERVER *server,u8_socket sock,short events)
     int slot=server->free_slot, max_slot=server->max_slot;
     struct pollfd *pfd=&(server->sockets[slot]);
     int i=slot+1; while (i<max_slot) {
-      if ((!(clients[i]))&&(sockets[i].fd<0)) break;}
+      if ((!(clients[i]))&&(sockets[i].fd<0)) break;
+      else i++;}
     server->free_slot=i;
     memset(pfd,0,sizeof(struct pollfd));
     pfd->fd=sock; pfd->events=events;
@@ -1048,7 +1050,7 @@ static int server_listen(struct U8_SERVER *server)
       if (!(socket_peek(client->socket))) {
 	/* No real data, so we close it (probably the other side closed)
 	   the connection. */
-	u8_client_close(client);
+	client_close_core(client,0);
 	i++; continue;}
       else if (push_task(server,client)) n_actions++;
       else {}}
