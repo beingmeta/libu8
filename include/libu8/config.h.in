@@ -162,6 +162,12 @@
 /* Define if you have sys/socket.h */
 #undef HAVE_SYS_SELECT_H
 
+/* Define if you have poll.h */
+#undef HAVE_POLL_H
+
+/* Define if you have sys/poll.h */
+#undef HAVE_SYS_POLL_H
+
 /* Define if you have sys/un.h */
 #undef HAVE_SYS_UN_H
 

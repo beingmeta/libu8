@@ -37,6 +37,7 @@ typedef int (*u8_client_callback)(u8_client,void *);
 
 #define U8_CLIENT_FIELDS                      \
   u8_socket socket;                           \
+  unsigned int clientid;                      \
   unsigned int flags, n_trans, n_errs;        \
   u8_utime started, queued, active;           \
   u8_utime reading, writing;                  \
@@ -66,6 +67,7 @@ typedef int (*u8_client_callback)(u8_client,void *);
      to which the client is connected. **/
 typedef struct U8_CLIENT {
   u8_socket socket;
+  unsigned int clientid;
   unsigned int flags, n_trans, n_errs;
   u8_utime started, queued, active;
   u8_utime reading, writing;
@@ -125,7 +127,7 @@ U8_EXPORT int u8_client_done(u8_client cl);
      to listen for new connections. 
 **/
 typedef struct U8_SERVER_INFO {
-  u8_socket socket; u8_string idstring;
+  u8_socket socket; u8_string idstring; int poll_index;
   struct sockaddr *addr;} U8_SERVER_INFO;
 typedef struct U8_SERVER_INFO *u8_server_info;
 
@@ -133,21 +135,28 @@ typedef struct U8_SERVER_INFO *u8_server_info;
      This structure represents a server's state and connections.
 **/
 typedef struct U8_SERVER {
-  fd_set servers, clients, reading, writing;
   /* n_servers is the number of sockets being listened on,
      server_info describes each one. */
   u8_string serverid;
-  int n_servers, flags, shutdown;
-  struct U8_SERVER_INFO *server_info;
-  /* This array maps socket numbers to clients */
-  struct U8_CLIENT **socketmap;
-  int n_clients; /* Total number of live clients */
-  int n_busy; /* How many clients are currently busy (in the middle of transactions) */
-  int n_accepted; /* How many connections have been accepted to date */
-  int n_trans; /* How many transactions have been completed to date */
-  int n_errs; /* How many transactions yielded errors */
-  u8_socket socket_max; /* Largest open socket */
-  int socket_lim; /* The size of socketmap */
+  /* Server-wide flags, whether we're shutting down, and
+     how many connections to start with/grow by. */
+  int flags, shutdown, delta;
+  /* The server addreses we're listening to for new connections */
+  struct U8_SERVER_INFO *server_info; int n_servers;
+  /* The connections (clients) we are currently serving */
+  struct U8_CLIENT **clients; int n_clients, clients_len;
+  /* free_slot is the first slot where a new client can be stored */
+  int free_slot, max_slot;
+  /* All sockets: n_sockets=n_servers+n_clients
+     To simplify things, sockets_len is always the same as clients_len,
+     and we just have NULL entries for server sockets. */
+  struct pollfd *sockets;
+  /* How many clients are currently busy (in the middle of transactions) */
+  int n_busy; 
+  /* How many connections have been accepted to date */
+  long n_accepted; 
+  long n_trans; /* How many transactions have been completed to date */
+  long n_errs; /* How many transactions yielded errors */
   /* Tracking total transaction time */
   long long tsum, tsum2, tmax; int tcount;
   /* Tracking total spent reading */
@@ -258,14 +267,5 @@ U8_EXPORT u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int b
        to buflen
 **/
 U8_EXPORT u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen);
-
-/** Calls select function, useful for debugging
-     @param reading where to look for readability
-     @param writing where to look for writability
-     @param other where to look for other activity (?)
-     @param maxsock largest socket value
-     @returns the number of sockets with activity
-**/
-U8_EXPORT int u8_select(fd_set *reading,fd_set *writing,fd_set *other,int max);
 
 #endif /* U8_U8SRVFNS_H */
