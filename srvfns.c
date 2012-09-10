@@ -19,10 +19,6 @@
 #define _FILEINFO __FILE__
 #endif
 
-#ifndef MAX_BACKLOG
-#define MAX_BACKLOG 16
-#endif
-
 #include "libu8/libu8io.h"
 #include "libu8/u8filefns.h"
 #include "libu8/u8netfns.h"
@@ -589,19 +585,52 @@ static void *event_loop(void *thread_arg)
 #endif
 
 U8_EXPORT
-int u8_server_init(struct U8_SERVER *server,
-		   int init_clients,int n_threads,
-		   /* max_clients is currently ignored */
-		   int maxback,int max_queued,int max_clients,
-		   u8_client (*acceptfn)(u8_server,u8_socket,
-					 struct sockaddr *,size_t),
-		   int (*servefn)(u8_client),
-		   int (*donefn)(u8_client),
-		   int (*closefn)(u8_client))
+struct U8_SERVER *u8_init_server
+   (struct U8_SERVER *server,
+    u8_client (*acceptfn)(u8_server,u8_socket,struct sockaddr *,size_t),
+    int (*servefn)(u8_client),
+    int (*donefn)(u8_client),
+    int (*closefn)(u8_client),
+    ...)
 {
   int i=0;
+  int flags=0, init_clients=DEFAULT_INIT_CLIENTS, n_threads=DEFAULT_NTHREADS;
+  int maxback=MAX_BACKLOG, max_queue=DEFAULT_MAX_QUEUE;
+  int  max_clients=DEFAULT_MAX_CLIENTS;
+  va_list args; int prop; int retval;
+  if (server==NULL) {
+    server=u8_alloc(struct U8_SERVER);
+    memset(server,0,sizeof(struct U8_SERVER));}
+  va_start(args,closefn);
+  while ((prop=va_arg(args,int))>0) {
+    switch (prop) {
+    case U8_SERVER_FLAGS:
+      flags=flags|(va_arg(args,int)); continue;
+    case U8_SERVER_NTHREADS:
+      n_threads=(va_arg(args,int)); continue;
+    case U8_SERVER_INIT_CLIENTS:
+      init_clients=(va_arg(args,int)); continue;
+    case U8_SERVER_MAX_QUEUE:
+      max_queue=(va_arg(args,int)); continue;
+    case U8_SERVER_MAX_CLIENTS:
+      max_clients=(va_arg(args,int)); continue;
+    case U8_SERVER_BACKLOG:
+      max_clients=(va_arg(args,int)); continue;
+    case U8_SERVER_LOGLEVEL: {
+      int level=(va_arg(args,int));
+      if (level>3) flags=flags|U8_SERVER_LOG_TRANSFERS;
+      if (level>2) flags=flags|U8_SERVER_LOG_TRANSACT;
+      if (level>1) flags=flags|U8_SERVER_LOG_CONNECT;
+      if (level>0) flags=flags|U8_SERVER_LOG_LISTEN;
+      continue;}
+    default:
+      u8_log(LOG_CRIT,"u8_server_init",
+	     "Unknown property code %d for server",prop);
+      continue;}}
+  va_end(args);
+  
   if (init_clients<=0) init_clients=1;
-  server->serverid=NULL; server->flags=0;
+  server->serverid=NULL; server->flags=flags; server->shutdown=0;
   server->init_clients=init_clients; server->max_clients=max_clients;
   server->server_info=NULL; server->n_servers=0;
   server->clients=u8_alloc_n(init_clients,u8_client);
@@ -619,9 +648,9 @@ int u8_server_init(struct U8_SERVER *server,
   u8_init_mutex(&(server->lock));
   u8_init_condvar(&(server->empty)); u8_init_condvar(&(server->full));  
   server->n_threads=n_threads;
-  server->queue=u8_alloc_n(max_queued,u8_client);
-  server->n_queued=0; server->max_queued=max_queued;
-  server->queue_head=0; server->queue_tail=0; server->queue_len=max_queued;
+  server->queue=u8_alloc_n(max_queue,u8_client);
+  server->n_queued=0; server->max_queued=max_queue;
+  server->queue_head=0; server->queue_tail=0; server->queue_len=max_queue;
   server->thread_pool=u8_alloc_n(n_threads,pthread_t);
   server->n_trans=0; /* Transaction count */
   server->n_accepted=0; /* Accept count (new clients) */
@@ -631,7 +660,27 @@ int u8_server_init(struct U8_SERVER *server,
 			event_loop,(void *)server);
 	 i++;}
 #endif
-  return 1;
+  return server;
+}
+
+U8_EXPORT
+int u8_server_init(struct U8_SERVER *server,
+		   /* max_clients is currently ignored */
+		   int maxback,int max_queue,int n_threads,
+		   u8_client (*acceptfn)(u8_server,u8_socket,
+					 struct sockaddr *,size_t),
+		   int (*servefn)(u8_client),
+		   int (*closefn)(u8_client))
+{
+  if (u8_init_server
+      (server,acceptfn,servefn,NULL,closefn,
+       U8_SERVER_NTHREADS,n_threads,
+       U8_SERVER_INIT_CLIENTS,max_queue,
+       U8_SERVER_MAX_QUEUE,max_queue,
+       U8_SERVER_BACKLOG,maxback,
+       -1))
+    return 1;
+  else return 0;
 }
 
 static int do_shutdown(struct U8_SERVER *server,int grace)
@@ -1050,7 +1099,7 @@ static int server_listen(struct U8_SERVER *server)
       if (!(socket_peek(client->socket))) {
 	/* No real data, so we close it (probably the other side closed)
 	   the connection. */
-	client_close_core(client,0);
+	client_close_core(client,1);
 	i++; continue;}
       else if (push_task(server,client)) n_actions++;
       else {}}
