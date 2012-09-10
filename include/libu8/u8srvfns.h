@@ -26,11 +26,12 @@
 typedef struct U8_SERVER *u8_server;
 
 #define U8_CLIENT_OPEN 1
-#define U8_CLIENT_CLOSING 2
-#define U8_CLIENT_CLOSED 4
-#define U8_CLIENT_LOG_TRANSACT 8
-#define U8_CLIENT_ASYNC 16
-#define U8_CLIENT_FLAG_MAX 16
+#define U8_CLIENT_ASYNC 2
+#define U8_CLIENT_CLOSING 4
+#define U8_CLIENT_CLOSED 8
+#define U8_CLIENT_LOG_TRANSACT 16
+#define U8_CLIENT_LOG_TRANSFERS 32
+#define U8_CLIENT_FLAG_MAX 32
 
 typedef struct U8_CLIENT *u8_client;
 typedef int (*u8_client_callback)(u8_client,void *);
@@ -115,10 +116,11 @@ U8_EXPORT int u8_client_done(u8_client cl);
 #endif
 
 #define U8_SERVER_CLOSED 1
-#define U8_SERVER_LOG_LISTEN 2
-#define U8_SERVER_LOG_CONNECT 4
-#define U8_SERVER_LOG_TRANSACT 8
-#define U8_SERVER_ASYNC 16
+#define U8_SERVER_ASYNC 2
+#define U8_SERVER_LOG_LISTEN 4
+#define U8_SERVER_LOG_CONNECT 8
+#define U8_SERVER_LOG_TRANSACT 16
+#define U8_SERVER_LOG_TRANSFERS 32
 
 /** struct U8_SERVER_INFO 
     describes information about a particular server socket used
@@ -191,7 +193,9 @@ typedef struct U8_SERVER {
 U8_EXPORT int u8_server_init(struct U8_SERVER *,int,int,int,int,
 			     u8_client (*acceptfn)(u8_server,u8_socket,
 						   struct sockaddr *,size_t),
+			     int (*readyfn)(u8_client),
 			     int (*servefn)(u8_client),
+			     int (*donefn)(u8_client),
 			     int (*closefn)(u8_client));
 
 

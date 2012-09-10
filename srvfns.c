@@ -175,11 +175,9 @@ int u8_client_done(u8_client cl)
 	     ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
       cl->queued=0;}
 
-  if (cl->socket>0) {
-    struct pollfd *pfd=&(server->sockets[clientid]);
-    memset(pfd,0,sizeof(struct pollfd));
-    pfd->fd=-1;}
-
+    if (cl->socket>0) {
+      struct pollfd *pfd=&(server->sockets[clientid]);
+      pfd->events=POLLIN;}
     u8_lock_mutex(&(server->lock));
     server->n_busy--;
     u8_unlock_mutex(&(server->lock));
@@ -451,9 +449,11 @@ static void *event_loop(void *thread_arg)
 	if (cl->writing>0)
 	  delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
 	else delta=read(cl->socket,cl->buf+cl->off,cl->len-cl->off);
-	u8_log(LOG_DEBUG,((cl->writing>0)?("Writing"):("Reading")),
-	       "Processed %d bytes for @x%lx#%d/%d[%d](%s)",delta,
-	       ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
+	if (((server->flags)&(U8_SERVER_LOG_TRANSFERS))||
+	    ((cl->flags)&(U8_CLIENT_LOG_TRANSFERS)))
+	  u8_log(LOG_DEBUG,((cl->writing>0)?("Writing"):("Reading")),
+		 "Processed %d bytes for @x%lx#%d/%d[%d](%s)",delta,
+		 ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
 	if (delta>0) cl->off=cl->off+delta;}
       /* If we've still got data to read/write, we update the poll
 	 structure to keep listening and continue in the event loop.  */
@@ -546,9 +546,11 @@ static void *event_loop(void *thread_arg)
       if (cl->writing>0)
 	delta=write(cl->socket,cl->buf+cl->off,((size_t)(cl->len-cl->off)));
       else delta=read(cl->socket,cl->buf+cl->off,((size_t)(cl->len-cl->off)));
-      u8_log(LOG_DEBUG,((cl->writing>0)?("Writing"):("Reading")),
-	     "Processed %d bytes for @x%lx#%d/%d[%d](%s)",delta,
-	     ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
+      if (((server->flags)&(U8_SERVER_LOG_TRANSFERS))||
+	  ((cl->flags)&(U8_CLIENT_LOG_TRANSFERS)))
+	u8_log(LOG_DEBUG,((cl->writing>0)?("Writing"):("Reading")),
+	       "Processed %d bytes for @x%lx#%d/%d[%d](%s)",delta,
+	       ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
       if (delta>0) cl->off=cl->off+delta;
       /* If we've still got data to read/write, we continue,
 	 otherwise, we fall through */
@@ -592,7 +594,9 @@ int u8_server_init(struct U8_SERVER *server,
 		   int maxback,int max_queued,int n_threads,int delta,
 		   u8_client (*acceptfn)(u8_server,u8_socket,
 					 struct sockaddr *,size_t),
+		   int (*readyfn)(u8_client),
 		   int (*servefn)(u8_client),
+		   int (*donefn)(u8_client),
 		   int (*closefn)(u8_client))
 {
   int i=0;
@@ -604,10 +608,12 @@ int u8_server_init(struct U8_SERVER *server,
   server->n_clients=0; server->clients_len=delta;
   server->sockets=u8_alloc_n(delta,struct pollfd); 
   memset(server->sockets,0,sizeof(struct pollfd)*delta);
+  server->free_slot=server->max_slot=0;
   server->max_backlog=((maxback<=0) ? (MAX_BACKLOG) : (maxback));
   server->acceptfn=acceptfn;
   server->servefn=servefn;
   server->closefn=closefn;
+  server->donefn=donefn;
 #if U8_THREADS_ENABLED
   u8_init_mutex(&(server->lock));
   u8_init_condvar(&(server->empty)); u8_init_condvar(&(server->full));  

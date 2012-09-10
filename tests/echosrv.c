@@ -46,8 +46,7 @@ static int echosrv_handle(u8_client ucl)
   int n_bytes=recv(ucl->socket,inbuf,256,0);
   if (n_bytes<0) return -1;
   else if (n_bytes==0) {
-    u8_client_close(ucl);
-    return -1;}
+    return 0;}
   else if ((ec->lastin) && ((strcmp(inbuf,ec->lastin))==0)) {
     int retval=send(ucl->socket,"ditto\n",6,0);
     if (retval<0) return -1;}
@@ -78,12 +77,13 @@ int main(int argc,char *argv[])
   struct U8_SERVER eserv;
   struct ECHO_SERVER_DATA *esd=u8_malloc(sizeof(struct ECHO_SERVER_DATA));
   u8_server_init(&eserv,MAXBACKLOG,NTASKS,NTHREADS,NSOCKS,
-		 echosrv_accept,echosrv_handle,echosrv_close);
+		 echosrv_accept,NULL,echosrv_handle,NULL,echosrv_close);
   esd->prefix=u8_fromlibc(argv[1]);
   eserv.serverdata=esd;
   i=2; while (i<argc) {
     u8_add_server(&eserv,argv[i],0); i++;}
 
+  u8_log(LOG_ERR,"echosrv","Starting server");
   u8_server_loop(&eserv); normal_exit=1;
 
   return 0;
