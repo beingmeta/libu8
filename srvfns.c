@@ -617,14 +617,48 @@ static void *event_loop(void *thread_arg)
 #endif
 
 U8_EXPORT
-int u8_server_init(struct U8_SERVER *server,
-		   int maxback,int max_queued,int n_threads,
-		   u8_client (*acceptfn)(u8_server,u8_socket,
-					 struct sockaddr *,size_t),
-		   int (*servefn)(u8_client),
-		   int (*closefn)(u8_client))
+struct U8_SERVER *u8_init_server
+   (struct U8_SERVER *server,
+    u8_client (*acceptfn)(u8_server,u8_socket,struct sockaddr *,size_t),
+    int (*servefn)(u8_client),
+    int (*donefn)(u8_client),
+    int (*closefn)(u8_client),
+    ...)
 {
   int i=0;
+  int flags=0, init_clients=DEFAULT_INIT_CLIENTS, n_threads=DEFAULT_NTHREADS;
+  int maxback=MAX_BACKLOG, max_queue=DEFAULT_MAX_QUEUE;
+  int  max_clients=DEFAULT_MAX_CLIENTS;
+  va_list args; int prop; int retval;
+  if (server==NULL) server=u8_alloc(struct U8_SERVER);
+  memset(server,0,sizeof(struct U8_SERVER));
+  va_start(args,closefn);
+  while ((prop=va_arg(args,int))>0) {
+    switch (prop) {
+    case U8_SERVER_FLAGS:
+      flags=flags|(va_arg(args,int)); continue;
+    case U8_SERVER_NTHREADS:
+      n_threads=(va_arg(args,int)); continue;
+    case U8_SERVER_INIT_CLIENTS:
+      init_clients=(va_arg(args,int)); continue;
+    case U8_SERVER_MAX_QUEUE:
+      max_queue=(va_arg(args,int)); continue;
+    case U8_SERVER_MAX_CLIENTS:
+      max_clients=(va_arg(args,int)); continue;
+    case U8_SERVER_BACKLOG:
+      max_clients=(va_arg(args,int)); continue;
+    case U8_SERVER_LOGLEVEL: {
+      int level=(va_arg(args,int));
+      if (level>2) flags=flags|U8_SERVER_LOG_TRANSACT;
+      if (level>1) flags=flags|U8_SERVER_LOG_CONNECT;
+      if (level>0) flags=flags|U8_SERVER_LOG_LISTEN;
+      continue;}
+    default:
+      u8_log(LOG_CRIT,"u8_init_server",
+	     "Unknown property code %d for server",prop);
+      continue;}}
+  va_end(args);
+  
   server->n_clients=0; server->n_servers=0; server->flags=0;
   server->socket_max=0; server->socket_lim=256;
   server->max_backlog=((maxback<=0) ? (MAX_BACKLOG) : (maxback));
@@ -642,9 +676,9 @@ int u8_server_init(struct U8_SERVER *server,
   u8_init_mutex(&(server->lock));
   u8_init_condvar(&(server->empty)); u8_init_condvar(&(server->full));  
   server->n_threads=n_threads;
-  server->queue=u8_alloc_n(max_queued,u8_client);
-  server->n_queued=0; server->max_queued=max_queued;
-  server->queue_head=0; server->queue_tail=0; server->queue_len=max_queued;
+  server->queue=u8_alloc_n(max_queue,u8_client);
+  server->n_queued=0; server->max_queued=max_queue;
+  server->queue_head=0; server->queue_tail=0; server->queue_len=max_queue;
   server->thread_pool=u8_alloc_n(n_threads,pthread_t);
   server->n_trans=0; /* Transaction count */
   server->n_accepted=0; /* Accept count (new clients) */
@@ -654,7 +688,27 @@ int u8_server_init(struct U8_SERVER *server,
 			event_loop,(void *)server);
 	 i++;}
 #endif
-  return 1;
+
+  return server;
+}
+
+U8_EXPORT
+int u8_server_init(struct U8_SERVER *server,
+		   int maxback,int max_queued,int n_threads,
+		   u8_client (*acceptfn)(u8_server,u8_socket,
+					 struct sockaddr *,size_t),
+		   int (*servefn)(u8_client),
+		   int (*closefn)(u8_client))
+{
+ if (u8_init_server
+      (server,acceptfn,servefn,NULL,closefn,
+       U8_SERVER_NTHREADS,n_threads,
+       U8_SERVER_INIT_CLIENTS,max_queued,
+       U8_SERVER_MAX_QUEUE,max_queued,
+       U8_SERVER_BACKLOG,maxback,
+       -1))
+    return 1;
+  else return 0;
 }
 
 static int do_shutdown(struct U8_SERVER *server,int grace)

@@ -114,11 +114,47 @@ U8_EXPORT int u8_client_done(u8_client cl);
 #define u8_client_done(cl)
 #endif
 
+/* Bits of the server flags field */
+
 #define U8_SERVER_CLOSED 1
 #define U8_SERVER_LOG_LISTEN 2
 #define U8_SERVER_LOG_CONNECT 4
 #define U8_SERVER_LOG_TRANSACT 8
 #define U8_SERVER_ASYNC 16
+
+/* Argument names to u8_init_server */
+
+#define U8_SERVER_END_ARGS (-1)
+#define U8_SERVER_END_INIT (-1)
+#define U8_SERVER_FLAGS (1)
+#define U8_SERVER_NTHREADS (2)
+#define U8_SERVER_INIT_CLIENTS (3)
+#define U8_SERVER_MAX_QUEUE (4)
+#define U8_SERVER_MAX_CLIENTS (5)
+#define U8_SERVER_BACKLOG (6)
+#define U8_SERVER_LOGLEVEL (7)
+
+/* Default values */
+
+#ifndef MAX_BACKLOG
+#define MAX_BACKLOG 16
+#endif
+
+#ifndef DEFAULT_NTHREADS
+#define DEFAULT_NTHREADS 4
+#endif
+
+#ifndef DEFAULT_INIT_CLIENTS
+#define DEFAULT_INIT_CLIENTS 32
+#endif
+
+#ifndef DEFAULT_MAX_CLIENTS
+#define DEFAULT_MAX_CLIENTS 0
+#endif
+
+#ifndef DEFAULT_MAX_QUEUE
+#define DEFAULT_MAX_QUEUE 128
+#endif
 
 /** struct U8_SERVER_INFO 
     describes information about a particular server socket used
@@ -128,6 +164,8 @@ typedef struct U8_SERVER_INFO {
   u8_socket socket; u8_string idstring;
   struct sockaddr *addr;} U8_SERVER_INFO;
 typedef struct U8_SERVER_INFO *u8_server_info;
+
+/* The server struct itself */
 
 /** struct U8_SERVER
      This structure represents a server's state and connections.
@@ -164,7 +202,6 @@ typedef struct U8_SERVER {
   int (*servefn)(u8_client);
   int (*donefn)(u8_client);
   int (*closefn)(u8_client);
-  int (*readyfn)(u8_client);
   /* Miscellaneous data */
   void *serverdata;
   /* We don't handle non-threaded right now. */
@@ -181,12 +218,47 @@ typedef struct U8_SERVER {
 #endif
 } U8_SERVER;
 
-U8_EXPORT int u8_server_init(struct U8_SERVER *,int,int,int,
-			     u8_client (*acceptfn)(u8_server,u8_socket,
-						   struct sockaddr *,size_t),
-			     int (*servefn)(u8_client),
-			     int (*closefn)(u8_client));
+U8_EXPORT
+/** Initializes a server
+     @param server a pointer to a U8_SERVER struct
+     @param maxback the maximum backlog on listening sockets
+     @param max_queue the maximum number of tasks in the queue
+     @param n_threads the  number of threads servicing the queue
+     @param acceptfn the function for accepting connections
+     @param servefn the function called to process data for a client
+     @param donefn the function called when data processing is done
+     @param closefn the function called when a client is closed
+     @returns 1 on success, zero otherwise
+ This initializes a server object, allocating one if server is NULL.  To
+  actually start listening for requests, u8_add_server must be called
+  at least once to add a listening address.
+**/
+int u8_server_init(struct U8_SERVER *,int,int,int,
+		   u8_client (*acceptfn)(u8_server,u8_socket,
+					 struct sockaddr *,size_t),
+		   int (*servefn)(u8_client),
+		   int (*closefn)(u8_client));
 
+U8_EXPORT
+/** Initializes a server
+     @param server a pointer to a U8_SERVER struct
+     @param acceptfn the function for accepting connections
+     @param servefn the function called to process data for a client
+     @param donefn the function called when data processing is done
+     @param closefn the function called when a client is closed
+     @param alternating property/value pairs
+     @returns a pointer to the server object
+ This initializes a server object, allocating one if server is NULL.  To
+  actually start listening for requests, u8_add_server must be called
+  at least once to add a listening address.
+**/
+struct U8_SERVER *u8_init_server
+   (struct U8_SERVER *server,
+    u8_client (*acceptfn)(u8_server,u8_socket,struct sockaddr *,size_t),
+    int (*servefn)(u8_client),
+    int (*donefn)(u8_client),
+    int (*closefn)(u8_client),
+    ...);
 
 /** Configures a server to listen on a particular address (port/host or file)
      @param server a pointer to a U8_SERVER struct
