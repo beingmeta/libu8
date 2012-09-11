@@ -730,7 +730,7 @@ struct U8_SERVER *u8_init_server
       if (level>0) flags=flags|U8_SERVER_LOG_LISTEN;
       continue;}
     default:
-      u8_log(LOG_CRIT,"u8_server_init",
+      u8_log(LOG_CRIT,"u8_init_server",
 	     "Unknown property code %d for server",prop);
       continue;}}
   va_end(args);
@@ -766,6 +766,7 @@ struct U8_SERVER *u8_init_server
 			event_loop,(void *)server);
 	 i++;}
 #endif
+
   return server;
 }
 
