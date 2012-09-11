@@ -77,12 +77,14 @@ int main(int argc,char *argv[])
   int i=0;
   struct U8_SERVER eserv;
   struct ECHO_SERVER_DATA *esd=u8_malloc(sizeof(struct ECHO_SERVER_DATA));
+  char *logging=getenv("LOGGING");
   u8_init_server(&eserv,echosrv_accept,echosrv_handle,NULL,echosrv_close,
 		 U8_SERVER_INIT_CLIENTS,NCONNS,
 		 U8_SERVER_NTHREADS,NTHREADS,
 		 U8_SERVER_BACKLOG,MAXBACKLOG,
 		 U8_SERVER_MAX_QUEUE,MAXQUEUE,
 		 U8_SERVER_MAX_CLIENTS,MAXCONN,
+		 U8_SERVER_LOGLEVEL,((logging)?(atoi(logging)):(2)),
 		 U8_SERVER_END_INIT);
   esd->prefix=u8_fromlibc(argv[1]);
   eserv.serverdata=esd;
