@@ -15,6 +15,8 @@
 
 #include "libu8/libu8.h"
 
+/* #define _GNU_SOURCE */
+
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
 #endif
@@ -32,8 +34,10 @@
 #include <sys/poll.h>
 #endif
 
-#ifndef POLLRDHUP
-#define POLLRDHUP 0
+#ifdef POLLRDHUP
+#define HUPFLAGS POLLHUP|POLLRDHUP
+#else
+#define HUPFLAGS POLLHUP
 #endif
 
 static u8_condition ClosedClient=_("Closed connection");
@@ -177,7 +181,7 @@ int u8_client_done(u8_client cl)
 
     if (cl->socket>0) {
       struct pollfd *pfd=&(server->sockets[clientid]);
-      pfd->events=POLLIN|POLLHUP|POLLRDHUP;}
+      pfd->events=((short)(POLLIN|HUPFLAGS));}
     u8_lock_mutex(&(server->lock));
     server->n_busy--; server->n_trans++;
     u8_unlock_mutex(&(server->lock));
@@ -475,7 +479,7 @@ static int push_task(struct U8_SERVER *server,u8_client cl)
     cl->queued=cur;
     cl->active=-1;}
   else cl->queued=u8_microtime(); 
-  server->sockets[cl->clientid].events=0;
+  server->sockets[cl->clientid].events=((short)0);
   u8_condvar_signal(&(server->empty));
   return 1;
 }
@@ -517,8 +521,8 @@ static void *event_loop(void *thread_arg)
       if (cl->off<cl->len) {
 	/* u8_lock_mutex(&server->lock); */
 	if (cl->writing>0) 
-	  server->sockets[cl->clientid].events=POLLOUT|POLLHUP|POLLRDHUP;
-	else server->sockets[cl->clientid].events=POLLIN|POLLHUP|POLLRDHUP;
+	  server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
+	else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));
 	/* u8_unlock_mutex(&server->lock);*/
 	continue;}
       else {
@@ -619,8 +623,8 @@ static void *event_loop(void *thread_arg)
       if (cl->off<cl->len) {
 	/* Keep listening */
 	if (cl->writing>0) 
-	  server->sockets[cl->clientid].events=POLLOUT|POLLHUP|POLLRDHUP;
-	else server->sockets[cl->clientid].events=POLLIN|POLLHUP|POLLRDHUP;}
+	  server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
+	else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));}
       else push_task(server,cl);}
     else {
       /* Request is not yet completed, but we're not waiting
@@ -645,8 +649,8 @@ static void *event_loop(void *thread_arg)
       if (!(closed)) {
 	/* Start listening again (it was stopped by pop_task() */
 	if (cl->writing>0) 
-	  server->sockets[cl->clientid].events=POLLOUT|POLLHUP|POLLRDHUP;
-	else server->sockets[cl->clientid].events=POLLIN|POLLHUP|POLLRDHUP;}}}
+	  server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
+	else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));}}}
   u8_threadexit();
   return NULL;
 }
@@ -772,7 +776,7 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
   while (i<n_servers) {
     struct U8_SERVER_INFO *info=&(server->server_info[i++]);
     u8_socket socket=info->socket, poll_index=info->poll_index, retval=0;
-    sockets[poll_index].fd=-1; sockets[poll_index].events=0;
+    sockets[poll_index].fd=-1; sockets[poll_index].events=((short)0);
     if (socket>=0) retval=close(socket);
     if (retval<0) {
       u8_log(LOG_WARNING,ServerShutdown,
@@ -802,7 +806,7 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
 	client_close_for_shutdown(client);
 	clients[i]=NULL;
 	sockets[i].fd=-1;
-	sockets[i].events=0;
+	sockets[i].events=((short)0);
 	idle_clients++;}
       else active_clients++;}
     i++;}
@@ -831,7 +835,7 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
 	client_close_for_shutdown(client);
 	clients[i]=NULL;
 	sockets[i].fd=-1;
-	sockets[i].events=0;
+	sockets[i].events=((short)0);
 	idle_clients++;}
       i++;}}
 #endif
@@ -938,7 +942,7 @@ static int add_socket(struct U8_SERVER *server,u8_socket sock,short events)
     int slot=server->free_slot;
     struct pollfd *pfd=&(server->sockets[slot]);
     memset(pfd,0,sizeof(struct pollfd));
-    pfd->fd=sock; pfd->events=events;
+    pfd->fd=sock; pfd->events=((short)events);
     server->free_slot++; server->max_slot++;
     return slot;}
   else {
@@ -949,7 +953,7 @@ static int add_socket(struct U8_SERVER *server,u8_socket sock,short events)
       else i++;}
     server->free_slot=i;
     memset(pfd,0,sizeof(struct pollfd));
-    pfd->fd=sock; pfd->events=events;
+    pfd->fd=sock; pfd->events=((short)events);
     return slot;}
 }
 
@@ -1159,7 +1163,7 @@ static int server_listen(struct U8_SERVER *server)
 #if U8_THREADS_ENABLED
     else if (client->active>0) {
       /* A thread is working on this client.  Don't touch it. */}
-    else if (events&(POLLHUP|POLLRDHUP)) {
+    else if (events&(HUPFLAGS)) {
       if ((client->server->flags)&(U8_SERVER_LOG_CONNECT))
 	u8_log(LOG_NOTICE,"server_listen",
 	       "Other end closed (HUP) @x%lx#%d/%d[%d](%s)",
@@ -1170,7 +1174,9 @@ static int server_listen(struct U8_SERVER *server)
     else if (((events&POLLOUT)&&((client->writing)>0))||
 	     ((events&POLLIN)&&((client->reading)>0))) {
       if (push_task(server,client)) {
-	sockets[i].events=sockets[i].events&(~(POLLIN|POLLOUT));
+	sockets[i].events=
+	  ((short)(((short)(sockets[i].events))&
+		   ((short)(~(POLLIN|POLLOUT)))));
 	n_actions++;}}
     else if (events&POLLIN) {
       if (!(socket_peek(client->socket))) {
