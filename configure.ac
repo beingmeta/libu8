@@ -42,6 +42,7 @@ case $target_os in
    shared_suffix="dylib";
    install_shared="install-dylib";
    ifmacosx="";
+   AC_DEFINE(DESTRUCTIVE_POLL,1)
    ;;
 esac  
 

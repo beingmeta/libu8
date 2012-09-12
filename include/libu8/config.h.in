@@ -270,4 +270,7 @@
 /* For openssl crypto libraries */
 #undef HAVE_EVP_CIPHER_CTX_INIT
 
+/* Whether poll may be destructive (some BSDs?) */
+#undef DESTRUCTIVE_POLL
+
 #endif

@@ -100,6 +100,10 @@
 #define lseeko lseek
 #endif
 
+#ifndef DESTRUCTIVE_POLL
+#define DESTRUCTIVE_POLL 0
+#endif
+
 #ifndef U8_THREADS_ENABLED
 #define U8_THREADS_ENABLED 0
 #endif

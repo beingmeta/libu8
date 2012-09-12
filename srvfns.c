@@ -372,7 +372,6 @@ static int finish_closing_client(u8_client cl)
       return 0;}
     u8_unlock_mutex(&(server->lock));
     retval=client_close_core(cl,0);
-    u8_unlock_mutex(&(server->lock));
     return retval;}
   else return 0;
 }
@@ -866,6 +865,7 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
       u8_unlock_mutex(&server->lock);
       sleep(1);
       u8_lock_mutex(&server->lock);}}
+  u8_unlock_mutex(&server->lock);
   if (server->n_busy) {
     u8_log(LOG_CRIT,ServerShutdown,
 	   "Forcing %d active socket(s) closed after %dus",
@@ -1168,28 +1168,52 @@ static int socket_peek(u8_socket sock)
   return (retval>0);
 }
 
+#if DESTRUCTIVE_POLL
+static struct pollfd *update_socketbuf
+   (struct U8_SERVER *server,struct pollfd **bufp,int *lenp)
+{
+  int len=*lenp; int need_len=server->max_slot; struct pollfd *buf=*bufp;
+  if (len!=need_len) {
+    if (buf) *bufp=buf=u8_realloc(buf,sizeof(struct pollfd)*need_len);
+    else *bufp=buf=u8_malloc(sizeof(struct pollfd)*need_len);}
+  memcpy(buf,server->sockets,sizeof(struct pollfd)*need_len);
+  *lenp=need_len;
+  return buf;
+}
+#else
+static struct pollfd *update_socketbuf
+   (struct U8_SERVER *server,struct pollfd **bufp,int *lenp)
+{
+  *bufp=server->sockets; *lenp=server->max_slot;
+  return *bufp;
+}
+#endif
+
 /* This listens for connections and pushes tasks (unless we're not
    threaded, in which case it dispatches to the servefn right
    away).  */
 static int server_listen(struct U8_SERVER *server)
 {
-  struct pollfd *sockets; u8_client *clients;
+  struct pollfd *sockets=NULL; u8_client *clients; int n_socks=0;
   int i, max_slot, n_actions, retval;
+  update_socketbuf(server,&sockets,&n_socks);
   /* Wait for activity on one of your open sockets */
-  while ((retval=poll(server->sockets,server->max_slot,100)) == 0) {
+  while ((retval=poll(sockets,n_socks,100)) == 0) {
     if (retval<0) return retval;
     if (server->shutdown) {
       do_shutdown(server,server->shutdown);
+      if (sockets!=server->sockets) u8_free(sockets);
       return 0;}
-    if (server->flags&U8_SERVER_CLOSED) return 0;}
+    if (server->flags&U8_SERVER_CLOSED) return 0;
+    update_socketbuf(server,&sockets,&n_socks);}
   if (server->shutdown) {
     do_shutdown(server,server->shutdown);
+    if (sockets!=server->sockets) u8_free(sockets);
     return 0;}
   /* Iterate over the range of sockets */
   u8_lock_mutex(&(server->lock));
-  sockets=server->sockets; clients=server->clients;
-  max_slot=server->max_slot;
-  i=0; while (i <= max_slot) {
+  clients=server->clients;
+  i=0; while (i <= n_socks) {
     u8_client client; short events;
     if (sockets[i].fd<0) {i++; continue;}
     else if (sockets[i].revents==0) {
@@ -1241,6 +1265,7 @@ static int server_listen(struct U8_SERVER *server)
     else {}
     i++;}
   u8_unlock_mutex(&(server->lock));
+  if (sockets!=server->sockets) u8_free(sockets);
   return n_actions;
 }
 
