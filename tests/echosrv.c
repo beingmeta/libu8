@@ -66,6 +66,7 @@ static int echosrv_close(u8_client ucl)
   close(ec->socket);
   /* Debug message */
   u8_message("Closed connection to %s",ec->idstring);
+  ec->socket=-1;
   return 1;
 }
 

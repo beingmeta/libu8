@@ -235,8 +235,8 @@ int u8_client_close(u8_client cl)
       u8_unlock_mutex(&(server->lock));
       if (server->closefn)
 	rv=server->closefn(cl);
-      else if (sock>0)
-	rv=close(sock);
+      else if (sock>0) {
+	rv=close(sock); sock=-1;}
       else rv=0;
       if (rv<0) {
 	u8_log(LOG_ERR,ClosedClient,
