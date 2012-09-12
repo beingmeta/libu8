@@ -421,41 +421,42 @@ static void update_server_stats(u8_client cl)
 {
   u8_server server=cl->server;
   /* Transfer all the client statistics to the server */
-  server->aggregate.tsum+=cl->stats.tsum;
-  server->aggregate.tsum2+=cl->stats.tsum2;
-  server->aggregate.tcount+=cl->stats.tcount;
-  if (cl->stats.tmax>server->aggregate.tmax)
-    server->aggregate.tmax=cl->stats.tmax;
 
-  server->aggregate.asum+=cl->stats.asum;
-  server->aggregate.asum2+=cl->stats.asum2;
-  server->aggregate.acount+=cl->stats.acount;
-  if (cl->stats.amax>server->aggregate.amax)
-    server->aggregate.amax=cl->stats.amax;
+  server->aggrestats.tsum+=cl->stats.tsum;
+  server->aggrestats.tsum2+=cl->stats.tsum2;
+  server->aggrestats.tcount+=cl->stats.tcount;
+  if (cl->stats.tmax>server->aggrestats.tmax)
+    server->aggrestats.tmax=cl->stats.tmax;
 
-  server->aggregate.qsum+=cl->stats.qsum;
-  server->aggregate.qsum2+=cl->stats.qsum2;
-  server->aggregate.qcount+=cl->stats.qcount;
-  if (cl->stats.qmax>server->aggregate.qmax)
-    server->aggregate.qmax=cl->stats.qmax;
+  server->aggrestats.asum+=cl->stats.asum;
+  server->aggrestats.asum2+=cl->stats.asum2;
+  server->aggrestats.acount+=cl->stats.acount;
+  if (cl->stats.amax>server->aggrestats.amax)
+    server->aggrestats.amax=cl->stats.amax;
 
-  server->aggregate.rsum+=cl->stats.rsum;
-  server->aggregate.rsum2+=cl->stats.rsum2;
-  server->aggregate.rcount+=cl->stats.rcount;
-  if (cl->stats.rmax>server->aggregate.rmax)
-    server->aggregate.rmax=cl->stats.rmax;
+  server->aggrestats.qsum+=cl->stats.qsum;
+  server->aggrestats.qsum2+=cl->stats.qsum2;
+  server->aggrestats.qcount+=cl->stats.qcount;
+  if (cl->stats.qmax>server->aggrestats.qmax)
+    server->aggrestats.qmax=cl->stats.qmax;
 
-  server->aggregate.wsum+=cl->stats.wsum;
-  server->aggregate.wsum2+=cl->stats.wsum2;
-  server->aggregate.wcount+=cl->stats.wcount;
-  if (cl->stats.wmax>server->aggregate.wmax)
-    server->aggregate.wmax=cl->stats.wmax;
+  server->aggrestats.rsum+=cl->stats.rsum;
+  server->aggrestats.rsum2+=cl->stats.rsum2;
+  server->aggrestats.rcount+=cl->stats.rcount;
+  if (cl->stats.rmax>server->aggrestats.rmax)
+    server->aggrestats.rmax=cl->stats.rmax;
 
-  server->aggregate.xsum+=cl->stats.xsum;
-  server->aggregate.xsum2+=cl->stats.xsum2;
-  server->aggregate.xcount+=cl->stats.xcount;
-  if (cl->stats.xmax>server->aggregate.xmax)
-    server->aggregate.xmax=cl->stats.xmax;
+  server->aggrestats.wsum+=cl->stats.wsum;
+  server->aggrestats.wsum2+=cl->stats.wsum2;
+  server->aggrestats.wcount+=cl->stats.wcount;
+  if (cl->stats.wmax>server->aggrestats.wmax)
+    server->aggrestats.wmax=cl->stats.wmax;
+
+  server->aggrestats.xsum+=cl->stats.xsum;
+  server->aggrestats.xsum2+=cl->stats.xsum2;
+  server->aggrestats.xcount+=cl->stats.xcount;
+  if (cl->stats.xmax>server->aggrestats.xmax)
+    server->aggrestats.xmax=cl->stats.xmax;
 
   server->n_errs+=cl->n_errs;
 }
@@ -483,7 +484,11 @@ static u8_client pop_task(struct U8_SERVER *server)
     task->queued=-1; task=NULL;}
   else if (task) {
     u8_utime curtime=u8_microtime();
-    task->queued=-1; task->active=curtime;
+    long long qtime=curtime-task->queued;
+    task->stats.qsum+=qtime; task->stats.qsum2+=(qtime*qtime);
+    task->stats.qcount++;
+    if (qtime>task->stats.qmax) task->stats.qmax=qtime;
+    task->queued=0; task->active=curtime;
     if (task->started<=0) {
       task->started=curtime;
       server->n_busy++;}}
@@ -575,13 +580,14 @@ static void *event_loop(void *thread_arg)
 	  cl->stats.rcount++;}}}
     if (result>=0) {
       long long xtime;
-      cur=u8_microtime();
+      cl->running=cur=u8_microtime();
       if (cl->callback) {
 	void *state=cl->cbstate;
 	u8_client_callback callback=cl->callback;
 	cl->callback=NULL; cl->cbstate=NULL;
 	result=callback(cl,state);}
       else result=server->servefn(cl);
+      cl->running=0;
       /* Record execution stats */
       xtime=u8_microtime()-cur;
       cl->stats.xsum+=xtime;
@@ -1266,20 +1272,90 @@ U8_EXPORT u8_server_stats u8_server_statistics
   u8_lock_mutex(&(server->lock));
   stats->n_reqs=server->n_trans;
   stats->n_errs=server->n_errs;
-  stats->n_complete=server->aggregate.tcount;
 
-  stats->tsum=server->aggregate.tsum; stats->tsum2=server->aggregate.tsum2;
-  stats->tcount=server->aggregate.tcount; stats->tmax=server->aggregate.tmax;
-  stats->asum=server->aggregate.asum; stats->asum2=server->aggregate.asum2;
-  stats->acount=server->aggregate.acount; stats->amax=server->aggregate.amax;
-  stats->asum=server->aggregate.qsum; stats->asum2=server->aggregate.qsum2;
-  stats->acount=server->aggregate.qcount; stats->amax=server->aggregate.qmax;
-  stats->rsum=server->aggregate.rsum; stats->rsum2=server->aggregate.rsum2;
-  stats->rcount=server->aggregate.rcount; stats->rmax=server->aggregate.rmax;
-  stats->wsum=server->aggregate.wsum; stats->wsum2=server->aggregate.wsum2;
-  stats->wcount=server->aggregate.wcount; stats->wmax=server->aggregate.wmax;
-  stats->xsum=server->aggregate.xsum; stats->xsum2=server->aggregate.xsum2;
-  stats->xcount=server->aggregate.xcount; stats->xmax=server->aggregate.xmax;
+  stats->n_complete=server->aggrestats.tcount;
+
+  stats->tsum=server->aggrestats.tsum; stats->tsum2=server->aggrestats.tsum2;
+  stats->tcount=server->aggrestats.tcount; stats->tmax=server->aggrestats.tmax;
+  stats->asum=server->aggrestats.asum; stats->asum2=server->aggrestats.asum2;
+  stats->acount=server->aggrestats.acount; stats->amax=server->aggrestats.amax;
+  stats->asum=server->aggrestats.qsum; stats->asum2=server->aggrestats.qsum2;
+  stats->acount=server->aggrestats.qcount; stats->amax=server->aggrestats.qmax;
+  stats->rsum=server->aggrestats.rsum; stats->rsum2=server->aggrestats.rsum2;
+  stats->rcount=server->aggrestats.rcount; stats->rmax=server->aggrestats.rmax;
+  stats->wsum=server->aggrestats.wsum; stats->wsum2=server->aggrestats.wsum2;
+  stats->wcount=server->aggrestats.wcount; stats->wmax=server->aggrestats.wmax;
+  stats->xsum=server->aggrestats.xsum; stats->xsum2=server->aggrestats.xsum2;
+  stats->xcount=server->aggrestats.xcount; stats->xmax=server->aggrestats.xmax;
+
+  stats->n_errs=server->n_errs;
+
+  u8_unlock_mutex(&(server->lock));
+
+  /* Now add up everything from the current clients */
+  clients=server->clients; lim=server->max_slot;
+  while (i<lim) {
+    u8_client cl=clients[i++];
+    if (cl) {
+      if (cl->started>0) stats->n_busy++;
+      if (cl->active>0) stats->n_active++;
+      if (cl->reading>0) stats->n_reading++;
+      if (cl->writing>0) stats->n_writing++;      
+
+      stats->tsum+=cl->stats.tsum; stats->tsum2+=cl->stats.tsum2;
+      stats->tcount+=cl->stats.tcount;
+      if (cl->stats.tmax>stats->tmax) stats->tmax=cl->stats.tmax;
+
+      stats->qsum+=cl->stats.qsum; stats->qsum2+=cl->stats.qsum2;
+      stats->qcount+=cl->stats.qcount;
+      if (cl->stats.qmax>stats->qmax) stats->qmax=cl->stats.qmax;
+
+      stats->asum+=cl->stats.asum; stats->asum2+=cl->stats.asum2;
+      stats->acount+=cl->stats.acount;
+      if (cl->stats.amax>stats->amax) stats->amax=cl->stats.amax;
+
+      stats->rsum+=cl->stats.rsum; stats->rsum2+=cl->stats.rsum2;
+      stats->rcount+=cl->stats.rcount;
+      if (cl->stats.rmax>stats->rmax) stats->rmax=cl->stats.rmax;
+
+      stats->wsum+=cl->stats.wsum; stats->wsum2+=cl->stats.wsum2;
+      stats->wcount+=cl->stats.wcount;
+      if (cl->stats.wmax>stats->wmax) stats->wmax=cl->stats.wmax;
+
+      stats->xsum+=cl->stats.xsum; stats->xsum2+=cl->stats.xsum2;
+      stats->xcount+=cl->stats.xcount;
+      if (cl->stats.xmax>stats->xmax) stats->xmax=cl->stats.xmax;
+
+      stats->n_errs+=cl->n_errs;}}
+  u8_unlock_mutex(&(server->lock));
+  return stats;
+}
+
+U8_EXPORT u8_server_stats u8_server_livestats
+  (u8_server server,struct U8_SERVER_STATS *stats)
+{
+  int i=0, lim;
+  struct U8_CLIENT **clients;
+  if (stats==NULL) stats=u8_alloc(struct U8_SERVER_STATS);
+  memset(stats,0,sizeof(struct U8_SERVER_STATS));
+  u8_lock_mutex(&(server->lock));
+  stats->n_reqs=server->n_trans;
+  stats->n_errs=server->n_errs;
+
+  stats->n_complete=server->aggrestats.tcount;
+
+  stats->tsum=server->aggrestats.tsum; stats->tsum2=server->aggrestats.tsum2;
+  stats->tcount=server->aggrestats.tcount; stats->tmax=server->aggrestats.tmax;
+  stats->asum=server->aggrestats.asum; stats->asum2=server->aggrestats.asum2;
+  stats->acount=server->aggrestats.acount; stats->amax=server->aggrestats.amax;
+  stats->asum=server->aggrestats.qsum; stats->asum2=server->aggrestats.qsum2;
+  stats->acount=server->aggrestats.qcount; stats->amax=server->aggrestats.qmax;
+  stats->rsum=server->aggrestats.rsum; stats->rsum2=server->aggrestats.rsum2;
+  stats->rcount=server->aggrestats.rcount; stats->rmax=server->aggrestats.rmax;
+  stats->wsum=server->aggrestats.wsum; stats->wsum2=server->aggrestats.wsum2;
+  stats->wcount=server->aggrestats.wcount; stats->wmax=server->aggrestats.wmax;
+  stats->xsum=server->aggrestats.xsum; stats->xsum2=server->aggrestats.xsum2;
+  stats->xcount=server->aggrestats.xcount; stats->xmax=server->aggrestats.xmax;
 
   stats->n_errs=server->n_errs;
 
@@ -1318,6 +1394,61 @@ U8_EXPORT u8_server_stats u8_server_statistics
       if (cl->stats.xmax>stats->xmax) stats->xmax=cl->stats.xmax;
 
       stats->n_errs+=cl->n_errs;}}
+  u8_unlock_mutex(&(server->lock));
+  return stats;
+}
+
+U8_EXPORT u8_server_stats u8_server_curstats
+  (u8_server server,struct U8_SERVER_STATS *stats)
+{
+  int i=0, lim;
+  struct U8_CLIENT **clients; long long cur, start=0;
+  if (stats==NULL) stats=u8_alloc(struct U8_SERVER_STATS);
+  memset(stats,0,sizeof(struct U8_SERVER_STATS));
+  u8_lock_mutex(&(server->lock));
+  stats->n_reqs=server->n_trans;
+  stats->n_errs=server->n_errs;
+  stats->n_complete=server->aggrestats.tcount;
+  clients=server->clients; lim=server->max_slot;
+  cur=u8_microtime();
+  while (i<lim) {
+    u8_client cl=clients[i++];
+    if (cl) {
+      if (cl->started>0) stats->n_busy++;
+      if (cl->active>0) stats->n_active++;
+      if (cl->reading>0) stats->n_reading++;
+      if (cl->writing>0) stats->n_writing++;      
+      if ((start=cl->started)) {
+	long long interval=cur-start;
+	stats->tsum+=interval; stats->tsum2+=(interval*interval);
+	if (interval>stats->tmax) stats->tmax=interval;
+      	stats->tcount++;}
+      if ((start=cl->active)) {
+	long long interval=cur-start;
+	stats->asum+=interval; stats->asum2+=(interval*interval);
+	if (interval>stats->amax) stats->amax=interval;
+      	stats->acount++;}
+      else if ((start=cl->queued)) {
+	long long interval=cur-start;
+	stats->qsum+=interval; stats->qsum2+=(interval*interval);
+	if (interval>stats->qmax) stats->qmax=interval;
+      	stats->qcount++;}
+      else {}
+      if ((start=cl->reading)) {      
+	long long interval=cur-start;
+	stats->rsum+=interval; stats->rsum2+=(interval*interval);
+	if (interval>stats->rmax) stats->rmax=interval;
+	stats->rcount++;}
+      else if ((start=cl->writing)) {
+	long long interval=cur-start;
+	stats->wsum+=interval; stats->wsum2+=(interval*interval);
+	if (interval>stats->wmax) stats->wmax=interval;
+	stats->wcount++;}
+      else if ((start=cl->running)) {
+	long long interval=cur-start;
+	stats->xsum+=interval; stats->xsum2+=interval*interval;
+	if (interval>stats->xmax) stats->xmax=interval;
+	stats->xcount++;}}}
   u8_unlock_mutex(&(server->lock));
   return stats;
 }

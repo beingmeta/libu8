@@ -56,7 +56,7 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
     unsigned int clientid;                                     \
     unsigned int flags, n_trans, n_errs;                       \
     u8_utime started, queued, active;                          \
-    u8_utime reading, writing;                                 \
+    u8_utime reading, writing, running;			       \
     u8_string idstring;                                        \
     unsigned char *buf;                                        \
     size_t off, len, buflen, delta;                            \
@@ -78,7 +78,7 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
     unsigned int clientid;
     unsigned int flags, n_trans, n_errs;
     u8_utime started, queued, active;
-    u8_utime reading, writing;
+    u8_utime reading, writing, running;
     u8_string idstring;
     unsigned char *buf;
     size_t off, len, buflen, delta;
@@ -236,6 +236,7 @@ typedef struct U8_SERVER {
   /* n_servers is the number of sockets being listened on,
      server_info describes each one. */
   u8_string serverid;
+
   /* Server-wide flags, whether we're shutting down, and
      how many connections to start with/grow by. */
   int flags, shutdown, init_clients, max_clients;
@@ -255,7 +256,8 @@ typedef struct U8_SERVER {
   long n_accepted; 
   long n_trans; /* How many transactions have been completed to date */
   long n_errs; /* How many transactions yielded errors */
-  struct U8_CLIENT_STATS aggregate;
+  struct U8_CLIENT_STATS aggrestats;
+
   /* Handling functions */
   u8_client (*acceptfn)(struct U8_SERVER *,u8_socket sock,
 			struct sockaddr *,size_t);
@@ -388,13 +390,32 @@ typedef struct U8_SERVER_STATS {
   U8_SERVER_STATS;
 typedef struct U8_SERVER_STATS *u8_server_stats;
 
-U8_EXPORT u8_server_stats u8_server_statistics(u8_server,struct U8_SERVER_STATS *);
+U8_EXPORT
 /** Returns activity statistics for a server
      @param server a pointer to a U8_SERVER struct
      @param stats a pointer to a U8_SERVER_STATS structure, or NULL
      @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
+  This returns statistics over the life of the server
 **/
+u8_server_stats u8_server_statistics(u8_server,struct U8_SERVER_STATS *);
 
+U8_EXPORT
+/** Returns activity statistics for a server
+     @param server a pointer to a U8_SERVER struct
+     @param stats a pointer to a U8_SERVER_STATS structure, or NULL
+     @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
+  This returns statistics over all of the currently open clients.
+**/
+u8_server_stats u8_server_livestats(u8_server,struct U8_SERVER_STATS *);
+
+U8_EXPORT
+/** Returns activity statistics for a server
+     @param server a pointer to a U8_SERVER struct
+     @param stats a pointer to a U8_SERVER_STATS structure, or NULL
+     @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
+  This returns statistics over the current state of the current clients
+**/
+u8_server_stats u8_server_curstats(u8_server,struct U8_SERVER_STATS *);
 
 /** Returns a user readable string describing the server's status,
      including active and pending tasks, total transactions, etc.
