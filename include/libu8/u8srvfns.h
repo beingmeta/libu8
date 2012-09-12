@@ -39,7 +39,7 @@ typedef int (*u8_client_callback)(u8_client,void *);
   u8_socket socket;                           \
   unsigned int flags, n_trans, n_errs;        \
   u8_utime started, queued, active;           \
-  u8_utime reading, writing;                  \
+  u8_utime reading, writing, running;         \
   u8_string idstring;                         \
   unsigned char *buf;                         \
   size_t off, len, buflen, delta;             \
@@ -52,7 +52,9 @@ typedef int (*u8_client_callback)(u8_client,void *);
   long long wsum, wsum2, wmax; int wcount;    \
   /* Tracking total spent in event loop */    \
   long long asum, asum2, amax; int acount;    \
-  /* Tracking total spent in handler */       \
+  /* Tracking total spent waiting in queue */ \
+  long long qsum, qsum2, qmax; int qcount;    \
+  /* Tracking total spent in handlers */      \
   long long xsum, xsum2, xmax; int xcount;    \
   u8_client_callback callback; void *cbstate; \
   struct U8_SERVER *server
@@ -68,7 +70,7 @@ typedef struct U8_CLIENT {
   u8_socket socket;
   unsigned int flags, n_trans, n_errs;
   u8_utime started, queued, active;
-  u8_utime reading, writing;
+  u8_utime reading, writing, running;
   u8_string idstring;
   unsigned char *buf;
   size_t off, len, buflen, delta;
@@ -81,6 +83,8 @@ typedef struct U8_CLIENT {
   long long wsum, wsum2, wmax; int wcount;
   /* Tracking total spent in event loop */
   long long asum, asum2, amax; int acount;
+  /* Tracking total spent waiting in queue */
+  long long qsum, qsum2, qmax; int qcount;
   /* Tracking total spent in handler */
   long long xsum, xsum2, xmax; int xcount;
   u8_client_callback callback;
@@ -104,6 +108,8 @@ U8_EXPORT u8_client u8_client_init(u8_client client,size_t len,
      @returns void
 **/
 U8_EXPORT int u8_client_close(u8_client cl);
+#define u8_client_closed u8_client_close
+
 #if U8_THREADS_ENABLED
 /** Declares that client is done with its request and can receive others
      @param cl a pointer to a U8_CLIENT struct
@@ -194,6 +200,8 @@ typedef struct U8_SERVER {
   long long wsum, wsum2, wmax; int wcount;
   /* Tracking total spent in event loop */
   long long asum, asum2, amax; int acount;
+  /* Tracking total spent waiting in queue */
+  long long qsum, qsum2, qmax; int qcount;
   /* Tracking total spent in handler */
   long long xsum, xsum2, xmax; int xcount;
   /* Handling functions */
@@ -297,17 +305,38 @@ typedef struct U8_SERVER_STATS {
   /* Tracking total spent in event loop */
   long long asum, asum2, amax; int acount;
   /* Tracking total spent in handler */
-  long long xsum, xsum2, xmax; int xcount;}
+  long long xsum, xsum2, xmax; int xcount;
+  /* Tracking total spent in the queue waiting for a thread */
+  long long qsum, qsum2, qmax; int qcount;}
   U8_SERVER_STATS;
 typedef struct U8_SERVER_STATS *u8_server_stats;
 
-U8_EXPORT u8_server_stats u8_server_statistics(u8_server,struct U8_SERVER_STATS *);
+U8_EXPORT
 /** Returns activity statistics for a server
      @param server a pointer to a U8_SERVER struct
      @param stats a pointer to a U8_SERVER_STATS structure, or NULL
      @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
+  This returns statistics over the life of the server
 **/
+u8_server_stats u8_server_statistics(u8_server,struct U8_SERVER_STATS *);
 
+U8_EXPORT
+/** Returns activity statistics for a server
+     @param server a pointer to a U8_SERVER struct
+     @param stats a pointer to a U8_SERVER_STATS structure, or NULL
+     @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
+  This returns statistics over all of the currently open clients.
+**/
+u8_server_stats u8_server_livestats(u8_server,struct U8_SERVER_STATS *);
+
+U8_EXPORT
+/** Returns activity statistics for a server
+     @param server a pointer to a U8_SERVER struct
+     @param stats a pointer to a U8_SERVER_STATS structure, or NULL
+     @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
+  This returns statistics over the current state of the current clients
+**/
+u8_server_stats u8_server_curstats(u8_server,struct U8_SERVER_STATS *);
 
 /** Returns a user readable string describing the server's status,
      including active and pending tasks, total transactions, etc.
