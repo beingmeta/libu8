@@ -415,6 +415,25 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz);
 U8_EXPORT u8_string _u8_strdup(u8_string);
 U8_EXPORT u8_string u8_strndup(u8_string,int);
 
+/* Piles */
+
+typedef struct U8_PILE {
+  void **u8_elts; size_t u8_len, u8_max; int u8_mallocd;} U8_PILE;
+typedef struct U8_PILE *u8_pile;
+
+U8_EXPORT int _u8_grow_pile(u8_pile p,int delta);
+
+#define U8_INIT_PILE(p,len) \
+  p->u8_len=0; p->u8_max=len; p->u8_mallocd=1; \
+  p->u8_elts=u8_malloc(sizeof(void *)*len)
+#define U8_INIT_STATIC_PILE(p,vec,len)		\
+  p->u8_len=0; p->u8_max=len; p->u8_elts=(void **)vec
+
+#define u8_pile_add(p,e) \
+  if ((p)->u8_len>=(p)->u8_max) \
+    {_u8_grow_pile((p),1); (p)->u8_elts[((p)->u8_len)++]=((void *)e);}	\
+  else (p)->u8_elts[((p)->u8_len)++]=((void *)e)
+
 /* Errors */
 
 typedef const unsigned char *u8_condition;
