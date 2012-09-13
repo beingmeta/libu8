@@ -399,7 +399,7 @@ static void update_client_stats(u8_client cl,long long cur,int done)
     if (interval>cl->stats.rmax) cl->stats.rmax=interval;
     cl->stats.rcount++;}
   else {
-    interval=cur-cl->active;
+    interval=cur-cl->running;
     cl->stats.xsum+=interval;
     cl->stats.xsum2+=(interval*interval);
     if (interval>cl->stats.xmax) cl->stats.xmax=interval;
