@@ -431,7 +431,7 @@ U8_EXPORT int _u8_grow_pile(u8_pile p,int delta);
 
 #define u8_pile_add(p,e) \
   if ((p)->u8_len>=(p)->u8_max) \
-    {u8_grow_pile((p),1); (p)->u8_elts[((p)->u8_len)++]=((void *)e);}	\
+    {_u8_grow_pile((p),1); (p)->u8_elts[((p)->u8_len)++]=((void *)e);}	\
   else (p)->u8_elts[((p)->u8_len)++]=((void *)e)
 
 /* Errors */
