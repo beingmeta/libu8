@@ -171,16 +171,17 @@ int u8_client_done(u8_client cl)
       if (retval<0) {
 	u8_log(LOG_ERR,"u8_client_done",
 	       "Error when closing client @x%lx#%d/%d[%d](%s)",
-	       ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
+	       ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,
+	       cl->idstring);
 	u8_clear_errors(1);}}
     update_client_stats(cl,u8_microtime(),1);
     cl->active=cl->writing=cl->reading=0;
     if (cl->queued>0) {
       u8_log(LOG_WARNING,"u8_client_done",
 	     "Finishing transaction on a queued client @x%lx#%d/%d[%d](%s)",
-	     ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,cl->idstring);
+	     ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,
+	     cl->idstring);
       cl->queued=0;}
-
     if (cl->socket>0) {
       struct pollfd *pfd=&(server->sockets[clientid]);
       pfd->events=((short)(POLLIN|HUPFLAGS));}
@@ -325,7 +326,7 @@ static int client_close_core(u8_client cl,int server_locked)
       cl->stats.qsum2+=(interval*interval);
       if (interval>cl->stats.qmax) cl->stats.qmax=interval;
       cl->stats.qcount++;}
-    
+
     cl->queued=cl->active=cl->reading=cl->writing=cl->started=0;
 
     if (sock>0) {
