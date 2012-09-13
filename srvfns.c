@@ -153,7 +153,7 @@ int u8_client_done(u8_client cl)
       if (retval<0) {
 	u8_log(LOG_ERR,"u8_client_done",
 	       "Error when closing client %lx (#%d) (%s)",
-	       (unsigned long long)cl,cl->socket,cl->idstring);
+	       (unsigned long)cl,cl->socket,cl->idstring);
 	u8_clear_errors(1);}}
     u8_lock_mutex(&(server->lock));
     server->n_busy--;
@@ -169,7 +169,7 @@ int u8_client_done(u8_client cl)
     if (cl->queued>0) {
       u8_log(LOG_WARNING,"u8_client_done",
 	     "Finishing transaction on a queued client %lx (#%d) (%s)",
-	     (unsigned long long)cl,cl->socket,cl->idstring);
+	     (unsigned long)cl,cl->socket,cl->idstring);
       cl->queued=-1;}
     if (cl->socket>0) {
       FD_SET(cl->socket,&server->reading);
@@ -222,7 +222,7 @@ int u8_client_close(u8_client cl)
       if (cl->queued>0) {
 	u8_log(LOG_WARNING,"u8_client_done",
 	       "Closing a queued client %lx (#%d) (%s)",
-	       (unsigned long long)cl,cl->socket,cl->idstring);
+	       (unsigned long)cl,cl->socket,cl->idstring);
 	cl->queued=-1;}
       if (sock>0) {
 	server->socketmap[sock]=NULL;
@@ -327,7 +327,7 @@ static void finish_client_close(u8_client cl)
     if (cl->queued>0) {
       u8_log(LOG_WARN,"u8_client_done",
 	     "Finishing close on a queued client %lx (#%d) (%s)",
-	     (unsigned long long)cl,cl->socket,cl->idstring);
+	     (unsigned long)cl,cl->socket,cl->idstring);
       cl->queued=-1;}
     if (sock>0) {
       server->socketmap[sock]=NULL;
