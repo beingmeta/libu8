@@ -39,8 +39,6 @@ typedef int (*u8_client_callback)(u8_client,void *);
 typedef struct U8_CLIENT_STATS {
   /* Tracking total transaction time (clock time) */
   long long tsum, tsum2, tmax; int tcount;
-  /* Tracking total spent in event loop (run time) */
-  long long asum, asum2, amax; int acount;
   /* Tracking total spent queued (clock time) */
   long long qsum, qsum2, qmax; int qcount;
   /* Tracking total spent reading (clock time) */

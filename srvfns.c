@@ -184,6 +184,7 @@ int u8_client_done(u8_client cl)
       cl->queued=0;}
     if (cl->socket>0) {
       struct pollfd *pfd=&(server->sockets[clientid]);
+      cl->reading=u8_microtime();
       pfd->events=((short)(POLLIN|HUPFLAGS));}
     u8_lock_mutex(&(server->lock));
     server->n_busy--; server->n_trans++;
@@ -380,25 +381,8 @@ static int finish_closing_client(u8_client cl)
 static void update_client_stats(u8_client cl,long long cur,int done)
 {
   long long interval=cur-cl->active;
-  /* active stats */
-  cl->stats.asum+=interval;
-  cl->stats.asum2+=(interval*interval);
-  if (interval>cl->stats.amax) cl->stats.amax=interval;
-  cl->stats.acount++;
   /* read/write/execute */
-  if (cl->writing) {
-    interval=cur-cl->writing;
-    cl->stats.wsum+=interval;
-    cl->stats.wsum2+=(interval*interval);
-    if (interval>cl->stats.wmax) cl->stats.wmax=interval;
-    cl->stats.wcount++;}
-  else if (cl->reading) {
-    interval=cur-cl->reading;
-    cl->stats.rsum+=interval;
-    cl->stats.rsum2+=(interval*interval);
-    if (interval>cl->stats.rmax) cl->stats.rmax=interval;
-    cl->stats.rcount++;}
-  else {
+  if (cl->running) {
     interval=cur-cl->running;
     cl->stats.xsum+=interval;
     cl->stats.xsum2+=(interval*interval);
@@ -412,7 +396,7 @@ static void update_client_stats(u8_client cl,long long cur,int done)
       if (interval>cl->stats.tmax) cl->stats.tmax=interval;
       cl->stats.tcount++;}
     else u8_log(LOG_WARNING,IdleClient,
-		"Finishing off inactive client @x%lx#%d/%d[%d](%s)",
+		"Finishing off idle client @x%lx#%d/%d[%d](%s)",
 		((unsigned long)cl),cl->clientid,cl->socket,
 		cl->n_trans,cl->idstring);}
 }
@@ -427,12 +411,6 @@ static void update_server_stats(u8_client cl)
   server->aggrestats.tcount+=cl->stats.tcount;
   if (cl->stats.tmax>server->aggrestats.tmax)
     server->aggrestats.tmax=cl->stats.tmax;
-
-  server->aggrestats.asum+=cl->stats.asum;
-  server->aggrestats.asum2+=cl->stats.asum2;
-  server->aggrestats.acount+=cl->stats.acount;
-  if (cl->stats.amax>server->aggrestats.amax)
-    server->aggrestats.amax=cl->stats.amax;
 
   server->aggrestats.qsum+=cl->stats.qsum;
   server->aggrestats.qsum2+=cl->stats.qsum2;
@@ -507,10 +485,6 @@ static int push_task(struct U8_SERVER *server,u8_client cl)
   if (cl->active>0) {
     u8_utime cur=u8_microtime();
     long long atime=cur-cl->active;
-    cl->stats.asum+=atime;
-    cl->stats.asum2+=(atime*atime);
-    if (atime>cl->stats.amax) cl->stats.amax=atime;
-    cl->stats.acount++;
     cl->queued=cur;
     cl->active=-1;}
   else cl->queued=u8_microtime(); 
@@ -541,7 +515,7 @@ static void *event_loop(void *thread_arg)
     if ((cl->reading>0)||(cl->writing>0)) {
       /* We're in the middle of reading or writing a chunk of data,
 	 so we try a chunk. */
-      ssize_t delta;
+      ssize_t delta; u8_utime cur=u8_microtime();
       if (cl->off<cl->len) { /* We're not done */
 	if (cl->writing>0)
 	  delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
@@ -565,7 +539,7 @@ static void *event_loop(void *thread_arg)
       else {
 	/* Otherwise, we're done with whatever reading or writing we
 	   were doing, so we record stats. */
-	u8_utime cur=u8_microtime(); long long xtime;
+	u8_utime cur=u8_microtime();
 	if (cl->writing>0) {
 	  long long wtime=cur-cl->writing;
 	  cl->stats.wsum+=wtime;
@@ -678,11 +652,7 @@ static void *event_loop(void *thread_arg)
 	 (how long the task has been active) */
       u8_utime cur=u8_microtime();
       long long atime=cur-cl->active;
-      cl->stats.asum+=atime;
-      cl->stats.asum2+=(atime*atime);
-      if (atime>cl->stats.amax) cl->stats.amax=atime;
-      cl->stats.acount++;
-      cl->active=-1;
+      cl->active=0;
       if (dobreak) break;
       if (!(closed)) {
 	/* Start listening again (it was stopped by pop_task() */
@@ -1303,10 +1273,8 @@ U8_EXPORT u8_server_stats u8_server_statistics
 
   stats->tsum=server->aggrestats.tsum; stats->tsum2=server->aggrestats.tsum2;
   stats->tcount=server->aggrestats.tcount; stats->tmax=server->aggrestats.tmax;
-  stats->asum=server->aggrestats.asum; stats->asum2=server->aggrestats.asum2;
-  stats->acount=server->aggrestats.acount; stats->amax=server->aggrestats.amax;
-  stats->asum=server->aggrestats.qsum; stats->asum2=server->aggrestats.qsum2;
-  stats->acount=server->aggrestats.qcount; stats->amax=server->aggrestats.qmax;
+  stats->qsum=server->aggrestats.qsum; stats->qsum2=server->aggrestats.qsum2;
+  stats->qcount=server->aggrestats.qcount; stats->qmax=server->aggrestats.qmax;
   stats->rsum=server->aggrestats.rsum; stats->rsum2=server->aggrestats.rsum2;
   stats->rcount=server->aggrestats.rcount; stats->rmax=server->aggrestats.rmax;
   stats->wsum=server->aggrestats.wsum; stats->wsum2=server->aggrestats.wsum2;
@@ -1335,10 +1303,6 @@ U8_EXPORT u8_server_stats u8_server_statistics
       stats->qsum+=cl->stats.qsum; stats->qsum2+=cl->stats.qsum2;
       stats->qcount+=cl->stats.qcount;
       if (cl->stats.qmax>stats->qmax) stats->qmax=cl->stats.qmax;
-
-      stats->asum+=cl->stats.asum; stats->asum2+=cl->stats.asum2;
-      stats->acount+=cl->stats.acount;
-      if (cl->stats.amax>stats->amax) stats->amax=cl->stats.amax;
 
       stats->rsum+=cl->stats.rsum; stats->rsum2+=cl->stats.rsum2;
       stats->rcount+=cl->stats.rcount;
@@ -1372,10 +1336,8 @@ U8_EXPORT u8_server_stats u8_server_livestats
 
   stats->tsum=server->aggrestats.tsum; stats->tsum2=server->aggrestats.tsum2;
   stats->tcount=server->aggrestats.tcount; stats->tmax=server->aggrestats.tmax;
-  stats->asum=server->aggrestats.asum; stats->asum2=server->aggrestats.asum2;
-  stats->acount=server->aggrestats.acount; stats->amax=server->aggrestats.amax;
-  stats->asum=server->aggrestats.qsum; stats->asum2=server->aggrestats.qsum2;
-  stats->acount=server->aggrestats.qcount; stats->amax=server->aggrestats.qmax;
+  stats->qsum=server->aggrestats.qsum; stats->qsum2=server->aggrestats.qsum2;
+  stats->qcount=server->aggrestats.qcount; stats->qmax=server->aggrestats.qmax;
   stats->rsum=server->aggrestats.rsum; stats->rsum2=server->aggrestats.rsum2;
   stats->rcount=server->aggrestats.rcount; stats->rmax=server->aggrestats.rmax;
   stats->wsum=server->aggrestats.wsum; stats->wsum2=server->aggrestats.wsum2;
@@ -1402,10 +1364,6 @@ U8_EXPORT u8_server_stats u8_server_livestats
       stats->qsum+=cl->stats.qsum; stats->qsum2+=cl->stats.qsum2;
       stats->qcount+=cl->stats.qcount;
       if (cl->stats.qmax>stats->qmax) stats->qmax=cl->stats.qmax;
-
-      stats->asum+=cl->stats.asum; stats->asum2+=cl->stats.asum2;
-      stats->acount+=cl->stats.acount;
-      if (cl->stats.amax>stats->amax) stats->amax=cl->stats.amax;
 
       stats->rsum+=cl->stats.rsum; stats->rsum2+=cl->stats.rsum2;
       stats->rcount+=cl->stats.rcount;
@@ -1449,12 +1407,7 @@ U8_EXPORT u8_server_stats u8_server_curstats
 	stats->tsum+=interval; stats->tsum2+=(interval*interval);
 	if (interval>stats->tmax) stats->tmax=interval;
       	stats->tcount++;}
-      if ((start=cl->active)) {
-	long long interval=cur-start;
-	stats->asum+=interval; stats->asum2+=(interval*interval);
-	if (interval>stats->amax) stats->amax=interval;
-      	stats->acount++;}
-      else if ((start=cl->queued)) {
+      if ((start=cl->queued)) {
 	long long interval=cur-start;
 	stats->qsum+=interval; stats->qsum2+=(interval*interval);
 	if (interval>stats->qmax) stats->qmax=interval;

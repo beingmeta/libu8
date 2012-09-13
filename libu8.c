@@ -387,6 +387,7 @@ U8_EXPORT int _u8_grow_pile(u8_pile p,int delta)
       new_elts=u8_malloc(sizeof(void *)*new_max);
       memset(new_elts,0,sizeof(void *)*new_max);}
     p->u8_elts=new_elts; p->u8_max=new_max; p->u8_mallocd=1;}
+  return new_max;
 }
 
 /* Thread initialization */
