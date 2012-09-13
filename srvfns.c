@@ -312,7 +312,7 @@ static int client_close_core(u8_client cl,int server_locked)
     if (cl->active>0) {
       u8_log(LOG_WARNING,"client_close_core",
 	     "Closing active client @x%lx#%d/%d[%d](%s)",
-	     (unsigned long long)cl,cl->clientid,cl->socket,
+	     ((unsigned long)cl),cl->clientid,cl->socket,
 	     cl->n_trans,cl->idstring);
       update_client_stats(cl,cur,1);
       server->n_busy--;}
