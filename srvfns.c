@@ -317,7 +317,7 @@ static int client_close_core(u8_client cl,int server_locked)
       update_client_stats(cl,cur,1);
       server->n_busy--;}
     if (cl->queued>0) {
-      long long interval=cur-cl->started;
+      long long interval=cur-cl->queued;
       u8_log(LOG_WARNING,"client_close_core",
 	     "Closing a queued client @x%lx#%d/%d[%d](%s)",
 	     ((unsigned long)cl),cl->clientid,cl->socket,
