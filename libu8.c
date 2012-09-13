@@ -365,6 +365,30 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz)
   return nptr;
 }
 
+/* Piles */
+
+U8_EXPORT int _u8_grow_pile(u8_pile p,int delta)
+{
+  size_t need=p->u8_len+delta;
+  size_t old_max=p->u8_max, new_max=((old_max>0)?(old_max):(16));
+  while (need<new_max) new_max=new_max*2;
+  if (need>=p->u8_max) {
+    size_t new_max=((p->u8_max)?(p->u8_max*2):(16));
+    void *new_elts;
+    if (p->u8_elts) {
+      if (p->u8_mallocd) {
+	new_elts=u8_realloc(p->u8_elts,sizeof(void *)*new_max);
+	memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}
+      else {
+	new_elts=u8_malloc(sizeof(void *)*new_max);
+	memcpy(new_elts,p->u8_elts,sizeof(void *)*(p->u8_len));
+	memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}}
+    else {
+      new_elts=u8_malloc(sizeof(void *)*new_max);
+      memset(new_elts,0,sizeof(void *)*new_max);}
+    p->u8_elts=new_elts; p->u8_max=new_max; p->u8_mallocd=1;}
+}
+
 /* Thread initialization */
 
 #if (U8_THREADS_ENABLED)
