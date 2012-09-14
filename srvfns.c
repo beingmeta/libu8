@@ -453,11 +453,15 @@ static u8_client pop_task(struct U8_SERVER *server)
     u8_condvar_wait(&(server->empty),&(server->lock));
   if (server->flags&U8_SERVER_CLOSED) {}
   else if (server->n_queued) {
-    task=server->queue[server->queue_head++];
+    task=server->queue[server->queue_head];
+    server->queue[server->queue_head++]=NULL;
     if (server->queue_head>=server->queue_len) server->queue_head=0;
     server->n_queued--;}
   else {}
-  if ((task)&&((task->active>0))) {
+  if (!(task)) {
+    u8_unlock_mutex(&(server->lock));
+    return NULL;}
+  else if (task->active>0) {
     /* This should probably never happen */
     u8_log(LOG_CRIT,"pop_task(u8)","popping active task @x%lx#%d/%d[%d](%s)",
 	   ((unsigned long)task),task->clientid,task->socket,
@@ -486,17 +490,22 @@ static u8_client pop_task(struct U8_SERVER *server)
 
 static int push_task(struct U8_SERVER *server,u8_client cl)
 {
+  u8_utime cur=u8_microtime();
   if (server->n_queued >= server->max_queued) return 0;
   if (cl->queued>0) return 0;
+  if (cl->clientid<0) return 0;
+  if ((cl->flags)&(U8_CLIENT_CLOSED)) return 0;
+  if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
+      ((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
+    u8_log(LOG_NOTICE,ClientRequest,
+	   "Queueing client @x%lx#%d/%d[%d](%s)",
+	   ((unsigned long)cl),cl->clientid,cl->socket,
+	   cl->n_trans,cl->idstring);
+  cl->queued=cur;
   server->queue[server->queue_tail++]=cl;
   if (server->queue_tail>=server->queue_len) server->queue_tail=0;
   server->n_queued++;
-  if (cl->active>0) {
-    u8_utime cur=u8_microtime();
-    long long atime=cur-cl->active;
-    cl->queued=cur;
-    cl->active=-1;}
-  else cl->queued=u8_microtime(); 
+  if (cl->active>0) cl->active=-1;
   server->sockets[cl->clientid].events=((short)0);
   u8_condvar_signal(&(server->empty));
   return 1;
@@ -514,7 +523,9 @@ static void *event_loop(void *thread_arg)
     /* Check that this thread's init functions are up to date */
     u8_threadcheck();
     cl=pop_task(server);
-    if ((!(cl))||(cl->socket<=0)) continue;
+    if ((!(cl))||(cl->socket<=0)||
+	((cl->flags)&U8_CLIENT_CLOSED))
+      continue;
     if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
 	((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
       u8_log(LOG_NOTICE,ClientRequest,
@@ -590,12 +601,14 @@ static void *event_loop(void *thread_arg)
 	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       else if (cl->active>0) u8_client_done(cl);
-      while (ex) {
+      if (ex) {
 	u8_log(LOG_WARN,ClientRequest,
 	       "Error during activity on @x%lx#%d/%d[%d](%s)",
 	       ((unsigned long)cl),cl->clientid,cl->socket,
 	       cl->n_trans,cl->idstring,u8_errstring(ex));
-	u8_clear_errors(1);}
+	u8_clear_errors(1);
+	client_close_core(cl,1);
+	closed=1;}
       cl->n_errs++;}
     else if (result==0) {
       u8_utime cur=u8_microtime();
