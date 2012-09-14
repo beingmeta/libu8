@@ -328,13 +328,12 @@ static int client_close_core(u8_client cl,int server_locked)
       if (interval>cl->stats.qmax) cl->stats.qmax=interval;
       cl->stats.qcount++;}
 
-    cl->queued=cl->active=cl->reading=cl->writing=cl->started=0;
+    cl->active=cl->reading=cl->writing=cl->started=0;
 
     if (sock>0) {
       struct pollfd *pfd=&(cl->server->sockets[clientid]);
       memset(pfd,0,sizeof(struct pollfd));
       pfd->fd=-1;}
-    cl->flags|=U8_CLIENT_CLOSED;
 
     if (!(server_locked)) u8_lock_mutex(&(server->lock));
     server->n_clients--;
@@ -347,17 +346,21 @@ static int client_close_core(u8_client cl,int server_locked)
 
     if (server->closefn)
       retval=server->closefn(cl);
-    else if (cl->socket>0) {
-      retval=close(cl->socket); cl->socket=-1;}
+    else if (cl->socket>0) 
+      retval=close(cl->socket);
     else retval=0;
 
     if (cl->server->flags&U8_SERVER_LOG_CONNECT)
       u8_log(LOG_NOTICE,ClosedClient,"Closed @x%lx#%d/%d[%d](%s)",
 	     ((unsigned long)cl),cl->clientid,cl->socket,
 	     cl->n_trans,cl->idstring);
-    if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
-    u8_free(idstring);
-    u8_free(cl);
+    cl->flags|=U8_CLIENT_CLOSED;
+    cl->socket=-1;
+    if (cl->queued>0) {cl->clientid=-1; cl->queued=-1;}
+    else {
+      if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
+      u8_free(idstring);
+      u8_free(cl);}
 
     return retval;}
 }
@@ -460,6 +463,12 @@ static u8_client pop_task(struct U8_SERVER *server)
 	   ((unsigned long)task),task->clientid,task->socket,
 	   task->n_trans,task->idstring);
     task->queued=-1; task=NULL;}
+  else if (task->queued<=0) {
+    if (task->idstring) u8_free(task->idstring);
+    if (task->ownsbuf) u8_free(task->buf);
+    u8_free(task);
+    u8_unlock_mutex(&(server->lock));
+    return NULL;}
   else if (task) {
     u8_utime curtime=u8_microtime();
     long long qtime=curtime-task->queued;
@@ -505,7 +514,7 @@ static void *event_loop(void *thread_arg)
     /* Check that this thread's init functions are up to date */
     u8_threadcheck();
     cl=pop_task(server);
-    if ((!(cl))||(cl->socket<0)) continue;
+    if ((!(cl))||(cl->socket<=0)) continue;
     if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
 	((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
       u8_log(LOG_NOTICE,ClientRequest,

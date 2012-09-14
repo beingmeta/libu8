@@ -375,8 +375,6 @@ typedef struct U8_SERVER_STATS {
   int n_reqs, n_errs, n_complete, n_busy, n_active, n_reading, n_writing;
   /* Tracking total transaction time */
   long long tsum, tsum2, tmax; int tcount;
-  /* Tracking total spent in event loop */
-  long long asum, asum2, amax; int acount;
   /* Tracking total spent queued up */
   long long qsum, qsum2, qmax; int qcount;
   /* Tracking total spent reading */
