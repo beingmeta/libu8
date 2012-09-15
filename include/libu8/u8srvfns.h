@@ -30,7 +30,7 @@ typedef struct U8_SERVER *u8_server;
 #define U8_CLIENT_CLOSING 4
 #define U8_CLIENT_CLOSED 8
 #define U8_CLIENT_LOG_TRANSACT 16
-#define U8_CLIENT_LOG_TRANSFERS 32
+#define U8_CLIENT_LOG_TRANSFER 32
 #define U8_CLIENT_FLAG_MAX 32
 
 typedef struct U8_CLIENT *u8_client;
@@ -146,7 +146,8 @@ U8_EXPORT int u8_client_done(u8_client cl);
 #define U8_SERVER_LOG_LISTEN 4
 #define U8_SERVER_LOG_CONNECT 8
 #define U8_SERVER_LOG_TRANSACT 16
-#define U8_SERVER_LOG_TRANSFERS 32
+#define U8_SERVER_LOG_TRANSFER 32
+#define U8_SERVER_FLAG_MAX 32
 
 /* Argument names to u8_init_server */
 
@@ -434,5 +435,11 @@ U8_EXPORT u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int b
        to buflen
 **/
 U8_EXPORT u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen);
+
+U8_EXPORT unsigned char *u8_client_write
+  (u8_client cl,unsigned char *buf,size_t n,size_t off);
+U8_EXPORT unsigned char *u8_client_read
+  (u8_client cl,unsigned char *buf,size_t n,size_t off);
+U8_EXPORT int u8_client_finished(u8_client cl);
 
 #endif /* U8_U8SRVFNS_H */
