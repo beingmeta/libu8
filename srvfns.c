@@ -333,7 +333,7 @@ int u8_close_client(u8_client cl)
        don't close it right away. */
     if (cl->started>0) {
       if (server->flags&U8_SERVER_LOG_CONNECT)
-	u8_log(LOG_WARNING,"u8_close_client",
+	u8_log(LOG_NOTICE,"u8_close_client",
 	       "Deferring closing of  @x%lx#%d.%d[%s/%d](%s)",
 	       ((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
@@ -738,7 +738,6 @@ static void *event_loop(void *thread_arg)
       cl->n_errs++;}
     else if (result==0) {
       u8_utime cur=u8_microtime();
-      long long ttime=cur-cl->started;
       /* Request is completed */
       if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
 	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
@@ -755,9 +754,15 @@ static void *event_loop(void *thread_arg)
 	       ((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
 	       cl->n_trans,cl->idstring);
+	if (cl->started>0) {
+	  update_client_stats(cl,cur,1);
+	  cl->started=0;}
 	closed=1; if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       else if (cl->flags&U8_CLIENT_CLOSING) {
+	if (cl->started>0) {
+	  update_client_stats(cl,cur,1);
+	  cl->started=0;}
 	cl->active=0; finish_closing_client(cl); closed=1;
 	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
@@ -1376,7 +1381,8 @@ static int server_listen(struct U8_SERVER *server)
     else if (client->active>0) {
       /* A thread is working on this client.  Don't touch it. */}
     else if (events&(HUPFLAGS)) {
-      if ((client->server->flags)&(U8_SERVER_LOG_CONNECT))
+      if ((client->server->flags)&(U8_SERVER_LOG_CONNECT)&&
+	  (client->socket>=0))
 	u8_log(LOG_NOTICE,"server_listen",
 	       "Other end closed (HUP) @x%lx#%d.%d[%s/%d](%s)",
 	       ((unsigned long)client),client->clientid,client->socket,
@@ -1399,7 +1405,8 @@ static int server_listen(struct U8_SERVER *server)
       if (!(socket_peek(client->socket))) {
 	/* No real data, so we close it (probably the other side closed)
 	   the connection. */
-	if ((client->server->flags)&(U8_SERVER_LOG_CONNECT))
+	if (((client->server->flags)&(U8_SERVER_LOG_CONNECT))&&
+	    (client->socket>=0))
 	  u8_log(LOG_NOTICE,"server_listen",
 		 "Other end closed (no data) @x%lx#%d.%d[%s/%d](%s)",
 		 ((unsigned long)client),client->clientid,client->socket,
