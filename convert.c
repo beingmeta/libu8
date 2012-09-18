@@ -608,7 +608,7 @@ unsigned char *u8_localize
    u8_byte **scanner,u8_byte *end,
    int escape_char,int crlf,u8_byte *buf,int *size_loc)
 {
-  struct U8_MB_MAP *inv;
+  struct U8_MB_MAP *inv; int outsize;
   unsigned char *write, *write_limit;
   u8_byte *scan=*scanner;
   int u8len, buf_mallocd, bufsiz, in_crlf=0;
@@ -653,34 +653,34 @@ unsigned char *u8_localize
 	write=write+n_bytes; *write=0;}
     else if ((ch<0x80)&&((e->flags)&(U8_ENCODING_INCLUDES_ASCII))) {
       *write++=ch; *write=0;}
-    else if ((inv=e->charset_inv)) {
-      int size=table_uc2mb(write,(xchar)ch,e);
-      if ((size<0) && (escape_char>0) &&
-	  (!((escape_char == '\\') || (escape_char == '&') || (escape_char == 'x')))) {
-	ch=escape_char; size=table_uc2mb(write,(xchar)ch,e);}
-      if (size < 0)
-	if (escape_char<0) {
-	  u8_seterr(u8_UnRepresentedCharacter,"u8_localize",
-		    u8_strdup(last));
-	  return NULL;}
-	else if (escape_char == '&') {
-	  sprintf(write,"&#%d;",ch);
-	  write=write+strlen(write);}
-	else if (escape_char == '\\')
-	  if (ch < 0x8000) {
-	    sprintf(write,"\\u%04x",ch);
-	    write=write+6;}
-	  else {
-	    sprintf(write,"\\U%08x",ch);
-	    write=write+10;}
-	else if (escape_char == 'x') {
-	  sprintf(write,"\\x%x;",ch);
-	  write=write+strlen(write);}
+    else if ((inv=e->charset_inv)&&
+	     ((outsize=table_uc2mb(write,(xchar)ch,e))>=0)) {
+      write=write+outsize;}
+    else if ((e->uc2mb)&&
+	     ((outsize=e->uc2mb(write,(xchar)ch))>=0)) {
+      write=write+outsize;}
+    /* If we get here, we know we don't have a native encoding. */
+    else if (((escape_char == '\\') ||(escape_char == '&') ||
+	      (escape_char == 'x')) &&
+	     ((e->flags)&(U8_ENCODING_INCLUDES_ASCII))) {
+      if (escape_char == '&') {
+	sprintf(write,"&#%d;",ch);
+	write=write+strlen(write);}
+      else if (escape_char == '\\')
+	if (ch < 0x8000) {
+	  sprintf(write,"\\u%04x",ch);
+	  write=write+6;}
 	else {
-	  u8_seterr(u8_UnRepresentedCharacter,"u8_localize",
-		    u8_strdup(last));
-	  return NULL;}
-      else write=write+size;}
+	  sprintf(write,"\\U%08x",ch);
+	  write=write+10;}
+      else if (escape_char == 'x') {
+	sprintf(write,"\\x%x;",ch);
+	write=write+strlen(write);}
+      else {}}
+    /* There is another case we could handle here, which is encoding escapes
+       in character sets which don't include ASCII but do have representations
+       of all the characters used for the encoding.  But we don't currently
+       do that. */
     else {
       uc2mb_fn uc2mb=e->uc2mb; int l;
       if (uc2mb == NULL) uc2mb=(uc2mb_fn)wctomb;
