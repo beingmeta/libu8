@@ -1339,14 +1339,17 @@ static struct pollfd *update_socketbuf
 }
 #endif
 
+static int server_handle_poll(struct U8_SERVER *server,
+			      struct pollfd *sockets,
+			      int n_socks);
+
 /* This listens for connections and pushes tasks (unless we're not
    threaded, in which case it dispatches to the servefn right
    away).  */
 static int server_listen(struct U8_SERVER *server)
 {
-  struct pollfd *sockets=NULL; u8_client *clients; int n_socks=0;
-  int i, max_slot, n_actions, retval;
-  char statebuf[16];
+  struct pollfd *sockets=NULL;
+  int n_socks=0, retval;
   update_socketbuf(server,&sockets,&n_socks);
   /* Wait for activity on one of your open sockets */
   while ((retval=poll(sockets,n_socks,100)) == 0) {
@@ -1361,6 +1364,16 @@ static int server_listen(struct U8_SERVER *server)
     do_shutdown(server,server->shutdown);
     if (sockets!=server->sockets) u8_free(sockets);
     return 0;}
+  return server_handle_poll(server,sockets,n_socks);
+}
+
+static int server_handle_poll(struct U8_SERVER *server,
+			      struct pollfd *sockets,
+			      int n_socks)
+{
+  struct U8_CLIENT **clients;
+  int i=0, n_actions=0, retval=0;
+  char statebuf[16];
   /* Iterate over the range of sockets */
   u8_lock_mutex(&(server->lock));
   clients=server->clients;
@@ -1428,6 +1441,7 @@ static int server_listen(struct U8_SERVER *server)
   if (sockets!=server->sockets) u8_free(sockets);
   return n_actions;
 }
+
 
 U8_EXPORT
 int u8_push_task(struct U8_SERVER *server,u8_client cl,u8_context cxt)
