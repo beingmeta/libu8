@@ -1264,10 +1264,8 @@ static int add_client(struct U8_SERVER *server,u8_client client)
 static int free_client(struct U8_SERVER *server,u8_client cl)
 {
   int clientid=cl->clientid; u8_socket sock=cl->socket;
-  if (sock>0) {
-    struct pollfd *pfd=&(server->sockets[clientid]);
-    memset(pfd,0,sizeof(struct pollfd));
-    pfd->fd=-1;}
+  struct pollfd *pfd=&(server->sockets[clientid]);
+  memset(pfd,0,sizeof(struct pollfd)); pfd->fd=-1;
   server->n_clients--;
   update_server_stats(cl);
   server->clients[clientid]=NULL;
