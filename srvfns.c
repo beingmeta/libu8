@@ -1417,6 +1417,9 @@ static int server_handle_poll(struct U8_SERVER *server,
 	  ((short)(((short)(sockets[i].events))&
 		   ((short)(~(POLLIN|POLLOUT)))));
 	n_actions++;}}
+    else if ((events&POLLNVAL)&&(client->socket<0)) {
+      free_client(server,client);
+      i++; continue;}
     else if ((events&POLLNVAL)||
 	     ((events&POLLIN)&&(!(socket_peek(client->socket))))) {
       /* No real data, so we close it (probably the other side closed)
