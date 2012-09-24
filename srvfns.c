@@ -1417,22 +1417,23 @@ static int server_handle_poll(struct U8_SERVER *server,
 	  ((short)(((short)(sockets[i].events))&
 		   ((short)(~(POLLIN|POLLOUT)))));
 	n_actions++;}}
+    else if ((events&POLLNVAL)||
+	     ((events&POLLIN)&&(!(socket_peek(client->socket))))) {
+      /* No real data, so we close it (probably the other side closed)
+	 the connection. */
+      if (((client->server->flags)&(U8_SERVER_LOG_CONNECT))&&
+	  (client->socket>=0))
+	u8_log(LOG_NOTICE,"server_listen",
+	       "Other end closed (%s) @x%lx#%d.%d[%s/%d](%s)",
+	       ((events&POLLNVAL)?("closed/invalid"):("no data")),
+	       ((unsigned long)client),client->clientid,client->socket,
+	       get_client_state(client,statebuf),
+	       client->n_trans,client->idstring);
+      client->started=0;
+      close_client_core(client,1);
+      i++; continue;}
     else if (events&POLLIN) {
-      if (!(socket_peek(client->socket))) {
-	/* No real data, so we close it (probably the other side closed)
-	   the connection. */
-	if (((client->server->flags)&(U8_SERVER_LOG_CONNECT))&&
-	    (client->socket>=0))
-	  u8_log(LOG_NOTICE,"server_listen",
-		 "Other end closed (no data) @x%lx#%d.%d[%s/%d](%s)",
-		 ((unsigned long)client),client->clientid,client->socket,
-		 get_client_state(client,statebuf),
-		 client->n_trans,client->idstring);
-	client->started=0;
-	close_client_core(client,1);
-	i++; continue;}
-      else if (push_task(server,client,"server_listen/?")) n_actions++;
-      else {}}
+      if (push_task(server,client,"server_listen/?")) n_actions++;}
 #else
     else if (events&POLLIN) {
       server->servefn(client);
