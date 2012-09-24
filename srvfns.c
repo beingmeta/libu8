@@ -840,7 +840,7 @@ struct U8_SERVER *u8_init_server
   int i=0;
   int flags=0, init_clients=DEFAULT_INIT_CLIENTS, n_threads=DEFAULT_NTHREADS;
   int maxback=MAX_BACKLOG, max_queue=DEFAULT_MAX_QUEUE;
-  int  max_clients=DEFAULT_MAX_CLIENTS;
+  int  max_clients=DEFAULT_MAX_CLIENTS, timeout=DEFAULT_TIMEOUT;
   va_list args; int prop; int retval;
   if (server==NULL) server=u8_alloc(struct U8_SERVER);
   memset(server,0,sizeof(struct U8_SERVER));
@@ -859,6 +859,8 @@ struct U8_SERVER *u8_init_server
       max_clients=(va_arg(args,int)); continue;
     case U8_SERVER_BACKLOG:
       max_clients=(va_arg(args,int)); continue;
+    case U8_SERVER_TIMEOUT:
+      timeout=(va_arg(args,int)); continue;
     case U8_SERVER_LOGLEVEL: {
       int level=(va_arg(args,int));
       if (level>3) flags|=U8_SERVER_LOG_TRANSFER;
@@ -882,6 +884,7 @@ struct U8_SERVER *u8_init_server
   server->sockets=u8_alloc_n(init_clients,struct pollfd); 
   memset(server->sockets,0,sizeof(struct pollfd)*init_clients);
   server->free_slot=server->max_slot=0;
+  server->poll_timeout=timeout;
   server->max_backlog=((maxback<=0) ? (MAX_BACKLOG) : (maxback));
   server->acceptfn=acceptfn;
   server->servefn=servefn;
@@ -1349,10 +1352,10 @@ static int server_handle_poll(struct U8_SERVER *server,
 static int server_listen(struct U8_SERVER *server)
 {
   struct pollfd *sockets=NULL;
-  int n_socks=0, retval;
+  int n_socks=0, retval, timeout=server->poll_timeout;
   update_socketbuf(server,&sockets,&n_socks);
   /* Wait for activity on one of your open sockets */
-  while ((retval=poll(sockets,n_socks,100)) == 0) {
+  while ((retval=poll(sockets,n_socks,timeout)) == 0) {
     if (retval<0) return retval;
     if (server->shutdown) {
       do_shutdown(server,server->shutdown);

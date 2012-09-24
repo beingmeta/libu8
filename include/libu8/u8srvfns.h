@@ -25,6 +25,10 @@
 
 typedef struct U8_SERVER *u8_server;
 
+#ifndef DEFAULT_TIMEOUT
+#define DEFAULT_TIMEOUT 200
+#endif
+
 #define U8_CLIENT_OPEN 1
 #define U8_CLIENT_ASYNC 2
 #define U8_CLIENT_CLOSING 4
@@ -160,6 +164,7 @@ U8_EXPORT int u8_client_done(u8_client cl);
 #define U8_SERVER_MAX_CLIENTS (5)
 #define U8_SERVER_BACKLOG (6)
 #define U8_SERVER_LOGLEVEL (7)
+#define U8_SERVER_TIMEOUT (8)
 
 /* Default values */
 
@@ -256,6 +261,7 @@ typedef struct U8_SERVER {
   long n_trans; /* How many transactions have been completed to date */
   long n_errs; /* How many transactions yielded errors */
   struct U8_CLIENT_STATS aggrestats;
+  long poll_timeout; /* Timeout value to use when selecting */
 
   /* Handling functions */
   u8_client (*acceptfn)(struct U8_SERVER *,u8_socket sock,
