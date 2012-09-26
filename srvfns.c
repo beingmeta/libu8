@@ -237,7 +237,7 @@ U8_EXPORT unsigned char *u8_client_write
     else {cl->writing=0; return cl->buf;}}
   else if (cl->writing>0) {
     u8_log(LOG_WARNING,"u8_client_write",
-	   "Client @x%lx#%d.%d[%s/%d](%s) is already reading %ld bytes",
+	   "Client @x%lx#%d.%d[%s/%d](%s) is already writing %ld bytes",
 	   ((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
 	   cl->n_trans,cl->idstring,
@@ -250,7 +250,8 @@ U8_EXPORT unsigned char *u8_client_write
 	   get_client_state(cl,statebuf),
 	   cl->n_trans,cl->idstring,
 	   ((long)cl->len));
-    cl->reading=0;}
+    cl->reading=0;
+    return NULL;}
   else if (off<n) {
     cl->writing=u8_microtime();
     cl->buflen=cl->len=n; cl->buf=buf; cl->off=off;
@@ -1274,6 +1275,7 @@ static int free_client(struct U8_SERVER *server,u8_client cl)
   if (clientid<server->free_slot) server->free_slot=clientid;
   u8_free(cl->idstring);
   u8_free(cl);
+  return 1;
 }
 
 static int server_accept(u8_server server,u8_socket i)

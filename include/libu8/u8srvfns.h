@@ -55,7 +55,7 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
 
 #define U8_CLIENT_FIELDS                                       \
     u8_socket socket;                                          \
-    unsigned int clientid;                                     \
+    int clientid;                                              \
     unsigned int flags, n_trans, n_errs;                       \
     u8_utime started, queued, active;                          \
     u8_utime reading, writing, running;			       \
@@ -77,7 +77,7 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
      to which the client is connected. **/
   typedef struct U8_CLIENT {
     u8_socket socket;
-    unsigned int clientid;
+    int clientid;
     unsigned int flags, n_trans, n_errs;
     u8_utime started, queued, active;
     u8_utime reading, writing, running;
