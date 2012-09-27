@@ -30,7 +30,8 @@
 
 u8_condition u8_UnRepresentedCharacter=_("Encoding can't represent character");
 u8_condition u8_UnknownEncoding=_("Can't find named encoding");
-u8_condition u8_BadHexString=_("Bad hexadecimal representation");
+u8_condition u8_BadHexString=_("Bad hexadecimal representation (length)");
+u8_condition u8_BadHexChar=_("Bad hexadecimal representation (character)");
 
 #ifndef U8_ENCODINGS_DIR
 #define U8_ENCODINGS_DIR "/usr/share/libu8/encodings"
@@ -831,27 +832,31 @@ U8_EXPORT
 unsigned char *u8_read_base16(char *data,int len_arg,int *result_len)
 {
   unsigned int len=((len_arg<0) ? (strlen(data)) : (len_arg));
-  *result_len=-1; /* Initial error value */
-  if (len%2) {
-    u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
-    return NULL;}
-  else if (len==0) {
+  if (len==0) {
     *result_len=len;
     return NULL;}
   else {
     unsigned char *scan=data, *limit=data+len;
     unsigned char *result=u8_malloc(len/2);
     unsigned char *write=result;
+    *result_len=-1; /* Initial error value */
     if (U8_EXPECT_FALSE(result==NULL)) {
+      u8_seterr(u8_MallocFailed,"u8_read_base16",NULL);
       *result_len=-1; return NULL;}
     else while (scan<limit) {
-      int hival=hexweight(scan[0]), loval=hexweight(scan[1]);
-      if ((hival<0) || (loval<0)) {
-	u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
-	u8_free(result);
-	return NULL;}
-      *write=(hival<<4)|loval;
-      scan=scan+2; write++;}
+	if ((isspace(*scan))||(ispunct(*scan))) continue;
+	else if ((scan+1)<limit) {
+	  int hival=hexweight(scan[0]), loval=hexweight(scan[1]);
+	  if ((hival<0) || (loval<0)) {
+	    u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
+	    u8_free(result);
+	    return NULL;}
+	  *write=(hival<<4)|loval;
+	  scan=scan+2; write++;}
+	else {
+	  u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
+	  u8_free(result);
+	  return NULL;}}
     *result_len=len/2;
     return result;}
 }
