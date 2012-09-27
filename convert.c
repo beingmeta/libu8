@@ -844,7 +844,7 @@ unsigned char *u8_read_base16(char *data,int len_arg,int *result_len)
       u8_seterr(u8_MallocFailed,"u8_read_base16",NULL);
       *result_len=-1; return NULL;}
     else while (scan<limit) {
-	if ((isspace(*scan))||(ispunct(*scan))) continue;
+	if ((isspace(*scan))||(ispunct(*scan))) {scan++; continue;}
 	else if ((scan+1)<limit) {
 	  int hival=hexweight(scan[0]), loval=hexweight(scan[1]);
 	  if ((hival<0) || (loval<0)) {
