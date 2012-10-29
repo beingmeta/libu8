@@ -303,6 +303,7 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT(makefile docs/makefile)
+AC_OUTPUT(makefile)
+
 
 
