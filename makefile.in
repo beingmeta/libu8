@@ -215,7 +215,7 @@ clean:
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* 
 	@$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
 	@echo "Cleaned up libraries"
-	@$(CLEAN) docs/man/man3/* docs/html/* docs/rtf/* docs/latex/*
+	@$(CLEAN) docs/man/man3/* docs/html/* docs/rtf/* docs/latex/* docs/docs.done
 	@echo "Cleaned up docs"
 	@$(CLEAN) tests/getentity tests/latin1u8 tests/u8recode tests/u8xrecode
 	@$(CLEAN) tests/echosrv
