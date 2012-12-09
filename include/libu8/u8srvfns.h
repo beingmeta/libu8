@@ -62,7 +62,7 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
     u8_string idstring;                                        \
     unsigned char *buf;                                        \
     size_t off, len, buflen, delta;                            \
-    unsigned int ownsbuf:1, grows:1;                           \
+    unsigned int ownsbuf, grows;                           \
     struct U8_CLIENT_STATS stats;                              \
     u8_client_callback callback;                               \
     void *cbstate;                                             \
@@ -84,7 +84,7 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
     u8_string idstring;
     unsigned char *buf;
     size_t off, len, buflen, delta;
-    unsigned int ownsbuf:1, grows:1;
+    unsigned int ownsbuf, grows;
     struct U8_CLIENT_STATS stats;
     u8_client_callback callback;
     void *cbstate;
