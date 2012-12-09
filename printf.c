@@ -30,7 +30,7 @@
 #include <stdarg.h>
 
 #ifndef PRINTF_CHUNK_SIZE
-#define PRINTF_CHUNK_SIZE 128
+#define PRINTF_CHUNK_SIZE 1234
 #endif
 
 u8_condition u8_BadPrintFormat=_("u8_printf: Bad format code");
