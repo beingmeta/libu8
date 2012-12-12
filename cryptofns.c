@@ -30,6 +30,7 @@
 
 u8_condition u8_BadCryptoKey=_("bad crypto key value");
 u8_condition u8_BadCryptoInit=_("bad crypto init value");
+u8_condition u8_CipherInit_Failed=_("cipher init failed");
 u8_condition u8_InternalCryptoError=_("internal libcrypto error");
 u8_condition u8_UnknownCipher=_("Unknown cipher name");
 u8_condition u8_UnknownCipherNID=_("Unknown cipher name");
@@ -59,7 +60,7 @@ U8_EXPORT ssize_t u8_cryptic
    u8_context caller)
 {
   EVP_CIPHER_CTX ctx;
-  int inlen, outlen, totalout=0;
+  int inlen, outlen, totalout=0, retval=0;
   unsigned char inbuf[1024], outbuf[1024+EVP_MAX_BLOCK_LENGTH];
   const EVP_CIPHER *cipher=((cname)?(EVP_get_cipherbyname(cname)):
 			    (EVP_bf_cbc()));
@@ -68,19 +69,37 @@ U8_EXPORT ssize_t u8_cryptic
     int needivlen=EVP_CIPHER_iv_length(cipher);
     int blocksize=EVP_CIPHER_block_size(cipher);
     if (blocksize>1024) blocksize=1024;
+    /*
     if ((needkeylen)&&(keylen!=needkeylen))
       return u8_reterr(u8_BadCryptoKey,
 		       ((caller)?(caller):((u8_context)"u8_cryptic")),
 		       u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
+    */
     if ((needivlen)&&(ivlen)&&(ivlen!=needivlen))
       return u8_reterr(u8_BadCryptoInit,
 		       ((caller)?(caller):((u8_context)"u8_cryptic")),
 		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
     EVP_CIPHER_CTX_init(&ctx);
-    EVP_CipherInit(&ctx, cipher, NULL, NULL, do_encrypt);
-    EVP_CIPHER_CTX_set_key_length(&ctx,keylen);
-    EVP_CipherInit(&ctx, cipher, key, iv, do_encrypt);
+
+    retval=EVP_CipherInit(&ctx, cipher, NULL, NULL, do_encrypt);
+    if (retval==0)
+      return u8_reterr(u8_CipherInit_Failed,
+		       ((caller)?(caller):((u8_context)"u8_cryptic")),
+		       u8_strdup(cname));
+
+    retval=EVP_CIPHER_CTX_set_key_length(&ctx,keylen);
+    if (retval==0) 
+      return u8_reterr(u8_BadCryptoKey,
+		       ((caller)?(caller):((u8_context)"u8_cryptic")),
+		       u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
+
+    retval=EVP_CipherInit(&ctx, cipher, key, iv, do_encrypt);
+    if (retval==0)
+      return u8_reterr(u8_CipherInit_Failed,
+		       ((caller)?(caller):((u8_context)"u8_cryptic")),
+		       u8_strdup(cname));
+
     while (1) {
       inlen = reader(inbuf,blocksize,readstate);
       if(inlen <= 0) break;
