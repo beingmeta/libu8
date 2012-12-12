@@ -76,6 +76,7 @@ U8_EXPORT u8_condition u8_BadCryptoKey;
 U8_EXPORT u8_condition u8_InternalCryptoError;
 U8_EXPORT u8_condition u8_UnknownCipher;
 U8_EXPORT u8_condition u8_UnknownCipherNID;
+U8_EXPORT u8_condition u8_CipherInit_Failed;
 
 /** Returns a signed HMAC-SHA256 signature (32 bytes) of a data buffer
     @param key     a pointer to a key buffer
