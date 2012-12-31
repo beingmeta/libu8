@@ -30,9 +30,18 @@ int u8_log_show_elapsed=0; /* This tells displays to show elapsed time (fine gra
 int u8_log_show_appid=1;
 int u8_log_show_threadinfo=0;
 
-u8_string u8_loglevels[9]={
-  _("Emergency!!!"),_("Alert!!"),_("Critical"),_("Error"),_("Warning"),
-  _("Note"),_("Info"),_("Debug"),NULL};
+u8_string u8_loglevels[11]={
+  _("Emergency!!!"),
+  _("Alert!!"),
+  _("Critical"),
+  _("Error"),
+  _("Warning"),
+  _("Note"),
+  _("Info"),
+  _("Debug"),
+  _("Detail"),
+  _("-deluge-"),
+  NULL};
 
 /* Generic logging */
 /*  This assumes that it is linked with code that defines u8_logger. */
@@ -56,30 +65,45 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message);
 #if U8_WITH_STDIO
 U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
 {
-  u8_byte buf[128]; u8_string prefix; int eloglevel=loglevel;
-  if ((loglevel>U8_MAX_LOGLEVEL)||(loglevel<(-U8_MAX_LOGLEVEL))) {
+  u8_byte buf[128]; u8_string prefix;
+  int eloglevel=loglevel; u8_string level;
+  if (loglevel>U8_MAX_LOGLEVEL) {
     fprintf(stderr,"%s!! Logging call with invalid priority %d (%s)%s",
 	    u8_logprefix,loglevel,c,u8_logsuffix);
     return 0;}
   else if (loglevel>u8_loglevel) return 0;
-  else if (loglevel<0) eloglevel=-loglevel;
+  else if (loglevel<0) eloglevel=(-loglevel);
   else {}
+  level=((loglevel>=(-(U8_MAX_LOGLEVEL)))?
+	 (u8_loglevels[eloglevel]):
+	 ((u8_string)""));
   prefix=u8_message_prefix(buf,128);
   if ((loglevel<0)||(eloglevel<=u8_stdout_loglevel)) {
-    if (c) fprintf(stdout,"%s%s (%s) %s%s",
-		   u8_logprefix,prefix,c,message,u8_logsuffix);
+    if ((c)&&(*level))
+      fprintf(stdout,"%s%s %s (%s) %s%s",
+	      u8_logprefix,prefix,level,c,message,u8_logsuffix);
+    else if (c)
+      fprintf(stdout,"%s%s (%s) %s%s",
+	      u8_logprefix,prefix,c,message,u8_logsuffix);
+    else if (*level)
+      fprintf(stdout,"%s%s %s: %s%s",
+	      u8_logprefix,prefix,level,message,u8_logsuffix);
     else fprintf(stdout,"%s%s %s%s",
 		 u8_logprefix,prefix,message,u8_logsuffix);
     fflush(stdout);
     return 1;}
   if (eloglevel<=u8_stderr_loglevel) {
-    if (c)
-      fprintf(stdout,"%s%s %s (%s): %s]%s",
-	      u8_logprefix,prefix,u8_loglevels[loglevel],c,message,
-	      u8_logsuffix);
-    else fprintf(stdout,"%s%s %s: %s%s",
-		 u8_logprefix,prefix,u8_loglevels[loglevel],message,
-		 u8_logsuffix);}
+    if ((c)&&(*level))
+      fprintf(stderr,"%s%s%s (%s): %s%s",
+	      u8_logprefix,prefix,level,c,message,u8_logsuffix);
+    else if (c)
+      fprintf(stdout,"%s%s (%s) %s%s",
+	      u8_logprefix,prefix,c,message,u8_logsuffix);
+    else if (*level)
+      fprintf(stderr,"%s%s %s: %s%s",
+	      u8_logprefix,prefix,level,message,u8_logsuffix);
+    else fprintf(stderr,"%s%s %s%s",
+		 u8_logprefix,prefix,message,u8_logsuffix);}
   return 0;
 }
 #endif
@@ -119,8 +143,8 @@ U8_EXPORT int u8_message(u8_string format_string,...)
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
-  if (logfn) retval=logfn(-1,NULL,out.u8_outbuf);
-  else retval=u8_default_logger(-1,NULL,out.u8_outbuf);
+  if (logfn) retval=logfn(-10,NULL,out.u8_outbuf);
+  else retval=u8_default_logger(-10,NULL,out.u8_outbuf);
   if ((out.u8_streaminfo)&(U8_STREAM_OWNS_BUF)) u8_free(out.u8_outbuf);
   return retval;
 }

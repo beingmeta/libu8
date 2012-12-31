@@ -50,7 +50,7 @@ U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args; 
   int epriority=priority;
-  if (priority<0) epriority=-priority;
+  if (priority<0) epriority=(-priority)-2;
   if (epriority>LOG_DEBUG) epriority=LOG_DEBUG;
   U8_INIT_OUTPUT(&out,512);
   va_start(args,format_string);
