@@ -42,12 +42,12 @@ int u8_stdout_loglevel=U8_DEFAULT_STDOUT_LOGLEVEL;
 int u8_stderr_loglevel=U8_DEFAULT_STDERR_LOGLEVEL;
 int u8_syslog_loglevel=U8_DEFAULT_SYSLOG_LOGLEVEL;
 
-static u8_string logprefix="[";
-static u8_string logsuffix="]\n";
+u8_string u8_logprefix="[";
+u8_string u8_logsuffix="]\n";
 
-static void u8_logixes(u8_string pre, u8_string post)
+U8_EXPORT void u8_set_logixes(u8_string pre, u8_string post)
 {
-  logprefix=pre; logsuffix=post;
+  u8_logprefix=pre; u8_logsuffix=post;
 }
 
 static u8_logfn logfn=NULL;
@@ -59,23 +59,27 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
   u8_byte buf[128]; u8_string prefix; int eloglevel=loglevel;
   if ((loglevel>U8_MAX_LOGLEVEL)||(loglevel<(-U8_MAX_LOGLEVEL))) {
     fprintf(stderr,"%s!! Logging call with invalid priority %d (%s)%s",
-	    logprefix,loglevel,c,logsuffix);
+	    u8_logprefix,loglevel,c,u8_logsuffix);
     return 0;}
   else if (loglevel>u8_loglevel) return 0;
   else if (loglevel<0) eloglevel=-loglevel;
   else {}
   prefix=u8_message_prefix(buf,128);
   if ((loglevel<0)||(eloglevel<=u8_stdout_loglevel)) {
-    if (c) fprintf(stdout,"%s%s (%s) %s%s",logprefix,prefix,c,message,logsuffix);
-    else fprintf(stdout,"%s %s%s",logprefix,prefix,message,logsuffix);
+    if (c) fprintf(stdout,"%s%s (%s) %s%s",
+		   u8_logprefix,prefix,c,message,u8_logsuffix);
+    else fprintf(stdout,"%s%s %s%s",
+		 u8_logprefix,prefix,message,u8_logsuffix);
     fflush(stdout);
     return 1;}
   if (eloglevel<=u8_stderr_loglevel) {
     if (c)
-      fprintf(stdout,"%s %s (%s): %s]%s",
-	      logprefix,prefix,u8_loglevels[loglevel],c,message,logsuffix);
+      fprintf(stdout,"%s%s %s (%s): %s]%s",
+	      u8_logprefix,prefix,u8_loglevels[loglevel],c,message,
+	      u8_logsuffix);
     else fprintf(stdout,"%s%s %s: %s%s",
-		 logprefix,prefix,u8_loglevels[loglevel],message,logsuffix);}
+		 u8_logprefix,prefix,u8_loglevels[loglevel],message,
+		 u8_logsuffix);}
   return 0;
 }
 #endif
