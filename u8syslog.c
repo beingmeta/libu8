@@ -29,9 +29,12 @@ U8_EXPORT void u8_use_syslog(int flag)
 
 U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
 {
-  u8_byte buf[512];
-  if (priority>u8_loglevel) return 0;
+  u8_byte buf[512]; int epriority=priority;
   if (u8_logging_initialized==0) u8_initialize_logging();
+  if (priority>u8_loglevel) return 0;
+  else if (priority<0) epriority=-priority;
+  else {}
+  if (epriority<u8_syslog_loglevel) return 0;
   u8_string prefix=u8_message_prefix(buf,512);
   if ((prefix) && (c))
     syslog(priority,"%s (%s) %s",prefix,c,message);
@@ -46,11 +49,14 @@ U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
 U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args; 
+  int epriority=priority;
+  if (priority<0) epriority=-priority;
+  if (epriority>LOG_DEBUG) epriority=LOG_DEBUG;
   U8_INIT_OUTPUT(&out,512);
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
-  syslog(priority,"%s",out.u8_outbuf);
+  syslog(epriority,"%s",out.u8_outbuf);
   u8_free(out.u8_outbuf);
 }
 

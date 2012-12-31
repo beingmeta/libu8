@@ -38,6 +38,9 @@
 #ifndef LOG_DETAIL
 #define LOG_DETAIL 8
 #endif
+#ifndef LOG_DELUGE
+#define LOG_DELUGE 9
+#endif
 
 /* Common mistypes/misremembers/mnemonics, might as well define them */
 #define LOG_WARN LOG_WARNING
@@ -59,7 +62,9 @@
 #define LOGDETAILS LOG_DETAIL
 #define LOGDETAIL LOG_DETAIL
 #define LOG_DETAILED LOG_DETAIL
+#define LOGDELUGE LOG_DELUGE
 
+#define U8_MAX_LOGLEVEL 9
 
 /* This is the overall log level and messages with with priorities
    above this should not produced output. */
