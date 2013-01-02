@@ -124,8 +124,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/*.a
 
 %changelog
-* Sun August 19 2012 Ken Haase <kh@beingmeta.com> 2.2
+* Sun Aug 19 2012 Ken Haase <kh@beingmeta.com> 2.2
 Support for more asynchronous servers.
 Numerous API extensions
-
 
