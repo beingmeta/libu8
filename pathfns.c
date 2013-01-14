@@ -97,14 +97,22 @@ U8_EXPORT u8_string u8_mkpath(u8_string dir,u8_string base)
 {
   u8_string result;
   int dirlen=strlen(dir), baselen=strlen(base);
-  int need_slash=(((dirlen>0) && (dir[dirlen-1]!='/'))?(1):(0));
-  unsigned int newlen=dirlen+baselen+1+need_slash;
+  unsigned int newlen=dirlen+baselen+2;
   newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
   result=u8_malloc(newlen);
   strcpy(result,dir);
-  if (need_slash) {
-    result[dirlen]='/'; strcpy(result+dirlen+1,base);}
-  else strcpy(result+dirlen,base);
+  if (result[dirlen-1]=='/') {result[dirlen-1]='\0'; dirlen--;}
+  while (1) {
+    if (((base[0])=='\0')||(result[0]=='\0')) break;
+    else if ((base[0]=='.')&&(base[1]=='/')) base=base+2;
+    else if ((base[0]=='.')&&(base[1]=='.')&&(base[2]=='/')) {
+      u8_byte *lastslash=strrchr(result,'/');
+      if (lastslash) {
+	*lastslash='\0'; dirlen=(lastslash-result);
+	base=base+3;}
+      else {strcpy(result,base); return result;}}
+    else break;}
+  result[dirlen]='/'; strcpy(result+dirlen+1,base);
   return result;
 }
 
