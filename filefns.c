@@ -251,10 +251,11 @@ static void buildname(u8_byte *buf,u8_string name,int namelen,
     strncpy(buf+((ins-start)+namelen),ins+1,end-(ins+1));
     buf[(end-start)+(namelen-1)]='\0';}
   else {
+    u8_byte *namestart=buf+(end-start);
     strncpy(buf,start,end-start);
-    buf[end-start]='/';
-    strncpy(buf+(end-start)+1,name,namelen);
-    buf[(end-start)+namelen+1]='\0';}
+    if (*namestart!='/') *namestart++='/';
+    strncpy(namestart,name,namelen);
+    *(namestart+namelen)='\0';}
 }
 
 U8_EXPORT u8_string u8_find_file(u8_string name,u8_string searchpath,
