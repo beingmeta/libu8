@@ -21,6 +21,7 @@
 
 #include "libu8/libu8io.h"
 #include "libu8/u8streamio.h"
+#include "libu8/u8stringfns.h"
 #include "libu8/u8printf.h"
 
 #if HAVE_LIBINTL_H
@@ -145,7 +146,12 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	/* A - modifer on s indicates that the string arg should be freed
 	   after use. */
 	if (string==NULL) string="(null)";
-	else if (strchr(cmd,'-')) to_free=string;}
+	else if (strchr(cmd,'-')) to_free=string;
+	else if (strchr(cmd,'l'))
+	  to_free=string=u8_downcase(string);
+	else if (strchr(cmd,'u'))
+	  to_free=string=u8_upcase(string);
+	else {}}
       else if (code == 'm') {
 	/* The m conversion is like s but passes its argument through the
 	   message catalog. */
