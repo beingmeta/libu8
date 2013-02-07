@@ -253,7 +253,7 @@ static void buildname(u8_byte *buf,u8_string name,int namelen,
   else {
     u8_byte *namestart=buf+(end-start);
     strncpy(buf,start,end-start);
-    if (*namestart!='/') *namestart++='/';
+    if (namestart[-1]!='/') *namestart++='/';
     strncpy(namestart,name,namelen);
     *(namestart+namelen)='\0';}
 }
