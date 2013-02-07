@@ -420,7 +420,6 @@ U8_EXPORT int u8_register_threadinit(u8_threadinitfn fn)
   if (i<MAX_THREADINITFNS) {
     threadinitfns[i]=fn; u8_n_threadinits++;
     u8_unlock_mutex(&threadinitfns_lock);
-    u8_threadcheck();
     return 1;}
   else {
     u8_seterr(_("Too many thread init fns"),"u8_register_threadinit",NULL);
