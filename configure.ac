@@ -158,7 +158,7 @@ AC_EGREP_HEADER(tm_isdst,time.h,AC_DEFINE(HAVE_TM_ISDST,1),AC_DEFINE(HAVE_TM_ISD
 AC_CHECK_FUNCS(isatty fstat)
 AC_CHECK_FUNCS(strdup strerror_r)
 AC_CHECK_FUNCS(access flock fseeko)
-AC_CHECK_FUNCS(symlink realpath)
+AC_CHECK_FUNCS(symlink realpath mkdtemp)
 AC_CHECK_FUNCS(ftime gettimeofday localtime_r gmtime_r getpid)
 AC_CHECK_FUNCS(gethostbyname2_r)
 AC_CHECK_FUNCS(getservbyname)

@@ -87,8 +87,8 @@
 /* Define if you have the flock function.  */
 #undef HAVE_SYSLOG
 
-/* Define if you have the mkstemp function.  */
-#undef HAVE_MKSTEMP
+/* Define if you have the mkdtemp function.  */
+#undef HAVE_MKDTEMP
 
 /* Define if you have the fseeko function (for large files).  */
 #undef HAVE_FSEEKO

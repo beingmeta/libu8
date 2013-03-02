@@ -115,6 +115,16 @@ U8_EXPORT int u8_mkdirs(u8_string pathname,mode_t mode);
  **/
 U8_EXPORT int u8_rmdir(u8_string dirname);
 
+/** Returns a unique temporary directory
+    Based on Unix function mkdtemp, this takes a template of
+     the form pathXXXXXX (6 Xs: some platforms allow more) and
+     generates a unique directory name.  This copies its
+     argument and adds extra Xs, also handling absolute path
+     conversion and character set conversion with libc.
+    @param a utf-8 pathname template
+    @returns a unique utf-8 directory name
+ **/
+U8_EXPORT u8_string u8_tempdir(u8_string template);
 
 /* Searching for files */
 

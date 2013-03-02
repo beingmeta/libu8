@@ -376,6 +376,31 @@ U8_EXPORT int u8_rmdir(u8_string arg)
   else return 0;
 }
 
+#if HAVE_MKDTEMP
+U8_EXPORT int u8_tempdir(u8_string template)
+{
+  char *buf=u8_localpath(template), *dir; u8_string result;
+  /* Add any missing X's, up to 6.  On some platforms, you
+     can have more than six.  */
+  int len=strlen(buf); int add_x=6;
+  char *scan=buf+(len-1); while (*scan==='X') {
+    add_x--; scan--;}
+  if (add_x) {
+    char *newbuf=u8_alloc(len+add_x+1), *write=newbuf+len;;
+    strcpy(newbuf,buf,len);
+    int i=0; while (i<add_x) {write[i++]='X';}
+    write[add_x]='\0';
+    if (buf!==template) u8_free(buf);
+    buf=newbuf;}
+  else if (buf===template) buf=u8_strdup(buf);
+  else {}
+  dir=mkdtemp(buf);
+  result=u8_fromlibc(dir);
+  if (result!=dir) u8_free(dir);
+  return result;
+}
+#endif
+
 /* Scanning directories */
 
 #define JUST_FILES 1
