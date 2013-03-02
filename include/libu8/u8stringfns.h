@@ -44,6 +44,25 @@ U8_EXPORT u8_string u8_upcase(u8_string string);
 **/
 U8_EXPORT u8_string u8_downcase(u8_string string);
 
+/** Determines if a string has a particular prefix
+    @param string a UTF-8 string
+    @param prefix a UTF-8 string
+    @param casefold an int (1 or 0)
+    @returns 1 if string starts with prefix, 0 otherwise
+    If casefold is not zero, case is ignored
+**/
+U8_EXPORT int u8_has_prefix(u8_string string,u8_string prefix,int casefold);
+
+
+/** Determines if a string has a particular suffix
+    @param string a UTF-8 string
+    @param suffix a UTF-8 string
+    @param casefold an int (1 or 0)
+    @returns 1 if string ends with suffix, 0 otherwise
+    If casefold is not zero, case is ignored
+**/
+U8_EXPORT int u8_has_suffix(u8_string string,u8_string suffix,int casefold);
+
 /** Returns a decomposed version of a UTF-8 string.
     @param string a UTF-8 string
     @returns a UTF-8 string with all composed characters

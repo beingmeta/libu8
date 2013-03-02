@@ -342,7 +342,26 @@ u8_string u8_string_subst(u8_string input,u8_string key,u8_string replace)
     return out.u8_outbuf;}
 }
 
-
+U8_EXPORT int u8_has_prefix(u8_string string,u8_string prefix,int casefold)
+{
+  if ((casefold>0)&&(strncasecmp(string,prefix,u8_strlen(prefix))==0))
+    return 1;
+  else if ((casefold<=0)&&(strncmp(string,prefix,u8_strlen(prefix))==0))
+    return 1;
+  else return 0;
+}
+
+U8_EXPORT int u8_has_suffix(u8_string string,u8_string suffix,int casefold)
+{
+  int stringlen=u8_strlen(string), suffixlen=u8_strlen(suffix);
+  if (suffixlen>stringlen) return 0;
+  else if ((casefold>0)&&(strcasecmp(string+(stringlen-suffixlen),suffix)==0))
+    return 1;
+  else if ((casefold<=0)&&(strcmp(string+(stringlen-suffixlen),suffix)==0))
+    return 1;
+  else return 0;
+}
+
 /* Initialization function (just records source file info) */
 
 U8_EXPORT void u8_init_stringfns_c()

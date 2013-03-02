@@ -284,7 +284,7 @@ U8_EXPORT
 /**
    Gets the node id for a time-based UUID, returning -1 if the UUID is not
     time-based.
-   @param a pointer to uuid (u8_uuid)
+   @param uuid a pointer to uuid (u8_uuid)
    @returns a long long (actually 48 bits)
  */
 long long u8_uuid_nodeid(u8_uuid uuid);
@@ -295,7 +295,7 @@ U8_EXPORT
    Gets the timestamp for the UUID, returning -1 if the UUID is not
     time-based.  The timestamp is the number of 100-nanosecond ticks
     since 15 October 1582, when the Gregorian calendar was adopted.
-   @param a pointer to uuid (u8_uuid)
+   @param uuid a pointer to uuid (u8_uuid)
    @returns a long long uuid timestamp
  */
 long long u8_uuid_timestamp(u8_uuid);
@@ -304,7 +304,7 @@ U8_EXPORT
 /**
    Gets the time_t tick for the UUID, returning -1 if the UUID is not
     time-based or is outside of the time_t range
-   @param a pointer to uuid (u8_uuid)
+   @param uuid a pointer to uuid (u8_uuid)
    @returns a time_t value
  */
 time_t u8_uuid_tick(u8_uuid);
@@ -313,8 +313,8 @@ U8_EXPORT
 /**
    Gets the time_t tick for the UUID, returning -1 if the UUID is not
     time-based or is outside of the time_t range
-   @param a pointer to uuid (u8_uuid)
-   @param a (possibly NULL) pointer to a U8_XTIME struct to use
+   @param uuid a pointer to uuid (u8_uuid)
+   @param xtime a (possibly NULL) pointer to a U8_XTIME struct to use
    @returns a pointer to a U8_XTIME struct
  */
 struct U8_XTIME *u8_uuid_xtime(u8_uuid,struct U8_XTIME *);
