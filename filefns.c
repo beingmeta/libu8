@@ -425,20 +425,22 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
     u8_free(dirpath);
     return NULL;}
   else while ((entry=readdir(dp))) {
-    struct stat fileinfo;
-    char *fullpath=u8_mkpath(dirpath,entry->d_name);
-    if (stat(fullpath,&fileinfo)<0) {
-      u8_free(fullpath); continue;}
-    if (((which==JUST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
-	((which==JUST_FILES) && (S_ISREG(fileinfo.st_mode)))) {
-      if (n_results+1>=max_results) {
-	results=u8_realloc_n(results,max_results*2,u8_string);
-	max_results=max_results*2;}
-      if (ret_fullpath)
-	results[n_results++]=u8_fromlibc(fullpath);
-      else results[n_results++]=u8_fromlibc(entry->d_name);
-      u8_free(fullpath);}
-    else u8_free(fullpath);}
+      struct stat fileinfo; char *name=entry->d_name;
+      if (!(((name[0]=='.')&&(name[1]=='\0'))||
+	    ((name[0]=='.')&&(name[1]=='.')&&(name[2]=='\0')))) {
+	char *fullpath=u8_mkpath(dirpath,name);
+	if (stat(fullpath,&fileinfo)<0) {
+	  u8_free(fullpath); continue;}
+	if (((which==JUST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
+	    ((which==JUST_FILES) && (S_ISREG(fileinfo.st_mode)))) {
+	  if (n_results+1>=max_results) {
+	    results=u8_realloc_n(results,max_results*2,u8_string);
+	    max_results=max_results*2;}
+	  if (ret_fullpath)
+	    results[n_results++]=u8_fromlibc(fullpath);
+	  else results[n_results++]=u8_fromlibc(entry->d_name);
+	  u8_free(fullpath);}
+	else u8_free(fullpath);}}
   results[n_results++]=NULL;
   closedir(dp);
   u8_free(dirpath);
@@ -456,27 +458,29 @@ static void remove_tree_helper(u8_string dirname)
     u8_free(dirpath);
     return;}
   else while ((entry=readdir(dp))) {
-      struct stat fileinfo;
-      char *fullpath=u8_mkpath(dirpath,entry->d_name);
-      if (stat(fullpath,&fileinfo)<0) {
-	u8_free(fullpath); continue;}
-      if (((fileinfo.st_mode)&(S_IFLNK))||
-	  ((fileinfo.st_mode)&(S_IFREG))||
-	  ((fileinfo.st_mode)&(S_IFSOCK))) {
-	int retval=u8_removefile(fullpath);
-	if (retval<0) {
-	  u8_graberr(-1,"u8_remove_tree",fullpath);
-	  u8_clear_errors(1);}
-	else u8_free(fullpath);}
-      else if ((fileinfo.st_mode)&(S_IFDIR)) {
-	int retval;
-	remove_tree_helper(fullpath);
-	retval=u8_rmdir(fullpath);
-	if (retval<0) {
-	  u8_graberr(-1,"u8_remove_tree",fullpath);
-	  u8_clear_errors(1);}
-	else u8_free(fullpath);}
-      else {}}
+      struct stat fileinfo; char *name=entry->d_name;
+      if (!(((name[0]=='.')&&(name[1]=='\0'))||
+	    ((name[0]=='.')&&(name[1]=='.')&&(name[2]=='\0')))) {
+	char *fullpath=u8_mkpath(dirpath,entry->d_name);
+	if (stat(fullpath,&fileinfo)<0) {
+	  u8_free(fullpath); continue;}
+	if (((fileinfo.st_mode)&(S_IFLNK))||
+	    ((fileinfo.st_mode)&(S_IFREG))||
+	    ((fileinfo.st_mode)&(S_IFSOCK))) {
+	  int retval=u8_removefile(fullpath);
+	  if (retval<0) {
+	    u8_graberr(-1,"u8_remove_tree",fullpath);
+	    u8_clear_errors(1);}
+	  else u8_free(fullpath);}
+	else if ((fileinfo.st_mode)&(S_IFDIR)) {
+	  int retval;
+	  remove_tree_helper(fullpath);
+	  retval=u8_rmdir(fullpath);
+	  if (retval<0) {
+	    u8_graberr(-1,"u8_remove_tree",fullpath);
+	    u8_clear_errors(1);}
+	  else u8_free(fullpath);}
+	else {}}}
   closedir(dp);
   u8_free(dirpath);
 }
