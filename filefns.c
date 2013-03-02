@@ -377,27 +377,32 @@ U8_EXPORT int u8_rmdir(u8_string arg)
 }
 
 #if HAVE_MKDTEMP
-U8_EXPORT int u8_tempdir(u8_string template)
+U8_EXPORT u8_string u8_tempdir(u8_string template)
 {
   char *buf=u8_localpath(template), *dir; u8_string result;
   /* Add any missing X's, up to 6.  On some platforms, you
      can have more than six.  */
   int len=strlen(buf); int add_x=6;
-  char *scan=buf+(len-1); while (*scan==='X') {
+  char *scan=buf+(len-1); while (*scan=='X') {
     add_x--; scan--;}
   if (add_x) {
-    char *newbuf=u8_alloc(len+add_x+1), *write=newbuf+len;;
-    strcpy(newbuf,buf,len);
+    char *newbuf=u8_malloc(len+add_x+1), *write=newbuf+len;;
+    strncpy(newbuf,buf,len);
     int i=0; while (i<add_x) {write[i++]='X';}
     write[add_x]='\0';
-    if (buf!==template) u8_free(buf);
+    if (((u8_string)buf)!=template) u8_free(buf);
     buf=newbuf;}
-  else if (buf===template) buf=u8_strdup(buf);
+  else if (((u8_string)buf)==template) buf=u8_strdup(buf);
   else {}
   dir=mkdtemp(buf);
-  result=u8_fromlibc(dir);
-  if (result!=dir) u8_free(dir);
-  return result;
+  if (dir) {
+    result=u8_fromlibc(dir);
+    if (dir!=buf) u8_free(buf);
+    if (result!=((u8_string)dir)) u8_free(dir);
+    return result;}
+  else {
+    u8_free(buf);
+    return NULL;}
 }
 #endif
 
