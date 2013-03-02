@@ -417,7 +417,7 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
   DIR *dp; struct dirent *entry;
   u8_string *results=u8_alloc_n(8,u8_string);
   int n_results=0, max_results=8;
-  char *abspath=u8_abspath(dirname,NULL);
+  u8_string abspath=u8_abspath(dirname,NULL);
   char *dirpath=u8_localpath(abspath);
   u8_free(abspath); dp=opendir(dirpath);
   if (dp==NULL) {
@@ -444,13 +444,56 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
   u8_free(dirpath);
   return results;
 }
+static void remove_tree_helper(u8_string dirname)
+{
+  DIR *dp; struct dirent *entry;
+  u8_string abspath=u8_abspath(dirname,NULL);
+  char *dirpath=u8_localpath(abspath);
+  u8_free(abspath); dp=opendir(dirpath);
+  if (dp==NULL) {
+    u8_graberr(-1,"u8_remove_tree",u8_strdup(dirname));
+    u8_clear_errors(1);
+    u8_free(dirpath);
+    return;}
+  else while ((entry=readdir(dp))) {
+      struct stat fileinfo;
+      char *fullpath=u8_mkpath(dirpath,entry->d_name);
+      if (stat(fullpath,&fileinfo)<0) {
+	u8_free(fullpath); continue;}
+      if (((fileinfo.st_mode)&(S_IFLNK))||
+	  ((fileinfo.st_mode)&(S_IFREG))||
+	  ((fileinfo.st_mode)&(S_IFSOCK))) {
+	int retval=u8_removefile(fullpath);
+	if (retval<0) {
+	  u8_graberr(-1,"u8_remove_tree",fullpath);
+	  u8_clear_errors(1);}
+	else u8_free(fullpath);}
+      else if ((fileinfo.st_mode)&(S_IFDIR)) {
+	int retval;
+	remove_tree_helper(fullpath);
+	retval=u8_rmdir(fullpath);
+	if (retval<0) {
+	  u8_graberr(-1,"u8_remove_tree",fullpath);
+	  u8_clear_errors(1);}
+	else u8_free(fullpath);}
+      else {}}
+  closedir(dp);
+  u8_free(dirpath);
+}
 #else
 static u8_string *getfiles_helper(u8_string dirname,int which,int fullpath)
 {
   u8_seterr(_("No directory lists"),"getfiles_helper",u8_strdup(dirname));
   return NULL;
 }
+static void remove_tree_helper(u8_string dirname) {}
 #endif
+
+U8_EXPORT int u8_rmtree(u8_string dirname)
+{
+  remove_tree_helper(dirname);
+  return u8_rmdir(dirname);
+}
 
 U8_EXPORT u8_string *u8_getfiles(u8_string dirname,int fullpath)
 {

@@ -115,6 +115,13 @@ U8_EXPORT int u8_mkdirs(u8_string pathname,mode_t mode);
  **/
 U8_EXPORT int u8_rmdir(u8_string dirname);
 
+/** Removes a directory tree, which is deleted recursively
+    @param a utf-8 pathname
+    @returns int: 1 if the directory actually existed, 0
+      if it didn't, and -1 on error
+ **/
+U8_EXPORT int u8_rmtree(u8_string dirname);
+
 /** Returns a unique temporary directory
     Based on Unix function mkdtemp, this takes a template of
      the form pathXXXXXX (6 Xs: some platforms allow more) and
