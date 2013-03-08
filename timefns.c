@@ -127,7 +127,7 @@ U8_EXPORT u8_xtime u8_init_xtime
   unsigned int prec_secs;
   struct tm _tptr, *tptr=&_tptr;
   if (xt==NULL) xt=u8_malloc(sizeof(struct U8_XTIME));
-  memset(xt,0,sizeof(struct U8_XTIME));
+  memset(xt,0,sizeof(struct U8_XTIME)); xt->u8_keepdst=1;
   if (tick<0) {
 #if HAVE_GETTIMEOFDAY
     struct timeval tv; struct timezone tz;
