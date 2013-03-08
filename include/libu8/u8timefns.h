@@ -211,14 +211,21 @@ U8_EXPORT time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xt);
 **/
 U8_EXPORT void u8_xtime_to_iso8601(struct U8_OUTPUT *ss,struct U8_XTIME *xt);
 
-/** Populates a U8_XTIME pointer based on an ISO-8601 formated timestamp.
+/** Outputs an ISO-8601 basic representation of a U8_XTIME structure.
+    @param ss a pointer to a U8_OUTPUT stream
+    @param xt a pointer to a U8_XTIME structure.
+    @returns void
+**/
+U8_EXPORT void u8_xtime_to_iso8601basic(struct U8_OUTPUT *ss,struct U8_XTIME *xt);
+
+/** Populates a U8_XTIME pointer based on an RFC822 formated timestamp.
     @param s a UTF-8 (ASCII) string containing an ISO-8601 timestamp.
     @param xt a pointer to a U8_XTIME structure.
     @returns the time_t value for the structure
 **/
 U8_EXPORT time_t u8_rfc822_to_xtime(u8_string s,struct U8_XTIME *xt);
 
-/** Outputs an ISO-8601 representation of a U8_XTIME structure.
+/** Outputs an RFC822 representation of a U8_XTIME structure.
     @param ss a pointer to a U8_OUTPUT stream
     @param xt a pointer to a U8_XTIME structure.
     @returns void

@@ -523,41 +523,39 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
   return xtp->u8_tick;
 }
 
-U8_EXPORT
-/* u8_xtime_to_iso8601:
-     Arguments: a timestamp and a pointer to a string stream
-     Returns: -1 on error, the time as a time_t otherwise
-
-This takes an iso8601 string and fills out an extended time pointer which
-includes possible timezone and precision information.
-*/
-void u8_xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt)
+void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int basic)
 {
   char buf[128], tzbuf[128];
+  char *dash="-", *colon=":";
+  u8_tmprec prec=xt->u8_prec;
+  if (basic) {dash=""; colon="";}
+  if ((basic)&&(prec>u8_second)) prec=u8_second;
   switch (xt->u8_prec) {
   case u8_year:
     sprintf(buf,"%04d",xt->u8_year); break;
   case u8_month:
-    sprintf(buf,"%04d-%02d",xt->u8_year,xt->u8_mon+1); break;
+    sprintf(buf,"%04d%s%02d",
+	    xt->u8_year,dash,xt->u8_mon+1); break;
   case u8_day:
-    sprintf(buf,"%04d-%02d-%02d",
-	    xt->u8_year,xt->u8_mon+1,xt->u8_mday); break;
+    sprintf(buf,"%04d%s%02d%s%02d",
+	    xt->u8_year,dash,xt->u8_mon+1,dash,xt->u8_mday); break;
   case u8_hour:
-    sprintf(buf,"%04d-%02d-%02dT%02d",
-	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
+    sprintf(buf,"%04d%s%02d%s%02dT%02d",
+	    xt->u8_year,dash,xt->u8_mon+1,dash,xt->u8_mday,
 	    xt->u8_hour);
     break;
   case u8_minute: case u8_maxtmprec:
-    sprintf(buf,"%04d-%02d-%02dT%02d:%02d",
-	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
-	    xt->u8_hour,xt->u8_min);
+    sprintf(buf,"%04d%s%02d%s%02dT%02d%s%02d",
+	    xt->u8_year,dash,xt->u8_mon+1,dash,xt->u8_mday,
+	    xt->u8_hour,colon,xt->u8_min);
     break;
   case u8_second:
-    sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d",
-	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
-	    xt->u8_hour,xt->u8_min,xt->u8_sec);
+    sprintf(buf,"%04d%s%02d%s%02dT%02d%s%02d%s%02d",
+	    xt->u8_year,dash,xt->u8_mon+1,dash,xt->u8_mday,
+	    xt->u8_hour,colon,xt->u8_min,colon,xt->u8_sec);
     break;
   case u8_millisecond:
+    /* The cases here and below don't exist for the basic format */
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%03d",
 	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
 	    xt->u8_hour,xt->u8_min,xt->u8_sec,
@@ -587,10 +585,37 @@ void u8_xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt)
     if (seconds)
       sprintf(tzbuf,"%s%d:%02d:%02d",sign,hours,minutes,seconds);
     else sprintf(tzbuf,"%s%d:%02d",sign,hours,minutes);}
+  else if (basic) strcpy(tzbuf,"Z");
   else strcpy(tzbuf,"UTC");
   if (xt->u8_prec > u8_day)
     u8_printf(ss,"%s%s",buf,tzbuf);
   else u8_printf(ss,"%s",buf);
+}
+
+U8_EXPORT
+/* u8_xtime_to_iso8601:
+     Arguments: a timestamp and a pointer to a string stream
+     Returns: -1 on error, the time as a time_t otherwise
+
+This takes an iso8601 string and fills out an extended time pointer which
+includes possible timezone and precision information.
+*/
+void u8_xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt)
+{
+  xtime_to_iso8601(ss,xt,0);
+}
+
+U8_EXPORT
+/* u8_xtime_to_iso8601:
+     Arguments: a timestamp and a pointer to a string stream
+     Returns: -1 on error, the time as a time_t otherwise
+
+This takes an iso8601 string and fills out an extended time pointer which
+includes possible timezone and precision information.
+*/
+void u8_xtime_to_iso8601basic(u8_output ss,struct U8_XTIME *xt)
+{
+  xtime_to_iso8601(ss,xt,1);
 }
 
 static u8_string month_names[12]=
