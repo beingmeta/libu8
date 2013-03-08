@@ -33,48 +33,12 @@ U8_EXPORT unsigned char *u8_md5(unsigned char *data,int len,unsigned char *resul
   if (len<0) len=strlen(data);
   return CC_MD5(data,len,((result==NULL) ? (u8_malloc(CC_MD5_DIGEST_LENGTH)) : (result)));
 }
-/* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha1(unsigned char *data,int len,unsigned char *result)
-{
-  if (len<0) len=strlen(data);
-  return CC_SHA1(data,len,((result==NULL) ? (u8_malloc(CC_SHA1_DIGEST_LENGTH)) : (result)));
-}
-/* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha224(unsigned char *data,int len,unsigned char *result)
-{
-  if (len<0) len=strlen(data);
-  return CC_SHA224(data,len,((result==NULL) ? (u8_malloc(CC_SHA224_DIGEST_LENGTH)) : (result)));
-}
-/* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha256(unsigned char *data,int len,unsigned char *result)
-{
-  if (len<0) len=strlen(data);
-  return CC_SHA256(data,len,((result==NULL) ? (u8_malloc(CC_SHA256_DIGEST_LENGTH)) : (result)));
-}
-#elif HAVE_LIBSSL
+#elif HAVE_OPENSSL_MD5_H
 /* Digests a string and returns the result */
 U8_EXPORT unsigned char *u8_md5(unsigned char *data,int len,unsigned char *result)
 {
   if (len<0) len=strlen(data);
   return MD5(data,len,((result==NULL) ? (u8_malloc(16)) : (result)));
-}
-/* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha1(unsigned char *data,int len,unsigned char *result)
-{
-  if (len<0) len=strlen(data);
-  return SHA1(data,len,((result==NULL) ? (u8_malloc(20)) : (result)));
-}
-/* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha224(unsigned char *data,int len,unsigned char *result)
-{
-  if (len<0) len=strlen(data);
-  return SHA224(data,len,((result==NULL) ? (u8_malloc(28)) : (result)));
-}
-/* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha256(unsigned char *data,int len,unsigned char *result)
-{
-  if (len<0) len=strlen(data);
-  return SHA256(data,len,((result==NULL) ? (u8_malloc(32)) : (result)));
 }
 #else
 /* MD5C.C - RSA Data Security, Inc., MD5 message-digest algorithm */
@@ -412,6 +376,47 @@ U8_EXPORT unsigned char *u8_md5
   return digest;
 }
 
+#endif
+
+#if HAVE_COMMONCRYPTO_COMMONDIGEST_H
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha1(unsigned char *data,int len,unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return CC_SHA1(data,len,((result==NULL) ? (u8_malloc(CC_SHA1_DIGEST_LENGTH)) : (result)));
+}
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha224(unsigned char *data,int len,unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return CC_SHA224(data,len,((result==NULL) ? (u8_malloc(CC_SHA224_DIGEST_LENGTH)) : (result)));
+}
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha256(unsigned char *data,int len,unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return CC_SHA256(data,len,((result==NULL) ? (u8_malloc(CC_SHA256_DIGEST_LENGTH)) : (result)));
+}
+#elif HAVE_OPENSSL_SHA_H
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha1(unsigned char *data,int len,unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return SHA1(data,len,((result==NULL) ? (u8_malloc(20)) : (result)));
+}
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha224(unsigned char *data,int len,unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return SHA224(data,len,((result==NULL) ? (u8_malloc(28)) : (result)));
+}
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha256(unsigned char *data,int len,unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return SHA256(data,len,((result==NULL) ? (u8_malloc(32)) : (result)));
+}
+#else
 /*
 SHA-1 in C
 By Steve Reid <steve@edmweb.com>
@@ -609,7 +614,7 @@ U8_EXPORT unsigned char *u8_sha224
 U8_EXPORT unsigned char *u8_sha256
   (unsigned char *data,int len,unsigned char *result)
 {
-  u8_seterr("SHA224 not available","u8_sha256",NULL);
+  u8_seterr("SHA256 not available","u8_sha256",NULL);
   return NULL;
 }
 #endif

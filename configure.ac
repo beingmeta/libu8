@@ -294,6 +294,7 @@ AC_CHECK_FUNCS(CCHmacInit)
 
 # OpenSSL crypto
 AC_CHECK_HEADERS(openssl/hmac.h)
+AC_CHECK_HEADERS(openssl/md5.h)
 AC_CHECK_HEADERS(openssl/sha.h)
 AC_CHECK_LIB(crypto,EVP_CIPHER_CTX_init)
 AC_CHECK_FUNCS(EVP_get_cipherbyname EVP_CIPHER_CTX_init SHA1_Init)
