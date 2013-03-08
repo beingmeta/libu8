@@ -272,11 +272,11 @@ time_t u8_mktime(struct U8_XTIME *xt)
   if (tptr.tm_isdst) moment=moment-3600;
   if ((xt->u8_dstoff==0) &&
       (tptr.tm_isdst) &&
-      (!(xt->u8_forcedst))) {
+      (!(xt->u8_keepdst))) {
     /* Our argument says its not DST, but it would be locally,
        so we assume that it is and adjust tzoff and dstoff
        appropriately. If we *know* the dstoff value, the caller
-       should set the u8_forcedst field. */
+       should set the u8_keepdst field. */
     xt->u8_dstoff=3600; xt->u8_tzoff=xt->u8_tzoff-3600;}
   if (moment<0) {}
   else if ((xt->u8_tzoff+xt->u8_dstoff)!=tptr.tm_gmtoff) 
@@ -473,6 +473,44 @@ int u8_parse_tzspec(u8_string s,int dflt)
 }
 
 U8_EXPORT
+/* u8_use_tzspec:
+     Arguments: a pointer to a U8_XTIME structure, a string, and a default offset
+     Returns: an offset from UTC
+
+This uses a built in table but should really use operating system
+facilities if they were even remotely standardized.
+*/
+void u8_apply_tzspec(struct U8_XTIME *xt,u8_string s)
+{
+  int hours=0, mins=0, secs=0, sign=1;
+  int dhours=0, dmins=0, dsecs=0, dsign=1;
+  char *offstart=strchr(s,'+');
+  if (offstart == NULL) {
+    offstart=strchr(s,'-');
+    if (offstart) sign=-1;}
+  if (offstart) {
+    char *dstart=strchr(offstart+1,'+');
+    sscanf(offstart+1,"%d:%d:%d",&hours,&mins,&secs);
+    xt->u8_tzoff=sign*(hours*3600+mins*60+secs);
+    if (!(dstart)) {
+      dstart=strchr(offstart+1,'-');
+      if (dstart) dsign=-1;}
+    if (dstart) {
+      sscanf(dstart+1,"%d:%d:%d",&dhours,&dmins,&dsecs);
+      xt->u8_dstoff=dsign*(dhours*3600+dmins*60+dsecs);}
+    xt->u8_keepdst=1;}
+  else {
+    struct TZENTRY *zones=tzones;
+    while ((*zones).name)
+      if (strcasecmp(s,(*zones).name) == 0) {
+	xt->u8_tzoff=(*zones).tzoff;
+	xt->u8_dstoff=(*zones).dstoff;
+	xt->u8_keepdst=1;
+	return;}
+      else zones++;}
+}
+
+U8_EXPORT
 /* u8_iso8601_to_xtime:
      Arguments: a string and a pointer to a timestamp structure
      Returns: -1 on error, the time as a time_t otherwise
@@ -506,19 +544,7 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
     xtp->u8_prec=xtp->u8_prec+((scan-start)/3);
     tzstart=scan;}
   else tzstart=s+pos[n_elts];
-  /* Handle our own little extension of IS9601 to separate
-     out DST and TZ offsets */
-  if ((tzstart[0]=='+') || (tzstart[0]=='-')) {
-    int dsign=1;
-    char *dststart=strchr(tzstart+1,'+');
-    if (dststart==NULL) {
-      dststart=strchr(tzstart+1,'-'); dsign=-1;}
-    if (dststart) {
-      int hr=0, min=0, sec=0;
-      sscanf(dststart+1,"%d:%d:%d",&hr,&min,&sec);
-      xtp->u8_dstoff=dsign*(3600*hr+60*min+sec);
-      xtp->u8_forcedst=1;}}
-  xtp->u8_tzoff=u8_parse_tzspec(tzstart,xtp->u8_tzoff);
+  if (tzstart) u8_apply_tzspec(xtp,tzstart);
   xtp->u8_tick=u8_mktime(xtp); xtp->u8_nsecs=0;
   return xtp->u8_tick;
 }
@@ -530,7 +556,7 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int basic)
   u8_tmprec prec=xt->u8_prec;
   if (basic) {dash=""; colon="";}
   if ((basic)&&(prec>u8_second)) prec=u8_second;
-  switch (xt->u8_prec) {
+  switch (prec) {
   case u8_year:
     sprintf(buf,"%04d",xt->u8_year); break;
   case u8_month:
@@ -638,14 +664,14 @@ U8_EXPORT
      Arguments: a string and a pointer to a timestamp structure
      Returns: -1 on error, the time as a time_t otherwise
 
-This takes an iso8601 string and fills out an extended time pointer which
+This takes an rfc822 string and fills out an extended time pointer which
 includes possible timezone and precision information.
 */
 time_t u8_rfc822_to_xtime(u8_string s,struct U8_XTIME *xtp)
 {
-  char tzspec[128], dow[128], mon[128];
-  int n_elts;
+  char tzspec[128], dow[128], mon[128]; int n_elts;
   if (strchr(s,'/')) return (time_t) -1;
+  tzspec[0]='\0'; dow[0]='\0'; mon[0]='\0';
   memset(xtp,0,sizeof(struct U8_XTIME));
   if (isdigit(*s)) 
     n_elts=sscanf(s,"%hhd %s %d %hhd:%hhd:%hhd %s",
@@ -667,7 +693,7 @@ time_t u8_rfc822_to_xtime(u8_string s,struct U8_XTIME *xtp)
   /* Set precision */
   xtp->u8_prec=u8_second;
   xtp->u8_nsecs=0;
-  xtp->u8_tzoff=u8_parse_tzspec(tzspec,xtp->u8_tzoff);
+  if (tzspec[0]) u8_apply_tzspec(xtp,tzspec);
   xtp->u8_tick=u8_mktime(xtp); xtp->u8_nsecs=0;
   return xtp->u8_tick;
 }

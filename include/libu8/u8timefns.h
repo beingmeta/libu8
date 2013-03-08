@@ -74,7 +74,7 @@ typedef struct U8_XTIME {
   short u8_tzoff, u8_dstoff;
   /* This indicates that the algorithm shouldn't adjust DST based
      on information from local rules (libc mktime() in particular. */
-  char u8_forcedst;} U8_XTIME;
+  char u8_keepdst;} U8_XTIME;
 typedef struct U8_XTIME *u8_xtime;
 
 #define u8_dbltime(tm) \
@@ -196,6 +196,16 @@ U8_EXPORT void u8_xtime_plus(struct U8_XTIME *xt,double delta);
     @returns an int representing seconds offset from GMT
 **/
 U8_EXPORT int u8_parse_tzspec(u8_string s,int dflt);
+
+/** Parses and applies timezone information to a U8_XTIME structure
+    Negative numbers indicate offsets to clock times earlier than (east of) GMT.
+    Strings such as -5:00 and +2:00 are handled, as are some commoner,
+    unambigous timezone codes.
+    @param xt a pointer to a U8_XTIME structure
+    @param s a UTF-8 character string
+    @returns void
+**/
+U8_EXPORT void u8_apply_tzspec(struct U8_XTIME *xt,u8_string s);
 
 /** Populates a U8_XTIME pointer based on an ISO-8601 formated timestamp.
     @param s a UTF-8 (ASCII) string containing an ISO-8601 timestamp.
