@@ -71,10 +71,7 @@ typedef struct U8_XTIME {
   int u8_nsecs;      /**< number of nanoseconds beyond the last seconds tick **/
   u8_tmprec u8_prec; /**< the precision of this timestamp **/
   /** The offset of this time from GMT **/
-  short u8_tzoff, u8_dstoff;
-  /* This indicates that the algorithm shouldn't adjust DST based
-     on information from local rules (libc mktime() in particular. */
-  char u8_keepdst;} U8_XTIME;
+  short u8_tzoff, u8_dstoff;} U8_XTIME;
 typedef struct U8_XTIME *u8_xtime;
 
 #define u8_dbltime(tm) \
@@ -150,12 +147,24 @@ U8_EXPORT time_t u8_xtime_to_tptr(struct U8_XTIME *xt,struct tm *tm);
     This attempts to get the most precise representation possible.  **/
 U8_EXPORT time_t u8_now(struct U8_XTIME *xt);
 
-/** Returns a POSIX time_t representation for a U8_XTIME structure.
+/** Returns a POSIX time_t representation for a broken down
+    U8_XTIME structure, including timezone and dst offsets
+    Also fills out day of week, day of year, etc.
     @param xt a pointer to a populated U8_XTIME structure.
      @returns a POSIX time_t value indicating seconds past the epoch
       for the moment represented by @a xt
 **/
 U8_EXPORT time_t u8_mktime(struct U8_XTIME *xt);
+
+/** Returns a POSIX time_t representation for a broken down
+    U8_XTIME structure, interpreting the time locally and filling
+    out timezone and daylight offsets.
+    Also fills out day of week, day of year, etc.
+    @param xt a pointer to a populated U8_XTIME structure.
+     @returns a POSIX time_t value indicating seconds past the epoch
+      for the moment represented by @a xt
+**/
+U8_EXPORT time_t u8_mklocaltime(struct U8_XTIME *xt);
 
 /** Sets the time precision of a U8_XTIME structure.
     @param xt a pointer to a U8_XTIME structure.   

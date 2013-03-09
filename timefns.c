@@ -127,7 +127,7 @@ U8_EXPORT u8_xtime u8_init_xtime
   unsigned int prec_secs;
   struct tm _tptr, *tptr=&_tptr;
   if (xt==NULL) xt=u8_malloc(sizeof(struct U8_XTIME));
-  memset(xt,0,sizeof(struct U8_XTIME)); xt->u8_keepdst=1;
+  memset(xt,0,sizeof(struct U8_XTIME));
   if (tick<0) {
 #if HAVE_GETTIMEOFDAY
     struct timeval tv; struct timezone tz;
@@ -154,7 +154,7 @@ U8_EXPORT u8_xtime u8_init_xtime
   }
 
   /* Offset the tick to get a "fake" gmtime */
-  offtick=tick+tzoff+dstoff;
+  offtick=tick+(tzoff+dstoff);
 
   /* Adjust for the precision, rounding to the middle of the range */
   prec_secs=u8_precision_secs[prec];
@@ -217,8 +217,8 @@ U8_EXPORT u8_xtime u8_local_xtime
   }
 
   /* Adjust for the precision */
-  prec_secs=u8_precision_secs[prec];
-  tick=tick-(tick%prec_secs)+prec_secs/2;
+  /* prec_secs=u8_precision_secs[prec]; */
+  /* tick=tick-(tick%prec_secs)+prec_secs/2; */
 
   /* Get the broken down representation for the "fake" time. */
 #if HAVE_LOCALTIME_R
@@ -254,46 +254,68 @@ U8_EXPORT u8_xtime u8_local_xtime
   return xt;
 }
 
-U8_EXPORT
-/* u8_mktime
-     Arguments: a pointer to a tm struct and a time_t value
-     Returns: the time_t value or -1 if it failed
-*/
-time_t u8_mktime(struct U8_XTIME *xt)
+static time_t mktime_x(struct U8_XTIME *xt,int islocal)
 {
-  time_t moment; struct tm tptr;
+  time_t tick; struct tm tptr; int localoff;
   memset(&tptr,0,sizeof(struct tm));
   copy_xt2tm(xt,&tptr);
   /* This tells it to figure it out. */
-  moment=mktime(&tptr);
-  /* The moment is what time it would be if the specified
-     time were in the current timezone and appropriate
-     daylight savings regimen for that time of year. */
-  if (tptr.tm_isdst) moment=moment-3600;
-  if ((xt->u8_dstoff==0) &&
-      (tptr.tm_isdst) &&
-      (!(xt->u8_keepdst))) {
-    /* Our argument says its not DST, but it would be locally,
-       so we assume that it is and adjust tzoff and dstoff
-       appropriately. If we *know* the dstoff value, the caller
-       should set the u8_keepdst field. */
-    xt->u8_dstoff=3600; xt->u8_tzoff=xt->u8_tzoff-3600;}
-  if (moment<0) {}
-  else if ((xt->u8_tzoff+xt->u8_dstoff)!=tptr.tm_gmtoff) 
-    /* This means that the current timezone assumed by mktime
-       is different from the timezone specified for our U8_XTIME
-       object. So we adjust the tick to compensate for where we really
-       are.  */
-    moment=moment+((tptr.tm_gmtoff)-(xt->u8_tzoff+xt->u8_dstoff));
-  xt->u8_tick=moment;
-  return moment;
+  tick=mktime(&tptr);
+  if (tick<0) {
+    u8_graberr(-1,"u8_mktime",NULL);
+    return tick;}
+  xt->u8_wday=tptr.tm_wday;
+  xt->u8_yday=tptr.tm_yday;
+  if (islocal) {
+#if (HAVE_TM_GMTOFF)
+    if (tptr.tm_isdst>0) {
+      xt->u8_dstoff=3600;
+      xt->u8_tzoff=tptr.tm_gmtoff-3600;}
+    else {
+      xt->u8_dstoff=0;
+      xt->u8_tzoff=tptr.tm_gmtoff;}
+#else
+    if (daylight) xt->u8_dstoff=0;
+    xt->u8_tzoff=timezone;
+#endif
+  }
+  else {
+#if HAVE_TM_GMTOFF
+    localoff=tptr.tm_gmtoff;
+#else
+    localoff=(timezone+((daylight>1)?(daylight):(daylight*3600)));
+#endif
+    xt->u8_tick=tick=tick+localoff-(xt->u8_tzoff+xt->u8_dstoff);}
+  return tick;
+}
+
+U8_EXPORT
+/* u8_mktime_x
+   Fills out an XTIME structure based on the broken down time representation
+   Arguments: a pointer to a tm struct and a time_t value
+   Returns: the time_t value or -1 if it failed
+*/
+time_t u8_mktime(struct U8_XTIME *xt)
+{
+  return mktime_x(xt,0);
+}
+
+U8_EXPORT
+/* u8_mktime
+   Fills out an XTIME structure based on the broken down time representation
+   Arguments: a pointer to a tm struct and a time_t value
+   Returns: the time_t value or -1 if it failed
+*/
+time_t u8_mklocaltime(struct U8_XTIME *xt)
+{
+  return mktime_x(xt,1);
 }
 
 /* Initializing xtime structures */
 
 U8_EXPORT
-/* u8_localtime
-     Arguments: a pointer to a tm struct and a time_t value
+/* u8_localtime_x
+     Arguments: a pointer to a tm struct, a time_t value, and a nanosecond value (or -1)
      Returns: the time_t value or -1 if it failed
 */
 time_t u8_localtime_x(struct U8_XTIME *xt,time_t tick,int nsecs)
@@ -310,7 +332,12 @@ time_t u8_localtime_x(struct U8_XTIME *xt,time_t tick,int nsecs)
 #endif
   copy_tm2xt(now,xt);
 #if HAVE_TM_GMTOFF
-  xt->u8_tzoff=now->tm_gmtoff;
+  if (now->tm_isdst) {
+    xt->u8_dstoff=3600;
+    xt->u8_tzoff=now->tm_gmtoff-3600;}
+  else {
+    xt->u8_tzoff=now->tm_gmtoff;
+    xt->u8_dstoff=0;}
 #endif
 #if (!(HAVE_LOCALTIME_R))
   u8_unlock_mutex(&timefns_lock);
@@ -497,15 +524,13 @@ void u8_apply_tzspec(struct U8_XTIME *xt,u8_string s)
       if (dstart) dsign=-1;}
     if (dstart) {
       sscanf(dstart+1,"%d:%d:%d",&dhours,&dmins,&dsecs);
-      xt->u8_dstoff=dsign*(dhours*3600+dmins*60+dsecs);}
-    xt->u8_keepdst=1;}
+      xt->u8_dstoff=dsign*(dhours*3600+dmins*60+dsecs);}}
   else {
     struct TZENTRY *zones=tzones;
     while ((*zones).name)
       if (strcasecmp(s,(*zones).name) == 0) {
 	xt->u8_tzoff=(*zones).tzoff;
 	xt->u8_dstoff=(*zones).dstoff;
-	xt->u8_keepdst=1;
 	return;}
       else zones++;}
 }
@@ -521,7 +546,9 @@ includes possible timezone and precision information.
 time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
 {
   char *tzstart;
-  int pos[]={-1,4,7,10,13,16,19,20}, nsecs=0, n_elts;
+  int stdpos[]={-1,4,7,10,13,16,19,20}, *pos=stdpos;
+  int basicpos[]={-1,4,6,8,11,13,15,17};
+  int nsecs=0, n_elts, len=strlen(s), basic=0;
   if (strchr(s,'/')) return (time_t) -1;
   memset(xtp,0,sizeof(struct U8_XTIME));
   n_elts=sscanf(s,"%04u-%02hhu-%02hhuT%02hhu:%02hhu:%02hhu.%u",
@@ -529,6 +556,14 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
 		&xtp->u8_mday,&xtp->u8_hour,
 		&xtp->u8_min,&xtp->u8_sec,
 		&nsecs);
+  if ((n_elts == 1)&&(len>4)) {
+    /* Assume basic format */
+    n_elts=sscanf(s,"%04u%02hhu%02hhuT%02hhu%02hhu%02hhu.%u",
+		  &xtp->u8_year,&xtp->u8_mon,
+		  &xtp->u8_mday,&xtp->u8_hour,
+		  &xtp->u8_min,&xtp->u8_sec,
+		  &nsecs);
+    basic=1; pos=basicpos;}
   /* Give up if you can't parse anything */
   if (n_elts == 0) return (time_t) -1;
   /* Adjust month */
@@ -544,8 +579,11 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
     xtp->u8_prec=xtp->u8_prec+((scan-start)/3);
     tzstart=scan;}
   else tzstart=s+pos[n_elts];
-  if (tzstart) u8_apply_tzspec(xtp,tzstart);
-  xtp->u8_tick=u8_mktime(xtp); xtp->u8_nsecs=0;
+  if ((tzstart)&&(*tzstart)) {
+    u8_apply_tzspec(xtp,tzstart);
+    xtp->u8_tick=mktime_x(xtp,0);}
+  else xtp->u8_tick=mktime_x(xtp,1);
+  xtp->u8_nsecs=0;
   return xtp->u8_tick;
 }
 
