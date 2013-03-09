@@ -68,6 +68,8 @@ all: @TAGS@ libs @I18N@ testbin dytestbin @DOCS@
 
 debug:
 	make XCFLAGS="-O0" all
+debugging:
+	make XCFLAGS="-O0" all
 fresh:
 	make clean; make all
 freshdebug:
