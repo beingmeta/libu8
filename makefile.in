@@ -8,6 +8,7 @@ LDFLAGS   = @LDFLAGS@ $(EFENCE)
 LIBS      = @LIBS@ $(EFENCE) -lm
 U8VERSION = @U8VERSION@
 U8MINOR   = @U8MINOR@
+BUILDMODE:= `cat buildmode`
 
 DESTDIR		=
 prefix		= @prefix@
@@ -62,20 +63,36 @@ DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
 STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
 
-all: @TAGS@ libs @I18N@ testbin dytestbin @DOCS@
+ALL=@TAGS@ libs @I18N@ testbin dytestbin @DOCS@
 
-# Handy targets
+default: buildmode
+	make `cat buildmode`
+standard:
+	make ${ALL}
+debugging:
+	make XCFLAGS="-O0 -g3 -ggdb" ${ALL}
+optimizing:
+	make XCFLAGS="-O3" ${ALL}
+nitpicking:
+	make XCFLAGS="-Wall" ${ALL}
+all: ${ALL}
 
 debug:
-	make XCFLAGS="-O0" all
-debugging:
-	make XCFLAGS="-O0" all
-fresh:
-	make clean; make all
-freshdebug:
-	make clean; make XCFLAGS="-O0" all
-dbg:
-	make clean; make XCFLAGS="-O0" all
+	if test $(BUILDMODE) != "debugging"; then echo debugging > buildmode; fi
+	make `cat buildmode`
+regular:
+	if test $(BUILDMODE) != "standard"; then echo standard > buildmode; fi
+	make `cat buildmode`
+nitpick:
+	if test $(BUILDMODE) != "nitpicking"; then echo nitpicking > buildmode; fi
+	make `cat buildmode`
+fast:
+	if test $(BUILDMODE) != "optimizing"; then echo optimizing > buildmode; fi
+	make `cat buildmode`
+buildmode:
+	echo standard > buildmode
+
+
 
 # configure/autoconf stuff
 
@@ -383,6 +400,11 @@ ENCODINGS=\
 	encodings/EUCTW \
 	encodings/CP1251 \
 	encodings/SHIFT_JISX0213
+
+# buildmode dependencies
+
+$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8DATA_OBJECTS): buildmode
+$(LIBU8IO_OBJECTS) $(LIBU8STDIO_OBJECTS) $(LIBU8SYSLOG_OBJECTS): buildmode
 
 # dependencies
 
