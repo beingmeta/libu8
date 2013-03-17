@@ -65,7 +65,7 @@ STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
 
 ALL=@TAGS@ libs @I18N@ testbin dytestbin @DOCS@
 
-default: buildmode
+update: buildmode
 	make `cat buildmode`
 standard:
 	make ${ALL}
@@ -78,19 +78,19 @@ nitpicking:
 all: ${ALL}
 
 debug:
-	if test $(BUILDMODE) != "debugging"; then echo debugging > buildmode; fi
+	@if test $(BUILDMODE) != "debugging"; then echo debugging > buildmode; fi
 	make `cat buildmode`
-regular:
-	if test $(BUILDMODE) != "standard"; then echo standard > buildmode; fi
+default:
+	@if test $(BUILDMODE) != "standard"; then echo standard > buildmode; fi
 	make `cat buildmode`
 nitpick:
-	if test $(BUILDMODE) != "nitpicking"; then echo nitpicking > buildmode; fi
+	@if test $(BUILDMODE) != "nitpicking"; then echo nitpicking > buildmode; fi
 	make `cat buildmode`
 fast:
-	if test $(BUILDMODE) != "optimizing"; then echo optimizing > buildmode; fi
+	@if test $(BUILDMODE) != "optimizing"; then echo optimizing > buildmode; fi
 	make `cat buildmode`
 buildmode:
-	echo standard > buildmode
+	@echo standard > buildmode
 
 
 
