@@ -129,7 +129,7 @@ U8_EXPORT int u8_rmtree(u8_string dirname);
      argument and adds extra Xs, also handling absolute path
      conversion and character set conversion with libc.
     @param a utf-8 pathname template
-    @returns a unique utf-8 directory name
+    @returns a count of deleted paths (files or directories)
  **/
 U8_EXPORT u8_string u8_tempdir(u8_string template);
 

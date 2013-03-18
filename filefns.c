@@ -446,9 +446,9 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
   u8_free(dirpath);
   return results;
 }
-static void remove_tree_helper(u8_string dirname)
+static int remove_tree_helper(u8_string dirname)
 {
-  DIR *dp; struct dirent *entry;
+  DIR *dp; struct dirent *entry; int count=0;
   u8_string abspath=u8_abspath(dirname,NULL);
   char *dirpath=u8_localpath(abspath);
   u8_free(abspath); dp=opendir(dirpath);
@@ -456,7 +456,7 @@ static void remove_tree_helper(u8_string dirname)
     u8_graberr(-1,"u8_remove_tree",u8_strdup(dirname));
     u8_clear_errors(1);
     u8_free(dirpath);
-    return;}
+    return 0;}
   else while ((entry=readdir(dp))) {
       struct stat fileinfo; char *name=entry->d_name;
       if (!(((name[0]=='.')&&(name[1]=='\0'))||
@@ -467,22 +467,27 @@ static void remove_tree_helper(u8_string dirname)
 	if (((fileinfo.st_mode)&(S_IFLNK))||
 	    ((fileinfo.st_mode)&(S_IFREG))||
 	    ((fileinfo.st_mode)&(S_IFSOCK))) {
-	  int retval=u8_removefile(fullpath);
+	  int retval=u8_removefile(fullpath); 
 	  if (retval<0) {
 	    u8_graberr(-1,"u8_remove_tree",fullpath);
 	    u8_clear_errors(1);}
-	  else u8_free(fullpath);}
+	  else {
+	    count++;
+	    u8_free(fullpath);}}
 	else if ((fileinfo.st_mode)&(S_IFDIR)) {
-	  int retval;
-	  remove_tree_helper(fullpath);
-	  retval=u8_rmdir(fullpath);
-	  if (retval<0) {
+	  int retval=remove_tree_helper(fullpath);
+	  if (retval>=0) {
+	    count=count+retval;
+	    retval=u8_rmdir(fullpath);
+	    if (retval>=0) count++;
+	    u8_free(fullpath);}
+	  else {
 	    u8_graberr(-1,"u8_remove_tree",fullpath);
-	    u8_clear_errors(1);}
-	  else u8_free(fullpath);}
-	else {}}}
+	    u8_clear_errors(1);}}
+	else u8_free(fullpath);}}
   closedir(dp);
   u8_free(dirpath);
+  return count;
 }
 #else
 static u8_string *getfiles_helper(u8_string dirname,int which,int fullpath)
@@ -490,13 +495,17 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int fullpath)
   u8_seterr(_("No directory lists"),"getfiles_helper",u8_strdup(dirname));
   return NULL;
 }
-static void remove_tree_helper(u8_string dirname) {}
+static int remove_tree_helper(u8_string dirname) { return 0; }
 #endif
 
 U8_EXPORT int u8_rmtree(u8_string dirname)
 {
-  remove_tree_helper(dirname);
-  return u8_rmdir(dirname);
+  int count=remove_tree_helper(dirname);
+  if (count>=0) {
+    int retval=u8_rmdir(dirname);
+    if (retval<0) return retval;
+    else return count+1;}
+  else return count;
 }
 
 U8_EXPORT u8_string *u8_getfiles(u8_string dirname,int fullpath)
