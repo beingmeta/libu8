@@ -464,17 +464,7 @@ static int remove_tree_helper(u8_string dirname)
 	char *fullpath=u8_mkpath(dirpath,entry->d_name);
 	if (stat(fullpath,&fileinfo)<0) {
 	  u8_free(fullpath); continue;}
-	if (((fileinfo.st_mode)&(S_IFLNK))||
-	    ((fileinfo.st_mode)&(S_IFREG))||
-	    ((fileinfo.st_mode)&(S_IFSOCK))) {
-	  int retval=u8_removefile(fullpath); 
-	  if (retval<0) {
-	    u8_graberr(-1,"u8_remove_tree",fullpath);
-	    u8_clear_errors(1);}
-	  else {
-	    count++;
-	    u8_free(fullpath);}}
-	else if ((fileinfo.st_mode)&(S_IFDIR)) {
+	if ((fileinfo.st_mode)&(S_IFDIR)) {
 	  int retval=remove_tree_helper(fullpath);
 	  if (retval>=0) {
 	    count=count+retval;
@@ -484,6 +474,16 @@ static int remove_tree_helper(u8_string dirname)
 	  else {
 	    u8_graberr(-1,"u8_remove_tree",fullpath);
 	    u8_clear_errors(1);}}
+	else if (((fileinfo.st_mode)&(S_IFLNK))||
+		 ((fileinfo.st_mode)&(S_IFREG))||
+		 ((fileinfo.st_mode)&(S_IFSOCK))) {
+	  int retval=u8_removefile(fullpath); 
+	  if (retval<0) {
+	    u8_graberr(-1,"u8_remove_tree",fullpath);
+	    u8_clear_errors(1);}
+	  else {
+	    count++;
+	    u8_free(fullpath);}}
 	else u8_free(fullpath);}}
   closedir(dp);
   u8_free(dirpath);
