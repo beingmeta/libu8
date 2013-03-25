@@ -92,14 +92,13 @@ U8_EXPORT FILE *u8_fopen_locked(u8_string path,char *mode)
 
 U8_EXPORT FILE *u8_fopen(u8_string path,char *mode)
 {
-  char copied_mode[16]; int lock=0, for_write=0, mlen=strlen(mode);
+  char copied_mode[16]; int lock=0, mlen=strlen(mode);
   if (mlen>15) return NULL;
   else {
     int i=0, j=0;
     while (i < mlen)
       if (mode[i] == 'l') {lock=1; i++;}
       else {
-	if (strchr("wa+",mode[i])) for_write=1;
 	copied_mode[j++]=mode[i++];}
     copied_mode[j]='\0';}
   if (lock) return u8_fopen_locked(path,copied_mode);

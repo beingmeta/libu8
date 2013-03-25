@@ -30,6 +30,7 @@
 
 #include <unistd.h>
 #include <time.h>
+#include <errno.h>
 
 #if HAVE_SYSLOG
 #include <syslog.h>
@@ -123,16 +124,6 @@ static void raisefn(u8_condition ex,u8_context cxt,u8_string details)
   
   fprintf(stderr,"%s\n",out.u8_outbuf);
   exit(1);
-}
-
-static void message(u8_string msg)
-{
-  u8_byte buf[512];
-  u8_string prefix=u8_message_prefix(buf,512);
-  if (prefix)
-    fprintf(stdout,"[%s %s]\n",prefix,msg);
-  else fprintf(stdout,"[%s]\n",msg);
-  fflush(stdout);
 }
 
 U8_EXPORT void u8_check_stdio()
@@ -247,8 +238,11 @@ U8_EXPORT void u8_fputs(u8_string s,FILE *f)
     u8_byte *scan=s, *start=s;
     while (*scan)
       if (*scan>=0x80) {
-	int c, retval;
+	int c, retval=0;
 	if (scan>start) retval=fwrite(start,1,scan-start,f);
+	if (retval<0) {
+	  u8_log(LOG_WARN,"u8_fputs",u8_strdup(strerror(errno)));
+	  errno=0;}
 	c=u8_sgetc(&scan); start=scan;
 	if (c<maxchar) fputc(c,f);
 	else fprintf(f,"\\u%04x",c);}
