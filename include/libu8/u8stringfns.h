@@ -171,7 +171,7 @@ U8_EXPORT u8_string u8_convert_crlfs(u8_byte *s);
 
 U8_EXPORT int _u8_sgetc(u8_byte **sptr);
 
-static char hexchars[]="0123456789ABCDEF";
+static MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
 
 #if U8_INLINE_IO
 /** Returns a Unicode code point from a pointer to a pointer to UTF-8 string.
@@ -244,9 +244,9 @@ static int u8_charoffset(u8_string s,u8_byteoff i)
 
 static int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 {
-  u8_string string=s, lim=s+max; int c=1;
+  u8_string string=s, lim=s+max; int c=0;
   if (offset<0) return -1;
-  else while ((string < lim) && (offset > 0)) {
+  else while ((string < lim) && (offset > 0) && (c>=0)) {
       c=u8_sgetc(&string); offset--;}
   if (string > lim) return -1;
   else return string-s;

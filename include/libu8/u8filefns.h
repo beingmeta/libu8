@@ -92,7 +92,8 @@ U8_EXPORT u8_string u8_file_owner(u8_string filename);
 
 /** Makes a directory with a particular mode
     This handles conversion to the local character set.
-    @param a utf-8 pathname
+    @param dirname a utf-8 pathname
+    @param mode the file mode for the directory, if created
     @returns int: 0 if the directory already existed, 1
       if it was created, and -1 on error
  **/
@@ -100,7 +101,8 @@ U8_EXPORT int u8_mkdir(u8_string dirname,mode_t mode);
 
 /** Makes all the containg directories for a pathname
     This handles conversion to the local character set.
-    @param a utf-8 pathname
+    @param pathname a utf-8 pathname
+    @param mode the file mode for any created directories
     @returns int: -1 on error or the number of directories
       actually created
  **/
@@ -109,14 +111,14 @@ U8_EXPORT int u8_mkdirs(u8_string pathname,mode_t mode);
 /** Removes a directory, which must be empty
     This handles conversion to the local character set and uses
     the rmdir() system call.
-    @param a utf-8 pathname
+    @param dirname a utf-8 pathname
     @returns int: 1 if the directory actually existed, 0
       if it didn't, and -1 on error
  **/
 U8_EXPORT int u8_rmdir(u8_string dirname);
 
 /** Removes a directory tree, which is deleted recursively
-    @param a utf-8 pathname
+    @param dirname a utf-8 pathname
     @returns int: 1 if the directory actually existed, 0
       if it didn't, and -1 on error
  **/
@@ -128,7 +130,7 @@ U8_EXPORT int u8_rmtree(u8_string dirname);
      generates a unique directory name.  This copies its
      argument and adds extra Xs, also handling absolute path
      conversion and character set conversion with libc.
-    @param a utf-8 pathname template
+    @param template a utf-8 pathname template
     @returns a count of deleted paths (files or directories)
  **/
 U8_EXPORT u8_string u8_tempdir(u8_string template);

@@ -285,14 +285,14 @@ u8_string u8_gets_x(u8_byte *buf,int len,
 		    struct U8_INPUT *f,u8_string eos,
 		    int *sizep)
 {
-  u8_byte *found=NULL, *start=f->u8_inptr; int eof=0;
+  u8_byte *found=NULL, *start=f->u8_inptr;
   *(f->u8_inlim)='\0';
   while ((found=strstr(start,eos))==NULL) {
     int start_pos=f->u8_inlim-f->u8_inptr, retval=0;
     /* Quit if we have length constraints which
        we are already past. */
     if (f->u8_fillfn) retval=f->u8_fillfn(f);
-    if (retval==0) {eof=1; break;}
+    if (retval==0) break;
     else if (retval<0) {
       if (sizep) *sizep=retval;
       return NULL;}

@@ -388,16 +388,21 @@ U8_EXPORT void *u8_dmalloc(size_t);
 U8_EXPORT void *u8_mallocz(size_t sz);
 
 /** Reallocates a block of memory, zero clearing any new parts
+   @param ptr a previously allocated (with malloc) block of memory
    @param sz the number of bytes to allocate
+   @param osz the previous number of bytes, needed to know how much
+     to zero out
    @returns void *
 **/
 U8_EXPORT void *u8_reallocz(void *ptr,size_t sz,size_t osz);
 
 /** Copies a block of memory into a larger block, zero clearing any new parts
+   @param ptr an existing block of memory
    @param sz the number of bytes to allocate
+   @param osz the number of bytes currently allocated at the location
    @returns void *
 **/
-U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz);
+U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 
 #define u8_allocz(t) ((t *)(u8_mallocz(sizeof(t))))
 #define u8_allocz_n(n,t) ((t *)(u8_mallocz(sizeof(t)*(n))))
@@ -486,10 +491,10 @@ U8_EXPORT void u8_randomize(unsigned int seed);
 U8_EXPORT void *u8_dynamic_load(u8_string filename);
 
 /** Gets a variable specified in the environment.
-    @param varname a variable name
+    @param envvar a variable name
     @returns a utf-8 string, copied
 **/ 
-U8_EXPORT u8_string u8_getenv(u8_string varname);
+U8_EXPORT u8_string u8_getenv(u8_string envvar);
 
 /** Returns elapsed time in seconds since some moment after application
      startup.

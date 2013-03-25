@@ -61,8 +61,8 @@ U8_EXPORT u8_exception u8_current_exception;
      should be a mallocd string.  xdata and freefn can be NULL.
      if freefn is provided, it is called on xdata when the
      exception is popped.
-   @param condition a utf-8 condition string (u8_condition)
-   @param context a utf-8 context string (a const string)
+   @param c a utf-8 condition string (u8_condition)
+   @param cxt a utf-8 context string (a const string)
    @param details a utf-8 string detailing the error, or NULL
    @param xdata a void pointer to additional data describing
                   the error or its context

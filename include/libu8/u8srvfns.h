@@ -400,7 +400,7 @@ U8_EXPORT
      @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
   This returns statistics over the life of the server
 **/
-u8_server_stats u8_server_statistics(u8_server,struct U8_SERVER_STATS *);
+u8_server_stats u8_server_statistics(u8_server server,struct U8_SERVER_STATS *stats);
 
 U8_EXPORT
 /** Returns activity statistics for a server
@@ -409,7 +409,7 @@ U8_EXPORT
      @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
   This returns statistics over all of the currently open clients.
 **/
-u8_server_stats u8_server_livestats(u8_server,struct U8_SERVER_STATS *);
+u8_server_stats u8_server_livestats(u8_server server,struct U8_SERVER_STATS *stats);
 
 U8_EXPORT
 /** Returns activity statistics for a server
@@ -418,7 +418,7 @@ U8_EXPORT
      @returns a pointer to a U8_SERVER_STATS structure (allocated if neccessary)
   This returns statistics over the current state of the current clients
 **/
-u8_server_stats u8_server_curstats(u8_server,struct U8_SERVER_STATS *);
+u8_server_stats u8_server_curstats(u8_server server,struct U8_SERVER_STATS *stats);
 
 /** Returns a user readable string describing the server's status,
      including active and pending tasks, total transactions, etc.

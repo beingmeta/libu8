@@ -267,7 +267,7 @@ U8_EXPORT
 /**
    Gets a 16-byte UUID based on the time and MAC address
    Arguments: none
-   @param stime an xtime structure
+   @param xtime an xtime structure
    @param nodeid a 48-bit node id, -1 means use the default
    @param clockid a clock id, -1 means make one up
    @param buf a (possibly NULL) 16-byte buffer to use/return
@@ -324,7 +324,7 @@ U8_EXPORT
    @param uuid a pointer to uuid (u8_uuid)
    @returns a long long uuid timestamp
  */
-long long u8_uuid_timestamp(u8_uuid);
+long long u8_uuid_timestamp(u8_uuid uuid);
 
 U8_EXPORT
 /**
@@ -333,7 +333,7 @@ U8_EXPORT
    @param uuid a pointer to uuid (u8_uuid)
    @returns a time_t value
  */
-time_t u8_uuid_tick(u8_uuid);
+time_t u8_uuid_tick(u8_uuid uuid);
 
 U8_EXPORT
 /**
@@ -343,6 +343,6 @@ U8_EXPORT
    @param xtime a (possibly NULL) pointer to a U8_XTIME struct to use
    @returns a pointer to a U8_XTIME struct
  */
-struct U8_XTIME *u8_uuid_xtime(u8_uuid,struct U8_XTIME *);
+struct U8_XTIME *u8_uuid_xtime(u8_uuid uuid,struct U8_XTIME *xtime);
 
 #endif

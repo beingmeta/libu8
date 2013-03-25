@@ -184,7 +184,6 @@ U8_EXPORT u8_xtime u8_init_xtime
 U8_EXPORT u8_xtime u8_local_xtime
   (struct U8_XTIME *xt,time_t tick,u8_tmprec prec,int nsecs)
 {
-  unsigned int prec_secs;
   struct tm _tptr, *tptr=&_tptr;
   if (xt==NULL) xt=u8_malloc(sizeof(struct U8_XTIME));
   memset(xt,0,sizeof(struct U8_XTIME));
@@ -215,10 +214,6 @@ U8_EXPORT u8_xtime u8_local_xtime
       prec=u8_second;
 #endif
   }
-
-  /* Adjust for the precision */
-  /* prec_secs=u8_precision_secs[prec]; */
-  /* tick=tick-(tick%prec_secs)+prec_secs/2; */
 
   /* Get the broken down representation for the "fake" time. */
 #if HAVE_LOCALTIME_R
@@ -489,8 +484,7 @@ facilities if they were even remotely standardized.
 int u8_parse_tzspec(u8_string s,int dflt)
 {
   int hours=0, mins=0, secs=0, sign=1;
-  int dhours=0, dmins=0, dsecs=0, dsign=1;
-  char *offstart=strchr(s,'+'), *dstart;
+  char *offstart=strchr(s,'+');
   if (offstart == NULL) {
     offstart=strchr(s,'-');
     if (offstart) sign=-1;
@@ -548,7 +542,7 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
   char *tzstart;
   int stdpos[]={-1,4,7,10,13,16,19,20}, *pos=stdpos;
   int basicpos[]={-1,4,6,8,11,13,15,17};
-  int nsecs=0, n_elts, len=strlen(s), basic=0;
+  int nsecs=0, n_elts, len=strlen(s);
   if (strchr(s,'/')) return (time_t) -1;
   memset(xtp,0,sizeof(struct U8_XTIME));
   n_elts=sscanf(s,"%04u-%02hhu-%02hhuT%02hhu:%02hhu:%02hhu.%u",
@@ -563,7 +557,7 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
 		  &xtp->u8_mday,&xtp->u8_hour,
 		  &xtp->u8_min,&xtp->u8_sec,
 		  &nsecs);
-    basic=1; pos=basicpos;}
+    pos=basicpos;}
   /* Give up if you can't parse anything */
   if (n_elts == 0) return (time_t) -1;
   /* Adjust month */

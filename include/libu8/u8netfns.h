@@ -85,10 +85,10 @@ U8_EXPORT int u8_reconnect_wait;
 U8_EXPORT int u8_reconnect_tries;
 
 /** Parses a variety of host/port syntaxes
-    @param the address specification (a utf-8 string)
-    @param a pointer to the port number (an int for the family, e.g. )
-    @param a buffer to hold the host address
-    @param the length of the buffer
+    @param spec the address specification (a utf-8 string)
+    @param portp a pointer to the port number (an int for the family, e.g. )
+    @param result a buffer to hold the host address
+    @param buflen the length of the buffer
     @returns the hostname for TCP/IP addresses or the filename
        for filesystem domain addresses; puts a port number in *portp*,
        storing zero for filesystem domain addresses and -1 for an error
@@ -203,6 +203,7 @@ U8_EXPORT u8_string u8_sockaddr_string(struct sockaddr *sockaddr);
      @param id a utf-8 string identifying the connection, passed to u8_connect
      @param reserve an int indicating the maximum number of open connections 
        to keep in reserve
+     @param cap how many connections to keep alive at any time
      @param init how many initial connections to create
      @returns a pointer to a connpool, either as passed in or mallocd.
  **/

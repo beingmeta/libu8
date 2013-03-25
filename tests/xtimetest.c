@@ -11,7 +11,7 @@ static u8_string dow_names[7]=
 
 int main(int argc,char **argv)
 {
-  struct U8_XTIME xtime, gmtime; time_t tick;
+  struct U8_XTIME xtime, gmtime;
   struct U8_OUTPUT out; U8_INIT_OUTPUT(&out,128);
   if (argc>1)
     u8_iso8601_to_xtime(argv[1],&xtime);
@@ -25,4 +25,5 @@ int main(int argc,char **argv)
   u8_printf(&out,"\ndow=%s",dow_names[xtime.u8_wday]);
   u8_printf(&out,"\ngmdow=%s",dow_names[gmtime.u8_wday]);
   fprintf(stderr,"%s\n",out.u8_outbuf);
+  return 0;
 }

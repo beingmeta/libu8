@@ -407,7 +407,6 @@ U8_EXPORT u8_socket u8_connect_x(u8_string spec,u8_string *addrp)
   else if (!(hostname)) return ((u8_socket)(-1));
   else if (portno) {
     struct sockaddr_in sockaddr;
-    u8_byte portspec[64];
     int addr_len, family=AF_INET;
     /* Lookup the host */
     char **addrs=u8_lookup_host(hostname,&addr_len,&family), **scan=addrs;
@@ -922,7 +921,7 @@ static int set_doblock(int socket)
   ioctlsocket(socket,FIONBIO,&flags);
   return flags;
 }
-static int reset_flags(int fd,int flags)
+static MAYBE_UNUSED int reset_flags(int fd,int flags)
 {
   unsigned long flag_value=flags;
   return ioctlsocket(fd,FIONBIO,&flag_value);
@@ -940,8 +939,7 @@ static int set_doblock(int fd)
   fcntl(fd,F_SETFL,flags);
   return oflags;
 }
-
-static int reset_flags(int fd,int flags)
+static MAYBE_UNUSED int reset_flags(int fd,int flags)
 {
   return fcntl(fd,F_SETFL,flags);
 }
@@ -976,27 +974,6 @@ static int wait_on_socket(int fd,int msecs,int rd,int wr,int exc)
   return select(fd+1,&rs,&ws,&xs,&timeout);
 }
   
-/* timed_connect:
-      Arguments: an interval in seconds (an int), an open socket,
-                 a pointer to a sockaddr struct, and its length
-      Returns: the socket id or -1 on failure
-  Tries to connect to a particular network address with a timeout
-  (in seconds). */
-static int timed_connect
-  (int msecs,int socket_id,struct sockaddr *addr,int addr_len)
-{
-  int connect_result=0, oflags=set_noblock(socket_id);
-  while ((connect_result=connect(socket_id,addr,addr_len)) != 0) {
-    if (errno == EAGAIN) {}
-    else if (inprogressp())
-      if (wait_on_socket(socket_id,msecs,0,1,0) == 0) {
-	set_timeout_error(); reset_flags(socket_id,oflags); return -1;}
-      else {reset_flags(socket_id,oflags); return socket_id;}
-    else break;
-    if (errno) u8_graberr(connect_result,"timed_connect",NULL);}
-  return connect_result;
-}
-
 U8_EXPORT
 /* u8_getbytes:
       Arguments: an interval in milliseconds (an int), an open socket,

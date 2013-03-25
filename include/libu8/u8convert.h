@@ -210,7 +210,7 @@ U8_EXPORT unsigned char *u8_read_base64(char *start,char *end,int *sizep);
     @param sizep a pointer to an int where the length of the result is stored
     @returns a pointer to an ASCII character string
  **/
-U8_EXPORT char *u8_write_base64(unsigned char *data,int len,int *result_len);
+U8_EXPORT char *u8_write_base64(unsigned char *data,int len,int *sizep);
 
 /** Converts a quoted printable ASCII representation into an array of bytes.
     Returns an array of bytes based on the base64 encoding between

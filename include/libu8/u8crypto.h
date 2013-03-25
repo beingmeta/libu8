@@ -57,11 +57,12 @@ U8_EXPORT unsigned char *u8_sha256
   (unsigned char *data,int len,unsigned char *result);
 
 /** Returns a signed HMAC-SHA1 signature (20 bytes) of a data buffer
-    @param key     a pointer to a key buffer
-    @param key_len the length of the key buffer in bytes (or -1)
-    @param data    a pointer to a data buffer
-    @param len     the number of bytes in the data buffer (or -1)
-    @param result  a result buffer (at least 20 bytes) or NULL
+    @param key         a pointer to a key buffer
+    @param key_len     the length of the key buffer in bytes (or -1)
+    @param data        a pointer to a data buffer
+    @param data_len    the number of bytes in the data buffer (or -1)
+    @param result      a result buffer (at least 20 bytes) or NULL
+    @param result_len  the byte length of the result buffer
     @returns the SHA1 hash of the provided data
   If @a len or @a key_len is negative, strlen() is called on the
     corresponding input buffers;
@@ -79,11 +80,12 @@ U8_EXPORT u8_condition u8_UnknownCipherNID;
 U8_EXPORT u8_condition u8_CipherInit_Failed;
 
 /** Returns a signed HMAC-SHA256 signature (32 bytes) of a data buffer
-    @param key     a pointer to a key buffer
-    @param key_len the length of the key buffer in bytes (or -1)
-    @param data    a pointer to a data buffer
-    @param len     the number of bytes in the data buffer (or -1)
-    @param result  a result buffer (at least 32 bytes) or NULL
+    @param key         a pointer to a key buffer
+    @param key_len     the length of the key buffer in bytes (or -1)
+    @param data        a pointer to a data buffer
+    @param data+len    the number of bytes in the data buffer (or -1)
+    @param result      a result buffer (at least 32 bytes) or NULL
+    @param result_len  the byte length of the result buffer
     @returns the SHA1 hash of the provided data
   If @a len or @a key_len is negative, strlen() is called on the
     corresponding input buffers;
@@ -116,7 +118,7 @@ U8_EXPORT void u8_init_cryptofns(void);
     @param cipher	a string identifying the cipher used
     @param key		a byte vector containing the decryption key
     @param keylen	the length (in bytes) of the key vector
-    @param outlen	a pointer to a size_t to store the output length
+    @param result_len	a pointer to a size_t to store the output length
     @returns a decrypted packet of data whose length is deposited in @a outlen
 **/
 U8_EXPORT unsigned char *u8_decrypt
@@ -131,7 +133,7 @@ U8_EXPORT unsigned char *u8_decrypt
     @param cipher	a string identifying the cipher to use
     @param key		a byte vector containing the encryption key
     @param keylen	the length (in bytes) of the key vector
-    @param outlen	a pointer to a size_t to store the output length
+    @param result_len	a pointer to a size_t to store the output length
     @returns an encrypted packet of data whose length is
         deposited in @a outlen
 **/

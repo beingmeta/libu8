@@ -44,5 +44,5 @@ int main(int argc,char **argv)
 		       NULL,&out_size);
     retval=fwrite(outbuf,1,out_size,out);
     if (argc>4) fclose(out);}
-  return 0;
+  return retval;
 }

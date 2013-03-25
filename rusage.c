@@ -70,7 +70,7 @@ int u8_getrusage(int who,struct rusage *r)
   return 1;
 }
 
-static size_t procfs_memusage()
+static MAYBE_UNUSED size_t procfs_memusage()
 {
 #if U8_RUSAGE_PROC_PATCH
   FILE *f=fopen("/proc/self/stat","r");

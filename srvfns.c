@@ -41,13 +41,11 @@
 #endif
 
 static u8_condition ClosedClient=_("Closed connection");
-static u8_condition IdleClient=_("Idle Client");
 static u8_condition ServerShutdown=_("Shutting down server");
 static u8_condition NewServer=_("New server port");
 static u8_condition NewClient=_("New connection");
 static u8_condition RejectedConnection=_("Rejected connection");
 static u8_condition ClientRequest=_("Client request");
-static u8_condition BadSocket=_("Bad socket value");
 static u8_condition Inconsistency=_("Internal inconsistency");
 
 /* Prototypes for some static definitions */
@@ -407,7 +405,6 @@ int u8_shutdown_client(u8_client cl)
    We dont wait for anything. */
 static int client_close_for_shutdown(u8_client cl)
 {
-  int retval=0;
   if ((cl->flags&U8_CLIENT_CLOSED)==0) {
     if (cl->started>0) {
       /* It's in the middle of something, so we just flag it as closing. */
@@ -423,12 +420,9 @@ static int close_client_core(u8_client cl,int server_locked)
 {
   if (cl->flags&U8_CLIENT_CLOSED) return 0;
   else {
-    U8_SERVER *server=cl->server;
-    u8_socket sock=cl->socket;
-    int clientid=cl->clientid, retval=0;
+    U8_SERVER *server=cl->server; int retval=0;
     /* We grab idstring, because our code allocated it but we will use it
        only after the closefn has freed the client object. */
-    u8_string idstring=cl->idstring;
     long long cur=u8_microtime();
     char statebuf[16];
     
@@ -501,7 +495,7 @@ static int finish_closing_client(u8_client cl)
 
 static void update_client_stats(u8_client cl,long long cur,int done)
 {
-  long long interval=cur-cl->active; char statebuf[16];
+  long long interval=cur-cl->active;
   /* read/write/execute */
   if (cl->running) {
     interval=cur-cl->running;
@@ -635,6 +629,7 @@ static void *event_loop(void *thread_arg)
     if (!(cl)) continue;
     else if ((cl->socket<=0)||((cl->flags)&U8_CLIENT_CLOSED)) {
       cl->active=0; continue;}
+    else cur=u8_microtime();
     if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
 	((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
       u8_log(LOG_NOTICE,ClientRequest,
@@ -644,8 +639,8 @@ static void *event_loop(void *thread_arg)
 	     cl->n_trans,cl->idstring);
     if ((cl->reading>0)||(cl->writing>0)) {
       /* We're in the middle of reading or writing a chunk of data,
-	 so we try a chunk. */
-      ssize_t delta; u8_utime cur=u8_microtime();
+	 so we try to read/write another chunk. */
+      ssize_t delta;
       if (cl->off<cl->len) { /* We're not done */
 	if (cl->writing>0)
 	  delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
@@ -670,15 +665,15 @@ static void *event_loop(void *thread_arg)
       else {
 	/* Otherwise, we're done with whatever reading or writing we
 	   were doing, so we record stats. */
-	u8_utime cur=u8_microtime();
+	u8_utime now=u8_microtime();
 	if (cl->writing>0) {
-	  long long wtime=cur-cl->writing;
+	  long long wtime=now-cl->writing;
 	  cl->stats.wsum+=wtime;
 	  cl->stats.wsum2+=(wtime*wtime);
 	  if (wtime>cl->stats.wmax) cl->stats.wmax=wtime;
 	  cl->stats.wcount++;}
 	else {
-	  long long rtime=cur-cl->reading;
+	  long long rtime=now-cl->reading;
 	  cl->stats.rsum+=rtime;
 	  cl->stats.rsum2+=(rtime*rtime);
 	  if (rtime>cl->stats.rmax) cl->stats.rmax=rtime;
@@ -692,8 +687,7 @@ static void *event_loop(void *thread_arg)
 			     ("event_loop/read"):
 			     ("event_loop/weird")),
 		 "Transferred all %d bytes for @x%lx#%d.%d[%s/%d](%s)",
-		 cl->len,
-		 ((unsigned long)cl),cl->clientid,cl->socket,
+		 cl->len,((unsigned long)cl),cl->clientid,cl->socket,
 		 get_client_state(cl,statebuf),
 		 cl->n_trans,cl->idstring);}}
     /* Unless there's an I/O error, call the handler */
@@ -812,8 +806,6 @@ static void *event_loop(void *thread_arg)
     if (cl->active>0) {
       /* Record the stats on how much thread time has been spent
 	 (how long the task has been active) */
-      u8_utime cur=u8_microtime();
-      long long atime=cur-cl->active;
       cl->active=0;
       if (dobreak) break;
       if (!(closed)) {
@@ -842,7 +834,7 @@ struct U8_SERVER *u8_init_server
   int flags=0, init_clients=DEFAULT_INIT_CLIENTS, n_threads=DEFAULT_NTHREADS;
   int maxback=MAX_BACKLOG, max_queue=DEFAULT_MAX_QUEUE;
   int  max_clients=DEFAULT_MAX_CLIENTS, timeout=DEFAULT_TIMEOUT;
-  va_list args; int prop; int retval;
+  va_list args; int prop;
   if (server==NULL) server=u8_alloc(struct U8_SERVER);
   memset(server,0,sizeof(struct U8_SERVER));
   va_start(args,closefn);
@@ -933,7 +925,7 @@ int u8_server_init(struct U8_SERVER *server,
 
 static int do_shutdown(struct U8_SERVER *server,int grace)
 {
-  int i=0, max_socket, n_servers=server->n_servers;
+  int i=0, n_servers=server->n_servers;
   int n_errs=0, idle_clients=0, active_clients=0, clients_len;
   u8_utime deadline=u8_microtime()+grace;
   struct pollfd *sockets; u8_client *clients;
@@ -1138,7 +1130,7 @@ static int add_socket(struct U8_SERVER *server,u8_socket sock,short events)
 static struct U8_SERVER_INFO *add_server
   (struct U8_SERVER *server,u8_socket sock,struct sockaddr *addr)
 {
-  u8_server_info info; int off=-1;
+  u8_server_info info;
   if (server->server_info==NULL) {
     info=server->server_info=u8_alloc(struct U8_SERVER_INFO);
     server->n_servers++;}
@@ -1175,10 +1167,9 @@ static int add_server_from_spec(struct U8_SERVER *server,u8_string spec)
        (strchr(spec,':')==NULL) &&
        (strchr(spec,'.'))))
     return u8_add_server(server,spec,-1);
-  else if (((strchr(spec,'@'))==NULL)&&((strchr(spec,':'))==NULL)) {
+  else if (((strchr(spec,'@'))==NULL)&&((strchr(spec,':'))==NULL)) 
     /* Spec is just a port */
-    int portno=u8_get_portno(spec);
-    return u8_add_server(server,NULL,u8_get_portno(spec));}
+    return u8_add_server(server,NULL,u8_get_portno(spec));
   else {
     int portno=-1;
     u8_byte _hostname[128], *hostname=u8_parse_addr(spec,&portno,_hostname,128);
@@ -1264,7 +1255,7 @@ static int add_client(struct U8_SERVER *server,u8_client client)
 
 static int free_client(struct U8_SERVER *server,u8_client cl)
 {
-  int clientid=cl->clientid; u8_socket sock=cl->socket;
+  int clientid=cl->clientid;
   struct pollfd *pfd=&(server->sockets[clientid]);
   memset(pfd,0,sizeof(struct pollfd)); pfd->fd=-1;
   server->n_clients--;
@@ -1317,7 +1308,7 @@ static int server_accept(u8_server server,u8_socket i)
 static int socket_peek(u8_socket sock)
 {
   unsigned char buf[5];
-  int retval=recv(sock,buf,1,MSG_PEEK), oretval=0;
+  int retval=recv(sock,buf,1,MSG_PEEK);
   return (retval>0);
 }
 
@@ -1375,7 +1366,7 @@ static int server_handle_poll(struct U8_SERVER *server,
 			      int n_socks)
 {
   struct U8_CLIENT **clients;
-  int i=0, n_actions=0, retval=0;
+  int i=0, n_actions=0;
   char statebuf[16];
   /* Iterate over the range of sockets */
   u8_lock_mutex(&(server->lock));
@@ -1388,9 +1379,10 @@ static int server_handle_poll(struct U8_SERVER *server,
     else {
       client=clients[i];
       events=sockets[i].revents;}
-    if ((client==NULL)&&(events&POLLIN)) 
+    if ((client==NULL)&&(events&POLLIN)) {
       /* Server connection */
-      retval=server_accept(server,sockets[i].fd);
+      int retval=server_accept(server,sockets[i].fd);
+      if (retval<0) u8_clear_errors(1);}
     else if (client==NULL) {
       /* Error on server socket? */}
 #if U8_THREADS_ENABLED
