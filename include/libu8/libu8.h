@@ -410,7 +410,7 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 /* strdup */
 
 #if HAVE_STRDUP
-#define u8_strdup(x) ((u8_string)(strdup(x)))
+#define u8_strdup(x) (strdup(x))
 #else
 #define u8_strdup(x) _u8_strdup(x)
 #endif
