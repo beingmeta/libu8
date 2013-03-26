@@ -358,8 +358,7 @@ U8_EXPORT int u8_mkdirs(u8_string arg,mode_t mode)
 {
   int len=strlen(arg);
   u8_string dirname=
-    ((arg[len-1]=='/')?(u8_strdup(arg)):
-     (u8_dirname(arg)));
+    ((arg[len-1]=='/')?((u8_string)(u8_strdup(arg))):(u8_dirname(arg)));
   int retval=mkdirs(dirname,mode);
   u8_free(dirname);
   return retval;
