@@ -269,45 +269,45 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 
 # Packaging targets
 
-rpmtar: dist/libu8-@U8VERSION@.tar.gz
+rpmtar: staging/libu8-@U8VERSION@.tar.gz
 cleanrpms: 
-	rm -rf dist/rpms.done dist/libu8-?.?.tar.gz dist/libu8-?.?
+	rm -rf dist/rpms.done staging/libu8-?.?.tar.gz staging/libu8-?.?
 	find dist -name "*.rpm" | xargs -r rm
 freshrpms: 
-	rm -rf dist/rpms.done dist/libu8-?.?.tar.gz dist/libu8-?.?
+	rm -rf dist/rpms.done staging/libu8-?.?.tar.gz staging/libu8-?.?
 	find dist -name "*.rpm" | xargs -r rm
 	make rpms
 rpms: dist/rpms.done
 debs: dist/debs.done
 
-dist/libu8-@U8VERSION@: makefile.in configure makefile \
+staging/libu8-@U8VERSION@: makefile.in configure makefile \
 		$(LIBU8_SOURCES) $(LIBU8_HEADERS)
-	rm -rf dist/libu8-@U8VERSION@
+	rm -rf staging/libu8-@U8VERSION@
 	git archive --prefix=libu8-@U8VERSION@/ \
-	            -o dist/libu8-@U8VERSION@.tar HEAD
+	            -o staging/libu8-@U8VERSION@.tar HEAD
 	cd dist; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
-	echo "#define LIBU8_SVNREV \""`git describe`"\"" > dist/libu8-@U8VERSION@/include/libu8/revision.h
-dist/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
-	make dist/libu8-@U8VERSION@
+	echo "#define LIBU8_SVNREV \""`git describe`"\"" > staging/libu8-@U8VERSION@/include/libu8/revision.h
+staging/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
+	make staging/libu8-@U8VERSION@
 	tar -czvf $@ -C dist libu8-@U8VERSION@
 
-dist/rpms.done: dist/libu8-@U8VERSION@.tar.gz
+dist/rpms.done: staging/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ ${RPMFLAGS}  \
 		--define "_rpmdir dist" --define "_srcrpmdir dist" \
 		 --nodeps -ta \
-		dist/libu8-@U8VERSION@.tar.gz && \
+		staging/libu8-@U8VERSION@.tar.gz && \
 	touch dist/rpms.done
 
-dist/rpms32.done: dist/libu8-@U8VERSION@.tar.gz
+dist/rpms32.done: staging/libu8-@U8VERSION@.tar.gz
 	CC='gcc -m32' rpmbuild ${RPMFLAGS} \
 		--define "_rpmdir dist" --define "_srcrpmdir dist" \
 		--target x86 --nodeps -ta \
-		dist/libu8-@U8VERSION@.tar.gz &&\
+		staging/libu8-@U8VERSION@.tar.gz &&\
 	touch dist/rpms32.done
 
-dist/debs.done: dist/libu8-@U8VERSION@
-	cd dist/libu8-@U8VERSION@; dpkg-buildpackage -rfakeroot
-	rm -rf dist/libu8-@U8VERSION@
+dist/debs.done: staging/libu8-@U8VERSION@
+	cd staging/libu8-@U8VERSION@; dpkg-buildpackage -rfakeroot
+	rm -rf staging/libu8-@U8VERSION@
 
 # Installation targets
 
