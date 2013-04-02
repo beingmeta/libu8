@@ -196,6 +196,32 @@ U8_EXPORT u8_int8 u8_cityhash64(const unsigned char *s,size_t len);
 /* Load threading compatability libraries */
 #include "threading.h"
 
+/* Thread proxy functions */
+
+/** Locks a POSIX thread mutex
+    @param a pointer to a mutex
+    @returns void
+**/
+U8_EXPORT void u8_mutex_lock(u8_mutex *m);
+
+/** Unlocks a POSIX thread mutex
+    @param a pointer to a mutex
+    @returns void
+**/
+U8_EXPORT void u8_mutex_unlock(u8_mutex *m);
+
+/** Initialize a POSIX thread mutex
+    @param a pointer to a mutex
+    @returns void
+**/
+U8_EXPORT void u8_mutex_init(u8_mutex *m);
+
+/** Destroys a POSIX thread mutex
+    @param a pointer to a mutex
+    @returns void
+**/
+U8_EXPORT void u8_mutex_destroy(u8_mutex *m);
+
 /* Thread init functions */
 
 typedef int (*u8_threadinitfn)(void);

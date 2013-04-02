@@ -482,6 +482,25 @@ static void threadexit_atexit()
   u8_threadexit();
 }
 
+/* Functions for mutex operations for cases where the pthread
+   functions are overriden */
+U8_EXPORT void u8_mutex_lock(u8_mutex *m)
+{
+  u8_lock_mutex(m);
+}
+U8_EXPORT void u8_mutex_unlock(u8_mutex *m)
+{
+  u8_unlock_mutex(m);
+}
+U8_EXPORT void u8_mutex_init(u8_mutex *m)
+{
+  u8_unlock_mutex(m);
+}
+U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
+{
+  u8_unlock_mutex(m);
+}
+
 /* Debugging malloc */
 
 static ssize_t max_malloc=-1;
