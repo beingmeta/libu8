@@ -289,7 +289,7 @@ staging/libu8-@U8VERSION@: makefile.in configure makefile \
 	echo "#define LIBU8_SVNREV \""`git describe`"\"" > staging/libu8-@U8VERSION@/include/libu8/revision.h
 staging/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	make staging/libu8-@U8VERSION@
-	tar -czvf $@ -C dist libu8-@U8VERSION@
+	tar -czvf $@ -C staging libu8-@U8VERSION@
 
 dist/rpms.done: staging/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ ${RPMFLAGS}  \
