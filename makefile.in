@@ -285,7 +285,7 @@ staging/libu8-@U8VERSION@: makefile.in configure makefile \
 	rm -rf staging/libu8-@U8VERSION@
 	git archive --prefix=libu8-@U8VERSION@/ \
 	            -o staging/libu8-@U8VERSION@.tar HEAD
-	cd dist; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
 	echo "#define LIBU8_SVNREV \""`git describe`"\"" > staging/libu8-@U8VERSION@/include/libu8/revision.h
 staging/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	make staging/libu8-@U8VERSION@
