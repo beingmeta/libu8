@@ -744,15 +744,15 @@ static u8_int4 crc32_tab[] = {
 
 U8_EXPORT u8_int4 u8_crc32(u8_int4 crc, const void *buf, size_t size)
 {
-	const u8_int4 *p;
+  const u8_byte *p;
 
-	p = buf;
-	crc = crc ^ ~0U;
+  p = buf;
+  crc = crc ^ ~0U;
 
-	while (size--)
-		crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
-
-	return crc ^ ~0U;
+  while (size--)
+    crc = crc32_tab[(crc ^ *p++) & 0xFF] ^ (crc >> 8);
+  
+  return crc ^ ~0U;
 }
 
 

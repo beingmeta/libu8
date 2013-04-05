@@ -190,6 +190,10 @@ typedef unsigned long u8_wideint;
 typedef unsigned int u8_wideint;
 #endif
 
+#ifndef WORDS_BIGENDIAN
+#define WORDS_BIGENDIAN 0
+#endif
+
 U8_EXPORT u8_int16 u8_cityhash128(const unsigned char *s,size_t len);
 U8_EXPORT u8_int8 u8_cityhash64(const unsigned char *s,size_t len);
 
@@ -543,6 +547,38 @@ U8_EXPORT void u8_initialize_logging(void);
 /* Contours */
 
 #include "u8contour.h"
+
+/* Handling endian-ness */
+
+U8_INLINE_FCN unsigned int u8_flip_word(unsigned int _w)
+{ return ((((_w) << 24) & 0xff000000) | (((_w) << 8) & 0x00ff0000) | 
+          (((_w) >> 8) & 0x0000ff00) | ((_w) >>24) );}
+
+U8_INLINE_FCN unsigned long long u8_flip_word8(unsigned long long _w)
+{ return (((_w&(0xFF)) << 56) |
+	  ((_w&(0xFF00)) << 48) |
+	  ((_w&(0xFF0000)) << 24) |
+	  ((_w&(0xFF000000)) << 8) |
+	  ((_w>>56) & 0xFF) |
+	  ((_w>>40) & 0xFF00) |
+	  ((_w>>24) & 0xFF0000) |
+	  ((_w>>8) & 0xFF000000));}
+
+U8_INLINE_FCN unsigned int u8_flip_ushort(unsigned short _w)
+{ return ((((_w) >> 8) & 0x0000ff) | (((_w) << 8) & 0x0000ff00) );}
+
+#if WORDS_BIGENDIAN
+#define u8_net_order(x) (x)
+#define u8_host_order(x) (x)
+#define u8_ushort_net_order(x) (x)
+#define u8_ushort_host_order(x) (x)
+#else
+#define u8_net_order(x) fd_flip_word(x)
+#define u8_host_order(x) fd_flip_word(x)
+#define u8_ushort_host_order(x) fd_flip_ushort(x)
+#define u8_ushort_net_order(x) fd_flip_ushort(x)
+#endif
+
 
 /* File and module recording */
 
