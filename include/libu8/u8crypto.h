@@ -96,6 +96,16 @@ U8_EXPORT unsigned char *u8_hmac_sha256
    unsigned char *data,int data_len,
    unsigned char *result,int *result_len);
 
+
+/* Computes the CRC32 code for a buffer.
+   @param crc initial crc value, should be zero for the first call
+   @param a pointer to a buffer to compute the CRC code for
+   @param the number of bytes in the buffer to process
+   @returns a new CRC code
+  Note that this function is cryptographically useless.
+*/
+U8_EXPORT u8_int4 u8_crc32(u8_int4 crc, const void *buf, size_t size);
+
 U8_EXPORT u8_condition u8_BadCryptoKey;
 U8_EXPORT u8_condition u8_InternalCryptoError;
 U8_EXPORT u8_condition u8_UnknownCipher;
