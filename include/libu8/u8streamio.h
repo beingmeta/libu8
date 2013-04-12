@@ -31,10 +31,10 @@
 
 U8_EXPORT int u8_validate(u8_byte *s,int n);
 
-U8_EXPORT u8_condition
-  u8_UnexpectedEOD, u8_BadUTF8, u8_BadUNGETC, u8_NoZeroStreams;
+U8_EXPORT u8_condition u8_UnexpectedEOD, u8_BadUNGETC, u8_NoZeroStreams;
+U8_EXPORT u8_condition u8_TruncatedUTF8, u8_BadUTF8, u8_BadUTF8byte;
 
-U8_EXPORT int u8_utf8warn;
+U8_EXPORT int u8_utf8warn, u8_utf8err;
 
 /* Generic streams */
 
@@ -69,6 +69,12 @@ U8_EXPORT int u8_utf8warn;
 /** This bit describes whether the stream should emit warnings for invalid
     UTF-8 bytes or sequences. **/
 #define U8_STREAM_UTF8WARN   0x200
+/** This bit describes whether the stream generate errors and stop on UTF-8
+    errors. **/
+#define U8_STREAM_UTF8ERR   0x400
+/** This bit describes whether the stream should try to fix UTF-8
+    errors. (Not yet implemented.) **/
+#define U8_STREAM_UTF8FIX   0x600
 
 #define U8_STREAM_FIELDS \
   int u8_bufsz, u8_streaminfo; \

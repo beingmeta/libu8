@@ -26,6 +26,7 @@
 #include "libu8/u8stringfns.h"
 
 #include <stdarg.h>
+#include <stdio.h>
 #include <ctype.h>
 
 /* Core functions */
@@ -360,6 +361,33 @@ U8_EXPORT int u8_has_suffix(u8_string string,u8_string suffix,int casefold)
   else if ((casefold<=0)&&(strcmp(string+(stringlen-suffixlen),suffix)==0))
     return 1;
   else return 0;
+}
+
+/* Converting strings to ascii-ish, mostly for debugging */
+
+U8_EXPORT
+/* u8_grab_bytes:
+    Arguments: a pointer to a string
+    Returns: an ASCII string representation of some number of bytes from a string
+*/
+char *u8_grab_bytes(u8_string s,int n,char *buf)
+{
+  char *result=((buf)?(buf):(u8_malloc(n))), *write=result, *lim=result+(n-1);
+  u8_byte *scan=s; int c=*scan++;
+  while ((c>0)&&(write<lim)) {
+    if ((c<128)&&((isprint((char)c))||(c==32))) *write++=c;
+    else if ((write+2)>lim) break;
+    else if ((c=='\n')||(c=='\t')||(c=='\r')) {
+      char *s;
+      if (c=='\n') s="\\n"; else if (c=='\t') s="\\t"; else s="\\r";
+      memcpy(write,s,3); write=write+2;}
+    else if ((write+3)>lim) break;
+    else {
+      char buf[8]; sprintf(buf,"%%%02x",c);
+      memcpy(write,buf,4); write=write+3;}
+    c=*scan++;}
+  *write++='\0';
+  return result;
 }
 
 /* Initialization function (just records source file info) */

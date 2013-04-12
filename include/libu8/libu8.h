@@ -333,12 +333,20 @@ U8_EXPORT void u8_identify_application(u8_string id);
 **/
 U8_EXPORT int u8_default_appid(u8_string id);
 
-/** Sets whether warnings are produced for invalid UTF-8 sequences, which
+/** Gets/sets whether warnings are produced for invalid UTF-8 sequences, which
      can be annoyingly common with some content.
     @param flag an int
     @returns int
+  If the flag is negative, the current value is returned
 **/
 U8_EXPORT int u8_config_utf8warn(int flag);
+
+/** Gets/sets whether errors are produced for invalid UTF-8 sequences.
+    @param flag an int
+    @returns int
+  If the flag is negative, the current value is returned
+**/
+U8_EXPORT int u8_config_utf8err(int flag);
 
 /** Initializes the core UTF-8 functions (from libu8.h)
     @returns void
@@ -449,6 +457,10 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 
 U8_EXPORT u8_string _u8_strdup(u8_string);
 U8_EXPORT u8_string u8_strndup(u8_string,int);
+
+#ifndef UTF8_BUGWINDOW
+#define UTF8_BUGWINDOW 64
+#endif
 
 /* Piles */
 

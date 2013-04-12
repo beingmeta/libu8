@@ -569,7 +569,7 @@ int u8_convert
   while (*scan<end) {
     u8_byte *last_scan=*scan; int retval=0;
     int c=encgetc(e,charset,includes_ascii,is_linear,scan,end);
-    if (c<0) break;
+    if (c<0) return c;
     else if ((convert_crlfs) && (c=='\r')) {
       int nc=encgetc(e,charset,includes_ascii,is_linear,scan,end);
       if (nc<0) {*scan=last_scan; break;}

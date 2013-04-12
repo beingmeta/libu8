@@ -23,10 +23,10 @@
      but some are particular to UTF-8.
  **/
 
-U8_EXPORT u8_condition
-  u8_UnexpectedEOD, u8_BadUTF8, u8_BadUNGETC, u8_NoZeroStreams;
+U8_EXPORT u8_condition u8_UnexpectedEOD, u8_BadUNGETC, u8_NoZeroStreams, u8_BadUnicodeChar;
+U8_EXPORT u8_condition u8_TruncatedUTF8, u8_BadUTF8, u8_BadUTF8byte;
 
-U8_EXPORT int u8_utf8warn;
+U8_EXPORT int u8_utf8warn, u8_utf8err;
 
 #include <stdarg.h>
 
@@ -167,6 +167,14 @@ U8_EXPORT u8_string u8_valid_copy(u8_byte *s);
 **/
 U8_EXPORT u8_string u8_convert_crlfs(u8_byte *s);
 
+/** Returns an ascii-converted substring of a possible UTF-8 string
+    @param s a possibly (probably) valid UTF-8 string.
+    @param n the size (in bytes) of the substring to return
+    @param buf an optional buffer to use (otherwise, one is mallocd
+    @returns an ASCII string, possibly with %-encoded bytes
+**/
+U8_EXPORT char *u8_grab_bytes(u8_string s,int n,char *buf);
+
 /* u8_sgetc */
 
 U8_EXPORT int _u8_sgetc(u8_byte **sptr);
@@ -188,8 +196,14 @@ static int u8_sgetc(u8_byte **sptr)
   else if (U8_EXPECT_TRUE(byte<0x80)) {(*sptr)++; return byte;}
   else if (U8_EXPECT_FALSE(byte < 0xc0)) {
     /* Unexpected continuation byte */
-    if (u8_utf8warn)
-      u8_log(LOG_WARN,u8_BadUTF8,_("Unexpected continuation byte: 0x%2x"),byte);
+    if (u8_utf8err) {
+      char *details=u8_grab_bytes(*sptr,UTF8_BUGWINDOW,NULL);
+      u8_log(LOG_WARN,u8_BadUTF8,_("Unexpected UTF-8 continuation byte: '%s'"),details);
+      u8_seterr(u8_BadUTF8byte,"u8_sgetc",details);
+      (*sptr)++; return -2;} 
+    else if (u8_utf8warn) {
+      char buf[UTF8_BUGWINDOW]; u8_grab_bytes(*sptr,UTF8_BUGWINDOW,buf);
+      u8_log(LOG_WARN,u8_BadUTF8,_("Unexpected UTF-8 continuation byte: '%s'"),buf);}
     (*sptr)++;
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */
@@ -199,24 +213,26 @@ static int u8_sgetc(u8_byte **sptr)
   else if (byte < 0xFC) {size=5; ch=byte&0x3;}     
   else if (byte < 0xFE) {size=6; ch=byte&0x1;}
   else { /* Bad data, return the character */
-    if (u8_utf8warn) 
-      u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: 0x%2x"),byte);
+    if (u8_utf8err) {
+      char *details=u8_grab_bytes(*sptr,UTF8_BUGWINDOW,NULL);
+      u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: '%s'"),details);
+      u8_seterr(u8_BadUTF8byte,"u8_sgetc",details);
+      (*sptr)++; return -2;} 
+    else if (u8_utf8warn) {
+      char buf[UTF8_BUGWINDOW]; u8_grab_bytes(*sptr,UTF8_BUGWINDOW,buf);
+      u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: '%s'"),buf);}
     (*sptr)++; return 0xFFFD;}
   i=size-1; scan++;
   while (i) {
     if ((*scan<0x80) || (*scan>=0xC0)) {
-      if (u8_utf8warn) {
-	char buf[256];
-	int j=0; buf[0]='\0'; while (j<size) {
-	  char tmp[8]; int val=start[j];
-	  unsigned char hi=(val>>4)&0xF;
-	  unsigned char lo=val&0xF;
-	  tmp[0]=hexchars[hi];
-	  tmp[1]=hexchars[lo];
-	  tmp[2]='\0';
-	  if (j>0) strcat(buf," ");
-	  strcat(buf,tmp); j++;}
-	u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: 0x%s"),buf);}
+      if (u8_utf8err) {
+	char *details=u8_grab_bytes(start,UTF8_BUGWINDOW,NULL);
+	u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),details);
+	u8_seterr(u8_TruncatedUTF8,"u8_sgetc",details);
+	return -2;} 
+      else if (u8_utf8warn) {
+	char buf[UTF8_BUGWINDOW]; u8_grab_bytes(buf,UTF8_BUGWINDOW,buf);
+	u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),buf);}
       *sptr=scan;
       return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}

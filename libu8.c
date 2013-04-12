@@ -76,6 +76,18 @@ static int u8_initialized=0;
 #define	LOG_INFO	6	/* informational */
 #define	LOG_DEBUG	7	/* debug-level messages */
 
+/* U8 settings */
+
+u8_condition u8_UnexpectedEOD=_("Unexpected EOD"), 
+  u8_BadUTF8=_("Invalid UTF-8 encoded text"),
+  u8_BadUTF8byte=_("Invalid UTF-8 continuation character"),
+  u8_TruncatedUTF8=_("Truncated UTF-8 sequence"),
+  u8_BadUnicodeChar=_("Invalid Unicode Character"),
+  u8_BadUNGETC=_("UNGETC error"),
+  u8_NoZeroStreams=_("No zero-length string streams");
+
+int u8_utf8warn=1, u8_utf8err=0;
+
 /* libc conversions */
 
 u8_string (*u8_fromlibcfn)(char *)=NULL;
@@ -163,6 +175,14 @@ U8_EXPORT int u8_config_utf8warn(int flag)
     int prev=u8_utf8warn; u8_utf8warn=flag;
     return prev;}
   else return u8_utf8warn;
+}
+
+U8_EXPORT int u8_config_utf8err(int flag)
+{
+  if (flag>=0) {
+    int prev=u8_utf8err; u8_utf8err=flag;
+    return prev;}
+  else return u8_utf8err;
 }
 
 /* Random numbers */
