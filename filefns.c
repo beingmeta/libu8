@@ -326,7 +326,7 @@ U8_EXPORT int u8_linkfile(u8_string from,u8_string to)
 }
 #endif
 
-/* Making directories */
+/* Manipulating directories */
 
 U8_EXPORT int u8_mkdir(u8_string name,mode_t mode)
 {
@@ -374,6 +374,8 @@ U8_EXPORT int u8_rmdir(u8_string arg)
     else return 1;}
   else return 0;
 }
+
+/* Temporary directories */
 
 #if HAVE_MKDTEMP
 U8_EXPORT u8_string u8_tempdir(u8_string template)

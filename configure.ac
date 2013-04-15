@@ -124,6 +124,10 @@ fi
 AC_DEFINE(FD_WORDS_ARE_ALIGNED,1)
 AC_TYPE_UID_T
 AC_TYPE_OFF_T
+AC_TYPE_SIZE_T
+AC_TYPE_SSIZE_T
+AC_TYPE_PID_T
+AC_TYPE_MODE_T
 AC_C_INLINE
 AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(int,4)
@@ -134,7 +138,7 @@ AC_CHECK_SIZEOF(void *,4)
 AC_HEADER_STDC
 AC_HEADER_STAT
 
-AC_CHECK_HEADERS(sys/stat.h unistd.h pwd.h fcntl.h poll.h sys/poll.h)
+AC_CHECK_HEADERS(sys/stat.h unistd.h pwd.h grp.h fcntl.h poll.h sys/poll.h)
 AC_CHECK_HEADERS(sys/socket.h sys/select.h sys/un.h netdb.h)
 AC_CHECK_HEADERS(netinet/in.h netinet/tcp.h)
 AC_CHECK_HEADERS(dirent.h sys/ndir.h sys/dir.h)
@@ -158,6 +162,10 @@ AC_EGREP_HEADER(tm_isdst,time.h,AC_DEFINE(HAVE_TM_ISDST,1),AC_DEFINE(HAVE_TM_ISD
 AC_CHECK_FUNCS(isatty fstat)
 AC_CHECK_FUNCS(strdup strerror_r)
 AC_CHECK_FUNCS(access flock fseeko)
+AC_CHECK_FUNCS(chown chmod setuid getuid geteuid)
+AC_CHECK_FUNCS(getpwnam getpwnam_r getpwgid getpwgid_r)
+AC_CHECK_FUNCS(setgid getgid getegid getgroups)
+AC_CHECK_FUNCS(getgrnam getgrnam_r getgrgid getgrgid_r)
 AC_CHECK_FUNCS(symlink realpath mkdtemp)
 AC_CHECK_FUNCS(ftime gettimeofday localtime_r gmtime_r getpid)
 AC_CHECK_FUNCS(gethostbyname2_r)
