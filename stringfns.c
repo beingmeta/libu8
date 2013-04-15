@@ -204,7 +204,7 @@ int u8_validate(u8_byte *s,int len)
 {
   int sz=get_utf8_size(*s);
   u8_byte *limit=s+len, *start=s;
-  while ((s<limit) && (sz=get_utf8_size(*s))) 
+  while ((s<limit) && ((sz=get_utf8_size(*s))>0)) 
     if (s+sz>limit)
       return s-start;
     else s=s+sz;
