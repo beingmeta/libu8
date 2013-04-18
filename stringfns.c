@@ -36,6 +36,11 @@ int _u8_sgetc(u8_byte **s)
   return u8_sgetc(s);
 }
 
+int _u8_sgetc_lim(u8_byte **s,u8_byte *lim)
+{
+  return u8_sgetc_lim(s,lim);
+}
+
 int _u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 {
   return u8_byteoffset(s,offset,max);

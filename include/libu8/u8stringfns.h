@@ -178,6 +178,7 @@ U8_EXPORT char *u8_grab_bytes(u8_string s,int n,char *buf);
 /* u8_sgetc */
 
 U8_EXPORT int _u8_sgetc(u8_byte **sptr);
+U8_EXPORT int _u8_sgetc_lim(u8_byte **sptr,u8_byte *lim);
 
 static MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
 
@@ -187,23 +188,30 @@ static MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
     @param sptr a pointer to a pointer into a UTF-8 encoding
     @returns a unicode code point
 **/
-static int u8_sgetc(u8_byte **sptr)
+static int u8_sgetc_lim(u8_byte **sptr,u8_byte *lim)
 {
   int i, ch, byte=**sptr, size;
   u8_byte *scan=*sptr; u8_string start=*sptr;
   /* Catch this error */
   if (U8_EXPECT_FALSE(byte == 0)) return -1;
+  else if (U8_EXPECT_TRUE((lim)&&(scan>=lim))) return -1;
   else if (U8_EXPECT_TRUE(byte<0x80)) {(*sptr)++; return byte;}
   else if (U8_EXPECT_FALSE(byte < 0xc0)) {
     /* Unexpected continuation byte */
     if (u8_utf8err) {
-      char *details=u8_grab_bytes(*sptr,UTF8_BUGWINDOW,NULL);
-      u8_log(LOG_WARN,u8_BadUTF8,_("Unexpected UTF-8 continuation byte: '%s'"),details);
+      char *details; int n_bytes=UTF8_BUGWINDOW;
+      if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
+      details=u8_grab_bytes(*sptr,n_bytes,NULL);
+      u8_log(LOG_WARN,u8_BadUTF8,_("Unexpected UTF-8 continuation byte: '%s'"),
+	     details);
       u8_seterr(u8_BadUTF8byte,"u8_sgetc",details);
-      (*sptr)++; return -2;} 
+      (*sptr)++; return -2;}
     else if (u8_utf8warn) {
-      char buf[UTF8_BUGWINDOW]; u8_grab_bytes(*sptr,UTF8_BUGWINDOW,buf);
-      u8_log(LOG_WARN,u8_BadUTF8,_("Unexpected UTF-8 continuation byte: '%s'"),buf);}
+      char buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
+      if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
+      u8_grab_bytes(*sptr,n_bytes,buf);
+      u8_log(LOG_WARN,u8_BadUTF8,_("Unexpected UTF-8 continuation byte: '%s'"),
+	     buf);}
     (*sptr)++;
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */
@@ -214,25 +222,33 @@ static int u8_sgetc(u8_byte **sptr)
   else if (byte < 0xFE) {size=6; ch=byte&0x1;}
   else { /* Bad data, return the character */
     if (u8_utf8err) {
-      char *details=u8_grab_bytes(*sptr,UTF8_BUGWINDOW,NULL);
+      char *details; int n_bytes=UTF8_BUGWINDOW;
+      if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
+      details=u8_grab_bytes(*sptr,n_bytes,NULL);
       u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: '%s'"),details);
       u8_seterr(u8_BadUTF8byte,"u8_sgetc",details);
       (*sptr)++; return -2;} 
     else if (u8_utf8warn) {
-      char buf[UTF8_BUGWINDOW]; u8_grab_bytes(*sptr,UTF8_BUGWINDOW,buf);
+      char buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
+      if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
+      u8_grab_bytes(*sptr,n_bytes,buf);
       u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: '%s'"),buf);}
     (*sptr)++; return 0xFFFD;}
   i=size-1; scan++;
   while (i) {
     if ((*scan<0x80) || (*scan>=0xC0)) {
       if (u8_utf8err) {
-	char *details=u8_grab_bytes(start,UTF8_BUGWINDOW,NULL);
+	char *details; int n_bytes=UTF8_BUGWINDOW;
+	if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
+	details=u8_grab_bytes(*sptr,n_bytes,NULL);
 	u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),details);
 	u8_seterr(u8_TruncatedUTF8,"u8_sgetc",details);
 	return -2;} 
       else if (u8_utf8warn) {
-	char buf[UTF8_BUGWINDOW]; u8_grab_bytes(buf,UTF8_BUGWINDOW,buf);
-	u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),buf);}
+      char *details, buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
+      if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
+      u8_grab_bytes(*sptr,n_bytes,buf);
+      u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),buf);}
       *sptr=scan;
       return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}
@@ -240,8 +256,13 @@ static int u8_sgetc(u8_byte **sptr)
   *sptr=scan;
   return ch;
 }
+static int u8_sgetc(u8_byte **sptr)
+{
+  return u8_sgetc_lim(sptr,NULL);
+}
 #else
 #define u8_sgetc _u8_sgetc
+#define u8_sgetc_lim _u8_sgetc_lim
 #endif
 
 /* Byte/Character offset conversion */

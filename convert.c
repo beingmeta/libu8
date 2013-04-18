@@ -510,13 +510,14 @@ static int encgetc(struct U8_TEXT_ENCODING *e,
 		   int is_linear,int includes_ascii,
 		   unsigned char **scan,unsigned char *end)
 {
-  /* If we have no encoding, we assume UTF-8, which is either ascii or uses u8_sgetc */
+  /* If we have no encoding, we assume UTF-8, which is either ascii
+     or uses u8_sgetc */
   if ((e==NULL) || (e==utf8_encoding))
     if (**scan<0x80) return *((*scan)++);
     else if (get_utf8_size(**scan)>(end-*scan))
       return -1;
-    else if (e) return u8_sgetc(scan);
-    else if (u8_validptr(*scan)) return u8_sgetc(scan);
+    else if (e) return u8_sgetc_lim(scan,end);
+    else if (u8_validptr(*scan)) return u8_sgetc_lim(scan,end);
     else
       /* If the string isn't valid UTF-8, return the byte values as though
 	 it were latin1 */
@@ -633,10 +634,10 @@ unsigned char *u8_localize
        advancing the scanner; if in_crlf is false, set it, output an \r,
        and reset the pointer.  Note that you have to reset the pointer
        to stay in the loop if you're at the end of the string. */
-    if (crlf==0) ch=u8_sgetc(&scan);
+    if (crlf==0) ch=u8_sgetc_lim(&scan,end);
     else if (in_crlf) {ch='\n'; in_crlf=0; scan++;}
     else {
-      ch=u8_sgetc(&scan);
+      ch=u8_sgetc_lim(&scan,end);
       if (ch == '\n') {ch='\r'; in_crlf=1; scan=last;}}
     /* Grow the buffer if you can and if its neccessary.
        Note that if you can't grow the buffer and it is neccessary,
