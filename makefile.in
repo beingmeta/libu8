@@ -298,9 +298,9 @@ dist/rpms.done: staging/libu8-@U8VERSION@.tar.gz
 	touch dist/rpms.done
 
 dist/rpms32.done: staging/libu8-@U8VERSION@.tar.gz
-	CC='gcc -m32' rpmbuild ${RPMFLAGS} \
+	CC='gcc -m32' LD='ld --oformat=elf32-i386' rpmbuild ${RPMFLAGS} \
 		--define "_rpmdir dist" --define "_srcrpmdir dist" \
-		--target x86_linux_gnu --nodeps -ta \
+		--target xman86_linux_gnu --nodeps -ta \
 		staging/libu8-@U8VERSION@.tar.gz &&\
 	touch dist/rpms32.done
 
