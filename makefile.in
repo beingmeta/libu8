@@ -305,8 +305,8 @@ dist/rpms32.done: staging/libu8-@U8VERSION@.tar.gz
 	touch dist/rpms32.done
 
 dist/debs.done: staging/libu8-@U8VERSION@
-	cd staging/libu8-@U8VERSION@; dpkg-buildpackage -rfakeroot
-	rm -rf staging/libu8-@U8VERSION@;
+	cd staging/libu8-@U8VERSION@; dpkg-buildpackage -F -rfakeroot
+	rm -rf staging/libu8-@U8VERSION@; mv staging/libu8* dist
 
 # Installation targets
 
