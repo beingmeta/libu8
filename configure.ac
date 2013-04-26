@@ -6,7 +6,10 @@ shared_default="yes"
 shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 CLEAN="rm -f"
-U8VERSION="2.2"
+U8MAJOR="2"
+U8MINOR="2"
+U8RELEASE="7"
+U8VERSION="2.2.7"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
 INSTALLI18N=""
@@ -50,6 +53,9 @@ AC_SUBST(CLEAN)
 AC_SUBST(TAGS)
 AC_SUBST(SHARED_LIB)
 AC_SUBST(SHARED_LIBV)
+AC_SUBST(U8MAJOR)
+AC_SUBST(U8MINOR)
+AC_SUBST(U8RELEASE)
 AC_SUBST(U8VERSION)
 AC_SUBST(MKSTATIC)
 AC_SUBST(shared_suffix)
