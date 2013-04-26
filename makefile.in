@@ -300,7 +300,7 @@ dist/rpms.done: staging/libu8-@U8VERSION@.tar.gz
 dist/rpms32.done: staging/libu8-@U8VERSION@.tar.gz
 	CC='gcc -m32' rpmbuild ${RPMFLAGS} \
 		--define "_rpmdir dist" --define "_srcrpmdir dist" \
-		--target x86 --nodeps -ta \
+		--target x86_linux_gnu --nodeps -ta \
 		staging/libu8-@U8VERSION@.tar.gz &&\
 	touch dist/rpms32.done
 
