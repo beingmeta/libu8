@@ -656,6 +656,9 @@ suffix
 shared_suffix
 MKSTATIC
 U8VERSION
+U8RELEASE
+U8MINOR
+U8MAJOR
 SHARED_LIBV
 SHARED_LIB
 TAGS
@@ -2599,7 +2602,10 @@ shared_default="yes"
 shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 CLEAN="rm -f"
-U8VERSION="2.2"
+U8MAJOR="2"
+U8MINOR="2"
+U8RELEASE="7"
+U8VERSION="2.2.7"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
 INSTALLI18N=""
@@ -2777,6 +2783,9 @@ case $target_os in
 
    ;;
 esac
+
+
+
 
 
 
