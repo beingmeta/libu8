@@ -1,3 +1,9 @@
+libu8 (2.2.0-2) unstable; urgency=low
+
+  * Updated minor version number
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Tue,  26 Apr 2012
+
 libu8 (2.0.0-1) unstable; urgency=low
 
   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
