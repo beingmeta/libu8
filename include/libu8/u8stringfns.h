@@ -191,7 +191,7 @@ static MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
 static int u8_sgetc_lim(u8_byte **sptr,u8_byte *lim)
 {
   int i, ch, byte=**sptr, size;
-  u8_byte *scan=*sptr; u8_string start=*sptr;
+  u8_byte *scan=*sptr;
   /* Catch this error */
   if (U8_EXPECT_FALSE(byte == 0)) return -1;
   else if (U8_EXPECT_TRUE((lim)&&(scan>=lim))) return -1;
@@ -245,10 +245,10 @@ static int u8_sgetc_lim(u8_byte **sptr,u8_byte *lim)
 	u8_seterr(u8_TruncatedUTF8,"u8_sgetc",details);
 	return -2;} 
       else if (u8_utf8warn) {
-      char *details, buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
-      if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
-      u8_grab_bytes(*sptr,n_bytes,buf);
-      u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),buf);}
+	char buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
+	if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
+	u8_grab_bytes(*sptr,n_bytes,buf);
+	u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),buf);}
       *sptr=scan;
       return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}
@@ -271,7 +271,7 @@ U8_EXPORT u8_charoff _u8_charoffset(u8_string s,u8_byteoff i);
 U8_EXPORT u8_byteoff _u8_byteoffset(u8_string s,u8_charoff i,u8_byteoff l);
 
 #if U8_INLINE_IO
-static int u8_charoffset(u8_string s,u8_byteoff i)
+static MAYBE_UNUSED int u8_charoffset(u8_string s,u8_byteoff i)
 {
   u8_string pt=s+i; int j=0;
   while (s < pt) {
@@ -279,7 +279,7 @@ static int u8_charoffset(u8_string s,u8_byteoff i)
   return j;
 }
 
-static int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
+static MAYBE_UNUSED int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 {
   u8_string string=s, lim=s+max; int c=0;
   if (offset<0) return -1;

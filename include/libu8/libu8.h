@@ -203,25 +203,25 @@ U8_EXPORT u8_int8 u8_cityhash64(const unsigned char *s,size_t len);
 /* Thread proxy functions */
 
 /** Locks a POSIX thread mutex
-    @param a pointer to a mutex
+    @param m a pointer to a mutex
     @returns void
 **/
 U8_EXPORT void u8_mutex_lock(u8_mutex *m);
 
 /** Unlocks a POSIX thread mutex
-    @param a pointer to a mutex
+    @param m a pointer to a mutex
     @returns void
 **/
 U8_EXPORT void u8_mutex_unlock(u8_mutex *m);
 
 /** Initialize a POSIX thread mutex
-    @param a pointer to a mutex
+    @param m a pointer to a mutex
     @returns void
 **/
 U8_EXPORT void u8_mutex_init(u8_mutex *m);
 
 /** Destroys a POSIX thread mutex
-    @param a pointer to a mutex
+    @param m a pointer to a mutex
     @returns void
 **/
 U8_EXPORT void u8_mutex_destroy(u8_mutex *m);

@@ -83,7 +83,7 @@ U8_EXPORT u8_condition u8_CipherInit_Failed;
     @param key         a pointer to a key buffer
     @param key_len     the length of the key buffer in bytes (or -1)
     @param data        a pointer to a data buffer
-    @param data+len    the number of bytes in the data buffer (or -1)
+    @param data_len    the number of bytes in the data buffer (or -1)
     @param result      a result buffer (at least 32 bytes) or NULL
     @param result_len  the byte length of the result buffer
     @returns the SHA1 hash of the provided data
