@@ -98,6 +98,7 @@ U8_EXPORT u8_string u8_mkpath(u8_string dir,u8_string base)
   u8_string result;
   int dirlen=strlen(dir), baselen=strlen(base);
   unsigned int newlen=dirlen+baselen+2;
+  if (dirlen==0) return u8_strdup(base);
   newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
   result=u8_malloc(newlen);
   strcpy(result,dir);
