@@ -586,8 +586,10 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int basic)
   char buf[128], tzbuf[128];
   char *dash="-", *colon=":";
   u8_tmprec prec=xt->u8_prec;
-  if (basic) {dash=""; colon="";}
-  if ((basic)&&(prec>u8_second)) prec=u8_second;
+  if (basic&(U8_ISO8601_BASIC)) {dash=""; colon="";}
+  if ((basic&(U8_ISO8601_BASIC))&&(prec>u8_second)) prec=u8_second;
+  else if ((basic&(U8_ISO8601_NOMSECS))&&(prec>u8_second)) prec=u8_second;
+  else {}
   switch (prec) {
   case u8_year:
     sprintf(buf,"%04d",xt->u8_year); break;
@@ -633,7 +635,8 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int basic)
 	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
 	    xt->u8_hour,xt->u8_min,xt->u8_sec);
     break;}
-  if ((xt->u8_tzoff) ||  (xt->u8_dstoff)) {
+  if (basic&(U8_ISO8601_NOZONE)) tzbuf[0]='\0';
+  else if ((xt->u8_tzoff) ||  (xt->u8_dstoff)) {
     int off=xt->u8_tzoff+xt->u8_dstoff;
     char *sign=((off<0) ? "-" : "+");
     int tzoff=((off<0) ? (-((off))) : (off));
@@ -643,7 +646,7 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int basic)
     if (seconds)
       sprintf(tzbuf,"%s%d:%02d:%02d",sign,hours,minutes,seconds);
     else sprintf(tzbuf,"%s%d:%02d",sign,hours,minutes);}
-  else if (basic) strcpy(tzbuf,"Z");
+  else if (basic&(U8_ISO8601_NOZONE)) strcpy(tzbuf,"Z");
   else strcpy(tzbuf,"UTC");
   if (xt->u8_prec > u8_day)
     u8_printf(ss,"%s%s",buf,tzbuf);

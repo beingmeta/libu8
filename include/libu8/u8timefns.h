@@ -59,6 +59,11 @@ typedef enum u8_timestamp_precision {
 
 U8_EXPORT unsigned int u8_precision_secs[12];
 
+#define U8_ISO8601_STD 0
+#define U8_ISO8601_BASIC 1
+#define U8_ISO8601_NOZONE 2
+#define U8_ISO8601_NOMSECS 4
+
 /** The U8_XTIME struct defines a variable precision timezone-offset
     time representation with extractable components.  **/
 typedef struct U8_XTIME {
