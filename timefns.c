@@ -581,63 +581,76 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
   return xtp->u8_tick;
 }
 
-void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int basic)
+void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int flags)
 {
   char buf[128], tzbuf[128];
+  struct U8_XTIME utc, *xtptr;
   char *dash="-", *colon=":";
   u8_tmprec prec=xt->u8_prec;
-  if (basic&(U8_ISO8601_BASIC)) {dash=""; colon="";}
-  if ((basic&(U8_ISO8601_BASIC))&&(prec>u8_second)) prec=u8_second;
-  else if ((basic&(U8_ISO8601_NOMSECS))&&(prec>u8_second)) prec=u8_second;
+  if ((flags)&(U8_ISO8601_BASIC)) {dash=""; colon="";}
+  if (((flags)&(U8_ISO8601_BASIC))&&(prec>u8_second)) prec=u8_second;
+  else if (((flags)&(U8_ISO8601_NOMSECS))&&(prec>u8_second)) prec=u8_second;
   else {}
+  if ((flags)&(U8_ISO8601_UTC)&&
+      ((xt->u8_tzoff!=0)||(xt->u8_dstoff!=0))) {
+    time_t tick=xt->u8_tick;
+    u8_init_xtime(&utc,xt->u8_tick,prec,
+		  ((prec>u8_second)?(xt->u8_nsecs):(0)),
+		  0,0);
+    xtptr=&utc;}
+  else xtptr=xt;
   switch (prec) {
   case u8_year:
-    sprintf(buf,"%04d",xt->u8_year); break;
+    sprintf(buf,"%04d",xtptr->u8_year); break;
   case u8_month:
     sprintf(buf,"%04d%s%02d",
-	    xt->u8_year,dash,xt->u8_mon+1); break;
+	    xtptr->u8_year,dash,xtptr->u8_mon+1); break;
   case u8_day:
     sprintf(buf,"%04d%s%02d%s%02d",
-	    xt->u8_year,dash,xt->u8_mon+1,dash,xt->u8_mday); break;
+	    xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday); break;
   case u8_hour:
     sprintf(buf,"%04d%s%02d%s%02dT%02d",
-	    xt->u8_year,dash,xt->u8_mon+1,dash,xt->u8_mday,
-	    xt->u8_hour);
+	    xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday,
+	    xtptr->u8_hour);
     break;
-  case u8_minute: case u8_maxtmprec:
+  case u8_minute:
     sprintf(buf,"%04d%s%02d%s%02dT%02d%s%02d",
-	    xt->u8_year,dash,xt->u8_mon+1,dash,xt->u8_mday,
-	    xt->u8_hour,colon,xt->u8_min);
+	    xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday,
+	    xtptr->u8_hour,colon,xtptr->u8_min);
     break;
+    /* u8_maxtmprec should never get this var */
+  case u8_maxtmprec:
+    u8_log(LOG_WARN,"xtime_to_iso8601","Invalid precision %d for tick=%ld",
+	   (int)prec,(long long)(xtptr->u8_tick));
   case u8_second:
     sprintf(buf,"%04d%s%02d%s%02dT%02d%s%02d%s%02d",
-	    xt->u8_year,dash,xt->u8_mon+1,dash,xt->u8_mday,
-	    xt->u8_hour,colon,xt->u8_min,colon,xt->u8_sec);
+	    xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday,
+	    xtptr->u8_hour,colon,xtptr->u8_min,colon,xtptr->u8_sec);
     break;
   case u8_millisecond:
     /* The cases here and below don't exist for the basic format */
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%03d",
-	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
-	    xt->u8_hour,xt->u8_min,xt->u8_sec,
-	    xt->u8_nsecs/1000000); break;
+	    xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
+	    xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec,
+	    xtptr->u8_nsecs/1000000); break;
   case u8_microsecond:
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%06d",
-	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
-	    xt->u8_hour,xt->u8_min,xt->u8_sec,
-	    xt->u8_nsecs/1000); break;
+	    xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
+	    xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec,
+	    xtptr->u8_nsecs/1000); break;
   case u8_nanosecond: case u8_picosecond: case u8_femtosecond:
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%09d",
-	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
-	    xt->u8_hour,xt->u8_min,xt->u8_sec,
-	    xt->u8_nsecs); break;
+	    xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
+	    xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec,
+	    xtptr->u8_nsecs); break;
   default:
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d",
-	    xt->u8_year,xt->u8_mon+1,xt->u8_mday,
-	    xt->u8_hour,xt->u8_min,xt->u8_sec);
+	    xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
+	    xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec);
     break;}
-  if (basic&(U8_ISO8601_NOZONE)) tzbuf[0]='\0';
-  else if ((xt->u8_tzoff) ||  (xt->u8_dstoff)) {
-    int off=xt->u8_tzoff+xt->u8_dstoff;
+  if ((flags)&(U8_ISO8601_NOZONE)) tzbuf[0]='\0';
+  else if ((xtptr->u8_tzoff) ||  (xtptr->u8_dstoff)) {
+    int off=xtptr->u8_tzoff+xtptr->u8_dstoff;
     char *sign=((off<0) ? "-" : "+");
     int tzoff=((off<0) ? (-((off))) : (off));
     int hours=tzoff/3600,
@@ -646,9 +659,9 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int basic)
     if (seconds)
       sprintf(tzbuf,"%s%d:%02d:%02d",sign,hours,minutes,seconds);
     else sprintf(tzbuf,"%s%d:%02d",sign,hours,minutes);}
-  else if (basic&(U8_ISO8601_NOZONE)) strcpy(tzbuf,"Z");
+  else if ((flags)&(U8_ISO8601_NOZONE)) strcpy(tzbuf,"Z");
   else strcpy(tzbuf,"UTC");
-  if (xt->u8_prec > u8_day)
+  if (xtptr->u8_prec > u8_day)
     u8_printf(ss,"%s%s",buf,tzbuf);
   else u8_printf(ss,"%s",buf);
 }
@@ -658,8 +671,8 @@ U8_EXPORT
      Arguments: a timestamp and a pointer to a string stream
      Returns: -1 on error, the time as a time_t otherwise
 
-This takes an iso8601 string and fills out an extended time pointer which
-includes possible timezone and precision information.
+This takes xtime pointer and outputs an ISO8601 representation of it,
+obeying the precision of the XTIME structure
 */
 void u8_xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt)
 {
@@ -667,16 +680,22 @@ void u8_xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt)
 }
 
 U8_EXPORT
-/* u8_xtime_to_iso8601:
-     Arguments: a timestamp and a pointer to a string stream
+/* u8_xtime_to_iso8601_x:
+     Arguments: a timestamp, a pointer to a string stream, and a flags arg
      Returns: -1 on error, the time as a time_t otherwise
 
-This takes an iso8601 string and fills out an extended time pointer which
-includes possible timezone and precision information.
+This takes xtime pointer and outputs an ISO8601 representation of it,
+obeying the precision of the XTIME structure
+
+The flags arg provides display options, which can be ORd together:
+  U8_ISO8601_BASIC:   use the more compact BASIC format)
+  U8_ISO8601_NOZONE:  don't show the timezone information
+  U8_ISO8601_NOMSECS: don't show milli/micro/nano seconds
+  U8_ISO8601_UTC:     display time as UTC
 */
-void u8_xtime_to_iso8601basic(u8_output ss,struct U8_XTIME *xt)
+void u8_xtime_to_iso8601_x(u8_output ss,struct U8_XTIME *xt,int flags)
 {
-  xtime_to_iso8601(ss,xt,1);
+  xtime_to_iso8601(ss,xt,flags);
 }
 
 static u8_string month_names[12]=
