@@ -1,4 +1,4 @@
-/* -*- Mode: C; -*- */
+/* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2009-2013 beingmeta, inc.
    This file is part of the libu8 UTF-8 unicode library.
