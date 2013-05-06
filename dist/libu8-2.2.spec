@@ -1,6 +1,6 @@
 Name:           libu8
 Version:        2.2.7
-Release:        9%{?dist}
+Release:        10%{?dist}
 Summary:        utility/compatability for Unicode and other functions
 
 Group:          System Environment/Libraries
