@@ -659,8 +659,7 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int flags)
     if (seconds)
       sprintf(tzbuf,"%s%d:%02d:%02d",sign,hours,minutes,seconds);
     else sprintf(tzbuf,"%s%d:%02d",sign,hours,minutes);}
-  else if ((flags)&(U8_ISO8601_NOZONE)) strcpy(tzbuf,"Z");
-  else strcpy(tzbuf,"UTC");
+  else strcpy(tzbuf,"Z");
   if (xtptr->u8_prec > u8_day)
     u8_printf(ss,"%s%s",buf,tzbuf);
   else u8_printf(ss,"%s",buf);
