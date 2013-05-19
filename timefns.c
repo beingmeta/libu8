@@ -773,6 +773,41 @@ void u8_xtime_to_rfc822(u8_output ss,struct U8_XTIME *xtp)
   u8_printf(ss,"%s +0000",buf);
 }
 
+U8_EXPORT
+/* u8_xtime_to_rfc822_x:
+     Arguments: a timestamp and a pointer to a string stream
+     Returns: -1 on error, the time as a time_t otherwise
+
+This takes an iso8601 string and fills out an extended time pointer which
+includes possible timezone and precision information.
+*/
+void u8_xtime_to_rfc822_x(u8_output ss,struct U8_XTIME *xtp,int zone,int flags)
+{
+  struct U8_XTIME inzone;
+  char buf[128];
+  if (zone==0)
+    u8_init_xtime(&inzone,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs,0,0);
+  else if (zone==-1)
+    u8_init_xtime
+      (&inzone,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs,
+       xtp->u8_tzoff,xtp->u8_dstoff);
+  else if (zone==1)
+    u8_local_xtime(&inzone,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs);
+  else u8_init_xtime(&inzone,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs,zone,0);
+  sprintf(buf,"%s, %d %s %04d %02d:%02d:%02d",
+	  dow_names[inzone.u8_wday],
+	  inzone.u8_mday,
+	  month_names[inzone.u8_mon],
+	  (inzone.u8_year),
+	  inzone.u8_hour,inzone.u8_min,inzone.u8_sec);
+  if (!(flags&U8_RFC822_NOZONE)) {
+    int minus=(inzone.u8_tzoff+inzone.u8_dstoff)<0;
+    int off=((minus)?(-(inzone.u8_tzoff+inzone.u8_dstoff)):
+	     (inzone.u8_tzoff+inzone.u8_dstoff));
+    int hroff=off/60, minoff=off%60;
+    u8_printf(ss,"%s %s%02d%02d",buf,((minus)?"-":"+"),hroff,minoff);}
+}
+
 /* printf handling for time related values */
 
 static u8_string time_printf_handler

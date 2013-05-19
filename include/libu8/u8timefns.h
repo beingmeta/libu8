@@ -65,6 +65,9 @@ U8_EXPORT unsigned int u8_precision_secs[12];
 #define U8_ISO8601_NOMSECS 4
 #define U8_ISO8601_UTC 8
 
+#define U8_RFC822_STD 16
+#define U8_RFC822_NOZONE 2
+
 /** The U8_XTIME struct defines a variable precision timezone-offset
     time representation with extractable components.  **/
 typedef struct U8_XTIME {
@@ -266,6 +269,15 @@ U8_EXPORT time_t u8_rfc822_to_xtime(u8_string s,struct U8_XTIME *xt);
     @returns void
 **/
 U8_EXPORT void u8_xtime_to_rfc822(struct U8_OUTPUT *ss,struct U8_XTIME *xt);
+
+/** Outputs an RFC822 representation of a U8_XTIME structure.
+    @param ss a pointer to a U8_OUTPUT stream
+    @param xt a pointer to a U8_XTIME structure.
+    @param zone a timezone offset
+    @param opts display option flags (currently unused)
+    @returns void
+**/
+U8_EXPORT void u8_xtime_to_rfc822_x(struct U8_OUTPUT *ss,struct U8_XTIME *xt,int zone,int opts);
 
 /* Miscellanous Functions */
 
