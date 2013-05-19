@@ -800,11 +800,12 @@ void u8_xtime_to_rfc822_x(u8_output ss,struct U8_XTIME *xtp,int zone,int flags)
 	  month_names[inzone.u8_mon],
 	  (inzone.u8_year),
 	  inzone.u8_hour,inzone.u8_min,inzone.u8_sec);
-  if (!(flags&U8_RFC822_NOZONE)) {
+  if (flags&U8_RFC822_NOZONE) u8_puts(ss,buf);
+  else {
     int minus=(inzone.u8_tzoff+inzone.u8_dstoff)<0;
     int off=((minus)?(-(inzone.u8_tzoff+inzone.u8_dstoff)):
 	     (inzone.u8_tzoff+inzone.u8_dstoff));
-    int hroff=off/60, minoff=off%60;
+    int hroff=off/3600, minoff=off%3600/60;
     u8_printf(ss,"%s %s%02d%02d",buf,((minus)?"-":"+"),hroff,minoff);}
 }
 
