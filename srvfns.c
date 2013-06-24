@@ -442,18 +442,6 @@ static int close_client_core(u8_client cl,int server_locked)
 	     cl->n_trans,cl->idstring);
       server->n_busy--;}
     update_client_stats(cl,cur,1);
-    if (cl->queued>0) {
-      long long interval=cur-cl->queued;
-      u8_log(LOG_WARNING,"close_client_core",
-	     "Closing a queued client @x%lx#%d.%d[%s/%d](%s)",
-	     ((unsigned long)cl),cl->clientid,cl->socket,
-	     get_client_state(cl,statebuf),
-	     cl->n_trans,cl->idstring);
-      cl->stats.qsum+=interval;
-      cl->stats.qsum2+=(interval*interval);
-      if (interval>cl->stats.qmax) cl->stats.qmax=interval;
-      cl->stats.qcount++;
-      cl->queued=0;}
 
     cl->active=cl->running=cl->reading=cl->writing=cl->started=0;
 
@@ -472,7 +460,18 @@ static int close_client_core(u8_client cl,int server_locked)
 	     get_client_state(cl,statebuf),
 	     cl->n_trans,cl->idstring);
 
-    push_task(server,cl,"close_client_core");
+    if (cl->queued>0) {
+      long long interval=cur-cl->queued;
+      u8_log(LOG_WARNING,"close_client_core",
+	     "Closing a queued client @x%lx#%d.%d[%s/%d](%s)",
+	     ((unsigned long)cl),cl->clientid,cl->socket,
+	     get_client_state(cl,statebuf),
+	     cl->n_trans,cl->idstring);
+      cl->stats.qsum+=interval;
+      cl->stats.qsum2+=(interval*interval);
+      if (interval>cl->stats.qmax) cl->stats.qmax=interval;
+      cl->stats.qcount++;}
+    else push_task(server,cl,"close_client_core");
     
     return retval;}
 }
@@ -574,7 +573,7 @@ static u8_client pop_task(struct U8_SERVER *server)
 	   get_client_state(task,statebuf),
 	   task->n_trans,task->idstring);
     task->queued=-1; task=NULL;}
-  else if (task->queued<=0) {
+  else if ((task->queued<=0)||(task->socket<0)) {
     free_client(task->server,task); task=NULL;}
   else {
     u8_utime curtime=u8_microtime();
