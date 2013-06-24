@@ -654,6 +654,7 @@ syslog_target
 install_shared
 suffix
 shared_suffix
+SUDOINSTALL
 MKSTATIC
 U8VERSION
 U8RELEASE
@@ -721,6 +722,7 @@ with_arch
 enable_shared
 with_i18n
 with_fileinfo
+with_sudoinstall
 with_tcmalloc
 enable_threads
 with_tls
@@ -1358,6 +1360,7 @@ Optional Packages:
 --without-arch build with particular --arch flags
 --without-i18n built and install message catalogs
 --without-fileinfo record fileinfo
+--without-sudoinstall use sudo with install
 --without-tcmalloc Use the Google malloc library
 --without-tls Force use of threadlocal storage
 
@@ -2609,6 +2612,7 @@ U8VERSION="2.2.7"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
 INSTALLI18N=""
+SUDOINSTALL=""
 TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
@@ -2783,6 +2787,7 @@ case $target_os in
 
    ;;
 esac
+
 
 
 
@@ -5588,6 +5593,18 @@ fi
 if test "x$with_fileinfo" = "xyes" ; then
    definefileinfo="-D_FILEINFO=\"\\\"\`./fileinfo ./$< .\`\\\"\""
    versionsh="include/framerd/versions.h"
+fi
+
+
+# Check whether --with-sudoinstall was given.
+if test "${with_sudoinstall+set}" = set; then :
+  withval=$with_sudoinstall;
+else
+  with_sudoinstall=""
+fi
+
+if test "x$with_sudoinstall" != "x"; then
+  SUDOINSTALL="sudo "
 fi
 
 

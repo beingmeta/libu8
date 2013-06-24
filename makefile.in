@@ -19,7 +19,7 @@ MANDIR		= $(DESTDIR)@mandir@
 LIBINSTALLDIR	= $(DESTDIR)@libdir@
 RPMFLAGS	= 
 CLEAN		= @CLEAN@
-INSTALL		= @INSTALL@
+INSTALL		= @SUDOINSTALL@@INSTALL@
 RANLIB		= @RANLIB@
 MKSTATIC	= @MKSTATIC@
 DOXYGEN		= @doxygen@
@@ -65,6 +65,7 @@ STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
 ALL=@TAGS@ libs @I18N@ testbin dytestbin @DOCS@
 
 update: buildmode
+	@echo Building `cat buildmode` configuration
 	make `cat buildmode`
 standard:
 	make ${ALL}
@@ -78,15 +79,19 @@ all: ${ALL}
 
 debug:
 	@if test $(BUILDMODE) != "debugging"; then echo debugging > buildmode; fi
+	@echo Building `cat buildmode` configuration
 	make `cat buildmode`
 default:
 	@if test $(BUILDMODE) != "standard"; then echo standard > buildmode; fi
+	@echo Building `cat buildmode` configuration
 	make `cat buildmode`
 nitpick:
 	@if test $(BUILDMODE) != "nitpicking"; then echo nitpicking > buildmode; fi
+	@echo Building `cat buildmode` configuration
 	make `cat buildmode`
 fast:
 	@if test $(BUILDMODE) != "optimizing"; then echo optimizing > buildmode; fi
+	@echo Building `cat buildmode` configuration
 	make `cat buildmode`
 buildmode:
 	@echo standard > buildmode

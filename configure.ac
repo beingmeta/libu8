@@ -13,6 +13,7 @@ U8VERSION="2.2.7"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
 INSTALLI18N=""
+SUDOINSTALL=""
 TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
@@ -58,6 +59,7 @@ AC_SUBST(U8MINOR)
 AC_SUBST(U8RELEASE)
 AC_SUBST(U8VERSION)
 AC_SUBST(MKSTATIC)
+AC_SUBST(SUDOINSTALL)
 AC_SUBST(shared_suffix)
 AC_SUBST(suffix)
 AC_SUBST(install_shared)
@@ -203,6 +205,12 @@ AC_ARG_WITH(fileinfo,--with[out]-fileinfo record fileinfo,,with_fileinfo="yes")
 if test "x$with_fileinfo" = "xyes" ; then
    definefileinfo="-D_FILEINFO=\"\\\"\`./fileinfo ./$< .\`\\\"\""
    versionsh="include/framerd/versions.h"
+fi
+
+dnl Use sudo with install in makefile
+AC_ARG_WITH(sudoinstall,--with[out]-sudoinstall use sudo with install,,with_sudoinstall="")
+if test "x$with_sudoinstall" != "x"; then
+  SUDOINSTALL="sudo "
 fi
 
 AC_ARG_WITH(tcmalloc,--with[out]-tcmalloc Use the Google malloc library,,with_tcmalloc="no")
