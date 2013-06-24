@@ -13,7 +13,7 @@ U8VERSION="2.2.7"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
 INSTALLI18N=""
-SUDOINSTALL=""
+SUDO=""
 TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
@@ -59,7 +59,7 @@ AC_SUBST(U8MINOR)
 AC_SUBST(U8RELEASE)
 AC_SUBST(U8VERSION)
 AC_SUBST(MKSTATIC)
-AC_SUBST(SUDOINSTALL)
+AC_SUBST(SUDO)
 AC_SUBST(shared_suffix)
 AC_SUBST(suffix)
 AC_SUBST(install_shared)
@@ -207,10 +207,17 @@ if test "x$with_fileinfo" = "xyes" ; then
    versionsh="include/framerd/versions.h"
 fi
 
-dnl Use sudo with install in makefile
-AC_ARG_WITH(sudoinstall,--with[out]-sudoinstall use sudo with install,,with_sudoinstall="")
-if test "x$with_sudoinstall" != "x"; then
-  SUDOINSTALL="sudo "
+dnl Use sudo for installations in makefile
+AC_ARG_WITH(sudo,--with[out]-sudo use sudo with install,,with_sudo="yes")
+if test "x$with_sudo" == "xyes"; then
+  AC_CHECK_PROGS(sudo_program,sudo,"na")
+  if test "x$sudoprogram" == "xna"; then
+    SUDO=""
+  else 
+    SUDO="$sudo_program "
+  fi
+elif test "x$with_sudo" != "xno"; then
+  SUDO="$with_sudo "
 fi
 
 AC_ARG_WITH(tcmalloc,--with[out]-tcmalloc Use the Google malloc library,,with_tcmalloc="no")
