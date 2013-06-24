@@ -157,7 +157,7 @@ $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: lib/%@suffix@.so.@U8VERSION@
 	$(INSTALL) -d $(LIBINSTALLDIR)
 	$(INSTALL) $< $(LIBINSTALLDIR)
 $(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
-	ln -sf $(shell basename $<) $@
+	@SUDOINSTALL@ln -sf $(shell basename $<) $@
 
 $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: lib/%@suffix@.@U8VERSION@.dylib
 	$(INSTALL) -d $(LIBINSTALLDIR)
@@ -165,7 +165,7 @@ $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: lib/%@suffix@.@U8VERSION@.dylib
 
 $(LIBINSTALLDIR)/%@suffix@.dylib: \
 		$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
-	ln -sf $(shell basename $<) $@
+	@SUDOINSTALL@ln -sf $(shell basename $<) $@
 
 testbin: $(TESTBIN)
 dytestbin: $(DYTESTBIN)
