@@ -17,6 +17,7 @@ datadir		= @datadir@
 LOCALEDIR	= $(DESTDIR)@localedir@
 MANDIR		= $(DESTDIR)@mandir@
 LIBINSTALLDIR	= $(DESTDIR)@libdir@
+ENCDIR		= $(DESTDIR)@prefix@/share/libu8/encodings
 RPMFLAGS	= 
 CLEAN		= @CLEAN@
 INSTALL		= @SUDO@@INSTALL@
@@ -150,22 +151,27 @@ lib/%@suffix@.dylib: lib/%@suffix@.@U8VERSION@.dylib
 	@ln -sf $(<F) $@
 
 $(LIBINSTALLDIR)/%.a: lib/%.a
-	$(INSTALL) -d $(LIBINSTALLDIR)
-	$(INSTALL) $< $(LIBINSTALLDIR)
+	@echo Installing $@
+	@unset LD_LIBRARY_PATH; $(INSTALL) -d $(LIBINSTALLDIR)
+	@unset LD_LIBRARY_PATH; $(INSTALL) $< $(LIBINSTALLDIR)
 
 $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: lib/%@suffix@.so.@U8VERSION@
-	$(INSTALL) -d $(LIBINSTALLDIR)
-	$(INSTALL) $< $(LIBINSTALLDIR)
+	@echo Installing $@
+	@unset LD_LIBRARY_PATH; $(INSTALL) -d $(LIBINSTALLDIR)
+	@unset LD_LIBRARY_PATH; $(INSTALL) $< $(LIBINSTALLDIR)
 $(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
-	@SUDO@ln -sf $(shell basename $<) $@
+	@echo Linking to $@
+	@unset LD_LIBRARY_PATH; @SUDO@ln -sf $(shell basename $<) $@
 
 $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: lib/%@suffix@.@U8VERSION@.dylib
-	$(INSTALL) -d $(LIBINSTALLDIR)
-	$(INSTALL) $< $(LIBINSTALLDIR)
+	@echo Installing $@
+	@unset LD_LIBRARY_PATH; $(INSTALL) -d $(LIBINSTALLDIR)
+	@unset LD_LIBRARY_PATH; $(INSTALL) $< $(LIBINSTALLDIR)
 
 $(LIBINSTALLDIR)/%@suffix@.dylib: \
 		$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
-	@SUDO@ln -sf $(shell basename $<) $@
+	@echo Linking to $@
+	@unset LD_LIBRARY_PATH; @SUDO@ln -sf $(shell basename $<) $@
 
 testbin: $(TESTBIN)
 dytestbin: $(DYTESTBIN)
@@ -321,12 +327,46 @@ install: install-libs install-headers install-encodings \
 install-libs: install-static-libs @install_shared@
 
 install-headers: $(DESTDIR)@prefix@/include/libu8
-	$(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
+	@echo Installing headers in $(DESTDIR)@prefix@/include/libu8
+	@unset LD_LIBRARY_PATH; $(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
 $(DESTDIR)@prefix@/include/libu8:
 	$(INSTALL) -d $(DESTDIR)@prefix@/include/libu8
 
 install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
-	$(INSTALL) $(ENCODINGS) $(DESTDIR)@prefix@/share/libu8/encodings
+	@echo Installing encodings in $(ENCDIR)
+	@unset LD_LIBRARY_PATH; $(INSTALL) $(ENCODINGS) $(ENCDIR)
+	@unset LD_LIBRARY_PATH; \
+        for x in CP1125_ALIASES; do @SUDO@ln -sf CP1125 $(ENCDIR)/$x; done; \
+	for x in CP1250_ALIASES; do @SUDO@ln -sf CP1250 $(ENCDIR)/$x; done; \
+	for x in CP1251_ALIASES; do @SUDO@ln -sf CP1251 $(ENCDIR)/$x; done; \
+	for x in CP1252_ALIASES; do @SUDO@ln -sf CP1252 $(ENCDIR)/$x; done; \
+	for x in CP1253_ALIASES; do @SUDO@ln -sf CP1253 $(ENCDIR)/$x; done; \
+	for x in CP1254_ALIASES; do @SUDO@ln -sf CP1254 $(ENCDIR)/$x; done; \
+	for x in CP1255_ALIASES; do @SUDO@ln -sf CP1255 $(ENCDIR)/$x; done; \
+	for x in CP1256_ALIASES; do @SUDO@ln -sf CP1256 $(ENCDIR)/$x; done; \
+	for x in CP1257_ALIASES; do @SUDO@ln -sf CP1257 $(ENCDIR)/$x; done; \
+	for x in CP1258_ALIASES; do @SUDO@ln -sf CP1258 $(ENCDIR)/$x; done; \
+	for x in ISO88591_ALIASES; do @SUDO@ln -sf ISO88591 $(ENCDIR)/$x; done; \
+	for x in ISO88592_ALIASES; do @SUDO@ln -sf ISO88592 $(ENCDIR)/$x; done; \
+	for x in ISO88593_ALIASES; do @SUDO@ln -sf ISO88593 $(ENCDIR)/$x; done; \
+	for x in ISO88594_ALIASES; do @SUDO@ln -sf ISO88594 $(ENCDIR)/$x; done; \
+	for x in ISO88595_ALIASES; do @SUDO@ln -sf ISO88595 $(ENCDIR)/$x; done; \
+	for x in ISO88596_ALIASES; do @SUDO@ln -sf ISO88596 $(ENCDIR)/$x; done; \
+	for x in ISO88597_ALIASES; do @SUDO@ln -sf ISO88597 $(ENCDIR)/$x; done; \
+	for x in ISO88598_ALIASES; do @SUDO@ln -sf ISO88598 $(ENCDIR)/$x; done; \
+	for x in ISO88599_ALIASES; do @SUDO@ln -sf ISO88599 $(ENCDIR)/$x; done; \
+	for x in EUCJP_ALIASES; do @SUDO@ln -sf EUCJP $(ENCDIR)/$x; done; \
+	for x in EUCKR_ALIASES; do @SUDO@ln -sf EUCKR $(ENCDIR)/$x; done; \
+	for x in EUCTW_ALIASES; do @SUDO@ln -sf EUCTW $(ENCDIR)/$x; done; \
+	for x in KOI8R_ALIASES; do @SUDO@ln -sf KOI8R $(ENCDIR)/$x; done; \
+	for x in SHIFTJIS_ALIASES; do @SUDO@ln -sf SHIFTJIS $(ENCDIR)/$x; done; \
+	for x in GB2312_ALIASES; do @SUDO@ln -sf GB2312 $(ENCDIR)/$x; done; \
+	for x in GBK_ALIASES; do @SUDO@ln -sf GBK $(ENCDIR)/$x; done; \
+	for x in BIG5_ALIASES; do @SUDO@ln -sf BIG5 $(ENCDIR)/$x; done; \
+	for x in MACINTOSH_ALIASES; do @SUDO@ln -sf MACINTOSH $(ENCDIR)/$x; done; \
+	for x in MACCYRILLIC_ALIASES; do @SUDO@ln -sf MACCYRILLIC $(ENCDIR)/$x; done; \
+	for x in MACCENTRALEUROPE_ALIASES; do @SUDO@ln -sf MACCENTRALEUROPE $(ENCDIR)/$x; done;
+
 $(DESTDIR)@prefix@/share/libu8/encodings:
 	$(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
 
@@ -391,19 +431,59 @@ ENCODINGS=\
 	encodings/MACINTOSH \
 	encodings/ISO_6937 \
 	encodings/GBK \
-	encodings/CP1258 \
 	encodings/SHIFT_JIS \
 	encodings/CP1125 \
+	encodings/CP1251 \
 	encodings/CP1252 \
+	encodings/CP1253 \
+	encodings/CP1254 \
+	encodings/CP1255 \
+	encodings/CP1256 \
+	encodings/CP1257 \
+	encodings/CP1258 \
 	encodings/GB2312 \
 	encodings/ISO88592 \
 	encodings/BIG5 \
 	encodings/EUCJP \
-	encodings/GREEK7 \
 	encodings/EUCKR \
 	encodings/EUCTW \
-	encodings/CP1251 \
-	encodings/SHIFT_JISX0213
+	encodings/GREEK7 \
+	encodings/SHIFT_JISX0213 \
+	encodings/MACCYRILLIC \
+	encodings/MACCENTRALEUROPE \
+	encodings/TSCII \
+	encodings/VISCII
+CP1125_ALIASES=MSEE WINDOWS1250
+CP1250_ALIASES=MSEE WINDOWS1250
+CP1251_ALIASES=MSCYRL WINDOWS1251
+CP1252_ALIASES=MS1252 WINDOWS1252 MSANSI
+CP1253_ALIASES=MS1252 WINDOWS1253 MSGREEK
+CP1254_ALIASES=MS1254 WINDOWS1254 MSTURK
+CP1255_ALIASES=MS1255 WINDOWS1255 MSHEBR
+CP1256_ALIASES=MS1256 WINDOWS1256 MSARAB
+CP1257_ALIASES=MS1257 WINDOWS1257 WINBALTRIM
+CP1258_ALIASES=MS1258 WINDOWS1258
+ISO88591_ALIASES=CP819 CSISOLATIN IBM819 ISOIR100 L1 LATIN1
+ISO88592_ALIASES=CSISOLATIN2 ISOIR101 L2 LATIN2
+ISO88593_ALIASES=CSISOLATIN3 ISOIR109 L3 LATIN3
+ISO88594_ALIASES=CSISOLATIN4 ISOIR110 L4 LATIN4
+ISO88595_ALIASES=CSISOLATINCYRILLIC CYRILLIC ISOIR144 L4 LATIN4
+ISO88596_ALIASES=ARABIC ASMO708 CSISOLATINARABIC ECMA114 ISOIR127
+ISO88597_ALIASES=CSISOLATINGREEK ECMA118 ELOT928 GREEK GREEK8 ISOIR126
+ISO88598_ALIASES=CSISOLATINHEBREW HEBREW ISOIR138
+ISO88599_ALIASES=CSISOLATIN5 ISOIR148 L5 LATIN5
+EUCJP_ALIASES=CSEUCJP EUCJP UJIS XEUCJP
+EUCKR_ALIASES=CSEUCKR EUCKR
+EUCTW_ALIASES=CNS11643
+#KOI8_ALIASES=
+KOI8R_ALIASES=CSKOI8R
+SHIFTJIS_ALIASES=CSSHIFTJIS MSKANJI SJIS SJIS
+#SHIFTJISX2013_ALIASES=
+GB2312_ALIASES=CHINESE CSGB2312 CSISO58GB231280,ISOIR58
+GBK_ALIASES=CP936 MS936 WINDOWS936
+#GREEK7_ALIASES=
+BIG5_ALIASES=BIGFIVE CN-BIG5 CSBIG5
+MACINTOSH_ALIASES=MACROMAN CSMACINTOSH MAC
 
 # buildmode dependencies
 
