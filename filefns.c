@@ -142,6 +142,13 @@ U8_EXPORT int u8_file_existsp(u8_string filename)
 {
   char *lpath=u8_localpath(filename);
   int retval=file_existsp(filename);
+  if (retval<0) {
+    if (errno) {
+      u8_log(LOG_WARN,"u8_file_existsp","Error for '%s' (%s)",
+	     lpath,strerror(errno));
+      errno=0;}
+    else u8_log(LOG_WARN,"u8_file_existsp","Error for '%s'",lpath);
+    retval=0;}
   u8_free(lpath);
   return retval;
 }
@@ -149,6 +156,13 @@ U8_EXPORT int u8_file_readablep(u8_string filename)
 {
   char *lpath=u8_localpath(filename);
   int retval=file_readablep(filename);
+  if (retval<0) {
+    if (errno) {
+      u8_log(LOG_WARN,"u8_file_readablep","Error for '%s' (%s)",
+	     lpath,strerror(errno));
+      errno=0;}
+    else u8_log(LOG_WARN,"u8_file_readablep","Error for '%s'",lpath);
+    retval=0;}
   u8_free(lpath);
   return retval;
 }
@@ -156,6 +170,13 @@ U8_EXPORT int u8_file_writablep(u8_string filename)
 {
   char *lpath=u8_localpath(filename);
   int retval=file_writablep(filename);
+  if (retval<0) {
+    if (errno) {
+      u8_log(LOG_WARN,"u8_file_writablep","Error for '%s' (%s)",
+	     lpath,strerror(errno));
+      errno=0;}
+    else u8_log(LOG_WARN,"u8_file_writeablep","Error for '%s'",lpath);
+    retval=0;}
   u8_free(lpath);
   return retval;
 }
