@@ -332,44 +332,6 @@ install-headers: $(DESTDIR)@prefix@/include/libu8
 $(DESTDIR)@prefix@/include/libu8:
 	$(INSTALL) -d $(DESTDIR)@prefix@/include/libu8
 
-install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
-	@echo Installing encodings in $(ENCDIR)
-	@unset LD_LIBRARY_PATH; $(INSTALL) $(ENCODINGS) $(ENCDIR)
-	@unset LD_LIBRARY_PATH; \
-        for x in CP1125_ALIASES; do @SUDO@ln -sf CP1125 $(ENCDIR)/$x; done; \
-	for x in CP1250_ALIASES; do @SUDO@ln -sf CP1250 $(ENCDIR)/$x; done; \
-	for x in CP1251_ALIASES; do @SUDO@ln -sf CP1251 $(ENCDIR)/$x; done; \
-	for x in CP1252_ALIASES; do @SUDO@ln -sf CP1252 $(ENCDIR)/$x; done; \
-	for x in CP1253_ALIASES; do @SUDO@ln -sf CP1253 $(ENCDIR)/$x; done; \
-	for x in CP1254_ALIASES; do @SUDO@ln -sf CP1254 $(ENCDIR)/$x; done; \
-	for x in CP1255_ALIASES; do @SUDO@ln -sf CP1255 $(ENCDIR)/$x; done; \
-	for x in CP1256_ALIASES; do @SUDO@ln -sf CP1256 $(ENCDIR)/$x; done; \
-	for x in CP1257_ALIASES; do @SUDO@ln -sf CP1257 $(ENCDIR)/$x; done; \
-	for x in CP1258_ALIASES; do @SUDO@ln -sf CP1258 $(ENCDIR)/$x; done; \
-	for x in ISO88591_ALIASES; do @SUDO@ln -sf ISO88591 $(ENCDIR)/$x; done; \
-	for x in ISO88592_ALIASES; do @SUDO@ln -sf ISO88592 $(ENCDIR)/$x; done; \
-	for x in ISO88593_ALIASES; do @SUDO@ln -sf ISO88593 $(ENCDIR)/$x; done; \
-	for x in ISO88594_ALIASES; do @SUDO@ln -sf ISO88594 $(ENCDIR)/$x; done; \
-	for x in ISO88595_ALIASES; do @SUDO@ln -sf ISO88595 $(ENCDIR)/$x; done; \
-	for x in ISO88596_ALIASES; do @SUDO@ln -sf ISO88596 $(ENCDIR)/$x; done; \
-	for x in ISO88597_ALIASES; do @SUDO@ln -sf ISO88597 $(ENCDIR)/$x; done; \
-	for x in ISO88598_ALIASES; do @SUDO@ln -sf ISO88598 $(ENCDIR)/$x; done; \
-	for x in ISO88599_ALIASES; do @SUDO@ln -sf ISO88599 $(ENCDIR)/$x; done; \
-	for x in EUCJP_ALIASES; do @SUDO@ln -sf EUCJP $(ENCDIR)/$x; done; \
-	for x in EUCKR_ALIASES; do @SUDO@ln -sf EUCKR $(ENCDIR)/$x; done; \
-	for x in EUCTW_ALIASES; do @SUDO@ln -sf EUCTW $(ENCDIR)/$x; done; \
-	for x in KOI8R_ALIASES; do @SUDO@ln -sf KOI8R $(ENCDIR)/$x; done; \
-	for x in SHIFTJIS_ALIASES; do @SUDO@ln -sf SHIFTJIS $(ENCDIR)/$x; done; \
-	for x in GB2312_ALIASES; do @SUDO@ln -sf GB2312 $(ENCDIR)/$x; done; \
-	for x in GBK_ALIASES; do @SUDO@ln -sf GBK $(ENCDIR)/$x; done; \
-	for x in BIG5_ALIASES; do @SUDO@ln -sf BIG5 $(ENCDIR)/$x; done; \
-	for x in MACINTOSH_ALIASES; do @SUDO@ln -sf MACINTOSH $(ENCDIR)/$x; done; \
-	for x in MACCYRILLIC_ALIASES; do @SUDO@ln -sf MACCYRILLIC $(ENCDIR)/$x; done; \
-	for x in MACCENTRALEUROPE_ALIASES; do @SUDO@ln -sf MACCENTRALEUROPE $(ENCDIR)/$x; done;
-
-$(DESTDIR)@prefix@/share/libu8/encodings:
-	$(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
-
 install-docs: docs/doxygen.done
 	@echo "Writing man pages"
 	@$(INSTALL) -d $(MANDIR)/man3
@@ -485,6 +447,44 @@ GBK_ALIASES=CP936 MS936 WINDOWS936
 #GREEK7_ALIASES=
 BIG5_ALIASES=BIGFIVE CN-BIG5 CSBIG5
 MACINTOSH_ALIASES=MACROMAN CSMACINTOSH MAC
+
+install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
+	@echo Installing encodings in $(ENCDIR)
+	@unset LD_LIBRARY_PATH; $(INSTALL) $(ENCODINGS) $(ENCDIR)
+	@unset LD_LIBRARY_PATH; \
+        for x in $(CP1125_ALIASES); do @SUDO@ln -sf CP1125 $(ENCDIR)/$$x; done; \
+	for x in $(CP1250_ALIASES); do @SUDO@ln -sf CP1250 $(ENCDIR)/$$x; done; \
+	for x in $(CP1251_ALIASES); do @SUDO@ln -sf CP1251 $(ENCDIR)/$$x; done; \
+	for x in $(CP1252_ALIASES); do @SUDO@ln -sf CP1252 $(ENCDIR)/$$x; done; \
+	for x in $(CP1253_ALIASES); do @SUDO@ln -sf CP1253 $(ENCDIR)/$$x; done; \
+	for x in $(CP1254_ALIASES); do @SUDO@ln -sf CP1254 $(ENCDIR)/$$x; done; \
+	for x in $(CP1255_ALIASES); do @SUDO@ln -sf CP1255 $(ENCDIR)/$$x; done; \
+	for x in $(CP1256_ALIASES); do @SUDO@ln -sf CP1256 $(ENCDIR)/$$x; done; \
+	for x in $(CP1257_ALIASES); do @SUDO@ln -sf CP1257 $(ENCDIR)/$$x; done; \
+	for x in $(CP1258_ALIASES); do @SUDO@ln -sf CP1258 $(ENCDIR)/$$x; done; \
+	for x in $(ISO88591_ALIASES); do @SUDO@ln -sf ISO88591 $(ENCDIR)/$$x; done; \
+	for x in $(ISO88592_ALIASES); do @SUDO@ln -sf ISO88592 $(ENCDIR)/$$x; done; \
+	for x in $(ISO88593_ALIASES); do @SUDO@ln -sf ISO88593 $(ENCDIR)/$$x; done; \
+	for x in $(ISO88594_ALIASES); do @SUDO@ln -sf ISO88594 $(ENCDIR)/$$x; done; \
+	for x in $(ISO88595_ALIASES); do @SUDO@ln -sf ISO88595 $(ENCDIR)/$$x; done; \
+	for x in $(ISO88596_ALIASES); do @SUDO@ln -sf ISO88596 $(ENCDIR)/$$x; done; \
+	for x in $(ISO88597_ALIASES); do @SUDO@ln -sf ISO88597 $(ENCDIR)/$$x; done; \
+	for x in $(ISO88598_ALIASES); do @SUDO@ln -sf ISO88598 $(ENCDIR)/$$x; done; \
+	for x in $(ISO88599_ALIASES); do @SUDO@ln -sf ISO88599 $(ENCDIR)/$$x; done; \
+	for x in $(EUCJP_ALIASES); do @SUDO@ln -sf EUCJP $(ENCDIR)/$$x; done; \
+	for x in $(EUCKR_ALIASES); do @SUDO@ln -sf EUCKR $(ENCDIR)/$$x; done; \
+	for x in $(EUCTW_ALIASES); do @SUDO@ln -sf EUCTW $(ENCDIR)/$$x; done; \
+	for x in $(KOI8R_ALIASES); do @SUDO@ln -sf KOI8R $(ENCDIR)/$$x; done; \
+	for x in $(SHIFTJIS_ALIASES); do @SUDO@ln -sf SHIFTJIS $(ENCDIR)/$$x; done; \
+	for x in $(GB2312_ALIASES); do @SUDO@ln -sf GB2312 $(ENCDIR)/$$x; done; \
+	for x in $(GBK_ALIASES); do @SUDO@ln -sf GBK $(ENCDIR)/$$x; done; \
+	for x in $(BIG5_ALIASES); do @SUDO@ln -sf BIG5 $(ENCDIR)/$$x; done; \
+	for x in $(MACINTOSH_ALIASES); do @SUDO@ln -sf MACINTOSH $(ENCDIR)/$$x; done; \
+	for x in $(MACCYRILLIC_ALIASES); do @SUDO@ln -sf MACCYRILLIC $(ENCDIR)/$$x; done; \
+	for x in $(MACCENTRALEUROPE_ALIASES); do @SUDO@ln -sf MACCENTRALEUROPE $(ENCDIR)/$$x; done;
+
+$(DESTDIR)@prefix@/share/libu8/encodings:
+	$(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
 
 # buildmode dependencies
 
