@@ -35,7 +35,8 @@ typedef struct U8_SERVER *u8_server;
 #define U8_CLIENT_CLOSED 8
 #define U8_CLIENT_LOG_TRANSACT 16
 #define U8_CLIENT_LOG_TRANSFER 32
-#define U8_CLIENT_FLAG_MAX 32
+#define U8_CLIENT_LOG_QUEUE 64
+#define U8_CLIENT_FLAG_MAX 64
 
 typedef struct U8_CLIENT *u8_client;
 typedef int (*u8_client_callback)(u8_client,void *);
@@ -151,7 +152,8 @@ U8_EXPORT int u8_client_done(u8_client cl);
 #define U8_SERVER_LOG_CONNECT 8
 #define U8_SERVER_LOG_TRANSACT 16
 #define U8_SERVER_LOG_TRANSFER 32
-#define U8_SERVER_FLAG_MAX 32
+#define U8_SERVER_LOG_QUEUE 64
+#define U8_SERVER_FLAG_MAX 64
 
 /* Argument names to u8_init_server */
 
