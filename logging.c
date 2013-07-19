@@ -155,33 +155,26 @@ U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
 {
   time_t nowval=time(NULL);
   struct tm *now=localtime(&nowval);
-  char clockbuf[64], timebuf[64], procid[128]; u8_string appid=NULL;
+  char clockbuf[64], timebuf[64], procbuf[128];
+  u8_string appid=NULL, procid=procbuf;
   if (u8_log_show_date)
     strftime(clockbuf,32,"%H:%M:%S(%d%b%y)",now);
   else strftime(clockbuf,32,"%H:%M:%S",now);
   if (u8_log_show_elapsed) 
     sprintf(timebuf,"%s(%f)",clockbuf,u8_elapsed_time());
   else sprintf(timebuf,"%s",clockbuf);
-  if (u8_log_show_procinfo) {
-#if ((HAVE_GETPID) && (HAVE_PTHREAD_SELF))
-    if (u8_log_show_threadinfo)
-      sprintf(procid,"%lu:%lx",
-	      (unsigned long)getpid(),
-	      (unsigned long)pthread_self());
-    else sprintf(procid,"%lu",(unsigned long)getpid());
-#elif (HAVE_GETPID)
-    sprintf(procid,"%lu",(unsigned long)getpid());
-#else
-    sprintf(procid,"noinfo");
-#endif
-  }
-  else strcpy(procid,"");
-  if ((u8_log_show_procinfo) && (u8_log_show_appid)) appid=u8_appid();
   if (!(u8_log_show_procinfo)) {
     sprintf(buf,"%s",timebuf);
     return buf;}
-  else if ((u8_log_show_procinfo) && (u8_log_show_appid) && (appid!=NULL) &&
-	   ((strlen(timebuf)+strlen(procid)+strlen(appid)+5)<buflen))
+if (u8_log_show_appid) appid=u8_appid();
+#if (HAVE_GETPID)
+  if (u8_log_show_threadinfo)
+    procid=u8_threadid(procbuf);
+  else sprintf(procbuf,"%lu",(unsigned long)getpid());
+#else
+  if (u8_log_show_procinfo) sprintf(procbuf,"nopid");
+#endif
+  if ((appid!=NULL)&&((strlen(timebuf)+strlen(procid)+strlen(appid)+5)<buflen))
     sprintf(buf,"%s <%s:%s>",timebuf,appid,procid);
   else if ((u8_log_show_procinfo) &&
 	   ((strlen(timebuf)+strlen(procid)+5)<buflen))
