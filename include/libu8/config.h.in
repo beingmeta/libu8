@@ -156,6 +156,12 @@
 /* Define if you have getrusage */
 #undef HAVE_GETRUSAGE
 
+/* Define if you have sys/syscall.h */
+#undef HAVE_SYS_SYSCALL_H
+
+/* Define if you have syscall */
+#undef HAVE_SYSCALL
+
 /* Define if you need the rusage patch which gets meminfo from /proc/self */
 #undef U8_RUSAGE_PROC_PATCH
 

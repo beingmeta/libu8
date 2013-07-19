@@ -35,6 +35,11 @@
 #include <sys/time.h>
 #endif
 
+#if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
+#include <sys/syscall.h>
+#include <sys/types.h>
+#endif
+
 #if HAVE_LIBINTL_H
 #include <libintl.h>
 #endif
@@ -46,6 +51,8 @@
 #define MAX_THREADEXITFNS 128
 #endif
 
+#include <stdlib.h>
+#include <stdio.h>
 #include <errno.h>
 
 void perror(const char *s);
@@ -520,6 +527,44 @@ U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
 {
   u8_unlock_mutex(m);
 }
+
+/* Getting a thread ID */
+
+#if (HAVE_GETPID)
+#if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
+U8_EXPORT char *u8_threadid(char *buf)
+{
+  
+  pid_t pid=getpid();
+  pid_t tid=syscall(SYS_gettid);
+  if (!(buf)) buf=u8_malloc(128);
+  sprintf(buf,"%ld:%ld",(unsigned long int)pid,(unsigned long int)tid);
+  return buf;
+}
+#elif (HAVE_PTHREAD_SELF)
+U8_EXPORT char *u8_threadid(char *buf)
+{
+  pid_t pid=getpid();
+  pthread_t self=pthread_self();
+  if (!(buf)) buf=u8_malloc(128);
+  sprintf(buf,"%ld:0x%lx",(unsigned long int)pid,(unsigned long int)self);
+  return buf;
+}
+#else 
+U8_EXPORT char *u8_threadid(char *buf)
+{
+  pid_t pid=getpid();
+  if (!(buf)) buf=u8_malloc(128);
+  sprintf(buf,"%ld",(unsigned long int)pid);
+  return buf;
+}
+#endif
+#else
+U8_EXPORT char *u8_threadid(char *buf)
+{
+  return NULL;
+}
+#endif
 
 /* Debugging malloc */
 
