@@ -291,9 +291,11 @@ int u8_client_done(u8_client cl)
       cl->reading=u8_microtime();
       pfd->events=((short)(POLLIN|HUPFLAGS));}
     u8_lock_mutex(&(server->lock));
-    server->n_busy--; server->n_trans++;
+    if (cl->started>0) {
+      server->n_busy--;
+      cl->started=0;}
+     server->n_trans++;
     u8_unlock_mutex(&(server->lock));
-    cl->started=0;
     return 1;}
   else {
     u8_log(LOG_WARNING,"u8_client_done",
@@ -770,13 +772,13 @@ static void *event_loop(void *thread_arg)
 	       cl->n_trans,cl->idstring);
 	if (cl->started>0) {
 	  update_client_stats(cl,cur,1);
-	  cl->started=0;}
+	  server->n_busy--; cl->started=0;}
 	closed=1; if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       else if (cl->flags&U8_CLIENT_CLOSING) {
 	if (cl->started>0) {
 	  update_client_stats(cl,cur,1);
-	  cl->started=0;}
+	  server->n_busy--; cl->started=0;}
 	cl->active=0; finish_closing_client(cl); closed=1;
 	if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
 	cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
@@ -975,7 +977,8 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
 	     socket,info->idstring);
     if (info->idstring) u8_free(info->idstring);
     if (info->addr) u8_free(info->addr);
-    info->idstring=NULL; info->addr=NULL; info->socket=-1;}
+    info->idstring=NULL; info->addr=NULL;
+    info->socket=-1;}
   if (n_errs)
     u8_log(LOG_WARNING,ServerShutdown,
 	   "Closed %d listening socket(s) with %d errors",
@@ -989,7 +992,7 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
   i=0; while (i<clients_len) {
     u8_client client=clients[i];    
     if (client) {
-      if (client->started<0) {
+      if (client->started<=0) {
 	client_close_for_shutdown(client);
 	clients[i]=NULL;
 	sockets[i].fd=-1;
@@ -1422,7 +1425,7 @@ static int server_handle_poll(struct U8_SERVER *server,
 	       ((unsigned long)client),client->clientid,client->socket,
 	       get_client_state(client,statebuf),
 	       client->n_trans,client->idstring);
-      client->started=0;
+      if (client->started>0) {client->started=0; server->n_busy--;}
       close_client_core(client,1,"server_handle_poll/HUP");
       i++; continue;}
     else if (((events&POLLOUT)&&((client->writing)>0))||
@@ -1436,6 +1439,7 @@ static int server_handle_poll(struct U8_SERVER *server,
 		   ((short)(~(POLLIN|POLLOUT)))));
 	n_actions++;}}
     else if ((events&POLLNVAL)&&(client->socket<0)) {
+      sockets[i].fd=-1;
       if (!(client->queued>0))
 	push_task(server,client,"server_handle_pool/inval");
       i++; continue;}
@@ -1451,7 +1455,7 @@ static int server_handle_poll(struct U8_SERVER *server,
 	       ((unsigned long)client),client->clientid,client->socket,
 	       get_client_state(client,statebuf),
 	       client->n_trans,client->idstring);
-      client->started=0;
+      if (client->started>0) {client->started=0; server->n_busy--;}
       close_client_core(client,1,"server_handle_poll/POLLINVAL");
       i++; continue;}
     else if (events&POLLIN) {
