@@ -436,6 +436,7 @@ U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *buf)
   else if ((code_start=strstr(buf,"charset=")))
     code_start=code_start+8;
   else return NULL;
+  while ((*code_start)&&(isspace(*code_start))) code_start++;
   if (!(isalpha(*code_start))) return NULL;
   else {
     u8_byte *scan=code_start; int c=u8_sgetc(&scan);
