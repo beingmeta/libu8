@@ -230,9 +230,12 @@ U8_EXPORT unsigned char *u8_client_write
   (u8_client cl,unsigned char *buf,size_t n,size_t off)
 {
   char statebuf[16];
-  if ((cl->writing>0)&&(cl->buf==buf)&&(cl->len=n)) {
+  if ((cl->writing>0)&&(cl->buf==buf)&&(cl->len==n)) {
+    /* We're already writing this */
     if (cl->off<cl->len) return NULL;
-    else {cl->writing=0; return cl->buf;}}
+    else {
+      /* And we're done */
+      cl->writing=0; return cl->buf;}}
   else if (cl->writing>0) {
     u8_log(LOG_WARNING,"u8_client_write",
 	   "Client @x%lx#%d.%d[%s/%d](%s) is already writing %ld bytes",
@@ -1465,6 +1468,8 @@ static int server_handle_poll(struct U8_SERVER *server,
       server->servefn(client);
       n_actions++;}
 #endif
+    else if (events&POLLOUT) {
+      sockets[i].events=((short)(POLLIN|HUPFLAGS));}
     else {}
     i++;}
   u8_unlock_mutex(&(server->lock));
