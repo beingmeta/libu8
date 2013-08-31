@@ -566,18 +566,30 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
   xtp->u8_prec=n_elts;
   if (n_elts <= 6) xtp->u8_nsecs=0;
   if (n_elts == 7) {
-    char *start=s+pos[n_elts], *scan=start; int zeros=0;
-    while (*scan == '0') {zeros++; scan++;}
-    while (isdigit(*scan)) scan++;
-    xtp->u8_nsecs=nsecs*(9-zeros);
-    xtp->u8_prec=xtp->u8_prec+((scan-start)/3);
+    char *start=s+pos[n_elts], *scan=start;
+    int n_digits=0;
+    while (isdigit(*scan)) scan++; n_digits=scan-start;
+    if (n_digits==9) {
+      xtp->u8_nsecs=nsecs;
+      xtp->u8_prec=u8_nanosecond;}
+    else if (n_digits<9) {
+      int multiplier=1, missing=9-n_digits, i=0;
+      while (i<missing) {multiplier=multiplier*10; i++;}
+      if (n_digits<=3) xtp->u8_prec=u8_millisecond;
+      else if (n_digits<=6) xtp->u8_prec=u8_microsecond;
+      else xtp->u8_prec=u8_nanosecond;
+      xtp->u8_nsecs=nsecs*multiplier;}
+    else if (n_digits>9) {
+      int divisor=1, extra=n_digits-9, i=0;
+      while (i<extra) {divisor=divisor*10; i++;}
+      xtp->u8_nsecs=nsecs/divisor;
+      xtp->u8_prec=u8_nanosecond;}
     tzstart=scan;}
   else tzstart=s+pos[n_elts];
   if ((tzstart)&&(*tzstart)) {
     u8_apply_tzspec(xtp,tzstart);
     xtp->u8_tick=mktime_x(xtp,0);}
   else xtp->u8_tick=mktime_x(xtp,1);
-  xtp->u8_nsecs=0;
   return xtp->u8_tick;
 }
 
