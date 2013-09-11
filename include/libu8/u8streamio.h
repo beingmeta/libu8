@@ -77,7 +77,7 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 #define U8_STREAM_UTF8FIX   0x600
 
 #define U8_STREAM_FIELDS \
-  int u8_bufsz, u8_streaminfo; \
+  int u8_bufsz; unsigned int u8_streaminfo;   \
   u8_byte *u8_strbuf, *u8_strptr, *u8_strlim; \
   void *u8_cfn; void *u8_xfn
 
