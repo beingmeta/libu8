@@ -54,6 +54,22 @@ int u8_syslog_loglevel=U8_DEFAULT_SYSLOG_LOGLEVEL;
 u8_string u8_logprefix="[";
 u8_string u8_logsuffix="]\n";
 
+#if HAVE_THREAD_STORAGE_CLASS
+static __THREAD u8_logfn thread_logfn=NULL;
+U8_EXPORT void u8_bind_logfn(u8_logfn f){thread_logfn=f;}
+U8_EXPORT u8_logfn u8_thread_logfn(){return thread_logfn;}
+#elif U8_THREADS_ENABLED
+static u8_tld_key logfn_threadkey;
+#define thread_logfn ((u8_logfn)((u8_tld_get(logfn_threadkey))||NULL))
+U8_EXPORT void u8_bind_logfn(u8_logfn f){
+  u8_tld_set(logfn_threadkey,f);}
+U8_EXPORT u8_logfn u8_thread_logfn(){return u8_tld_get(logfn_threadkey);}
+#else
+static u8_logfn thread_logfn=NULL;
+U8_EXPORT void u8_bind_logfn(u8_logfn f){thread_logfn=f;}
+U8_EXPORT u8_logfn u8_thread_logfn(){return thread_logfn;}
+#endif
+
 U8_EXPORT void u8_set_logixes(u8_string pre, u8_string post)
 {
   u8_logprefix=pre; u8_logsuffix=post;
@@ -110,7 +126,12 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
 
 U8_EXPORT int u8_logger(int loglevel,u8_condition c,u8_string msg)
 {
-  if (logfn) return logfn(loglevel,c,msg);
+  u8_logfn tlogfn=u8_thread_logfn();
+  if ((tlogfn)&&(logfn)) {
+    tlogfn(loglevel,c,msg);
+    return logfn(loglevel,c,msg);}
+  else if (logfn) return logfn(loglevel,c,msg);
+  else if (tlogfn) return tlogfn(loglevel,c,msg);
   else return u8_default_logger(loglevel,c,msg);
 }
 
@@ -209,6 +230,9 @@ U8_EXPORT void u8_initialize_logging()
 U8_EXPORT void u8_initialize_logging()
 {
   if (u8_logging_initialized) return;
+#if ((U8_THREADS_ENABLED)&&(!(HAVE_THREAD_STORAGE_CLASS)))
+  u8_new_threadkey(&logfn_threadkey,NULL);
+#endif
   u8_logging_initialized=1;
   u8_register_source_file(_FILEINFO);
 }

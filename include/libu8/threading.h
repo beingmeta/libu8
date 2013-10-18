@@ -62,7 +62,6 @@ typedef pthread_mutex_t u8_rwlock;
 #define u8_rw_unlock(x) pthread_mutex_unlock((x))
 #endif
 
-
 #elif WIN32
 #define U8_THREADS_ENABLED 1
 #define U8_MUTEX_DECL(var) HANDLE var
