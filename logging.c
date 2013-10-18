@@ -55,7 +55,7 @@ u8_string u8_logprefix="[";
 u8_string u8_logsuffix="]\n";
 
 #if HAVE_THREAD_STORAGE_CLASS
-static __THREAD u8_logfn thread_logfn=NULL;
+static u8_logfn __thread thread_logfn=NULL;
 U8_EXPORT void u8_bind_logfn(u8_logfn f){thread_logfn=f;}
 U8_EXPORT u8_logfn u8_thread_logfn(){return thread_logfn;}
 #elif U8_THREADS_ENABLED
