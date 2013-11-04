@@ -264,9 +264,19 @@ U8_EXPORT u8_string u8_file_owner(u8_string filename)
 /* Searching for files */
 
 static void buildname(u8_byte *buf,u8_string name,int namelen,
-		      u8_byte *start,u8_byte *end,u8_byte *ins)
+		      u8_byte *start,u8_byte *end,
+		      u8_byte *ins,u8_byte *instoo)
 {
-  if (ins) {
+  if ((instoo)&&(ins==NULL)) {ins=instoo; instoo=NULL;}
+  if (instoo) {
+    strncpy(buf,start,ins-start);
+    strncpy(buf+(ins-start),name,namelen);
+    strncpy(buf+((ins-start)+namelen),ins+1,instoo-(ins+1));
+    strncpy(buf+((ins-start)+namelen+(instoo-(ins+1))),name,namelen);
+    strncpy(buf+((ins-start)+namelen+(instoo-(ins+1))+namelen),
+	    instoo+1,end-(instoo+1));
+    buf[(ins-start)+namelen+(instoo-ins)+namelen+end-instoo]='\0';}
+  else if (ins) {
     strncpy(buf,start,ins-start);
     strncpy(buf+(ins-start),name,namelen);
     strncpy(buf+((ins-start)+namelen),ins+1,end-(ins+1));
@@ -283,14 +293,16 @@ static void buildname(u8_byte *buf,u8_string name,int namelen,
 U8_EXPORT u8_string u8_find_file(u8_string name,u8_string searchpath,
 				 int (*testp)(u8_string))
 {
-  int namelen=strlen(name), buflen=strlen(searchpath)+namelen+2;
-  u8_byte *start=searchpath, *end, *ins, *buf=u8_malloc(buflen);
+  int namelen=strlen(name), buflen=strlen(searchpath)+namelen*2+4;
+  u8_byte *start=searchpath, *end, *ins, *instoo=NULL, *buf=u8_malloc(buflen);
   u8_string probename;
   if (testp==NULL) testp=u8_file_existsp;
   while ((end=strchr(start,':'))) {
     ins=strchr(start,'%');
     if ((ins==NULL) || (ins>end)) ins=NULL;
-    buildname(buf,name,namelen,start,end,ins);
+    if (ins) instoo=strchr(ins+1,'%');
+    if (instoo>end) instoo=NULL;
+    buildname(buf,name,namelen,start,end,ins,instoo);
     probename=u8_abspath(buf,NULL);
     if (testp(probename)) {
       u8_free(probename);
@@ -301,7 +313,9 @@ U8_EXPORT u8_string u8_find_file(u8_string name,u8_string searchpath,
   end=start+strlen(start);
   ins=strchr(start,'%');
   if ((ins==NULL) || (ins>end)) ins=NULL;
-  buildname(buf,name,namelen,start,end,ins);
+  if (ins) instoo=strchr(ins+1,'%');
+  if (instoo>end) instoo=NULL;
+  buildname(buf,name,namelen,start,end,ins,instoo);
   probename=u8_abspath(buf,NULL);
   if (testp(probename)) {
     u8_free(probename);
