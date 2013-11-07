@@ -222,6 +222,9 @@ U8_EXPORT void u8_initialize_logging()
     return;}
   app=u8_appid();
   openlog(app,LOG_PID|LOG_CONS|LOG_NDELAY|LOG_PERROR,LOG_DAEMON);
+#if ((U8_THREADS_ENABLED)&&(!(HAVE_THREAD_STORAGE_CLASS)))
+  u8_new_threadkey(&logfn_threadkey,NULL);
+#endif
   u8_logging_initialized=1;
   u8_unlock_mutex(&logging_init_lock);
   u8_register_source_file(_FILEINFO);
