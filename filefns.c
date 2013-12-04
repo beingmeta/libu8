@@ -361,6 +361,24 @@ U8_EXPORT int u8_linkfile(u8_string from,u8_string to)
 }
 #endif
 
+/* Changing modes */
+
+U8_EXPORT int u8_chmod(u8_string name,mode_t mode)
+{
+  struct stat fileinfo;
+  char *localized=u8_localpath(name);
+  int retval=-1;
+  if (stat(localized,&fileinfo)<0) 
+    u8_graberr(-1,"u8_chmod",u8_strdup(name));
+  else if (fileinfo.st_mode==mode)
+    retval=0;
+  else {
+    retval=chmod(localized,mode);
+    if (retval>=0) retval=1;}
+  u8_free(localized);
+  return retval;
+}
+
 /* Manipulating directories */
 
 U8_EXPORT int u8_mkdir(u8_string name,mode_t mode)

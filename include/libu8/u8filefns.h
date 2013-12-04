@@ -88,6 +88,13 @@ U8_EXPORT ssize_t u8_file_size(u8_string filename);
 **/
 U8_EXPORT u8_string u8_file_owner(u8_string filename);
 
+/** Changes the mode of a file
+    @param filename a utf-8 pathname
+    @param mode the file mode for the file
+    @returns int: 1 if the mode was changed, 0 if it wasn't, and -1 on error
+ **/
+U8_EXPORT int u8_chown(u8_string dirname,mode_t mode);
+
 /* Making directories */
 
 /** Makes a directory with a particular mode
