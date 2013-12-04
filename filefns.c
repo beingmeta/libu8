@@ -294,8 +294,10 @@ U8_EXPORT u8_string u8_find_file(u8_string name,u8_string searchpath,
 				 int (*testp)(u8_string))
 {
   int namelen=strlen(name), buflen=strlen(searchpath)+namelen*2+4;
-  u8_byte *start=searchpath, *end, *ins, *instoo=NULL, *buf=u8_malloc(buflen);
+  u8_byte *start=searchpath, *end, *ins, *instoo=NULL;
+  u8_byte *buf=u8_malloc(buflen);
   u8_string probename;
+  memset(buf,0,buflen);
   if (testp==NULL) testp=u8_file_existsp;
   while ((end=strchr(start,':'))) {
     ins=strchr(start,'%');
