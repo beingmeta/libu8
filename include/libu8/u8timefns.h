@@ -184,6 +184,14 @@ U8_EXPORT time_t u8_mklocaltime(struct U8_XTIME *xt);
 **/
 U8_EXPORT void u8_set_xtime_precision(struct U8_XTIME *xt,u8_tmprec tp);
 
+/** Sets the GMT offset of an XTIME structure
+    @param xt a pointer to a U8_XTIME structure
+    @param tzoff (int) a timezone offset in seconds
+    @param dstoff (int) a local (daylight savings/summer offset) in seconds
+    @returns void
+**/
+U8_EXPORT void u8_set_xtime_gmtoff(struct U8_XTIME *xt,int tzoff,int dstoff);
+
 /** Returns a non-integral difference, in seconds, between U8_XTIME pointers.
     Returns the number of seconds (possibly non-integral) that the moment
      described by @a yt occurs after @a xt.  This is negative if @a yt

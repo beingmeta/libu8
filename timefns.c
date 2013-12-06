@@ -361,7 +361,38 @@ U8_EXPORT
 */
 void u8_set_xtime_precision(struct U8_XTIME *xt,u8_tmprec prec)
 {
+  time_t secs=xt->u8_tick;
+  if (prec==u8_microsecond) {
+    double nsecs=(double)xt->u8_nsecs;
+    double usecs=1000*round(nsecs/1000);
+    xt->u8_nsecs=usecs;}
+  else if (prec==u8_millisecond) {
+    double nsecs=(double)xt->u8_nsecs;
+    double msecs=1000000*round(nsecs/1000000);
+    xt->u8_nsecs=msecs;}
+  else if (prec>=u8_second) {
+    xt->u8_nsecs=0;
+    if (prec==u8_minute) secs=(secs/60)*60;
+    else if (prec==u8_hour) secs=(secs/3600)*3600;
+    else if (prec==u8_day) secs=(secs/(24*3600))*(24*3600);
+    else if (prec==u8_month) secs=(secs/(30*24*3600))*(30*24*3600);
+    else  if (prec==u8_year) secs=(secs/(365*24*3600))*(365*24*3600);
+    else {}}
+  else {}
   xt->u8_prec=prec;
+}
+
+U8_EXPORT
+/* u8_set_xtime_gmtoff
+     Arguments: a pointer to an xtime struct, a tzoff (int), and a dstoff (int)
+     Returns: void
+*/
+void u8_set_xtime_gmtoff(struct U8_XTIME *xt,int tzoff,int dstoff)
+{
+  int gmtoff=tzoff-dstoff;
+  time_t secs=xt->u8_tick+gmtoff;
+  u8_init_xtime(xt,((xt->u8_tick)-tzoff),xt->u8_prec,
+		xt->u8_nsecs,tzoff,dstoff);
 }
 
 U8_EXPORT
