@@ -93,7 +93,7 @@ U8_EXPORT u8_string u8_file_owner(u8_string filename);
     @param mode the file mode for the file
     @returns int: 1 if the mode was changed, 0 if it wasn't, and -1 on error
  **/
-U8_EXPORT int u8_chmod(u8_string dirname,mode_t mode);
+U8_EXPORT int u8_chmod(u8_string filename,mode_t mode);
 
 /* Making directories */
 

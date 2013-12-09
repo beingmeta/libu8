@@ -340,6 +340,13 @@ void *u8_dynamic_load(u8_string name)
 }
 #endif
 
+/* Thread functions */
+
+#if HAVE_PTHREAD_H
+static pthread_mutexattr_t mutex_default_attr;
+U8_EXPORT int _u8_init_mutex(u8_mutex *mutex) {
+  return pthread_mutex_init(mutex,&mutex_default_attr);}
+#endif
 
 /* Raising errors */
 
@@ -618,6 +625,10 @@ U8_EXPORT void u8_initialize_logging(void);
 U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
+
+#if (HAVE_PTHREAD_H)
+  pthread_mutexattr_settype(&mutex_default_attr,PTHREAD_MUTEX_ERRORCHECK);
+#endif
 
   u8_register_source_file(_FILEINFO);
 

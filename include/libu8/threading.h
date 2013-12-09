@@ -27,9 +27,10 @@
 typedef pthread_mutex_t u8_mutex;
 typedef pthread_cond_t u8_condvar;
 typedef pthread_key_t u8_tld_key;
+U8_EXPORT int _u8_init_mutex(u8_mutex *);
 #define pthread_attr_default NULL
-#define pthread_mutexattr_default NULL
-#define u8_init_mutex(x) pthread_mutex_init(x,pthread_mutexattr_default)
+#define pthread_mutex_defaults (&u8_mutex_default_attr)
+#define u8_init_mutex(x) _u8_init_mutex(x)
 #define u8_destroy_mutex(x) pthread_mutex_destroy(x)
 #define u8_new_threadkey(key_loc,del_fcn) pthread_key_create(key_loc,del_fcn)
 #define u8_init_condvar(x) pthread_cond_init(x,NULL)
