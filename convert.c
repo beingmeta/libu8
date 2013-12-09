@@ -648,7 +648,7 @@ unsigned char *u8_localize
       int write_off=write-buf;
       buf=u8_realloc(buf,bufsiz+1024); bufsiz=bufsiz+1024;
       write_limit=buf+bufsiz; write=buf+write_off;}
-    if (ch<0) ch=0;
+    if (ch<0) {ch=0; scan++;}
     else if ((e==NULL) || (e == utf8_encoding)) 
       if (ch<0x80) {*write++=ch; *write=0;}
       else {
