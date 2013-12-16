@@ -33,6 +33,18 @@
 **/
 U8_EXPORT int u8_directoryp(u8_string filename);
 
+/** Checks if a named file exists and is a symbolic link
+    @param filename a utf-8 pathname
+    @returns 1 if the file exists and is a symlink, 0 otherwise
+**/
+U8_EXPORT int u8_symlinkp(u8_string filename);
+
+/** Checks if a named file exists and is a socket
+    @param filename a utf-8 pathname
+    @returns 1 if the file exists and is a socket, 0 otherwise
+**/
+U8_EXPORT int u8_socketp(u8_string filename);
+
 /** Determines if a named file exists.
     @param filename a utf-8 pathname
     @returns 1 if the file exists, 0 otherwise

@@ -76,8 +76,28 @@ U8_EXPORT int u8_directoryp(u8_string filename)
   if (stat(filename,&status) < 0) {
     errno=0; return 0;}
   else {
-    return (status.st_mode&S_IFDIR);}
+    return (S_ISDIR(status.st_mode));}
 }
+#ifdef S_ISLNK
+U8_EXPORT int u8_symlinkp(u8_string filename)
+{
+  struct stat status;
+  if (stat(filename,&status) < 0) {
+    errno=0; return 0;}
+  else {
+    return (S_ISLNK(status.st_mode));}
+}
+#endif
+#ifdef S_ISSOCK
+U8_EXPORT int u8_socketp(u8_string filename)
+{
+  struct stat status;
+  if (stat(filename,&status) < 0) {
+    errno=0; return 0;}
+  else {
+    return (S_ISSOCK(status.st_mode));}
+}
+#endif
 #endif
 
 #if HAVE_ACCESS
