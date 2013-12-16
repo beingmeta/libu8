@@ -197,6 +197,13 @@ U8_EXPORT int u8_movefile(u8_string from,u8_string to);
  **/
 U8_EXPORT int u8_linkfile(u8_string from,u8_string to);
 
+/** Gets the target of a symbolic link, possibly converting to absolute form
+    @param filename a utf-8 pathname (a symbolic link)
+    @param absolute an int, non-zero resolves . and .. references
+    @returns a pathname, NULL on error
+ **/
+U8_EXPORT u8_string u8_readlink(u8_string filename,int absolute);
+
 /* Getting directory contents */
 
 /** Returns the non-directory non-special files within a directory.
