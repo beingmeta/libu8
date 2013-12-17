@@ -286,7 +286,7 @@ U8_EXPORT u8_string u8_file_owner(u8_string filename)
 U8_EXPORT u8_string u8_readlink(u8_string filename,int absolute)
 {
   char *lpath=u8_localpath(filename);
-  char *linkname; size_t linklen;
+  char *linkname; ssize_t linklen;
   struct stat linkinfo;
   if (lstat(lpath,&linkinfo)<0) {
     u8_graberr(-1,"u8_readlink",u8_strdup(filename));
