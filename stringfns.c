@@ -410,9 +410,9 @@ U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent)
     u8_byte *read=input, *write=output; scan=read;
     while ((scan=strchr(read,'\n'))) {
       int n_bytes=scan-read;
-      strncpy(write,read,n_bytes); write=write+n_bytes;
+      strncpy(write,read,n_bytes); write=write+n_bytes; *write++='\n'; 
       strncpy(write,indent,indent_len); write=write+indent_len;
-      *write++='\n'; read=scan+1;}
+      read=scan+1;}
     strcpy(write,read);
     return output;}
 }
