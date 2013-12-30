@@ -28,6 +28,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <errno.h>
 
 /* Core functions */
 
@@ -393,6 +394,27 @@ char *u8_grab_bytes(u8_string s,int n,char *buf)
     c=*scan++;}
   *write++='\0';
   return result;
+}
+
+/* Inserts a string at the beginning and before every line break
+   in another string */
+U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent)
+{
+  int len=strlen(input), n_lines=1, indent_len=strlen(indent);
+  u8_byte *scan=input, *output;
+  while ((scan=strchr(scan+1,'\n'))) n_lines++;
+  output=u8_malloc(len+(n_lines*indent_len)+1);
+  if (output==NULL) {
+    errno=0; return NULL;}
+  else {
+    u8_byte *read=input, *write=output; scan=read;
+    while ((scan=strchr(read,'\n'))) {
+      int n_bytes=scan-read;
+      strncpy(write,read,n_bytes); write=write+n_bytes;
+      strncpy(write,indent,indent_len); write=write+indent_len;
+      *write++='\n'; read=scan+1;}
+    strcpy(write,read);
+    return output;}
 }
 
 /* Initialization function (just records source file info) */

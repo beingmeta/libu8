@@ -92,7 +92,7 @@ U8_EXPORT int u8_log_show_procinfo, u8_log_show_threadinfo;
 /* Whether or not syslog has been initialized. */
 U8_EXPORT int u8_logging_initialized;
 
-U8_EXPORT u8_string u8_logprefix, u8_logsuffix;
+U8_EXPORT u8_string u8_logprefix, u8_logsuffix, u8_logindent;
 
 typedef int (*u8_logfn)(int loglevel,u8_condition condition,u8_string message);
 
@@ -133,6 +133,12 @@ U8_EXPORT u8_logfn u8_set_logfn(u8_logfn logfn);
    @returns void
 **/      
 U8_EXPORT void u8_set_logixes(u8_string prefix, u8_string suffix);
+
+/** Sets the indentation string for log messages
+   @param indent a string to be used as the indentation for log messages
+   @returns void
+**/      
+U8_EXPORT void u8_set_logindent(u8_string indent);
 
 /** Generates a message prefix into the given buffer, 
      with output including process information controlled

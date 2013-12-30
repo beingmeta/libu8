@@ -167,6 +167,14 @@ U8_EXPORT u8_string u8_valid_copy(u8_byte *s);
 **/
 U8_EXPORT u8_string u8_convert_crlfs(u8_byte *s);
 
+/** Adds indentation at the beginning of every line within a string
+    @param s an original string, possibly with newlines
+    @param n the indent string
+    @returns a copy of the original string with the indent string
+      inserted before every '\n'
+**/
+U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent);
+
 /** Returns an ascii-converted substring of a possible UTF-8 string
     @param s a possibly (probably) valid UTF-8 string.
     @param n the size (in bytes) of the substring to return
