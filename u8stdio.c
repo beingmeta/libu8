@@ -45,17 +45,20 @@ static int stdoutISstderr=-1;
 
 static int stdio_logger(int priority,u8_condition c,u8_string msg)
 {
-  u8_byte buf[512]; int output=0;
+  u8_byte buf[512]; int output=0; u8_string indented=NULL;
   u8_string prefix=u8_message_prefix(buf,512);
+  if ((u8_logindent)&&(u8_logindent[0])&&(strchr(msg,'\n')))
+    indented=u8_indent_text(msg,u8_logindent);
+  if (!(indented)) indented=msg;
 #if HAVE_SYSLOG
   if ((priority>=0) && (priority<=u8_syslog_loglevel)) {
     if (u8_logging_initialized==0) u8_initialize_logging();
-    syslog(priority,"%s",msg);}
+    syslog(priority,"%s",indented);}
   else {}
 #endif
   if (priority<0) {
-    if (c) fprintf(stdout,"[%s (%s) %s]\n",prefix,c,msg);
-    else fprintf(stdout,"[%s %s]\n",prefix,msg);
+    if (c) fprintf(stdout,"[%s (%s) %s]\n",prefix,c,indented);
+    else fprintf(stdout,"[%s %s]\n",prefix,indented);
     fflush(stdout);
     return 1;}
   else if (priority>u8_loglevel) return 0;
@@ -65,39 +68,40 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
 	(priority<=u8_stdout_loglevel)) {
       if ((prefix) && (c))
 	fprintf(stderr,"[%s %s (%s): %s]\n",
-		prefix,u8_loglevels[priority],c,msg);
+		prefix,u8_loglevels[priority],c,indented);
       else if (prefix)
 	fprintf(stderr,"[%s %s: %s]\n",
-		prefix,u8_loglevels[priority],msg);
+		prefix,u8_loglevels[priority],indented);
       else if (c)
 	fprintf(stderr,"[%s (%s): %s]\n",
-		u8_loglevels[priority],c,msg);
-      else fprintf(stderr,"[%s: %s]\n",u8_loglevels[priority],msg);
+		u8_loglevels[priority],c,indented);
+      else fprintf(stderr,"[%s: %s]\n",u8_loglevels[priority],indented);
       return 1;}
     else return 0;}
   if (priority<=u8_stderr_loglevel) {
     if ((prefix) && (c))
       fprintf(stderr,"[%s %s (%s): %s]\n",
-	      prefix,u8_loglevels[priority],c,msg);
+	      prefix,u8_loglevels[priority],c,indented);
     else if (prefix)
       fprintf(stderr,"[%s %s: %s]\n",
-	      prefix,u8_loglevels[priority],msg);
+	      prefix,u8_loglevels[priority],indented);
     else if (c)
       fprintf(stderr,"[%s (%s): %s]\n",
-	      u8_loglevels[priority],c,msg);
-    else fprintf(stderr,"[%s: %s]\n",u8_loglevels[priority],msg);
+	      u8_loglevels[priority],c,indented);
+    else fprintf(stderr,"[%s: %s]\n",u8_loglevels[priority],indented);
     output=1;}
   if (priority<=u8_stdout_loglevel) {
     if ((prefix) && (c))
       fprintf(stdout,"[%s %s (%s): %s]\n",
-	      prefix,u8_loglevels[priority],c,msg);
+	      prefix,u8_loglevels[priority],c,indented);
     else if (prefix)
       fprintf(stdout,"[%s %s: %s]\n",
-	      prefix,u8_loglevels[priority],msg);
+	      prefix,u8_loglevels[priority],indented);
     else if (c)
       fprintf(stdout,"[%s (%s): %s]\n",
-	      u8_loglevels[priority],c,msg);
-    else fprintf(stdout,"[%s: %s]\n",u8_loglevels[priority],msg);
+	      u8_loglevels[priority],c,indented);
+    else fprintf(stdout,"[%s: %s]\n",u8_loglevels[priority],indented);
+    if (indented!=msg) u8_free(indented);
     fflush(stdout);
     output=1;}
   return output;
