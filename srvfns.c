@@ -453,6 +453,13 @@ static int close_client_core(u8_client cl,int server_locked,u8_context caller)
 
     cl->running=cl->reading=cl->writing=cl->started=0;
 
+    if ((cl->server->flags)&(U8_SERVER_LOG_CONNECT))
+      u8_log(LOG_NOTICE,"u8_client_closed",
+	     "Other end closed @x%lx#%d.%d[%s/%d](%s)",
+	     ((unsigned long)cl),cl->clientid,cl->socket,
+	     get_client_state(cl,statebuf),
+	     cl->n_trans,cl->idstring);
+
     if (server->closefn)
       retval=server->closefn(cl);
     else if (cl->socket>0) 
