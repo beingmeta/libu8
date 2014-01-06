@@ -352,20 +352,20 @@ U8_EXPORT u8_string u8_parse_addr
 {
   u8_byte *split=strchr(spec,'@'); int len=strlen(spec);
   if ((result==NULL)||(buflen<0)) {
-    buflen=len; result=u8_malloc(buflen); }
+    buflen=len+1; result=u8_malloc(buflen); }
   if (split==spec) {
     *portp=0; strcpy(result,spec+1);
     return result;}
   else if (split) {
+    int portlen=split-spec, hostlen=len-(portlen+1);
     u8_byte _portspec[32], *portspec;
-    if ((split-spec)>31) 
-      portspec=u8_malloc(1+(split-spec));
+    if (portlen>31) portspec=u8_malloc(1+(split-spec));
     else portspec=_portspec;
-    strncpy(portspec,spec,split-spec); portspec[split-spec]='\0';
+    strncpy(portspec,spec,portlen); portspec[portlen]='\0';
     *portp=u8_get_portno(portspec);
     if (portspec!=_portspec) u8_free(portspec);
-    if (buflen>(split-spec)) result=u8_malloc(len-(split-spec));
-    strncpy(result,split+1,len-(split-spec)); result[len-(split-spec)]='\0';
+    if (hostlen>=buflen) result=u8_malloc(hostlen+1);
+    strncpy(result,split+1,hostlen); result[hostlen]='\0';
     return result;}
   else if ((split=strrchr(spec,':'))) {
     /* We search backwards for the colon because we want to handle
