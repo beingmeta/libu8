@@ -81,6 +81,9 @@
 /* Define if you have the pthread_self function.  */
 #undef HAVE_PTHREAD_RWLOCK_INIT
 
+/* Define if you have the pthread_self function.  */
+#undef HAVE_PTHREAD_MUTEXATTR_SETTYPE
+
 /* Define if you have the strdup function.  */
 #undef HAVE_STRDUP
 

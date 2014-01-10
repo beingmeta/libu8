@@ -6255,6 +6255,17 @@ _ACEOF
 fi
 done
 
+for ac_func in pthread_mutexattr_settype
+do :
+  ac_fn_c_check_func "$LINENO" "pthread_mutexattr_settype" "ac_cv_func_pthread_mutexattr_settype"
+if test "x$ac_cv_func_pthread_mutexattr_settype" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_PTHREAD_MUTEXATTR_SETTYPE 1
+_ACEOF
+
+fi
+done
+
 
 # Check whether --enable-largefiles was given.
 if test "${enable_largefiles+set}" = set; then :

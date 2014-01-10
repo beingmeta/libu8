@@ -628,10 +628,8 @@ U8_EXPORT int u8_initialize()
 
 #if U8_THREADS_ENABLED
 #if (HAVE_PTHREAD_H)
-#if HAVE_ERRORCHECK_MUTEX
+#if HAVE_PTHREAD_MUTEXATTR_SETTYPE
   pthread_mutexattr_settype(&mutex_default_attr,PTHREAD_MUTEX_ERRORCHECK);
-#else
-    pthread_mutexattr_settype(&mutex_default_attr,PTHREAD_MUTEX_DEFAULT);
 #endif
 #endif
 #endif
