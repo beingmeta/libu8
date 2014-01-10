@@ -626,8 +626,14 @@ U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
 
+#if U8_THREADS_ENABLED
 #if (HAVE_PTHREAD_H)
+#if HAVE_ERRORCHECK_MUTEX
   pthread_mutexattr_settype(&mutex_default_attr,PTHREAD_MUTEX_ERRORCHECK);
+#else
+    pthread_mutexattr_settype(&mutex_default_attr,PTHREAD_MUTEX_DEFAULT);
+#endif
+#endif
 #endif
 
   u8_register_source_file(_FILEINFO);
