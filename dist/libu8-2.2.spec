@@ -51,7 +51,7 @@ You probably don't need it.
 
 
 %build
-%configure --prefix=/usr
+%configure --prefix=/usr --without-sudo
 make
 
 
