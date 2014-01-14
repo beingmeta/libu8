@@ -300,9 +300,9 @@ U8_EXPORT u8_condition u8_strerror(int num)
 	u8_unlock_mutex(&strerror_lock);
 	return scan->condition;}
       else scan=scan->next;}
-#if ((U8_THREADS_ENABLED) && (HAVE_STRERROR_R)) /*  */
+#if ((U8_THREADS_ENABLED) && (HAVE_STRERROR_R))
   {
-# if (STRERROR_R_CHAR_P)
+#if (STRERROR_R_CHAR_P)
     char *result=strerror_r(num,buf,256);
     if (result==NULL) condition=UnknownError;
     else condition=(u8_condition) u8_fromlibc(result);
@@ -310,11 +310,11 @@ U8_EXPORT u8_condition u8_strerror(int num)
     if ((retval=strerror_r(num,buf,256))) condition=UnknownError;
     else condition=(u8_condition) u8_fromlibc(buf);
 #endif
-  }
 #elif U8_THREADS_ENABLED
   strerror_result=strerror(num);
   condition=(u8_condition)u8_fromlibc(strerror_result);
-#endif  
+#endif
+  }
   if (num<U8_ERRNO_MAP_SIZE) errno_map[num]=condition;
   else {
     struct U8_SPARSE_ERRNO_MAP *newmap=u8_alloc(struct U8_SPARSE_ERRNO_MAP);
