@@ -179,6 +179,7 @@ AC_CHECK_FUNCS(symlink realpath mkdtemp)
 AC_CHECK_FUNCS(ftime gettimeofday localtime_r gmtime_r getpid)
 AC_CHECK_FUNCS(gethostbyname2_r)
 AC_CHECK_FUNCS(getservbyname)
+AC_FUNC_STRERROR_R
 
 # Syslog
 AC_CHECK_FUNCS(syslog,syslog_target="syslog_libs",syslog_target="")
