@@ -25,6 +25,8 @@
 
 #include "libu8/config.h"
 
+#define _XOPEN_SOURCE 700
+
 #if U8_LARGEFILES_ENABLED
 #define _FILE_OFFSET_BITS 64
 #define _LARGEFILE_SOURCE 1

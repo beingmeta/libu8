@@ -30,6 +30,10 @@
 #include <ctype.h>
 #include <errno.h>
 
+#if HAVE_STRINGS_H
+#include <strings.h>
+#endif
+
 /* Core functions */
 
 int _u8_sgetc(u8_byte **s)

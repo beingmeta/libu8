@@ -39,6 +39,10 @@ typedef unsigned int u8uint;
 #include <uuid/uuid.h>
 #endif
 
+#if HAVE_STRINGS_H
+#include <strings.h>
+#endif
+
 #if U8_THREADS_ENABLED
 static u8_mutex timefns_lock;
 #endif
