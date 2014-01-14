@@ -35,6 +35,12 @@
 /* Define if you have the <time.h> header file.  */
 #undef HAVE_TIME_H
 
+/* Define if you have the <string.h> header file.  */
+#undef HAVE_STRINGS_H
+
+/* Define if you have the <netdb.h> header file.  */
+#undef HAVE_NETDB_H
+
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H
 
