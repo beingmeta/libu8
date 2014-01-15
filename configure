@@ -2784,6 +2784,7 @@ case $target_os in
    shared_suffix="dylib";
    install_shared="install-dylib";
    ifmacosx="";
+   CFLAGS="-D_DARWIN_C_SOURCE $CFLAGS"
    $as_echo "#define DESTRUCTIVE_POLL 1" >>confdefs.h
 
    ;;

@@ -46,6 +46,7 @@ case $target_os in
    shared_suffix="dylib";
    install_shared="install-dylib";
    ifmacosx="";
+   CFLAGS="-D_DARWIN_C_SOURCE $CFLAGS"
    AC_DEFINE(DESTRUCTIVE_POLL,1)
    ;;
 esac  
