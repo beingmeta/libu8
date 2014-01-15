@@ -44,6 +44,9 @@
 /* Define if you have the <sys/time.h> header file.  */
 #undef HAVE_SYS_TIME_H
 
+/* Define if you have the <sys/types.h> header file.  */
+#undef HAVE_SYS_TYPES_H
+
 /* Define if you have the <uuid/uuid.h> header file.  */
 #undef HAVE_UUID_UUID_H
 
@@ -348,6 +351,11 @@
 /* Whether poll may be destructive (some BSDs?) */
 #undef DESTRUCTIVE_POLL
 
-
+/* Various types */
+#undef HAVE_MODE_T
+#undef HAVE_PID_T
+#undef HAVE_UID_T
+#undef HAVE_SIZE_T
+#undef HAVE_SSIZE_T
 
 #endif

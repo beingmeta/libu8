@@ -25,8 +25,11 @@
 
 #include "libu8/config.h"
 
+/*
 #define _XOPEN_SOURCE 700
+#define _POSIX_C_SOURCE 200112
 #define _GNU_SOURCE 1
+*/
 
 #if U8_LARGEFILES_ENABLED
 #define _FILE_OFFSET_BITS 64
@@ -38,6 +41,10 @@
 #include <string.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
 #endif
 
 #ifndef U8_WITH_STDIO
