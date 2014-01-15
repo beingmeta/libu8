@@ -1,5 +1,5 @@
 Name:           libu8
-Version:        2.2.7
+Version:        2.3.1
 Release:        12%{?dist}
 Summary:        utility/compatability for Unicode and other functions
 

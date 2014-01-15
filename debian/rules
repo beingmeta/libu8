@@ -25,7 +25,7 @@ else
 endif
 
 # shared library versions, option 1
-version=2.2.1
+version=2.3.1
 major=2
 # option 2, assuming the library is created as src/.libs/libfoo.so.2.0.5 or so
 #version=`ls src/.libs/lib*.so.* | \
