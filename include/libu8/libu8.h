@@ -27,9 +27,12 @@
 
 /*
 #define _XOPEN_SOURCE 700
-#define _POSIX_C_SOURCE 200112
 #define _GNU_SOURCE 1
 */
+
+#define _GNU_SOURCE
+#define _POSIX_C_SOURCE 200112L
+#define _XOPEN_SOURCE 600
 
 #if U8_LARGEFILES_ENABLED
 #define _FILE_OFFSET_BITS 64
