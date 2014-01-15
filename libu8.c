@@ -14,6 +14,7 @@
 
 */
 
+#include "libu8/source.h"
 #include "libu8/libu8.h"
 
 #ifndef _FILEINFO
@@ -37,7 +38,6 @@
 
 #if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
 #include <sys/syscall.h>
-#include <sys/types.h>
 #endif
 
 #if HAVE_LIBINTL_H
@@ -541,7 +541,6 @@ U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
 #if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
 U8_EXPORT char *u8_threadid(char *buf)
 {
-  
   pid_t pid=getpid();
   pid_t tid=syscall(SYS_gettid);
   if (!(buf)) buf=u8_malloc(128);

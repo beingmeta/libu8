@@ -294,7 +294,6 @@ U8_EXPORT
      @param servefn the function called to process data for a client
      @param donefn the function called when data processing is done
      @param closefn the function called when a client is closed
-     @param alternating property/value pairs
      @returns a pointer to the server object
  This initializes a server object, allocating one if server is NULL.  To
   actually start listening for requests, u8_add_server must be called

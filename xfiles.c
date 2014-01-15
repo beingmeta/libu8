@@ -13,7 +13,15 @@
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
+#include "libu8/source.h"
 #include "libu8/libu8.h"
+
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200112L
+#endif
+#ifndef _XOPEN_SOURCE
+#define _XOPEN_SOURCE 600
+#endif
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__

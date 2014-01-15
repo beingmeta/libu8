@@ -168,8 +168,8 @@ U8_EXPORT u8_string u8_valid_copy(u8_byte *s);
 U8_EXPORT u8_string u8_convert_crlfs(u8_byte *s);
 
 /** Adds indentation at the beginning of every line within a string
-    @param s an original string, possibly with newlines
-    @param n the indent string
+    @param input an original string, possibly with newlines
+    @param indent the indent string
     @returns a copy of the original string with the indent string
       inserted before every '\n'
 **/

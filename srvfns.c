@@ -13,6 +13,7 @@
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
+#include "libu8/source.h"
 #include "libu8/libu8.h"
 
 /* #define _GNU_SOURCE */

@@ -15,6 +15,7 @@
 
 #define U8_INLINE_CONTOURS 1
 
+#include "libu8/source.h"
 #include "libu8/libu8.h"
 
 u8_condition u8_BadDynamicContour=_("Bad Dynamic Contour");

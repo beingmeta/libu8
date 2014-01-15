@@ -13,15 +13,37 @@
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
-#include "libu8/source.h"
-#include "libu8/libu8.h"
+#ifndef LIBU8_U8BUILD_H
+#define LIBU8_U8BUILD_H 1
+#define LIBU8_U8BUILD_H_VERSION __FILE__
 
-#ifndef _FILEINFO
-#define _FILEINFO __FILE__
+#define _GNU_SOURCE
+
+#include "libu8/config.h"
+#include "libu8/revision.h"
+
+#include <stdlib.h>
+#include <string.h>
+#if HAVE_UNISTD_H
+#include <unistd.h>
 #endif
 
-U8_EXPORT int u8text_initialize()
-{
-  u8_register_source_file(_FILEINFO);
-  return 8069;
-}
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+
+#if MINGW
+#define WIN32 1
+#endif
+
+#if WIN32
+#include <windows.h>
+#define random rand
+#define srandom srand
+#define sleep(x) Sleep(x*1000)
+#endif
+
+#define LIBU8_SOURCE 1
+
+#endif
+

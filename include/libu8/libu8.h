@@ -22,17 +22,14 @@
  **/
 
 #include "libu8/revision.h"
-
 #include "libu8/config.h"
 
-/*
-#define _XOPEN_SOURCE 700
-#define _GNU_SOURCE 1
-*/
-
-#define _GNU_SOURCE
+#ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
+#endif
+#ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE 600
+#endif
 
 #if U8_LARGEFILES_ENABLED
 #define _FILE_OFFSET_BITS 64
@@ -40,33 +37,16 @@
 #define _LARGEFILE64_SOURCE 1
 #endif
 
-#include <stdlib.h>
-#include <string.h>
-#if HAVE_UNISTD_H
-#include <unistd.h>
-#endif
-
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-
 #ifndef U8_WITH_STDIO
 #define U8_WITH_STDIO 1
 #endif
 
-#if MINGW
-#define WIN32 1
-#endif
-
-#if WIN32
-#include <windows.h>
-#define random rand
-#define srandom srand
-#define sleep(x) Sleep(x*1000)
-#endif
-
 #ifndef U8_DLL
 #define U8_DLL 0
+#endif
+
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
 #endif
 
 #if WIN32
