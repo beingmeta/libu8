@@ -1,12 +1,12 @@
 Name:           libu8
 Version:        2.3.1
-Release:        12%{?dist}
+Release:        2%{?dist}
 Summary:        utility/compatability for Unicode and other functions
 
 Group:          System Environment/Libraries
 License:        GNU LGPL
 URL:            http://www.beingmeta.com/
-Source0:        libu8-2.2.7.tar.gz
+Source0:        libu8-2.3.1.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  openssl-devel doxygen
@@ -215,6 +215,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/*.a
 
 %changelog
+* Sun Jan 15 2014 Ken Haase <kh@beingmeta.com> 2.3
+Reorganize headers
 * Sun Aug 19 2012 Ken Haase <kh@beingmeta.com> 2.2
 Support for more asynchronous servers.
 Numerous API extensions
