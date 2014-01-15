@@ -54,7 +54,6 @@ You probably don't need it.
 %configure --prefix=/usr --without-sudo
 make
 
-
 %install
 rm -rf $RPM_BUILD_ROOT
 make install install-docs DESTDIR=$RPM_BUILD_ROOT
