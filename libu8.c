@@ -14,7 +14,7 @@
 
 */
 
-#include "libu8/source.h"
+#include "libu8/u8source.h"
 #include "libu8/libu8.h"
 
 #ifndef _FILEINFO

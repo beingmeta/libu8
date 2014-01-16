@@ -358,15 +358,4 @@
 #undef HAVE_SIZE_T
 #undef HAVE_SSIZE_T
 
-/** For system extensions **/
-
-#undef _GNU_SOURCE
-#undef __EXTENSIONS__
-#undef __POSIX_PTHREAD_SEMANTICS
-#undef _TANDEM_SOURCE
-#undef _ALL_SOURCE
-#undef _POSIX_SOURCE
-#undef _POSIX_1_SOURCE
-#undef _MINIX
-
 #endif

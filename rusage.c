@@ -13,7 +13,7 @@
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
-#include "libu8/source.h"
+#include "libu8/u8source.h"
 #include "libu8/libu8.h"
 #include "libu8/u8streamio.h"
 #include "libu8/u8printf.h"

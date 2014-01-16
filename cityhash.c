@@ -27,7 +27,7 @@
 // possible hash functions, by using SIMD instructions, or by
 // compromising on hash quality.
 
-#include "libu8/source.h"
+#include "libu8/u8source.h"
 #include "libu8/libu8.h"
 #include "libu8/cityhash.h"
 #include <string.h>  // for memcpy and memset

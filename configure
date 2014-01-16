@@ -2660,7 +2660,7 @@ ac_config_sub="$SHELL $ac_aux_dir/config.sub"  # Please don't use this var.
 ac_configure="$SHELL $ac_aux_dir/configure"  # Please don't use this var.
 
 
-ac_config_headers="$ac_config_headers include/libu8/config.h"
+ac_config_headers="$ac_config_headers include/libu8/u8source.h include/libu8/config.h"
 
 # Make sure we can run config.sub.
 $SHELL "$ac_aux_dir/config.sub" sun4 >/dev/null 2>&1 ||
@@ -7329,6 +7329,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
+    "include/libu8/u8source.h") CONFIG_HEADERS="$CONFIG_HEADERS include/libu8/u8source.h" ;;
     "include/libu8/config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/libu8/config.h" ;;
     "makefile") CONFIG_FILES="$CONFIG_FILES makefile" ;;
 

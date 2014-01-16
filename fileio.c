@@ -4,7 +4,7 @@
    This file is part of the libu8 UTF-8 unicode library.
 */
 
-#include "libu8/source.h"
+#include "libu8/u8source.h"
 #include "libu8/libu8.h"
 
 #ifndef _FILEINFO

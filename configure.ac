@@ -32,7 +32,7 @@ doxygen=""
 
 AC_PREFIX_DEFAULT(/usr)
 AC_CONFIG_AUX_DIR(etc)
-AC_CONFIG_HEADER(include/libu8/config.h)
+AC_CONFIG_HEADER(include/libu8/u8source.h include/libu8/config.h)
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
