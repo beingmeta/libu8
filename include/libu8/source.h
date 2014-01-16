@@ -17,8 +17,6 @@
 #define LIBU8_U8BUILD_H 1
 #define LIBU8_U8BUILD_H_VERSION __FILE__
 
-#define _GNU_SOURCE
-
 #include "libu8/config.h"
 #include "libu8/revision.h"
 
