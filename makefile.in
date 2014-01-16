@@ -281,13 +281,13 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 
 rpmtar: staging/libu8-@U8VERSION@.tar.gz
 cleanrpms: 
-	rm -rf dist/rpms.done staging/libu8-?.?.tar.gz staging/libu8-?.?
+	rm -rf dist/rpms.done staging/libu8*
 	find dist -name "*.rpm" | xargs -r rm
-freshrpms: 
-	rm -rf dist/rpms.done staging/libu8-?.?.tar.gz staging/libu8-?.?
+rpms: 
+	rm -rf dist/rpms.done staging/libu8*
 	find dist -name "*.rpm" | xargs -r rm
-	make rpms
-rpms: dist/rpms.done
+	make dist/rpms.done
+
 debs: dist/debs.done
 
 staging/libu8-@U8VERSION@: makefile.in configure makefile \
