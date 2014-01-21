@@ -107,9 +107,9 @@ makefile: makefile.in config.status
 	./config.status --recheck
 configure: configure.ac
 	autoconf
-include/framerd/config.h: include/framerd/config.h.in config.status
+include/libu8/config.h: include/libu8/config.h.in config.status
 	./config.status
-include/framerd/u8source.h: include/framerd/u8source.h.in config.status
+include/libu8/u8source.h: include/libu8/u8source.h.in config.status
 	./config.status
 
 # Fileinfo gets version-related information about a file to pass in
