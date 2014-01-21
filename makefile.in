@@ -106,7 +106,9 @@ makefile: makefile.in config.status
 ./config.status: configure
 	./config.status --recheck
 configure: configure.ac
-	autoconf
+	@if test -f .autoautoconf; then \
+	     echo "REBUILDING configure"; autoconf; \
+	else echo "WARNING: configure may be out of date"; fi
 include/libu8/config.h: include/libu8/config.h.in config.status
 	./config.status
 include/libu8/u8source.h: include/libu8/u8source.h.in config.status
