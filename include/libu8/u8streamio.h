@@ -150,6 +150,7 @@ U8_INLINE_FCN void U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
 static void U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags)
 {
   assert(sz>0);
+  memset(s,0,sizeof(struct U8_OUTPUT));
   if (buf) (s)->u8_outptr=(s)->u8_outbuf=buf;
   else {
     (s)->u8_outptr=(s)->u8_outbuf=u8_malloc(sz);

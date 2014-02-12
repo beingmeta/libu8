@@ -67,6 +67,7 @@ static MAYBE_UNUSED double getprecfactor(enum u8_timestamp_precision precision)
 
 static void copy_tm2xt(struct tm *tptr,struct U8_XTIME *xt)
 {
+  memset(xt,0,sizeof(struct U8_XTIME));
   xt->u8_sec=tptr->tm_sec;
   xt->u8_min=tptr->tm_min;
   xt->u8_hour=tptr->tm_hour;
@@ -80,6 +81,7 @@ static void copy_tm2xt(struct tm *tptr,struct U8_XTIME *xt)
 
 static void copy_xt2tm(struct U8_XTIME *xt,struct tm *tptr)
 {
+  memset(tptr,0,sizeof(struct tm));
   tptr->tm_sec=xt->u8_sec;
   tptr->tm_min=xt->u8_min;
   tptr->tm_hour=xt->u8_hour;
@@ -862,7 +864,7 @@ void u8_xtime_to_rfc822_x(u8_output ss,struct U8_XTIME *xtp,int zone,int flags)
 static u8_string time_printf_handler
   (u8_output s,char *cmd,u8_string buf,int bufsz,va_list *args)
 {
-  struct U8_XTIME xt;
+  struct U8_XTIME xt; memset(&xt,0,sizeof(struct U8_XTIME));
   if (strchr(cmd,'*'))
     /* Uses the current time, doesn't consume an argument. */
     if (strchr(cmd+1,'G'))
