@@ -573,34 +573,35 @@ static void update_server_stats(u8_client cl)
 #if U8_THREADS_ENABLED
 static u8_client pop_task(struct U8_SERVER *server)
 {
-  u8_client task=NULL; char statebuf[16];
+  u8_client task=NULL; char statebuf[16]; int slot;
   u8_lock_mutex(&(server->lock));
   while ((server->n_queued == 0) && ((server->flags&U8_SERVER_CLOSED)==0)) 
     u8_condvar_wait(&(server->empty),&(server->lock));
   if (server->flags&U8_SERVER_CLOSED) {}
   else if (server->n_queued) {
+    slot=server->queue_head;
     task=server->queue[server->queue_head];
-    server->queue[server->queue_head++]=NULL;
+    server->queue[server->queue_head]=NULL;
+    server->queue_head++;
     if (server->queue_head>=server->queue_len) server->queue_head=0;
     server->n_queued--;}
   else {}
   if (!(task)) {}
   else if (task->active>0) {
     /* This should probably never happen */
-    u8_log(LOG_CRIT,"pop_task(u8)","popping active task @x%lx#%d.%d[%s/%d](%s)",
-	   ((unsigned long)task),task->clientid,task->socket,
+    u8_log(LOG_CRIT,"pop_task(u8)","popping (%d) active task @x%lx#%d.%d[%s/%d](%s)",
+	   slot,((unsigned long)task),task->clientid,task->socket,
 	   get_client_state(task,statebuf),
 	   task->n_trans,task->idstring);
     task->queued=-1; task=NULL;}
   else if ((task->queued<=0)||(task->socket<0)) {
     if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
 	((task->flags)&(U8_CLIENT_LOG_QUEUE)))
-      u8_log(LOG_NOTICE,"pop_task(u8)","Final pop of closed task @x%lx#%d.%d[%s/%d](%s)",
-	     ((unsigned long)task),task->clientid,task->socket,
+      u8_log(LOG_NOTICE,"pop_task(u8)","Final pop (%d) of closed task @x%lx#%d.%d[%s/%d](%s)",
+	     slot,((unsigned long)task),task->clientid,task->socket,
 	     get_client_state(task,statebuf),
 	     task->n_trans,task->idstring);
     free_client(task->server,task,"pop_task/closed");
-    task->queued=-1;
     task=NULL;}
   else {
     u8_utime curtime=u8_microtime();
@@ -611,8 +612,8 @@ static u8_client pop_task(struct U8_SERVER *server)
     task->queued=0; task->active=curtime;
     if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
 	((task->flags)&(U8_CLIENT_LOG_QUEUE)))
-      u8_log(LOG_NOTICE,"pop_task(u8)","Popped task @x%lx#%d.%d[%s/%d](%s)",
-	     ((unsigned long)task),task->clientid,task->socket,
+      u8_log(LOG_NOTICE,"pop_task(u8)","Popped (%d) task @x%lx#%d.%d[%s/%d](%s)",
+	     slot,((unsigned long)task),task->clientid,task->socket,
 	     get_client_state(task,statebuf),
 	     task->n_trans,task->idstring);
     if (task->started<=0) {
@@ -631,8 +632,8 @@ static int push_task(struct U8_SERVER *server,u8_client cl,u8_context cxt)
   if ((cl->flags)&(U8_CLIENT_CLOSED)) return 0;
   if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
       ((cl->flags)&(U8_CLIENT_LOG_QUEUE)))
-    u8_log(LOG_NOTICE,cxt,"Queueing client @x%lx#%d.%d[%s/%d](%s)",
-	   ((unsigned long)cl),cl->clientid,cl->socket,
+    u8_log(LOG_NOTICE,cxt,"Queueing (%d) client @x%lx#%d.%d[%s/%d](%s)",
+	   server->queue_tail,((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
 	   cl->n_trans,cl->idstring);
   cl->queued=cur;
@@ -946,6 +947,8 @@ struct U8_SERVER *u8_init_server
   server->n_queued=0; server->max_queued=max_queue;
   server->queue_head=0; server->queue_tail=0; server->queue_len=max_queue;
   server->thread_pool=u8_alloc_n(n_threads,pthread_t);
+  memset(server->queue,0,sizeof(u8_client)*max_queue);
+  memset(server->thread_pool,0,sizeof(pthread_t)*n_threads);
   server->n_trans=0; /* Transaction count */
   server->n_accepted=0; /* Accept count (new clients) */
   i=0; while (i < n_threads) {
