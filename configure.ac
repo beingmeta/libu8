@@ -10,6 +10,7 @@ U8MAJOR="2"
 U8MINOR="3"
 U8RELEASE="1"
 U8VERSION="2.3.1"
+LD="ld"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
 INSTALLI18N=""
@@ -19,10 +20,16 @@ DOCS="docs"
 INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
 doi18n="no"
+build_shared="shared-libs"
+build_static="static-libs"
+test_shared="test-shared"
+test_static="test-static"
 install_shared="install-so"
+install_static="install-static"
 libc_pthreads="no"
 libc_dlopen="no"
-syslog_target="syslog_libs"
+syslog_static="syslog-static"
+syslog_shared="syslog-shared"
 suffix=""
 have_constructor_attributes="yes"
 archflags=""
@@ -51,6 +58,7 @@ case $target_os in
    ;;
 esac  
 
+AC_SUBST(LD)
 AC_SUBST(CLEAN)
 AC_SUBST(TAGS)
 AC_SUBST(SHARED_LIB)
@@ -63,8 +71,14 @@ AC_SUBST(MKSTATIC)
 AC_SUBST(SUDO)
 AC_SUBST(shared_suffix)
 AC_SUBST(suffix)
+AC_SUBST(test_shared)
+AC_SUBST(test_static)
+AC_SUBST(build_shared)
+AC_SUBST(build_static)
 AC_SUBST(install_shared)
-AC_SUBST(syslog_target)
+AC_SUBST(install_static)
+AC_SUBST(syslog_shared)
+AC_SUBST(syslog_static)
 AC_SUBST(archflags)
 AC_SUBST(definefileinfo)
 AC_SUBST(versionsh)
@@ -73,6 +87,17 @@ AC_SUBST(INSTALLI18N)
 AC_SUBST(doxygen)
 AC_SUBST(DOCS)
 AC_SUBST(INSTALLDOCS)
+
+AC_ARG_WITH(asan,--with-asan,,with_asan="no")
+if test "x$with_asan" = "xyes"; then
+   CC=clang
+   CFLAGS="-fsanitize=address -fno-omit-frame-pointer -O0 -g $CFLAGS"
+   LD=clang
+   LDFLAGS="-g -fsanitize=address $LDFLAGS"
+   build_static=""
+   test_static=""
+   install_static=""
+fi
 
 AC_PROG_CC([cc gcc])
 AC_USE_SYSTEM_EXTENSIONS
@@ -159,6 +184,10 @@ AC_CHECK_FUNCS(getrusage mallinfo syscall)
 
 AC_HEADER_STDC
 AC_HEADER_STAT
+
+if test "x$with_asan" = "xyes"; then
+   AC_CHECK_LIB(asan,asan_init)
+fi
 
 # Time support
 AC_CHECK_HEADERS(time.h sys/time.h sys/types.h)

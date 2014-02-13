@@ -1,5 +1,5 @@
 CC	  = @CC@
-LD	  = ld
+LD	  = @LD@
 XCFLAGS   =
 ARCHFLAGS = @archflags@
 CFLAGS    =-g -O2 @CFLAGS@ -I./include $(XCFLAGS) $(ARCHFLAGS)
@@ -63,7 +63,7 @@ DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
 STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
 
-ALL=@TAGS@ libs @I18N@ testbin dytestbin @DOCS@
+ALL=@TAGS@ libs @I18N@ tests @DOCS@
 
 update: buildmode
 	@echo Building `cat buildmode` configuration
@@ -132,7 +132,7 @@ dbginstall:
 # Make rules
 
 %.o: %.c ./fileinfo
-	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
+	$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo CC $@ $<
 tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a \
          lib/libu8stdio.a lib/libu8core.a
@@ -143,10 +143,10 @@ tests/dynamic/%: tests/%.c
 	@echo CC_DYNAMIC_EXE $@ $<
 
 lib/%@suffix@.a:
-	@$(MKSTATIC) $@ $^
+	$(MKSTATIC) $@ $^
 	@echo MKSTATIC $@
 lib/%@suffix@.so.@U8VERSION@:
-	@$(MKSO) -Wl,-soname=$(@F) -Llib -o $@ $^ -lu8 $(LIBS)
+	$(MKSO) -Wl,-soname=$(@F) -Llib -o $@ $^ -lu8 $(LIBS)
 	@echo MKSO $@
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	@ln -sf $(<F) $@
@@ -179,18 +179,22 @@ $(LIBINSTALLDIR)/%@suffix@.dylib: \
 	@echo Linking to $@
 	@unset LD_LIBRARY_PATH; @SUDO@ln -sf $(shell basename $<) $@
 
-testbin: $(TESTBIN)
-dytestbin: $(DYTESTBIN)
+test: @test_shared@ @test_static@
+test-shared: $(DYTESTBIN)
+test-static: $(TESTBIN)
 
 TAGS: tests/*.c include/libu8/*.h *.c
 	etags tests/*.c include/libu8/*.h *.c
 
-libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a lib/libu8data.a \
-      lib/libu8stdio.a lib/libu8.@shared_suffix@ lib/libu8fns.@shared_suffix@ \
-      lib/libu8io.@shared_suffix@ lib/libu8data.@shared_suffix@ \
-      lib/libu8stdio.@shared_suffix@ @syslog_target@
+libs: @build_shared@ @build_static@
+static-libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a \
+	lib/libu8data.a lib/libu8stdio.a @syslog_static@
+shared-libs: lib/libu8.@shared_suffix@ lib/libu8fns.@shared_suffix@ \
+        lib/libu8io.@shared_suffix@ lib/libu8data.@shared_suffix@ \
+        lib/libu8stdio.@shared_suffix@ @syslog_shared@
 
-syslog_libs: lib/libu8syslog.a lib/libu8syslog.@shared_suffix@
+syslog-shared: lib/libu8syslog.@shared_suffix@
+syslog-static: lib/libu8syslog.a
 
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	if test -f etc/revision.h; \
@@ -330,7 +334,7 @@ dist/debs.done: staging/libu8-@U8VERSION@
 install: install-libs install-headers install-encodings \
 	@INSTALLI18N@ @INSTALLDOCS@
 
-install-libs: install-static-libs @install_shared@
+install-libs: @install_static@ @install_shared@
 
 install-headers: $(DESTDIR)@prefix@/include/libu8
 	@echo Installing headers in $(DESTDIR)@prefix@/include/libu8
@@ -343,11 +347,11 @@ install-docs: docs/doxygen.done
 	@$(INSTALL) -d $(MANDIR)/man3
 	@$(INSTALL) docs/man/man3/* $(MANDIR)/man3
 
-install-static-libs: $(LIBINSTALLDIR)/libu8.a \
-		     $(LIBINSTALLDIR)/libu8io.a \
-		     $(LIBINSTALLDIR)/libu8fns.a \
-		     $(LIBINSTALLDIR)/libu8data.a \
-		     $(LIBINSTALLDIR)/libu8stdio.a
+install-static: $(LIBINSTALLDIR)/libu8.a \
+		$(LIBINSTALLDIR)/libu8io.a \
+		$(LIBINSTALLDIR)/libu8fns.a \
+		$(LIBINSTALLDIR)/libu8data.a \
+		$(LIBINSTALLDIR)/libu8stdio.a
 
 install-so: $(LIBINSTALLDIR)/libu8@suffix@.so                  \
 	    $(LIBINSTALLDIR)/libu8@suffix@.so.@U8VERSION@      \

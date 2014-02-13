@@ -651,8 +651,14 @@ I18N
 versionsh
 definefileinfo
 archflags
-syslog_target
+syslog_static
+syslog_shared
+install_static
 install_shared
+build_static
+build_shared
+test_static
+test_shared
 suffix
 shared_suffix
 SUDO
@@ -665,6 +671,7 @@ SHARED_LIBV
 SHARED_LIB
 TAGS
 CLEAN
+LD
 target_os
 target_vendor
 target_cpu
@@ -718,6 +725,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+with_asan
 with_encodings_dir
 with_arch
 enable_shared
@@ -1357,6 +1365,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+--with-asan
 --with-encodings-dir pathname
 --without-arch build with particular --arch flags
 --without-i18n built and install message catalogs
@@ -2610,6 +2619,7 @@ U8MAJOR="2"
 U8MINOR="3"
 U8RELEASE="1"
 U8VERSION="2.3.1"
+LD="ld"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
 INSTALLI18N=""
@@ -2619,10 +2629,16 @@ DOCS="docs"
 INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
 doi18n="no"
+build_shared="shared-libs"
+build_static="static-libs"
+test_shared="test-shared"
+test_static="test-static"
 install_shared="install-so"
+install_static="install-static"
 libc_pthreads="no"
 libc_dlopen="no"
-syslog_target="syslog_libs"
+syslog_static="syslog-static"
+syslog_shared="syslog-shared"
 suffix=""
 have_constructor_attributes="yes"
 archflags=""
@@ -2812,6 +2828,31 @@ esac
 
 
 
+
+
+
+
+
+
+
+
+
+# Check whether --with-asan was given.
+if test "${with_asan+set}" = set; then :
+  withval=$with_asan;
+else
+  with_asan="no"
+fi
+
+if test "x$with_asan" = "xyes"; then
+   CC=clang
+   CFLAGS="-fsanitize=address -fno-omit-frame-pointer -O0 -g $CFLAGS"
+   LD=clang
+   LDFLAGS="-g -fsanitize=address $LDFLAGS"
+   build_static=""
+   test_static=""
+   install_static=""
+fi
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
@@ -5154,6 +5195,54 @@ $as_echo "#define STAT_MACROS_BROKEN 1" >>confdefs.h
 
 fi
 
+
+if test "x$with_asan" = "xyes"; then
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for asan_init in -lasan" >&5
+$as_echo_n "checking for asan_init in -lasan... " >&6; }
+if ${ac_cv_lib_asan_asan_init+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lasan  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char asan_init ();
+int
+main ()
+{
+return asan_init ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_asan_asan_init=yes
+else
+  ac_cv_lib_asan_asan_init=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_asan_asan_init" >&5
+$as_echo "$ac_cv_lib_asan_asan_init" >&6; }
+if test "x$ac_cv_lib_asan_asan_init" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBASAN 1
+_ACEOF
+
+  LIBS="-lasan $LIBS"
+
+fi
+
+fi
 
 # Time support
 for ac_header in time.h sys/time.h sys/types.h
