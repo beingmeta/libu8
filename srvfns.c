@@ -845,10 +845,10 @@ static void *event_loop(void *thread_arg)
       else if ((cl->len>0)&&((cl->writing>0)||(cl->reading>0))) {
 	int cid=cl->clientid;
 	cl->active=0;
-	push_task(server,cl,((cl->writing)?("event_loop/w"):("event_loop/r")));
 	if (cl->writing>0)
 	  server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
 	else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));
+	u8_push_task(server,cl,((cl->writing)?("event_loop/w"):("event_loop/r")));
 	continue;}
       else {}}
     else {
@@ -1256,18 +1256,23 @@ int u8_add_server(struct U8_SERVER *server,char *hostname,int port)
     /* Open a file socket */
     struct sockaddr *addr=get_sockaddr_file(hostname); 
     struct U8_SERVER_INFO *info;
+    u8_lock_mutex(&(server->lock));
     if (find_server(server,addr)) {
       u8_log(LOG_NOTICE,NewServer,"Already listening at %s",hostname);
-      u8_free(addr); return 0;}
+      u8_free(addr);
+      u8_unlock_mutex(&(server->lock));
+      return 0;}
     else {
       u8_socket sock=open_server_socket(addr,server->max_backlog);
       if (sock<0) {
 	u8_free(addr);
+	u8_unlock_mutex(&(server->lock));
 	return -1;}
       else info=add_server(server,sock,addr);
       info->idstring=u8_strdup(hostname);
       if (server->flags&U8_SERVER_LOG_LISTEN)
 	u8_log(LOG_INFO,NewServer,"Listening at %s",hostname);
+      u8_unlock_mutex(&(server->lock));
       return 1;}}
   else {
     int n_servers=0;
@@ -1286,6 +1291,7 @@ int u8_add_server(struct U8_SERVER *server,char *hostname,int port)
 	  struct U8_SERVER_INFO *info;
 	  u8_socket sock=open_server_socket(sockaddr,server->max_backlog);
 	  if (sock>=0) {
+	    u8_lock_mutex(&(server->lock));
 	    info=add_server(server,sock,sockaddr);
 	    if (info) info->idstring=u8_sockaddr_string(sockaddr);
 	    if (server->flags&U8_SERVER_LOG_LISTEN)
@@ -1294,7 +1300,9 @@ int u8_add_server(struct U8_SERVER *server,char *hostname,int port)
 	    u8_log(LOG_ERROR,u8_NetworkError,"Can't open one socket");
 	    if (sockaddr) u8_free(sockaddr);
 	    if (hostinfo) u8_free(hostinfo);
+	    u8_unlock_mutex(&(server->lock));
 	    return -1;}
+	  u8_unlock_mutex(&(server->lock));
 	  addrs++; n_servers++;}}
       if (hostinfo) u8_free(hostinfo);
       return n_servers;}}
@@ -1355,7 +1363,9 @@ static int server_accept(u8_server server,u8_socket i)
 	 (u8_sockaddr_string((struct sockaddr *)addrbuf)));
       server->n_accepted++;
       if (!(cl->idstring)) cl->idstring=idstring;
+      u8_lock_mutex(&(server->lock));
       add_client(server,cl);
+      u8_unlock_mutex(&(server->lock));
       if (server->flags&U8_SERVER_LOG_CONNECT) 
 	u8_log(LOG_NOTICE,NewClient,"Opened @x%lx#%d.%d[%s/%d](%s)",
 	       ((unsigned long)cl),cl->clientid,cl->socket,
@@ -1507,7 +1517,6 @@ static int server_handle_poll(struct U8_SERVER *server,
     else {}
     i++;}
   u8_unlock_mutex(&(server->lock));
-  if (sockets!=server->sockets) u8_free(sockets);
   return n_actions;
 }
 

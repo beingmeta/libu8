@@ -367,6 +367,15 @@ U8_EXPORT
 void u8_server_loop(struct U8_SERVER *server);
 
 U8_EXPORT
+/** Pushes a client/task onto the queue for a server
+    @param server a pointer to a U8_SERVER struct
+    @param client a pointer to a structure head-compatible with a U8_CLIENT struct
+    @param cxt the caller context, used for debugging
+    @returns 1 if it did anything, zero otherwise
+*/
+int u8_push_task(struct U8_SERVER *server,u8_client client,u8_context cxt);
+
+U8_EXPORT
 /** Shuts down a server, stopping listening and closing all
      connections when completed.
      @param server a pointer to a U8_SERVER struct
