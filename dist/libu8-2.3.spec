@@ -1,6 +1,6 @@
 Name:           libu8
 Version:        2.3.1
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        utility/compatability for Unicode and other functions
 
 Group:          System Environment/Libraries
@@ -51,7 +51,7 @@ You probably don't need it.
 
 
 %build
-%configure --prefix=/usr --without-sudo
+%configure --prefix=/usr --libdir=%{_libdir} --without-sudo
 make
 
 %install
