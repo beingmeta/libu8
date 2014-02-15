@@ -1250,9 +1250,7 @@ int u8_add_server(struct U8_SERVER *server,char *hostname,int port)
       else if ((n_servers=u8_add_server(server,thishost,port))<0) {
 	u8_clear_errors(1);
 	n_servers=u8_add_server(server,"localhost",port);}
-      else if ((n_servers=u8_add_server(server,thishost,port))==0) {
-	n_servers=u8_add_server(server,"localhost",port);}
-      else n_servers=-1;
+      else {}
       if (thishost) u8_free(thishost);
       return n_servers;}
   else if (port==0)
