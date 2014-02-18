@@ -846,8 +846,8 @@ static void *event_loop(void *thread_arg)
 	int cid=cl->clientid;
 	cl->active=0;
 	if (cl->writing>0)
-	  server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
-	else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));
+	  server->sockets[cid].events=((short)(POLLOUT|HUPFLAGS));
+	else server->sockets[cid].events=((short)(POLLIN|HUPFLAGS));
 	u8_push_task(server,cl,((cl->writing)?("event_loop/w"):("event_loop/r")));
 	continue;}
       else {}}

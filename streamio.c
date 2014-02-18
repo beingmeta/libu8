@@ -135,7 +135,7 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 U8_EXPORT int _u8_getc(struct U8_INPUT *f)
 {
   int i, ch, byte, size;
-  u8_byte *scan, *start=f->u8_inptr;
+  u8_byte *scan;
   if (f->u8_inptr>=f->u8_inlim) {
     /* Try to get more data */
     if (f->u8_fillfn) f->u8_fillfn(f);
@@ -222,7 +222,7 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
 U8_EXPORT int u8_probec(struct U8_INPUT *f)
 {
   int i, ch, byte, size;
-  u8_byte *scan, *start=f->u8_inptr;
+  u8_byte *start=f->u8_inptr, *scan=start;
   if (f->u8_inptr>=f->u8_inlim) {
     /* Try to get more data */
     if (f->u8_fillfn) f->u8_fillfn(f);

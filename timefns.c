@@ -397,7 +397,6 @@ U8_EXPORT
 void u8_set_xtime_gmtoff(struct U8_XTIME *xt,int tzoff,int dstoff)
 {
   int gmtoff=tzoff-dstoff;
-  time_t secs=xt->u8_tick+gmtoff;
   u8_init_xtime(xt,((xt->u8_tick)-tzoff),xt->u8_prec,
 		xt->u8_nsecs,tzoff,dstoff);
 }
@@ -643,7 +642,6 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int flags)
   else {}
   if ((flags)&(U8_ISO8601_UTC)&&
       ((xt->u8_tzoff!=0)||(xt->u8_dstoff!=0))) {
-    time_t tick=xt->u8_tick;
     u8_init_xtime(&utc,xt->u8_tick,prec,
 		  ((prec>u8_second)?(xt->u8_nsecs):(0)),
 		  0,0);

@@ -307,7 +307,7 @@ static u8_string entity_end(u8_string entity)
 U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_byte **endp)
 {
   int codepoint;
-  u8_byte buf[16], _end;
+  u8_byte buf[16];
   u8_byte *end=((endp)?(*endp):(entity+strlen(entity)));
   u8_byte *semi=entity_end(entity);
   if (semi==NULL) return -1;

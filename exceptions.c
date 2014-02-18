@@ -287,7 +287,6 @@ U8_EXPORT u8_condition u8_strerror(int num)
   char buf[256];
   u8_condition condition;
   struct U8_SPARSE_ERRNO_MAP *scan=sparse_errno_map;
-  int retval;
   if ((num<U8_ERRNO_MAP_SIZE) && (errno_map[num]))
     return errno_map[num];
   else while (scan)
@@ -308,7 +307,8 @@ U8_EXPORT u8_condition u8_strerror(int num)
     if (result==NULL) condition=UnknownError;
     else condition=(u8_condition) u8_fromlibc(result);
 #else
-    if ((retval=strerror_r(num,buf,256))) condition=UnknownError;
+    int retval=strerror_r(num,buf,256);
+    if (retval) condition=UnknownError;
     else condition=(u8_condition) u8_fromlibc(buf);
 #endif
 #elif U8_THREADS_ENABLED
