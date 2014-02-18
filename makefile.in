@@ -333,12 +333,11 @@ staging/libu8_@U8VERSION@.orig.tar.gz: \
 	cd staging; tar -xf libu8_@U8VERSION@.orig.tar
 	gzip staging/libu8_@U8VERSION@.orig.tar
 
-dist/libu8_@U8VERSION@-1_amd64.deb: staging/libu8_@U8VERSION@.orig.tar.gz
-	cd staging/libu8_@U8VERSION@; dpkg-buildpackage -F -rfakeroot && \
-	  cd ../..; rm -rf staging/libu8_@U8VERSION@; \
-	  mv staging/libu8* dist
+dist/debs.done: staging/libu8_@U8VERSION@.orig.tar.gz
+	(cd staging/libu8_@U8VERSION@; dpkg-buildpackage -F -rfakeroot) && \
+	(cd staging; mv libu8*.deb ../dist) && touch dist/debs.done;
 
-debian: dist/libu8_@U8VERSION@-1_amd64.deb
+debian: dist/debs.done
 
 # Installation targets
 
