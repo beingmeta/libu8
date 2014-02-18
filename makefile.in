@@ -335,8 +335,10 @@ staging/libu8_@U8VERSION@.orig.tar.gz: \
 
 dist/debs.done: staging/libu8_@U8VERSION@.orig.tar.gz
 	(cd staging/libu8_@U8VERSION@; dpkg-buildpackage -F -rfakeroot) && \
-	(cd staging; mv libu8*.deb libu8*.dsc libu8*.gz libu8*.changes ../dist) && \
-	touch dist/debs.done;
+	(cd staging; mv libu8_@U8VERSION@*.deb libu8_@U8VERSION@*.dsc \
+			libu8_@U8VERSION@*.gz libu8_@U8VERSION@*.changes \
+			../dist) && \
+	touch dist/debs.done; rm -rf staging/libu8_@U8VERSION@;
 
 debian: dist/debs.done
 
