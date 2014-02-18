@@ -1,3 +1,9 @@
+libu8 (2.3.1-1ubuntu1) UNRELEASED; urgency=low
+
+  * Switch to dpkg-source 3.0 (quilt) format
+
+ -- Ken Haase <haase@moby>  Tue, 18 Feb 2014 16:25:25 -0500
+
 libu8 (2.3.1-1) unstable; urgency=low
 
   * Updated release 
