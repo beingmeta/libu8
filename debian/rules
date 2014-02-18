@@ -40,18 +40,17 @@ config.status: configure
 	dh_testdir
 	# Add here commands to configure the package.
 	./configure --without-sudo --prefix=/usr \
-		--mandir=\$${prefix}/share/man --infodir=\$${prefix}/share/info \
+		--mandir=\$${prefix}/share/man \
+		--infodir=\$${prefix}/share/info \
 		$(DEB_CONFIGURE_EXTRA_FLAGS)
 
 
 build: build-stamp
 build-stamp:  config.status
 	dh_testdir
-
 	# Add here commands to compile the package.
 	$(MAKE) XCFLAGS="$(CFLAGS)"
 	$(MAKE) XCFLAGS="$(CFLAGS)" docs
-
 	touch $@
 
 clean:
