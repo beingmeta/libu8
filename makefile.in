@@ -339,6 +339,8 @@ dist/debs.done: staging/libu8_@U8VERSION@.orig.tar.gz
 			libu8_@U8VERSION@*.gz libu8_@U8VERSION@*.changes \
 			../dist) && \
 	touch dist/debs.done; rm -rf staging/libu8_@U8VERSION@;
+update-apt: dist/debs.done
+	deb-s3 upload --bucket=repo.beingmeta.com --codename=$distname dist/libu8_@U8VERSION@*.deb
 
 debian: dist/debs.done
 
