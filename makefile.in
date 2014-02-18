@@ -325,9 +325,17 @@ dist/rpms32.done: staging/libu8-@U8VERSION@.tar.gz
 		staging/libu8-@U8VERSION@.tar.gz &&\
 	touch dist/rpms32.done
 
-dist/libu8_@U8VERSION@-1_amd64.deb:
-	cd staging/libu8-@U8VERSION@; dpkg-buildpackage -F -rfakeroot && \
-	  cd ../..; rm -rf staging/libu8-@U8VERSION@; \
+staging/libu8_@U8VERSION@.orig.tar.gz: \
+	makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
+	rm -rf staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
+	git archive --prefix=libu8_@U8VERSION@/ \
+	            -o staging/libu8_@U8VERSION@.orig.tar HEAD
+	cd staging; tar -xf libu8_@U8VERSION@.orig.tar
+	gzip staging/libu8_@U8VERSION@.orig.tar
+
+dist/libu8_@U8VERSION@-1_amd64.deb: staging/libu8_@U8VERSION@.orig.tar.gz
+	cd staging/libu8_@U8VERSION@; dpkg-buildpackage -F -rfakeroot && \
+	  cd ../..; rm -rf staging/libu8_@U8VERSION@; \
 	  mv staging/libu8* dist
 
 debian: dist/libu8_@U8VERSION@-1_amd64.deb
