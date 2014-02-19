@@ -28,6 +28,9 @@ MKSO		= $(CC) $(CFLAGS) $(XCFLAGS) -shared $(LDFLAGS) $(XLDFLAGS) $(LIBS)
 #MACLIBTOOL	= libtool -dynamic -single_module $(LDFLAGS) $(LIBS)
 MACLIBTOOL	= $(CC) -dynamiclib -single_module $(LDFLAGS) $(LIBS)
 
+COMPONENT=main
+CODENAME=beingmeta
+
 LIBU8_HEADERS=\
 	include/libu8/config.h include/libu8/u8source.h include/libu8/threading.h \
 	include/libu8/libu8.h include/libu8/u8contour.h \
@@ -340,7 +343,10 @@ dist/debs.done: staging/libu8_@U8VERSION@.orig.tar.gz
 			../dist) && \
 	touch dist/debs.done; rm -rf staging/libu8_@U8VERSION@;
 update-apt: dist/debs.done
-	deb-s3 upload --bucket=repo.beingmeta.com --codename=$distname dist/libu8_@U8VERSION@*.deb
+	deb-s3 upload --bucket=repo.beingmeta.com \
+		      --component=$(COMPONENT) \
+		      --codename=$(CODENAME) \
+		dist/libu8_@U8VERSION@*.deb
 
 debian: dist/debs.done
 
