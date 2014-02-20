@@ -118,7 +118,7 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
 	      u8_logprefix,prefix,level,indented,u8_logsuffix);
     else fprintf(stdout,"%s%s %s%s",
 		 u8_logprefix,prefix,indented,u8_logsuffix);
-    if (indented!=message) u8_free(indented);
+    if ((indented)&&(indented!=message)) u8_free(indented);
     fflush(stdout);
     return 1;}
   if (eloglevel<=u8_stderr_loglevel) {
@@ -133,7 +133,7 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
 	      u8_logprefix,prefix,level,indented,u8_logsuffix);
     else fprintf(stderr,"%s%s %s%s",
 		 u8_logprefix,prefix,indented,u8_logsuffix);}
-  if (indented!=message) u8_free(indented);
+  if ((indented)&&(indented!=message)) u8_free(indented);
   return 0;
 }
 #endif

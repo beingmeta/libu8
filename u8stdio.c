@@ -61,6 +61,7 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
     if (c) fprintf(stdout,"[%s (%s) %s]\n",prefix,c,indented);
     else fprintf(stdout,"[%s %s]\n",prefix,indented);
     fflush(stdout);
+    if ((indented)&&(msg!=indented)) u8_free(indented);
     return 1;}
   else if (priority>u8_loglevel) return 0;
   if (stdoutISstderr<0) u8_check_stdio();
@@ -77,6 +78,7 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
 	fprintf(stderr,"[%s (%s): %s]\n",
 		u8_loglevels[priority],c,indented);
       else fprintf(stderr,"[%s: %s]\n",u8_loglevels[priority],indented);
+      if ((indented)&&(msg!=indented)) u8_free(indented);
       return 1;}
     else return 0;}
   if (priority<=u8_stderr_loglevel) {
@@ -102,10 +104,10 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
       fprintf(stdout,"[%s (%s): %s]\n",
 	      u8_loglevels[priority],c,indented);
     else fprintf(stdout,"[%s: %s]\n",u8_loglevels[priority],indented);
-    if (indented!=msg) u8_free(indented);
     fflush(stdout);
     output=1;}
-  return output;
+    if ((indented)&&(msg!=indented)) u8_free(indented);
+    return output;
 }
 
 #if (!(U8_WITH_STDIO))
