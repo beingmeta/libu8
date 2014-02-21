@@ -97,10 +97,14 @@ fast:
 	@if test $(BUILDMODE) != "optimizing"; then echo optimizing > buildmode; fi
 	@echo Building `cat buildmode` configuration
 	make `cat buildmode`
+
 buildmode:
-	@echo standard > buildmode
-
-
+	@if test -f buildmode; then       \
+	    touch buildmode;              \
+	 else echo standard > buildmode;  \
+	 fi
+showbuildmode showmode showbuild: buildmode
+	@cat buildmode
 
 # configure/autoconf stuff
 
