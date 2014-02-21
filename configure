@@ -583,7 +583,6 @@ PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
 ac_unique_file="include/libu8/libu8.h"
-ac_default_prefix=/usr
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>
@@ -2610,6 +2609,43 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # information on what to do *after* running autoupdate.
 
 
+threads_default="yes"
+ifmacosx="#"
+shared_default="yes"
+shared_suffix="so"
+SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
+CLEAN="rm -f"
+U8MAJOR="2"
+U8MINOR="3"
+U8RELEASE="1"
+U8VERSION="2.3.1"
+LD="ld"
+MKSTATIC="\$(LD) -r -o"
+I18N=""
+INSTALLI18N=""
+SUDO=""
+TAGS="TAGS"
+DOCS="docs"
+INSTALLDOCS="install-docs"
+BUILDRPM="lsbrpmbuild"
+doi18n="no"
+build_shared="shared-libs"
+build_static="static-libs"
+test_shared="test-shared"
+test_static="test-static"
+install_shared="install-so"
+install_static="install-static"
+libc_pthreads="no"
+libc_dlopen="no"
+syslog_static="syslog-static"
+syslog_shared="syslog-shared"
+suffix=""
+have_constructor_attributes="yes"
+archflags=""
+definefileinfo=""
+versionsh=""
+doxygen=""
+
 if test "x$prefix" = xNONE; then
   $as_echo_n "checking for prefix by " >&6
   # Extract the first word of "autoconf", so it can be a program name with args.
@@ -2701,44 +2737,6 @@ $as_echo X"$prefix" |
 	  s/.*/./; q'`
   fi
 fi
-
-threads_default="yes"
-ifmacosx="#"
-shared_default="yes"
-shared_suffix="so"
-SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
-CLEAN="rm -f"
-U8MAJOR="2"
-U8MINOR="3"
-U8RELEASE="1"
-U8VERSION="2.3.1"
-LD="ld"
-MKSTATIC="\$(LD) -r -o"
-I18N=""
-INSTALLI18N=""
-SUDO=""
-TAGS="TAGS"
-DOCS="docs"
-INSTALLDOCS="install-docs"
-BUILDRPM="lsbrpmbuild"
-doi18n="no"
-build_shared="shared-libs"
-build_static="static-libs"
-test_shared="test-shared"
-test_static="test-static"
-install_shared="install-so"
-install_static="install-static"
-libc_pthreads="no"
-libc_dlopen="no"
-syslog_static="syslog-static"
-syslog_shared="syslog-shared"
-suffix=""
-have_constructor_attributes="yes"
-archflags=""
-definefileinfo=""
-versionsh=""
-doxygen=""
-
 
 ac_aux_dir=
 for ac_dir in etc "$srcdir"/etc; do
