@@ -1,4 +1,5 @@
 AC_INIT(include/libu8/libu8.h)
+AC_PREFIX_PROGRAM(autoconf)
 m4_include([etc/ax_pthread.m4])
 threads_default="yes"
 ifmacosx="#"
@@ -37,7 +38,6 @@ definefileinfo=""
 versionsh=""
 doxygen=""
 
-AC_PREFIX_PROGRAM(autoconf)
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADER(include/libu8/u8source.h include/libu8/config.h)
 AC_CANONICAL_HOST
