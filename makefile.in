@@ -322,7 +322,7 @@ staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 
 dist/rpms.done: staging/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ ${RPMFLAGS}  \
-		--define "_rpmdir dist" --define "_srcrpmdir dist" \
+		--define "_rpmdir $(RPMDIR)" --define "_srcrpmdir $(RPMDIR)" \
 		 --nodeps -ta \
 		staging/libu8-@U8VERSION@.tar.gz && \
 	touch dist/rpms.done
@@ -331,37 +331,22 @@ dist/rpms.signed: dist/rpms.done
 	   (test "x${GPGNAME}" != "xnone"); then \
 	   echo "Signing password for ${GPGNAME}:"; \
 	   rpm --define "_gpg_name \"${GPGNAME}\"" \
-	       --addsign dist/libu8-@U8VERSION@-*.rpm \
-	 		 dist/*/libu8-@U8VERSION@-*.rpm; \
-	else rpm --addsign dist/libu8-@U8VERSION@-*.rpm \
-	 		   dist/*/libu8-@U8VERSION@-*.rpm; \
+	       --addsign $(RPMDIR)/libu8*-@FDVERSION@-*.rpm \
+	 		 $(RPMDIR)dist/*/libu8*-@FDVERSION@-*.rpm; \
+	else rpm --addsign $(RPMDIR)/libu8-@FDVERSION@-*.rpm \
+	 		   $(RPMDIR)/*/libu8*-@FDVERSION@-*.rpm; \
 	fi
 
 dist/rpms.zip: dist/rpms.signed
 	@rm -f dist/rpms.zip
 	@zip dist/rpms.zip \
-		dist/libu8-@U8VERSION@-*.rpm \
-		dist/*/libu8-@U8VERSION@-*.rpm
+		$(RPMDIR)/libu8*-@FDVERSION@-*.rpm \
+		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm
 repo: dist/rpms.signed
-	@cp dist/libu8-@U8VERSION@-*.rpm \
-	   dist/*/libu8-@U8VERSION@-*.rpm \
-	   $(RPMDIR);
 	createrepo $(RPMDIR)
 
-dist/rpms32.done: staging/libu8-@U8VERSION@.tar.gz
-	CC='gcc -m32' LDFLAGS='--oformat=elf32-i386' rpmbuild ${RPMFLAGS} \
-		--define "_rpmdir ${RPMDIR}" --define "_srcrpmdir ${RPMDIR}" \
-		--target xman86_linux_gnu --nodeps -ta \
-		staging/libu8-@U8VERSION@.tar.gz &&\
-	touch dist/rpms32.done
-
-staging/libu8_@U8VERSION@.orig.tar.gz: \
-	makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
-	rm -rf staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
-	git archive --prefix=libu8_@U8VERSION@/ \
-	            -o staging/libu8_@U8VERSION@.orig.tar HEAD
-	cd staging; tar -xf libu8_@U8VERSION@.orig.tar
-	gzip staging/libu8_@U8VERSION@.orig.tar
+staging/libu8_@U8VERSION@.orig.tar.gz: staging/libu8-@U8VERSION@
+	cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz libu8-@U8VERSION@
 
 dist/debs.done: staging/libu8_@U8VERSION@.orig.tar.gz
 	(cd staging/libu8_@U8VERSION@; dpkg-buildpackage -F -rfakeroot) && \
