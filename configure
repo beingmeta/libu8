@@ -642,6 +642,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+gpgid
 rpmflags
 rpmdir
 INSTALLDOCS
@@ -2726,8 +2727,9 @@ TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
-rpmdir=dist
+rmpdir="\$(FD_RPMDIR:-dist)"
 rpmflags=
+gpgid=
 doi18n="no"
 build_shared="shared-libs"
 build_static="static-libs"
@@ -2904,6 +2906,7 @@ case $target_os in
 
    ;;
 esac
+
 
 
 
@@ -4394,8 +4397,8 @@ fi
 rpmdir=$with_rpmdir
 rpmflags=$with_rpmflags
 
-if test "x${GPGNAME}" != "x"; then
-  RPMFLAGS="--addsign --define \"_gpg_name=${GPGNAME} ${RPMFLAGS}\"";
+if test "x${GPGID}" != "x"; then
+  gpgid=${GPGID}
 fi
 
 if test $etags = "na"; then

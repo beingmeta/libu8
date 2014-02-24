@@ -20,8 +20,9 @@ TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
-rpmdir=dist
+rmpdir="\$(FD_RPMDIR:-dist)"
 rpmflags=
+gpgid=
 doi18n="no"
 build_shared="shared-libs"
 build_static="static-libs"
@@ -91,6 +92,7 @@ AC_SUBST(DOCS)
 AC_SUBST(INSTALLDOCS)
 AC_SUBST(rpmdir)
 AC_SUBST(rpmflags)
+AC_SUBST(gpgid)
 
 AC_ARG_WITH(asan,--with-asan,,with_asan="no")
 if test "x$with_asan" = "xyes"; then
@@ -143,8 +145,8 @@ AC_ARG_WITH(rpmflags,--with-rpmflags Default RPM flags,,with_rpmflags="")
 rpmdir=$with_rpmdir
 rpmflags=$with_rpmflags
 
-if test "x${GPGNAME}" != "x"; then
-  RPMFLAGS="--addsign --define \"_gpg_name=${GPGNAME} ${RPMFLAGS}\"";
+if test "x${GPGID}" != "x"; then
+  gpgid=${GPGID}
 fi
 
 if test $etags = "na"; then

@@ -21,7 +21,7 @@ ENCDIR		= $(DESTDIR)@prefix@/share/libu8/encodings
 XRPMFLAGS	=
 RPMFLAGS	= $(XRPMFLAGS) @rpmflags@
 RPMDIR		= @rpmdir@
-RPMSIGN         = developers@beingmeta.com
+GPGID           = @gpgid@
 CLEAN		= @CLEAN@
 INSTALL		= @SUDO@@INSTALL@
 RANLIB		= @RANLIB@
@@ -327,20 +327,21 @@ dist/rpms.done: staging/libu8-@U8VERSION@.tar.gz
 		staging/libu8-@U8VERSION@.tar.gz && \
 	touch dist/rpms.done
 dist/rpms.signed: dist/rpms.done
-	@if (test "x${GPGNAME}" != "x") && \
-	   (test "x${GPGNAME}" != "xnone"); then \
-	   echo "Signing password for ${GPGNAME}:"; \
-	   rpm --define "_gpg_name \"${GPGNAME}\"" \
-	       --addsign $(RPMDIR)/libu8*-@FDVERSION@-*.rpm \
-	 		 $(RPMDIR)dist/*/libu8*-@FDVERSION@-*.rpm; \
-	else rpm --addsign $(RPMDIR)/libu8-@FDVERSION@-*.rpm \
-	 		   $(RPMDIR)/*/libu8*-@FDVERSION@-*.rpm; \
-	fi
+	@if (test "x${GPGID}" != "x") && \
+	   (test "x${GPGID}" != "xnone"); then \
+	   echo "Signing password for ${GPGID}:"; \
+	   rpm --define "_gpg_name \"${GPGID}\"" \
+	       --addsign $(RPMDIR)/libu8*-@U8VERSION@-*.rpm \
+	 		 $(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; \
+	else rpm --addsign $(RPMDIR)/libu8-@U8VERSION@-*.rpm \
+	 		   $(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; \
+	fi && \
+	touch dist/rpms.signed
 
 dist/rpms.zip: dist/rpms.signed
 	@rm -f dist/rpms.zip
 	@zip dist/rpms.zip \
-		$(RPMDIR)/libu8*-@FDVERSION@-*.rpm \
+		$(RPMDIR)/libu8*-@U8VERSION@-*.rpm \
 		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm
 repo: dist/rpms.signed
 	createrepo $(RPMDIR)
