@@ -20,9 +20,9 @@ TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
-rmpdir="dist"
-rpmflags=
-gpgid=
+RPMDIR=${RPMDIR:-dist}
+RPMFLAGS=${RPMFLAGS:-}
+GPGID=${GPGID:-}
 doi18n="no"
 build_shared="shared-libs"
 build_static="static-libs"
@@ -90,9 +90,13 @@ AC_SUBST(INSTALLI18N)
 AC_SUBST(doxygen)
 AC_SUBST(DOCS)
 AC_SUBST(INSTALLDOCS)
-AC_SUBST(rpmdir)
-AC_SUBST(rpmflags)
-AC_SUBST(gpgid)
+
+AC_ARG_VAR(RPMDIR,"Location for writing built RPMs")
+AC_ARG_VAR(RPMFLAGS,"Default flags for building RPMs")
+AC_ARG_VAR(GPGID,"Default GnuPG id for signing packages")
+AC_SUBST(RPMDIR)
+AC_SUBST(RPMFLAGS)
+AC_SUBST(GPGID)
 
 AC_ARG_WITH(asan,--with-asan,,with_asan="no")
 if test "x$with_asan" = "xyes"; then
@@ -139,15 +143,6 @@ fi
 AC_CHECK_PROGS(etags,"etags","na")
 AC_CHECK_PROGS(doxygen,"doxygen","na")
 AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","na")
-
-AC_ARG_WITH(rpmdir,--with-rpmdir Location for saving RPMs,,with_rpmdir=dist)
-AC_ARG_WITH(rpmflags,--with-rpmflags Default RPM flags,,with_rpmflags="")
-rpmdir=$with_rpmdir
-rpmflags=$with_rpmflags
-
-if test "x${GPGID}" != "x"; then
-  gpgid=${GPGID}
-fi
 
 if test $etags = "na"; then
    TAGS=""
