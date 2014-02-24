@@ -143,6 +143,10 @@ AC_ARG_WITH(rpmflags,--with-rpmflags Default RPM flags,,with_rpmflags="")
 rpmdir=$with_rpmdir
 rpmflags=$with_rpmflags
 
+if test "x${GPGNAME}" != "x"; then
+  RPMFLAGS="--addsign --define \"_gpg_name=${GPGNAME} ${RPMFLAGS}\"";
+fi
+
 if test $etags = "na"; then
    TAGS=""
 fi

@@ -18,7 +18,8 @@ LOCALEDIR	= $(DESTDIR)@localedir@
 MANDIR		= $(DESTDIR)@mandir@
 LIBINSTALLDIR	= $(DESTDIR)@libdir@
 ENCDIR		= $(DESTDIR)@prefix@/share/libu8/encodings
-RPMFLAGS	= @rpmflags@
+XRPMFLAGS	=
+RPMFLAGS	= $(XRPMFLAGS) @rpmflags@
 RPMDIR		= @rpmdir@
 RPMSIGN         = developers@beingmeta.com
 CLEAN		= @CLEAN@
@@ -309,23 +310,43 @@ rpms:
 
 debs: dist/debs.done
 
-staging/libu8-@U8VERSION@: makefile.in configure makefile \
-		$(LIBU8_SOURCES) $(LIBU8_HEADERS)
+staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	rm -rf staging/libu8-@U8VERSION@
 	git archive --prefix=libu8-@U8VERSION@/ \
 	            -o staging/libu8-@U8VERSION@.tar HEAD
 	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
 	echo "#define LIBU8_SVNREV \""`git describe`"\"" > staging/libu8-@U8VERSION@/include/libu8/revision.h
-staging/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES) $(COMMON_HEADERS)
+staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	make staging/libu8-@U8VERSION@
 	tar -czvf $@ -C staging libu8-@U8VERSION@
 
 dist/rpms.done: staging/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ ${RPMFLAGS}  \
-		--define "_rpmdir ${RPMDIR}" --define "_srcrpmdir ${RPMDIR}" \
+		--define "_rpmdir dist" --define "_srcrpmdir dist" \
 		 --nodeps -ta \
 		staging/libu8-@U8VERSION@.tar.gz && \
 	touch dist/rpms.done
+dist/rpms.signed: dist/rpms.done
+	@if (test "x${GPGNAME}" != "x") && \
+	   (test "x${GPGNAME}" != "xnone"); then \
+	   echo "Signing password for ${GPGNAME}:"; \
+	   rpm --define "_gpg_name \"${GPGNAME}\"" \
+	       --addsign dist/libu8-@U8VERSION@-*.rpm \
+	 		 dist/*/libu8-@U8VERSION@-*.rpm; \
+	else rpm --addsign dist/libu8-@U8VERSION@-*.rpm \
+	 		   dist/*/libu8-@U8VERSION@-*.rpm; \
+	fi
+
+dist/rpms.zip: dist/rpms.signed
+	@rm -f dist/rpms.zip
+	@zip dist/rpms.zip \
+		dist/libu8-@U8VERSION@-*.rpm \
+		dist/*/libu8-@U8VERSION@-*.rpm
+repo: dist/rpms.signed
+	@cp dist/libu8-@U8VERSION@-*.rpm \
+	   dist/*/libu8-@U8VERSION@-*.rpm \
+	   $(RPMDIR);
+	createrepo $(RPMDIR)
 
 dist/rpms32.done: staging/libu8-@U8VERSION@.tar.gz
 	CC='gcc -m32' LDFLAGS='--oformat=elf32-i386' rpmbuild ${RPMFLAGS} \
