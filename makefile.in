@@ -331,9 +331,9 @@ dist/rpms.signed: dist/rpms.done
 	   (test "x${GPGID}" != "xnone"); then \
 	   echo "Signing password for ${GPGID}:"; \
 	   rpm --define "_gpg_name \"${GPGID}\"" \
-	       --addsign $(RPMDIR)/libu8*-@U8VERSION@-*.rpm \
+	       --addsign $(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
 	 		 $(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; \
-	else rpm --addsign $(RPMDIR)/libu8-@U8VERSION@-*.rpm \
+	else rpm --addsign $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm \
 	 		   $(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; \
 	fi && \
 	touch dist/rpms.signed
@@ -341,7 +341,7 @@ dist/rpms.signed: dist/rpms.done
 dist/rpms.zip: dist/rpms.signed
 	@rm -f dist/rpms.zip
 	@zip dist/rpms.zip \
-		$(RPMDIR)/libu8*-@U8VERSION@-*.rpm \
+		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm
 repo: dist/rpms.signed
 	createrepo $(RPMDIR)
