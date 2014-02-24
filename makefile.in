@@ -331,12 +331,12 @@ dist/rpms.done: staging/libu8-@U8VERSION@ \
 	((test "x$(GPGID)" = "xnone")|| \
          (if (test "x$(GPGID)" = "x"); then \
 	   echo "Enter passphrase for RPM signing GPG key:"; \
-	   rpm --addsign \
+	   @rpm@ --addsign \
 		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm; \
 	   else \
 	     echo "Enter passphrase for RPM signing key '$(GPGID)':"; \
-	     rpm --addsign --define="_gpg_name $(GPGID)" \
+	     @rpm@ --addsign --define="_gpg_name $(GPGID)" \
 		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm; fi)) && \
 	touch dist/rpms.done
