@@ -324,7 +324,7 @@ staging/libu8_@U8VERSION@.orig.tar.gz: staging/libu8-@U8VERSION@
 
 dist/rpms.done: staging/libu8-@U8VERSION@ \
 	staging/libu8_@U8VERSION@.orig.tar.gz staging/libu8-@U8VERSION@.tar.gz
-	(@buildrpm@ $(RPMFLAGS)  \
+	@(@buildrpm@ $(RPMFLAGS)  \
 	   --define="_rpmdir $(RPMDIR)" --define="_srcrpmdir $(RPMDIR)" \
 	   --nodeps -ta \
 	    staging/libu8-@U8VERSION@.tar.gz;) && \
@@ -332,14 +332,16 @@ dist/rpms.done: staging/libu8-@U8VERSION@ \
          (if (test "x$(GPGID)" = "x"); then \
 	   echo "Enter passphrase for RPM signing GPG key:"; \
 	   @rpm@ --addsign \
-		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
-		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm; \
+		$(RPMDIR)/libu8-@U8VERSION@-*.src.rpm \
+		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; \
 	   else \
 	     echo "Enter passphrase for RPM signing key '$(GPGID)':"; \
 	     @rpm@ --addsign --define="_gpg_name $(GPGID)" \
-		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
-		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm; fi)) && \
-	touch dist/rpms.done
+		$(RPMDIR)/libu8-@U8VERSION@*.src.rpm \
+		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; fi)) && \
+	touch dist/rpms.done && \
+	ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm \
+		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
 
 update-rpms:
 	rm -f dist/rpms.done
