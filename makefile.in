@@ -18,7 +18,9 @@ LOCALEDIR	= $(DESTDIR)@localedir@
 MANDIR		= $(DESTDIR)@mandir@
 LIBINSTALLDIR	= $(DESTDIR)@libdir@
 ENCDIR		= $(DESTDIR)@prefix@/share/libu8/encodings
-RPMFLAGS	= 
+RPMFLAGS	= @rpmflags@
+RPMDIR		= @rpmdir@
+RPMSIGN         = developers@beingmeta.com
 CLEAN		= @CLEAN@
 INSTALL		= @SUDO@@INSTALL@
 RANLIB		= @RANLIB@
@@ -320,14 +322,14 @@ staging/libu8-@U8VERSION@.tar.gz: makefile.in configure makefile $(LIBU8_SOURCES
 
 dist/rpms.done: staging/libu8-@U8VERSION@.tar.gz
 	@buildrpm@ ${RPMFLAGS}  \
-		--define "_rpmdir dist" --define "_srcrpmdir dist" \
+		--define "_rpmdir ${RPMDIR}" --define "_srcrpmdir ${RPMDIR}" \
 		 --nodeps -ta \
 		staging/libu8-@U8VERSION@.tar.gz && \
 	touch dist/rpms.done
 
 dist/rpms32.done: staging/libu8-@U8VERSION@.tar.gz
 	CC='gcc -m32' LDFLAGS='--oformat=elf32-i386' rpmbuild ${RPMFLAGS} \
-		--define "_rpmdir dist" --define "_srcrpmdir dist" \
+		--define "_rpmdir ${RPMDIR}" --define "_srcrpmdir ${RPMDIR}" \
 		--target xman86_linux_gnu --nodeps -ta \
 		staging/libu8-@U8VERSION@.tar.gz &&\
 	touch dist/rpms32.done

@@ -642,6 +642,8 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+rpmflags
+rpmdir
 INSTALLDOCS
 DOCS
 doxygen
@@ -729,6 +731,8 @@ with_asan
 with_encodings_dir
 with_arch
 enable_shared
+with_rpmdir
+with_rpmflags
 with_i18n
 with_fileinfo
 with_sudo
@@ -1368,6 +1372,8 @@ Optional Packages:
 --with-asan
 --with-encodings-dir pathname
 --without-arch build with particular --arch flags
+--with-rpmdir Location for saving RPMs
+--with-rpmflags Default RPM flags
 --without-i18n built and install message catalogs
 --without-fileinfo record fileinfo
 --without-sudo use sudo with install
@@ -2720,6 +2726,8 @@ TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
+rpmdir=dist
+rpmflags=
 doi18n="no"
 build_shared="shared-libs"
 build_static="static-libs"
@@ -2896,6 +2904,8 @@ case $target_os in
 
    ;;
 esac
+
+
 
 
 
@@ -4364,6 +4374,25 @@ fi
 done
 test -n "$buildrpm" || buildrpm=""rpmbuild""
 
+
+
+# Check whether --with-rpmdir was given.
+if test "${with_rpmdir+set}" = set; then :
+  withval=$with_rpmdir;
+else
+  with_rpmdir=dist
+fi
+
+
+# Check whether --with-rpmflags was given.
+if test "${with_rpmflags+set}" = set; then :
+  withval=$with_rpmflags;
+else
+  with_rpmflags=""
+fi
+
+rpmdir=$with_rpmdir
+rpmflags=$with_rpmflags
 
 if test $etags = "na"; then
    TAGS=""
