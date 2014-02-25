@@ -299,16 +299,13 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 
 # Packaging targets
 
-rpmtar: staging/libu8-@U8VERSION@.tar.gz
-cleanrpms: 
-	rm -rf dist/rpms.done staging/libu8*
-	find dist -name "*.rpm" | xargs -r rm
-rpms: 
-	rm -rf dist/rpms.done staging/libu8*
-	find dist -name "*.rpm" | xargs -r rm
-	make dist/rpms.done
-
+rpms: dist/rpms.done
 debs: dist/debs.done
+
+cleandist: 
+	rm -rf dist/rpms.done dist/rpms.ready
+	rm -rf staging/libu8*
+	find dist -name "*.rpm" | xargs -r rm
 
 staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	rm -rf staging/libu8-@U8VERSION@
@@ -322,24 +319,26 @@ staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 staging/libu8_@U8VERSION@.orig.tar.gz: staging/libu8-@U8VERSION@
 	cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz libu8-@U8VERSION@
 
-dist/rpms.done: staging/libu8-@U8VERSION@ \
+dist/rpms.ready: staging/libu8-@U8VERSION@ \
 	staging/libu8_@U8VERSION@.orig.tar.gz staging/libu8-@U8VERSION@.tar.gz
-	@(@buildrpm@ $(RPMFLAGS)  \
+	@@buildrpm@ $(RPMFLAGS)  \
 	   --define="_rpmdir $(RPMDIR)" --define="_srcrpmdir $(RPMDIR)" \
 	   --nodeps -ta \
-	    staging/libu8-@U8VERSION@.tar.gz;) && \
-	((test "x$(GPGID)" = "xnone")|| \
-         (if (test "x$(GPGID)" = "x"); then \
-	   echo "Enter passphrase for RPM signing GPG key:"; \
+	    staging/libu8-@U8VERSION@.tar.gz && \
+	touch dist/rpms.ready
+dist/rpms.done: dist/rpms.ready
+	if (test "x$(GPGID)" = "xnone") || (test "x$(GPGID)" = "x"); then \
+	   echo "Enter passphrase for the RPM signing key:"; \
 	   @rpm@ --addsign \
 		$(RPMDIR)/libu8-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; \
 	   else \
-	     echo "Enter passphrase for RPM signing key '$(GPGID)':"; \
+	     echo "Enter passphrase for the RPM signing key '$(GPGID)':"; \
 	     @rpm@ --addsign --define="_gpg_name $(GPGID)" \
 		$(RPMDIR)/libu8-@U8VERSION@*.src.rpm \
-		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; fi)) && \
-	touch dist/rpms.done && \
+		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; fi && \
+	createrepo $(RPMDIR) && \
+	touch dist/rpms.done;
 	ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
 
