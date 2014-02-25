@@ -1031,6 +1031,7 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
     if (client) {
       if (client->started<=0) {
 	client_close_for_shutdown(client);
+	free_client(server,client,"do_shutdown");
 	clients[i]=NULL;
 	sockets[i].fd=-1;
 	sockets[i].events=((short)0);
