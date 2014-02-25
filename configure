@@ -664,6 +664,7 @@ test_static
 test_shared
 suffix
 shared_suffix
+debugcflags
 SUDO
 MKSTATIC
 U8VERSION
@@ -2734,6 +2735,7 @@ RPMDIR=${RPMDIR:-dist}
 RPMFLAGS=${RPMFLAGS:-}
 GPGID=${GPGID:-}
 doi18n="no"
+debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
 build_static="static-libs"
 test_shared="test-shared"
@@ -2909,6 +2911,7 @@ case $target_os in
 
    ;;
 esac
+
 
 
 

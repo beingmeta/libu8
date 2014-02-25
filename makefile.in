@@ -77,7 +77,7 @@ update: buildmode
 standard:
 	make ${ALL}
 debugging:
-	make XCFLAGS="-O0 -g3 -ggdb" ${ALL}
+	make XCFLAGS="@debugcflags@ $(XCFLAGS)" ${ALL}
 optimizing:
 	make XCFLAGS="-O3" ${ALL}
 nitpicking:

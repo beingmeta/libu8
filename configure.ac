@@ -24,6 +24,7 @@ RPMDIR=${RPMDIR:-dist}
 RPMFLAGS=${RPMFLAGS:-}
 GPGID=${GPGID:-}
 doi18n="no"
+debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
 build_static="static-libs"
 test_shared="test-shared"
@@ -72,6 +73,7 @@ AC_SUBST(U8RELEASE)
 AC_SUBST(U8VERSION)
 AC_SUBST(MKSTATIC)
 AC_SUBST(SUDO)
+AC_SUBST(debugcflags)
 AC_SUBST(shared_suffix)
 AC_SUBST(suffix)
 AC_SUBST(test_shared)
