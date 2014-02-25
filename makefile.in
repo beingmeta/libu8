@@ -300,12 +300,15 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 # Packaging targets
 
 rpms: dist/rpms.done
-debs: dist/debs.done
+debian deb debs: dist/debs.done
 
 cleandist: 
-	rm -rf dist/rpms.done dist/rpms.ready
-	rm -rf staging/libu8*
+	rm -rf dist/rpms.done dist/rpms.ready dist/debs.done dist/debs.ready
+	rm -f dist/*.deb dist/*.tar dist/*.gz dist/*.spec
 	find dist -name "*.rpm" | xargs -r rm
+	rm -rf staging/libu8*
+
+# Creating staging areas from GIT
 
 staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	rm -rf staging/libu8-@U8VERSION@
@@ -313,11 +316,19 @@ staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	            -o staging/libu8-@U8VERSION@.tar HEAD
 	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
 	echo "#define LIBU8_SVNREV \""`git describe`"\"" > staging/libu8-@U8VERSION@/include/libu8/revision.h
+staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+	rm -rf staging/libu8_@U8VERSION@
+	git archive --prefix=libu8_@U8VERSION@/ \
+	            -o staging/libu8_@U8VERSION@.tar HEAD
+	cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
+	echo "#define LIBU8_SVNREV \""`git describe`"\"" > staging/libu8-@U8VERSION@/include/libu8/revision.h
 staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	make staging/libu8-@U8VERSION@
 	tar -czvf $@ -C staging libu8-@U8VERSION@
 staging/libu8_@U8VERSION@.orig.tar.gz: staging/libu8-@U8VERSION@
 	cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz libu8-@U8VERSION@
+
+# RPM rules
 
 dist/rpms.ready: staging/libu8-@U8VERSION@ \
 	staging/libu8_@U8VERSION@.orig.tar.gz staging/libu8-@U8VERSION@.tar.gz
@@ -343,7 +354,7 @@ dist/rpms.done: dist/rpms.ready
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
 
 update-rpms:
-	rm -f dist/rpms.done
+	rm -f dist/rpms.done dist/rpms.ready
 	make dist/rpms.done
 
 dist/rpms.zip: dist/rpms.done
@@ -351,16 +362,16 @@ dist/rpms.zip: dist/rpms.done
 	@zip dist/rpms.zip \
 		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm
-repo: dist/rpms.done
-	createrepo $(RPMDIR)
 
-dist/debs.done: staging/libu8_@U8VERSION@.orig.tar.gz
-	(cd staging/libu8_@U8VERSION@; dpkg-buildpackage -F -rfakeroot) && \
+# Rules for debian building
+
+dist/debs.done: staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
+	(cd staging/libu8_@U8VERSION@; dpkg-buildpackage -k $(GPGID:-default) -F -rfakeroot) && \
 	(cd staging; mv libu8_@U8VERSION@*.deb libu8_@U8VERSION@*.dsc \
 			libu8_@U8VERSION@*.gz libu8_@U8VERSION@*.changes \
 			../dist) && \
 	touch dist/debs.done; rm -rf staging/libu8_@U8VERSION@;
-update-apt: dist/debs.done
+update-repo: dist/debs.done
 	deb-s3 upload --bucket=repo.beingmeta.com \
 		      --component=$(COMPONENT) \
 		      --codename=$(CODENAME) \
