@@ -142,7 +142,7 @@ U8_EXPORT u8_xtime u8_init_xtime
       u8_graberr(errno,"u8_xlocaltime/gettimeofday",NULL);
       return NULL;}
     tick=tv.tv_sec;
-    xt->u8_nsecs=tv.tv_usec*1000;
+    nsecs=tv.tv_usec*1000;
     if (prec==u8_maxtmprec) xt->u8_prec=u8_microsecond;
 #elif HAVE_FTIME
     struct timeb tb;
@@ -150,13 +150,14 @@ U8_EXPORT u8_xtime u8_init_xtime
       u8_graberr(errno,"u8_xlocaltime/ftime",NULL);
       return NULL;}
     tick=tb.time;
-    xt->u8_nsecs=tb.millitm*1000000;
+    nsecs=tb.millitm*1000000;
     if (prec==u8_maxtmprec) xt->u8_prec=u8_millisecond;
 #else
     if ((tick=time(NULL))<0) {
       u8_graberr(errno,"u8_xlocaltime/time",NULL);
       return NULL;}
     if (prec==u8_maxtmprec) xt->u8_prec=u8_second;
+    nsecs=0;
 #endif
   }
 
@@ -180,6 +181,7 @@ U8_EXPORT u8_xtime u8_init_xtime
 #endif
   /* Set the real time and the offset */
   xt->u8_tick=tick; xt->u8_tzoff=tzoff; xt->u8_dstoff=dstoff;
+  xt->u8_nsecs=nsecs;
   /* Initialize the precision */
   if (prec==u8_maxtmprec) prec=u8_second;
   xt->u8_prec=prec;
@@ -201,7 +203,7 @@ U8_EXPORT u8_xtime u8_local_xtime
       u8_graberr(errno,"u8_xlocaltime/gettimeofday",NULL);
       return NULL;}
     tick=tv.tv_sec;
-    xt->u8_nsecs=tv.tv_usec*1000;
+    nsecs=tv.tv_usec*1000;
     if ((prec==u8_maxtmprec) || (prec>u8_microsecond))
       prec=u8_microsecond;
 #elif HAVE_FTIME
@@ -210,13 +212,14 @@ U8_EXPORT u8_xtime u8_local_xtime
       u8_graberr(errno,"u8_xlocaltime/ftime",NULL);
       return NULL;}
     tick=tb.time;
-    xt->u8_nsecs=tb.millitm*1000000;
+    nsecs=tb.millitm*1000000;
     if ((prec==u8_maxtmprec) || (prec>u8_millisecond))
       prec=u8_millisecond;
 #else
     if ((tick=time(NULL))<0) {
       u8_graberr(errno,"u8_xlocaltime/time",NULL);
       return NULL;}
+    nsecs=0;
     if ((prec<0) || (prec>u8_second))
       prec=u8_second;
 #endif
@@ -230,11 +233,13 @@ U8_EXPORT u8_xtime u8_local_xtime
   tptr=localtime(&tick);
 #endif
   copy_tm2xt(tptr,xt);
+
 #if (!(HAVE_LOCALTIME_R))
   u8_unlock_mutex(&timefns_lock);
 #endif
   /* Set the real time and the offset */
   xt->u8_tick=tick;
+  xt->u8_nsecs=nsecs;
 #if HAVE_TM_GMTOFF
   if (tptr->tm_isdst) {
     xt->u8_tzoff=tptr->tm_gmtoff-3600;
