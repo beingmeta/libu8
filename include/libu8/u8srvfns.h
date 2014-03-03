@@ -56,33 +56,34 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
 
 #define U8_CLIENT_FIELDS                                       \
     u8_socket socket;                                          \
-    int clientid;                                              \
+    int clientid;					       \
+    long threadid;                                             \
     unsigned int flags, n_trans, n_errs;                       \
     u8_utime started, queued, active;                          \
     u8_utime reading, writing, running;			       \
-    u8_string idstring;                                        \
+    u8_string idstring, status;				       \
     unsigned char *buf;                                        \
     size_t off, len, buflen, delta;                            \
-    unsigned int ownsbuf, grows;                           \
+    unsigned int ownsbuf, grows;                               \
     struct U8_CLIENT_STATS stats;                              \
     u8_client_callback callback;                               \
     void *cbstate;                                             \
     struct U8_SERVER *server
 
-/** struct U8_CLIENT
-     This structure represents a particular live client of a server.
-     The socket field is the socket going to the client, the flags field
-     contains flags describing the configuration and state of the client,
-     the idstring field is a string identify the client for logging and
-     debugging, and the server field is the server (a U8_SERVER struct)
-     to which the client is connected. **/
+/** struct U8_CLIENT This structure represents a particular live
+     client of a server.  The socket field is the socket going to the
+     client, the flags field contains flags describing the
+     configuration and state of the client, the idstring field and
+     statestring fields are strings identifying the client for logging
+     and debugging, and the server field is the server (a U8_SERVER
+     struct) to which the client is connected. **/
   typedef struct U8_CLIENT {
     u8_socket socket;
-    int clientid;
+    int clientid; long threadid;
     unsigned int flags, n_trans, n_errs;
     u8_utime started, queued, active;
     u8_utime reading, writing, running;
-    u8_string idstring;
+    u8_string idstring, status;
     unsigned char *buf;
     size_t off, len, buflen, delta;
     unsigned int ownsbuf, grows;
@@ -450,6 +451,16 @@ U8_EXPORT u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int b
        to buflen
 **/
 U8_EXPORT u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen);
+
+U8_EXPORT
+/** Returns a machine readable (tab-separated) string describing each of the
+     current clients
+     @param out a pointer to a U8_OUTPUT struct
+     @param server a pointer to a U8_SERVER struct
+     @returns the buffer string of the output stream
+**/
+u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server);
+
 
 U8_EXPORT unsigned char *u8_client_write
   (u8_client cl,unsigned char *buf,size_t n,size_t off);

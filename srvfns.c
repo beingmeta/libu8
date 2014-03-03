@@ -206,18 +206,18 @@ U8_EXPORT unsigned char *u8_client_read
     cl->reading=0; return cl->buf;}
   else if (cl->reading>0) {
     u8_log(LOG_WARNING,"u8_client_read",
-	   "Client @x%lx#%d.%d[%s/%d](%s) is already reading %ld bytes",
+	   "Client @x%lx#%d.%d[%s/%d](%s%:hs) is already reading %ld bytes",
 	   ((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring,
+	   cl->n_trans,cl->idstring,cl->status,
 	   ((long)cl->len));
     return NULL;}
   else if (cl->writing>0) {
     u8_log(LOG_WARNING,"u8_client_read",
-	   "Client @x%lx#%d.%d[%s/%d](%s) is still writing %ld bytes",
+	   "Client @x%lx#%d.%d[%s/%d](%s%:hs) is still writing %ld bytes",
 	   ((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring,
+	   cl->n_trans,cl->idstring,cl->status,
 	   ((long)cl->len));
     return NULL;}
   else if (off<n) {
@@ -239,18 +239,18 @@ U8_EXPORT unsigned char *u8_client_write
       cl->writing=0; return cl->buf;}}
   else if (cl->writing>0) {
     u8_log(LOG_WARNING,"u8_client_write",
-	   "Client @x%lx#%d.%d[%s/%d](%s) is already writing %ld bytes",
+	   "Client @x%lx#%d.%d[%s/%d](%s%:hs) is already writing %ld bytes",
 	   ((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring,
+	   cl->n_trans,cl->idstring,cl->status,
 	   ((long)cl->len));
     return NULL;}
   else if (cl->reading>0) {
     u8_log(LOG_WARNING,"u8_client_write",
-	   "Write to @x%lx#%d.%d[%s/%d](%s) which is still reading %d bytes",
+	   "Write to @x%lx#%d.%d[%s/%d](%s%:hs) which is still reading %d bytes",
 	   ((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring,
+	   cl->n_trans,cl->idstring,cl->status,
 	   ((long)cl->len));
     cl->reading=0;
     return NULL;}
@@ -278,17 +278,17 @@ int u8_client_done(u8_client cl)
       int retval=server->donefn(cl);
       if (retval<0) {
 	u8_log(LOG_ERR,"u8_client_done",
-	       "Error when finishing transaction on @x%lx#%d.%d[%s/%d](%s)",
+	       "Error when finishing transaction on @x%lx#%d.%d[%s/%d](%s%:hs)",
 	       ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,
-	       cl->idstring);
+	       cl->idstring,cl->status);
 	u8_clear_errors(1);}}
     update_client_stats(cl,u8_microtime(),1);
     cl->writing=cl->reading=0;
     if (cl->queued>0) {
       u8_log(LOG_WARNING,"u8_client_done",
-	     "Finishing transaction on a queued client @x%lx#%d.%d[%s/%d](%s)",
+	     "Finishing transaction on a queued client @x%lx#%d.%d[%s/%d](%s%:hs)",
 	     ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,
-	     cl->idstring);
+	     cl->idstring,cl->status);
       cl->queued=0;}
     if (cl->socket>0) {
       struct pollfd *pfd=&(server->sockets[clientid]);
@@ -303,10 +303,10 @@ int u8_client_done(u8_client cl)
     return 1;}
   else {
     u8_log(LOG_WARNING,"u8_client_done",
-	   "Declaring done on idle client @x%lx#%d.%d[%s/%d](%s)",
+	   "Declaring done on idle client @x%lx#%d.%d[%s/%d](%s%:hs)",
 	   ((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring);
+	   cl->n_trans,cl->idstring,cl->status);
     return 0;}
 }
 
@@ -339,19 +339,19 @@ int u8_close_client(u8_client cl)
     if (cl->started>0) {
       if (server->flags&U8_SERVER_LOG_CONNECT)
 	u8_log(LOG_NOTICE,"u8_close_client",
-	       "Deferring closing of  @x%lx#%d.%d[%s/%d](%s)",
+	       "Deferring closing of  @x%lx#%d.%d[%s/%d](%s%:hs)",
 	       ((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
-	       cl->n_trans,cl->idstring);
+	       cl->n_trans,cl->idstring,cl->status);
       return 0;}
     retval=close_client_core(cl,0,"u8_close_client");
     return retval;}
   else {
     u8_log(LOG_WARNING,"u8_close_client",
-	   "Closing already closed socket @x%lx#%d.%d[%s/%d](%s)",
+	   "Closing already closed socket @x%lx#%d.%d[%s/%d](%s%:hs)",
 	   ((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring);
+	   cl->n_trans,cl->idstring,cl->status);
     u8_unlock_mutex(&(server->lock));
     return 0;}
 }
@@ -368,10 +368,10 @@ int u8_client_closed(u8_client cl)
   char statebuf[16];
   if ((cl->server->flags)&(U8_SERVER_LOG_CONNECT))
     u8_log(LOG_NOTICE,"u8_client_closed",
-	   "Other end closed @x%lx#%d.%d[%s/%d](%s)",
+	   "Other end closed @x%lx#%d.%d[%s/%d](%s%:hs)",
 	   ((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring);
+	   cl->n_trans,cl->idstring,cl->status);
   return u8_client_close(cl);
 }
 
@@ -399,10 +399,10 @@ int u8_shutdown_client(u8_client cl)
     return retval;}
   else {
     u8_log(LOG_WARNING,"u8_shutdown_client",
-	   "Closing already closed socket @x%lx#%d.%d[%s/%d](%s)",
+	   "Closing already closed socket @x%lx#%d.%d[%s/%d](%s%:hs)",
 	   ((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring);
+	   cl->n_trans,cl->idstring,cl->status);
     u8_unlock_mutex(&(server->lock));
     return 0;}
 }
@@ -437,18 +437,18 @@ static int close_client_core(u8_client cl,int server_locked,u8_context caller)
 
     if (server->flags&U8_SERVER_LOG_CONNECT)
       u8_log(LOG_INFO,"u8_close_client",
-	     "Closing (%s)  @x%lx#%d.%d[%s/%d](%s)",
+	     "Closing (%s)  @x%lx#%d.%d[%s/%d](%s%:hs)",
 	     caller,((unsigned long)cl),cl->clientid,cl->socket,
 	     get_client_state(cl,statebuf),
-	     cl->n_trans,cl->idstring);
+	     cl->n_trans,cl->idstring,cl->status);
     
     /* Update run stats for one last time */
     if (cl->started>0) {
       u8_log(LOG_WARNING,"close_client_core",
-	     "Closing (%s) running client @x%lx#%d.%d[%s/%d](%s)",
+	     "Closing (%s) running client @x%lx#%d.%d[%s/%d](%s%:hs)",
 	     caller,((unsigned long)cl),cl->clientid,cl->socket,
 	     get_client_state(cl,statebuf),
-	     cl->n_trans,cl->idstring);
+	     cl->n_trans,cl->idstring,cl->status);
       server->n_busy--;}
     update_client_stats(cl,cur,1);
 
@@ -456,10 +456,10 @@ static int close_client_core(u8_client cl,int server_locked,u8_context caller)
 
     if ((cl->server->flags)&(U8_SERVER_LOG_CONNECT))
       u8_log(LOG_NOTICE,"u8_client_closed",
-	     "Other end closed @x%lx#%d.%d[%s/%d](%s)",
+	     "Other end closed @x%lx#%d.%d[%s/%d](%s%:hs)",
 	     ((unsigned long)cl),cl->clientid,cl->socket,
 	     get_client_state(cl,statebuf),
-	     cl->n_trans,cl->idstring);
+	     cl->n_trans,cl->idstring,cl->status);
 
     if (server->closefn)
       retval=server->closefn(cl);
@@ -471,19 +471,19 @@ static int close_client_core(u8_client cl,int server_locked,u8_context caller)
     cl->socket=-1;
 
     if (cl->server->flags&U8_SERVER_LOG_CONNECT)
-      u8_log(LOG_NOTICE,ClosedClient,"Closed (%s) @x%lx#%d.%d[%s/%d](%s)",
+      u8_log(LOG_NOTICE,ClosedClient,"Closed (%s) @x%lx#%d.%d[%s/%d](%s%:hs)",
 	     caller,((unsigned long)cl),cl->clientid,cl->socket,
 	     get_client_state(cl,statebuf),
-	     cl->n_trans,cl->idstring);
+	     cl->n_trans,cl->idstring,cl->status);
 
     if (cl->queued>0) {
       long long interval=cur-cl->queued;
       if ((cl->reading>0)||(cl->writing>0))
 	u8_log(LOG_WARNING,"close_client_core",
-	       "Closing (%s) a queued client @x%lx#%d.%d[%s/%d](%s)",
+	       "Closing (%s) a queued client @x%lx#%d.%d[%s/%d](%s%:hs)",
 	       caller,((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
-	       cl->n_trans,cl->idstring);
+	       cl->n_trans,cl->idstring,cl->status);
       cl->stats.qsum+=interval;
       cl->stats.qsum2+=(interval*interval);
       if (interval>cl->stats.qmax) cl->stats.qmax=interval;
@@ -589,18 +589,18 @@ static u8_client pop_task(struct U8_SERVER *server)
   if (!(task)) {}
   else if (task->active>0) {
     /* This should probably never happen */
-    u8_log(LOG_CRIT,"pop_task(u8)","popping (%d) active task @x%lx#%d.%d[%s/%d](%s)",
+    u8_log(LOG_CRIT,"pop_task(u8)","popping (%d) active task @x%lx#%d.%d[%s/%d](%s%:hs)",
 	   slot,((unsigned long)task),task->clientid,task->socket,
 	   get_client_state(task,statebuf),
-	   task->n_trans,task->idstring);
+	   task->n_trans,task->idstring,task->status);
     task->queued=-1; task=NULL;}
   else if ((task->queued<=0)||(task->socket<0)) {
     if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
 	((task->flags)&(U8_CLIENT_LOG_QUEUE)))
-      u8_log(LOG_NOTICE,"pop_task(u8)","Final pop (%d) of closed task @x%lx#%d.%d[%s/%d](%s)",
+      u8_log(LOG_NOTICE,"pop_task(u8)","Final pop (%d) of closed task @x%lx#%d.%d[%s/%d](%s%:hs)",
 	     slot,((unsigned long)task),task->clientid,task->socket,
 	     get_client_state(task,statebuf),
-	     task->n_trans,task->idstring);
+	     task->n_trans,task->idstring,task->status);
     free_client(task->server,task,"pop_task/closed");
     task=NULL;}
   else {
@@ -612,10 +612,10 @@ static u8_client pop_task(struct U8_SERVER *server)
     task->queued=0; task->active=curtime;
     if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
 	((task->flags)&(U8_CLIENT_LOG_QUEUE)))
-      u8_log(LOG_NOTICE,"pop_task(u8)","Popped (%d) task @x%lx#%d.%d[%s/%d](%s)",
+      u8_log(LOG_NOTICE,"pop_task(u8)","Popped (%d) task @x%lx#%d.%d[%s/%d](%s%:hs)",
 	     slot,((unsigned long)task),task->clientid,task->socket,
 	     get_client_state(task,statebuf),
-	     task->n_trans,task->idstring);
+	     task->n_trans,task->idstring,task->status);
     if (task->started<=0) {
       task->started=curtime;
       server->n_busy++;}}
@@ -626,16 +626,17 @@ static u8_client pop_task(struct U8_SERVER *server)
 static int push_task(struct U8_SERVER *server,u8_client cl,u8_context cxt)
 {
   u8_utime cur=u8_microtime(); char statebuf[16];
+  cl->threadid=-1;
   if (server->n_queued >= server->max_queued) return 0;
   if (cl->queued>0) return 0;
   if (cl->clientid<0) return 0;
   if ((cl->flags)&(U8_CLIENT_CLOSED)) return 0;
   if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
       ((cl->flags)&(U8_CLIENT_LOG_QUEUE)))
-    u8_log(LOG_NOTICE,cxt,"Queueing (%d) client @x%lx#%d.%d[%s/%d](%s)",
+    u8_log(LOG_NOTICE,cxt,"Queueing (%d) client @x%lx#%d.%d[%s/%d](%s%:hs)",
 	   server->queue_tail,((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring);
+	   cl->n_trans,cl->idstring,cl->status);
   cl->queued=cur;
   server->queue[server->queue_tail++]=cl;
   if (server->queue_tail>=server->queue_len) server->queue_tail=0;
@@ -660,15 +661,16 @@ static void *event_loop(void *thread_arg)
     cl=pop_task(server);
     if (!(cl)) continue;
     else if ((cl->socket<=0)||((cl->flags)&U8_CLIENT_CLOSED)) {
-      cl->active=0; continue;}
+      cl->active=0; cl->threadid=-1; continue;}
     else cur=u8_microtime();
     if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
 	((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
       u8_log(LOG_NOTICE,ClientRequest,
-	     "Handling activity on @x%lx#%d.%d[%s/%d](%s)",
+	     "Handling activity on @x%lx#%d.%d[%s/%d](%s%:hs)",
 	     ((unsigned long)cl),cl->clientid,cl->socket,
 	     get_client_state(cl,statebuf),
-	     cl->n_trans,cl->idstring);
+	     cl->n_trans,cl->idstring,cl->status);
+    cl->threadid=u8_threadnum();
     if ((cl->reading>0)||(cl->writing>0)) {
       /* We're in the middle of reading or writing a chunk of data,
 	 so we try to read/write another chunk. */
@@ -680,10 +682,10 @@ static void *event_loop(void *thread_arg)
 	if (((server->flags)&(U8_SERVER_LOG_TRANSFER))||
 	    ((cl->flags)&(U8_CLIENT_LOG_TRANSFER)))
 	  u8_log(LOG_NOTICE,((cl->writing>0)?("Writing"):("Reading")),
-		 "Processed %d bytes for @x%lx#%d.%d[%s/%d](%s)",delta,
+		 "Processed %d bytes for @x%lx#%d.%d[%s/%d](%s%:hs)",delta,
 		 ((unsigned long)cl),cl->clientid,cl->socket,
 		 get_client_state(cl,statebuf),
-		 cl->n_trans,cl->idstring);
+		 cl->n_trans,cl->idstring,cl->status);
 	if (delta>0) cl->off=cl->off+delta;}
       /* If we've still got data to read/write, we update the poll
 	 structure to keep listening and continue in the event loop.  */
@@ -718,17 +720,17 @@ static void *event_loop(void *thread_arg)
 			     (cl->reading>0)?
 			     ("event_loop/read"):
 			     ("event_loop/weird")),
-		 "Transferred all %d bytes for @x%lx#%d.%d[%s/%d](%s)",
+		 "Transferred all %d bytes for @x%lx#%d.%d[%s/%d](%s%:hs)",
 		 cl->len,((unsigned long)cl),cl->clientid,cl->socket,
 		 get_client_state(cl,statebuf),
-		 cl->n_trans,cl->idstring);}}
+		 cl->n_trans,cl->idstring,cl->status);}}
     /* Unless there's an I/O error, call the handler */
     if ((cl->flags)&(U8_CLIENT_CLOSED|U8_CLIENT_CLOSING)) {
       u8_log(LOG_WARN,"event_loop/closed",
-	     "Client @x%lx#%d.%d[%s/%d] (%s) asynchronously closed",
+	     "Client @x%lx#%d.%d[%s/%d] (%s%:hs) asynchronously closed",
 	     ((unsigned long)cl),cl->clientid,cl->socket,
 	     get_client_state(cl,statebuf),
-	     cl->n_trans,cl->idstring);}
+	     cl->n_trans,cl->idstring,cl->status);}
     else if (result>=0) {
       long long xtime;
       cl->running=cur=u8_microtime();
@@ -739,19 +741,19 @@ static void *event_loop(void *thread_arg)
 	if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
 	    ((cl->flags)&(U8_CLIENT_LOG_TRANSACT))) {
 	  u8_log(LOG_WARN,"event_loop/callback",
-		 "Client @x%lx#%d.%d[%s/%d] (%s) callback",
+		 "Client @x%lx#%d.%d[%s/%d] (%s%:hs) callback",
 		 ((unsigned long)cl),cl->clientid,cl->socket,
 		 get_client_state(cl,statebuf),
-		 cl->n_trans,cl->idstring);}
+		 cl->n_trans,cl->idstring,cl->status);}
 	result=callback(cl,state);}
       else {
 	if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
 	    ((cl->flags)&(U8_CLIENT_LOG_TRANSACT))) {
 	  u8_log(LOG_WARN,"event_loop/servefn",
-		 "Client @x%lx#%d.%d[%s/%d] (%s) servefn",
+		 "Client @x%lx#%d.%d[%s/%d] (%s%:hs) servefn",
 		 ((unsigned long)cl),cl->clientid,cl->socket,
 		 get_client_state(cl,statebuf),
-		 cl->n_trans,cl->idstring);}
+		 cl->n_trans,cl->idstring,cl->status);}
 	result=server->servefn(cl);}
       cl->running=0;
       /* Record execution stats */
@@ -763,10 +765,10 @@ static void *event_loop(void *thread_arg)
     if (result<0) {
       u8_exception ex=u8_current_exception;
       u8_log(LOG_ERR,"event_loop",
-	     "Error result from client @x%lx#%d.%d[%s/%d](%s)",
+	     "Error result from client @x%lx#%d.%d[%s/%d](%s%:hs)",
 	     ((unsigned long)cl),cl->clientid,cl->socket,
 	     get_client_state(cl,statebuf),
-	     cl->n_trans,cl->idstring);
+	     cl->n_trans,cl->idstring,cl->status);
       if (cl->flags&U8_CLIENT_CLOSED) closed=1;
       else if (cl->flags&U8_CLIENT_CLOSING) {
 	update_client_stats(cl,u8_microtime(),1);
@@ -776,10 +778,11 @@ static void *event_loop(void *thread_arg)
       else if (cl->active>0) u8_client_done(cl);
       if (ex) {
 	u8_log(LOG_WARN,ClientRequest,
-	       "Error during activity on @x%lx#%d.%d[%s/%d](%s)",
+	       "Error during activity on @x%lx#%d.%d[%s/%d](%s%:hs) %s",
 	       ((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
-	       cl->n_trans,cl->idstring,u8_errstring(ex));
+	       cl->n_trans,cl->idstring,cl->status,
+	       u8_errstring(ex));
 	u8_clear_errors(1);
 	close_client_core(cl,1,"event_loop/error");
 	closed=1;}
@@ -790,18 +793,18 @@ static void *event_loop(void *thread_arg)
       if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
 	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
 	u8_log(LOG_NOTICE,ClientRequest,
-	       "Completed transaction with @x%lx#%d.%d[%s/%d](%s)",
+	       "Completed transaction with @x%lx#%d.%d[%s/%d](%s%:hs)",
 	       ((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
-	       cl->n_trans,cl->idstring);
+	       cl->n_trans,cl->idstring,cl->status);
       cl->n_trans++;
       if (server->flags&U8_SERVER_CLOSED) dobreak=1;
       if (cl->flags&U8_CLIENT_CLOSED) {
 	u8_log(LOG_CRIT,Inconsistency,
-	       "Result returned from closed client @x%lx#%d.%d[%s/%d](%s)",
+	       "Result returned from closed client @x%lx#%d.%d[%s/%d](%s%:hs)",
 	       ((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
-	       cl->n_trans,cl->idstring);
+	       cl->n_trans,cl->idstring,cl->status);
 	if (cl->started>0) {
 	  update_client_stats(cl,cur,1);
 	  server->n_busy--; cl->started=0;}
@@ -830,10 +833,10 @@ static void *event_loop(void *thread_arg)
       if (((server->flags)&(U8_SERVER_LOG_TRANSFER))||
 	  ((cl->flags)&(U8_CLIENT_LOG_TRANSFER)))
 	u8_log(LOG_NOTICE,((cl->writing>0)?("Writing"):("Reading")),
-	       "Processed %d bytes for @x%lx#%d.%d[%s/%d](%s)",delta,
+	       "Processed %d bytes for @x%lx#%d.%d[%s/%d](%s%:hs)",delta,
 	       ((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
-	       cl->n_trans,cl->idstring);
+	       cl->n_trans,cl->idstring,cl->status);
       if (delta>0) cl->off=cl->off+delta;
       /* If we've still got data to read/write, we continue,
 	 otherwise, we fall through */
@@ -857,10 +860,10 @@ static void *event_loop(void *thread_arg)
       if (((server->flags)&U8_SERVER_LOG_TRANSACT)||
 	  ((cl->flags)&U8_CLIENT_LOG_TRANSACT))
 	u8_log(LOG_NOTICE,ClientRequest,
-	       "Yield during request for @x%lx#%d.%d[%s/%d](%s)",
+	       "Yield during request for @x%lx#%d.%d[%s/%d](%s%:hs)",
 	       ((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
-	       cl->n_trans,cl->idstring);}
+	       cl->n_trans,cl->idstring,cl->status);}
     if (cl->active>0) {
       cl->active=0;
       if (dobreak) break;
@@ -1320,7 +1323,7 @@ static int add_client(struct U8_SERVER *server,u8_client client)
   int slot=add_socket(server,sock,POLLIN);
   if (slot<0) return slot;
   server->clients[slot]=client; client->clientid=slot;
-  client->server=server; server->n_clients++;
+  client->threadid=-1; client->server=server; server->n_clients++;
   return slot;
 }
 
@@ -1331,10 +1334,10 @@ static int free_client(struct U8_SERVER *server,u8_client cl,u8_context caller)
   struct pollfd *pfd=&(server->sockets[clientid]);
   if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
       ((cl->flags)&(U8_CLIENT_LOG_QUEUE)))
-    u8_log(LOG_NOTICE,"free_client(u8)","Freeing (%s) client/task @x%lx#%d.%d[%s/%d](%s)",
+    u8_log(LOG_NOTICE,"free_client(u8)","Freeing (%s) client/task @x%lx#%d.%d[%s/%d](%s%:hs)",
 	   caller,((unsigned long)cl),cl->clientid,cl->socket,
 	   get_client_state(cl,statebuf),
-	   cl->n_trans,cl->idstring);
+	   cl->n_trans,cl->idstring,cl->status);
   memset(pfd,0,sizeof(struct pollfd)); pfd->fd=-1;
   server->n_clients--;
   update_server_stats(cl);
@@ -1342,7 +1345,8 @@ static int free_client(struct U8_SERVER *server,u8_client cl,u8_context caller)
   /* If the newly empty slot is before the current free_slot,
      make it the free_slot. */
   if (clientid<server->free_slot) server->free_slot=clientid;
-  u8_free(cl->idstring);
+  if (cl->idstring) u8_free(cl->idstring);
+  if (cl->status) u8_free(cl->status);
   u8_free(cl);
   return 1;
 }
@@ -1367,6 +1371,7 @@ static int server_accept(u8_server server,u8_socket i)
 	 (u8_sockaddr_string((struct sockaddr *)addrbuf)));
       server->n_accepted++;
       if (!(cl->idstring)) cl->idstring=idstring;
+      cl->status=NULL;
       u8_lock_mutex(&(server->lock));
       add_client(server,cl);
       u8_unlock_mutex(&(server->lock));
@@ -1472,10 +1477,10 @@ static int server_handle_poll(struct U8_SERVER *server,
       if ((client->server->flags)&(U8_SERVER_LOG_CONNECT)&&
 	  (client->socket>=0))
 	u8_log(LOG_NOTICE,"server_handle_poll",
-	       "Other end closed (HUP) @x%lx#%d.%d[%s/%d](%s)",
+	       "Other end closed (HUP) @x%lx#%d.%d[%s/%d](%s%:hs)",
 	       ((unsigned long)client),client->clientid,client->socket,
 	       get_client_state(client,statebuf),
-	       client->n_trans,client->idstring);
+	       client->n_trans,client->idstring,client->status);
       if (client->started>0) {client->started=0; server->n_busy--;}
       close_client_core(client,1,"server_handle_poll/HUP");
       i++; continue;}
@@ -1501,12 +1506,13 @@ static int server_handle_poll(struct U8_SERVER *server,
       if (((client->server->flags)&(U8_SERVER_LOG_CONNECT))&&
 	  (client->socket>=0))
 	u8_log(LOG_NOTICE,"server_listen",
-	       "Other end closed (%s) @x%lx#%d.%d[%s/%d](%s)",
+	       "Other end closed (%s) @x%lx#%d.%d[%s/%d](%s%:hs)",
 	       ((events&POLLNVAL)?("closed/invalid"):("no data")),
 	       ((unsigned long)client),client->clientid,client->socket,
 	       get_client_state(client,statebuf),
-	       client->n_trans,client->idstring);
+	       client->n_trans,client->idstring,client->status);
       if (client->started>0) {client->started=0; server->n_busy--;}
+      client->threadid=-1;
       close_client_core(client,1,"server_handle_poll/POLLINVAL");
       i++; continue;}
     else if (events&POLLIN) {
@@ -1750,6 +1756,35 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
      server->n_busy,server->n_queued,server->n_trans);
   u8_unlock_mutex(&(server->lock));
   return out.u8_outbuf;
+}
+
+U8_EXPORT
+u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
+{
+  struct U8_CLIENT **clients; long long cur, start=0;
+  int i=0, lim;
+  u8_lock_mutex(&(server->lock));
+  clients=server->clients; lim=server->max_slot;
+  cur=u8_microtime();
+  while (i<lim) {
+    struct U8_CLIENT *cl=clients[i++];
+    u8_string state="I"; long long interval=-1;
+    if (!(cl)) continue;
+    if (cl->reading>0) {state="R"; interval=cur-cl->reading;}
+    else if (cl->writing>0) {state="W"; interval=cur-cl->writing;}
+    else if (cl->queued>0) {state="Q"; interval=cur-cl->queued;}
+    else if (cl->running>0) {state="X"; interval=cur-cl->running;}
+    else if (cl->active>0) {state="A"; interval=cur-cl->active;}
+    else {}
+    if (cl->threadid>0)
+      u8_printf
+	(out,"%d\t%d\t%s %lldms\t%s%/hs\n",
+	 cl->clientid,cl->threadid,state,interval,cl->idstring,cl->status);
+    else u8_printf
+	(out,"%d\tidle\t%s %lldms\t%s%/hs\n",
+	 cl->clientid,state,interval,cl->idstring,cl->status);}
+  u8_unlock_mutex(&(server->lock));
+  return out->u8_outbuf;
 }
 
 /* Initialize */
