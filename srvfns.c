@@ -1790,11 +1790,11 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
     else {}
     if (tnum>=0)
       u8_printf
-	(out,"%d\t%d.%lx\t%s %lldms\t%s%/hs\n",
+	(out,"%d\t%d.%lx\t%s %lldus\t%s%/hs\n",
 	 cl->clientid,tnum,threads[tnum].u8st_threadid,
 	 state,interval,cl->idstring,cl->status);
     else u8_printf
-	   (out,"%d\tidle\t%s %lldms\t%s%/hs\n",
+	   (out,"%d\tidle\t%s %lldus\t%s%/hs\n",
 	    cl->clientid,state,interval,cl->idstring,cl->status);}
   u8_unlock_mutex(&(server->lock));
   return out->u8_outbuf;
