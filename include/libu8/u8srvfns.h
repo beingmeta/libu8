@@ -281,6 +281,8 @@ typedef struct U8_SERVER {
   int (*servefn)(u8_client);
   int (*donefn)(u8_client);
   int (*closefn)(u8_client);
+  int (*xserverfn)(struct U8_SERVER *);
+  int (*xclientfn)(struct U8_CLIENT *);
   /* Miscellaneous data */
   void *serverdata;
   /* We don't handle non-threaded right now. */
