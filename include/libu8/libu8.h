@@ -268,6 +268,11 @@ U8_EXPORT int u8_initlevel;
 **/
 U8_EXPORT char *u8_threadid(char *buf);
 
+/** Returns a long identifying the current thread
+    @returns long a numeric thread identifier (OS dependent)
+**/
+U8_EXPORT long u8_threadnum(void);
+
 /* UTF-8 String maniuplation */
 
 typedef unsigned char u8_byte;

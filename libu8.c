@@ -572,6 +572,32 @@ U8_EXPORT char *u8_threadid(char *buf)
 }
 #endif
 
+#if (HAVE_GETPID)
+#if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
+U8_EXPORT long u8_threadnum()
+{
+  pid_t tid=syscall(SYS_gettid);
+  return (long) tid;
+}
+#elif (HAVE_PTHREAD_SELF)
+U8_EXPORT long u8_threadnum()
+{
+  pthread_t self=pthread_self();
+  return (unsigned long int)self;
+}
+#else 
+U8_EXPORT long u8_threadnum()
+{
+  return (long) getpid();
+}
+#endif
+#else
+U8_EXPORT long u8_threadnum()
+{
+  return 1;
+}
+#endif
+
 /* Debugging malloc */
 
 static ssize_t max_malloc=-1;
