@@ -626,7 +626,6 @@ static u8_client pop_task(struct U8_SERVER *server)
 static int push_task(struct U8_SERVER *server,u8_client cl,u8_context cxt)
 {
   u8_utime cur=u8_microtime(); char statebuf[16];
-  cl->threadid=-1;
   if (server->n_queued >= server->max_queued) return 0;
   if (cl->queued>0) return 0;
   if (cl->clientid<0) return 0;
@@ -651,7 +650,10 @@ static int push_task(struct U8_SERVER *server,u8_client cl,u8_context cxt)
 static void *event_loop(void *thread_arg)
 {
   char statebuf[16];
-  struct U8_SERVER *server=(struct U8_SERVER *)thread_arg;
+  struct U8_SERVER_THREAD *sthread=(struct U8_SERVER_THREAD *)thread_arg;
+  struct U8_SERVER *server=sthread->u8st_server;
+  if (sthread->u8st_threadid<0)
+    sthread->u8st_threadid=u8_threadid();
   /* Check for additional thread init functions */
   while (1) {
     u8_client cl; int dobreak=0; int result=0, closed=0;
@@ -661,7 +663,8 @@ static void *event_loop(void *thread_arg)
     cl=pop_task(server);
     if (!(cl)) continue;
     else if ((cl->socket<=0)||((cl->flags)&U8_CLIENT_CLOSED)) {
-      cl->active=0; cl->threadid=-1; continue;}
+      cl->active=0; cl->threadnum=-1; sthread->u8st_client=-1;
+      continue;}
     else cur=u8_microtime();
     if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
 	((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
@@ -670,7 +673,8 @@ static void *event_loop(void *thread_arg)
 	     ((unsigned long)cl),cl->clientid,cl->socket,
 	     get_client_state(cl,statebuf),
 	     cl->n_trans,cl->idstring,cl->status);
-    cl->threadid=u8_threadnum();
+    cl->threadnum=sthread->u8st_slotno;
+    sthread->u8st_client=cl->clientid;
     if ((cl->reading>0)||(cl->writing>0)) {
       /* We're in the middle of reading or writing a chunk of data,
 	 so we try to read/write another chunk. */
@@ -695,7 +699,8 @@ static void *event_loop(void *thread_arg)
 	  server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
 	else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));
 	/* u8_unlock_mutex(&server->lock);*/
-	cl->active=0; continue;}
+	cl->active=0; sthread->u8st_client=-1;
+	continue;}
       else {
 	/* Otherwise, we're done with whatever reading or writing we
 	   were doing, so we record stats. */
@@ -851,6 +856,7 @@ static void *event_loop(void *thread_arg)
 	if (cl->writing>0)
 	  server->sockets[cid].events=((short)(POLLOUT|HUPFLAGS));
 	else server->sockets[cid].events=((short)(POLLIN|HUPFLAGS));
+	sthread->u8st_client=-1; cl->threadnum=-1;
 	u8_push_task(server,cl,((cl->writing)?("event_loop/w"):("event_loop/r")));
 	continue;}
       else {}}
@@ -871,7 +877,8 @@ static void *event_loop(void *thread_arg)
 	/* Start listening again (it was stopped by pop_task() */
 	if (cl->writing>0)
 	  server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
-	else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));}}}
+	else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));}}
+    sthread->u8st_client=-1;}
   u8_threadexit();
   return NULL;
 }
@@ -949,16 +956,18 @@ struct U8_SERVER *u8_init_server
   server->queue=u8_alloc_n(max_queue,u8_client);
   server->n_queued=0; server->max_queued=max_queue;
   server->queue_head=0; server->queue_tail=0; server->queue_len=max_queue;
-  server->thread_pool=u8_alloc_n(n_threads,pthread_t);
+  server->thread_pool=u8_alloc_n(n_threads,struct U8_SERVER_THREAD);
   memset(server->queue,0,sizeof(u8_client)*max_queue);
-  memset(server->thread_pool,0,sizeof(pthread_t)*n_threads);
+  memset(server->thread_pool,0,sizeof(struct U8_SERVER_THREAD)*n_threads);
   server->n_trans=0; /* Transaction count */
   server->n_accepted=0; /* Accept count (new clients) */
   i=0; while (i < n_threads) {
-	 pthread_create(&(server->thread_pool[i]),
-			pthread_attr_default,
-			event_loop,(void *)server);
-	 i++;}
+    struct U8_SERVER_THREAD *u8st=&(server->thread_pool[i]);
+    u8st->u8st_server=server; u8st->u8st_slotno=i; u8st->u8st_client=-1;
+    pthread_create(&(u8st->u8st_thread),
+		   pthread_attr_default,
+		   event_loop,(void *)u8st);
+    i++;}
 #endif
 
   return server;
@@ -1323,7 +1332,7 @@ static int add_client(struct U8_SERVER *server,u8_client client)
   int slot=add_socket(server,sock,POLLIN);
   if (slot<0) return slot;
   server->clients[slot]=client; client->clientid=slot;
-  client->threadid=-1; client->server=server; server->n_clients++;
+  client->threadnum=-1; client->server=server; server->n_clients++;
   return slot;
 }
 
@@ -1512,7 +1521,7 @@ static int server_handle_poll(struct U8_SERVER *server,
 	       get_client_state(client,statebuf),
 	       client->n_trans,client->idstring,client->status);
       if (client->started>0) {client->started=0; server->n_busy--;}
-      client->threadid=-1;
+      client->threadnum=-1;
       close_client_core(client,1,"server_handle_poll/POLLINVAL");
       i++; continue;}
     else if (events&POLLIN) {
@@ -1761,28 +1770,32 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
 U8_EXPORT
 u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
 {
-  struct U8_CLIENT **clients; long long cur, start=0;
+  struct U8_CLIENT **clients;
+  struct U8_SERVER_THREAD *threads;
+  long long cur, start=0;
   int i=0, lim;
   u8_lock_mutex(&(server->lock));
   clients=server->clients; lim=server->max_slot;
   cur=u8_microtime();
   while (i<lim) {
-    struct U8_CLIENT *cl=clients[i++];
+    struct U8_CLIENT *cl=clients[i++]; int tnum;
     u8_string state="I"; long long interval=-1;
     if (!(cl)) continue;
+    else tnum=cl->threadnum;
     if (cl->reading>0) {state="R"; interval=cur-cl->reading;}
     else if (cl->writing>0) {state="W"; interval=cur-cl->writing;}
     else if (cl->queued>0) {state="Q"; interval=cur-cl->queued;}
     else if (cl->running>0) {state="X"; interval=cur-cl->running;}
     else if (cl->active>0) {state="A"; interval=cur-cl->active;}
     else {}
-    if (cl->threadid>0)
+    if (tnum>=0)
       u8_printf
-	(out,"%d\t%d\t%s %lldms\t%s%/hs\n",
-	 cl->clientid,cl->threadid,state,interval,cl->idstring,cl->status);
+	(out,"%d\t%d.%lx\t%s %lldms\t%s%/hs\n",
+	 cl->clientid,tnum,threads[tnum].u8st_threadid,
+	 state,interval,cl->idstring,cl->status);
     else u8_printf
-	(out,"%d\tidle\t%s %lldms\t%s%/hs\n",
-	 cl->clientid,state,interval,cl->idstring,cl->status);}
+	   (out,"%d\tidle\t%s %lldms\t%s%/hs\n",
+	    cl->clientid,state,interval,cl->idstring,cl->status);}
   u8_unlock_mutex(&(server->lock));
   return out->u8_outbuf;
 }

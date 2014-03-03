@@ -56,8 +56,7 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
 
 #define U8_CLIENT_FIELDS                                       \
     u8_socket socket;                                          \
-    int clientid;					       \
-    long threadid;                                             \
+    int clientid, threadnum;				       \
     unsigned int flags, n_trans, n_errs;                       \
     u8_utime started, queued, active;                          \
     u8_utime reading, writing, running;			       \
@@ -77,9 +76,9 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
      statestring fields are strings identifying the client for logging
      and debugging, and the server field is the server (a U8_SERVER
      struct) to which the client is connected. **/
-  typedef struct U8_CLIENT {
+typedef struct U8_CLIENT {
     u8_socket socket;
-    int clientid; long threadid;
+    int clientid, threadnum;
     unsigned int flags, n_trans, n_errs;
     u8_utime started, queued, active;
     u8_utime reading, writing, running;
@@ -144,6 +143,16 @@ U8_EXPORT int u8_client_done(u8_client cl);
 #else
 #define u8_client_done(cl)
 #endif
+
+/* Server threads */
+
+typedef struct U8_SERVER_THREAD {
+  pthread_t u8st_thread; struct U8_SERVER *u8st_server;
+  unsigned long us8st_flags, u8st_threadid;
+  int u8st_slotno, u8st_client;
+  void *u8st_data;}
+  U8_SERVER_THREAD;
+typedef struct U8_SERVER_THREAD *u8_server_thread;
 
 /* Bits of the server flags field */
 
@@ -282,7 +291,7 @@ typedef struct U8_SERVER {
      max_tasks is the space available in ->queue
      n_threads is the number of threads in the pool */
   int n_queued, max_queued, n_threads, max_backlog;
-  pthread_t *thread_pool;
+  struct U8_SERVER_THREAD *thread_pool;
   u8_client *queue;
   int queue_len, queue_head, queue_tail;
 #endif
