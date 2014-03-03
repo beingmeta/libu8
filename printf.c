@@ -161,11 +161,11 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	if ((arg)&&(code=='m')) arg=getmessage(arg);
 	if (arg==NULL) string="(null)";
 	else if (strchr(cmd,'l')) {
-	  string=u8_downcase(string);
+	  string=u8_downcase(arg);
 	  if (to_free) u8_free(to_free);
 	  to_free=string;}
 	else if (strchr(cmd,'u')) {
-	  string=u8_upcase(string);
+	  string=u8_upcase(arg);
 	  if (to_free) u8_free(to_free);
 	  to_free=string;}
 	else string=arg;
