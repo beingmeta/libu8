@@ -147,10 +147,8 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	char *arg=va_arg(*args,char *);
 	/* A - modifer on s indicates that the string arg should be
 	   freed after use.  l and u string indicates upper and lower
-	   case conversions.  An h modifier indicates that NULL should
-	   be displayed as an empty string (rather than '(null)') and
-	   further -:/ modifiers indicate a prefix character to precede
-	   the string when not empty. */
+	   case conversions.  Further -:/,.? modifiers indicate a prefix
+	   character that precedes the string when the string is not empty. */
 	if (strchr(cmd,'/')) prefix="/";
 	else if (strchr(cmd,'-')) prefix="-";
 	else if (strchr(cmd,':')) prefix=":";
@@ -166,7 +164,7 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	  to_free=string=u8_downcase(arg);
 	else if (strchr(cmd,'u'))
 	  to_free=string=u8_upcase(arg);
-	else {}
+	else string=arg;
 	if ((string)&&(*string)&&(prefix)) {
 	  string=u8_string_append(prefix,string,NULL);
 	  if (to_free) {u8_free(to_free); to_free=string;}}}
