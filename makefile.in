@@ -74,7 +74,7 @@ ALL=@TAGS@ libs @I18N@ tests @DOCS@
 update: buildmode
 	@echo Building `cat buildmode` configuration
 	make `cat buildmode`
-standard:
+normal:
 	make ${ALL}
 debugging:
 	make XCFLAGS="@debugcflags@ $(XCFLAGS)" ${ALL}
@@ -88,8 +88,8 @@ debug:
 	@if test $(BUILDMODE) != "debugging"; then echo debugging > buildmode; fi
 	@echo Building `cat buildmode` configuration
 	make `cat buildmode`
-default:
-	@if test $(BUILDMODE) != "standard"; then echo standard > buildmode; fi
+standard:
+	@if test $(BUILDMODE) != "normal"; then echo normal > buildmode; fi
 	@echo Building `cat buildmode` configuration
 	make `cat buildmode`
 nitpick:
@@ -104,7 +104,7 @@ fast:
 buildmode:
 	@if test -f buildmode; then       \
 	    touch buildmode;              \
-	 else echo standard > buildmode;  \
+	 else echo normal > buildmode;  \
 	 fi
 showbuildmode showmode showbuild: buildmode
 	@cat buildmode
