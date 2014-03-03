@@ -262,16 +262,17 @@ U8_EXPORT int u8_initlevel;
 #define u8_threadcheck() \
   if (u8_getinitlevel()<u8_n_threadinits) u8_run_threadinits()
 
-/** Returns a string identifying the current thread
-    @param buf a buffer to use (mallocd otherwise)
-    @returns a character string
-**/
-U8_EXPORT char *u8_threadid(char *buf);
-
 /** Returns a long identifying the current thread
     @returns long a numeric thread identifier (OS dependent)
 **/
-U8_EXPORT long u8_threadnum(void);
+U8_EXPORT long u8_threadid(void);
+
+/** Returns a string identifying the current process and thread
+    @param buf a buffer to use (mallocd otherwise)
+    @returns a character string
+**/
+U8_EXPORT char *u8_procinfo(char *buf);
+
 
 /* UTF-8 String maniuplation */
 

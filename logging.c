@@ -204,7 +204,7 @@ U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
 if (u8_log_show_appid) appid=u8_appid();
 #if (HAVE_GETPID)
   if (u8_log_show_threadinfo)
-    procid=u8_threadid(procbuf);
+    procid=u8_procinfo(procbuf);
   else sprintf(procbuf,"%lu",(unsigned long)getpid());
 #else
   if (u8_log_show_procinfo) sprintf(procbuf,"nopid");

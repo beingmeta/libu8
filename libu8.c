@@ -539,7 +539,7 @@ U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
 
 #if (HAVE_GETPID)
 #if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
-U8_EXPORT char *u8_threadid(char *buf)
+U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid();
   pid_t tid=syscall(SYS_gettid);
@@ -548,7 +548,7 @@ U8_EXPORT char *u8_threadid(char *buf)
   return buf;
 }
 #elif (HAVE_PTHREAD_SELF)
-U8_EXPORT char *u8_threadid(char *buf)
+U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid();
   pthread_t self=pthread_self();
@@ -557,7 +557,7 @@ U8_EXPORT char *u8_threadid(char *buf)
   return buf;
 }
 #else 
-U8_EXPORT char *u8_threadid(char *buf)
+U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid();
   if (!(buf)) buf=u8_malloc(128);
@@ -566,35 +566,39 @@ U8_EXPORT char *u8_threadid(char *buf)
 }
 #endif
 #else
-U8_EXPORT char *u8_threadid(char *buf)
+U8_EXPORT char *u8_procinfo(char *buf)
 {
-  return NULL;
+  if (buf) {
+    strcpy(buf,"no procinfo");
+    return buf;}
+  else return u8_strdup("no procinfo");
 }
 #endif
 
 #if (HAVE_GETPID)
 #if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
-U8_EXPORT long u8_threadnum()
+U8_EXPORT long u8_threadid()
 {
   pid_t tid=syscall(SYS_gettid);
   return (long) tid;
 }
 #elif (HAVE_PTHREAD_SELF)
-U8_EXPORT long u8_threadnum()
+U8_EXPORT long u8_threadid()
 {
   pthread_t self=pthread_self();
   return (unsigned long int)self;
 }
 #else 
-U8_EXPORT long u8_threadnum()
+U8_EXPORT long u8_threadid()
 {
   return (long) getpid();
 }
 #endif
 #else
-U8_EXPORT long u8_threadnum()
+/* TODO: Should really roll our own */
+U8_EXPORT long u8_threadid()
 {
-  return 1;
+  return -1;
 }
 #endif
 
