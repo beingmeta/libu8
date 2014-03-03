@@ -142,8 +142,8 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
       else if ((code == 'f') || (code == 'g') || (code == 'e')) {
 	double f=va_arg(*args,double);
 	sprintf(buf,cmd,f);}
-      else if (code == 's') {
-	char *prefix=NULL, *string=NULL;
+      else if ((code == 's')||(code == 'm')) {
+	char *prefix=NULL;
 	char *arg=va_arg(*args,char *);
 	/* A - modifer on s indicates that the string arg should be
 	   freed after use.  l and u string indicates upper and lower
@@ -156,23 +156,23 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	else if (strchr(cmd,',')) prefix=", ";
 	else {}
 	if (strchr(cmd,'-')) to_free=arg;
-	if (arg==NULL) {
-	  if ((prefix)||(strchr(cmd,'?'))) 
-	    string="";
-	  else string="(null)";}
-	else if (strchr(cmd,'l'))
-	  to_free=string=u8_downcase(arg);
-	else if (strchr(cmd,'u'))
-	  to_free=string=u8_upcase(arg);
-	else string=arg;
-	if ((string)&&(*string)&&(prefix)) {
-	  string=u8_string_append(prefix,string,NULL);
-	  if (to_free) {u8_free(to_free); to_free=string;}}}
-      else if (code == 'm') {
 	/* The m conversion is like s but passes its argument through the
 	   message catalog. */
-	u8_string arg=va_arg(*args,char *);
-	string=getmessage(arg);}
+	if ((arg)&&(code=='m')) arg=getmessage(arg);
+	if (arg==NULL) string="(null)";
+	else if (strchr(cmd,'l')) {
+	  string=u8_downcase(string);
+	  if (to_free) u8_free(to_free);
+	  to_free=string;}
+	else if (strchr(cmd,'u')) {
+	  string=u8_upcase(string);
+	  if (to_free) u8_free(to_free);
+	  to_free=string;}
+	else string=arg;
+	if ((arg)&&(prefix)) {
+	  string=u8_string_append(prefix,string,NULL);
+	  if (to_free) u8_free(to_free);
+	  to_free=string;}}
       else if ((code<128) && (u8_printf_handlers[(int)code]))
 	/* We pass the pointer args because some stdarg implementations
 	   work better that way. */
