@@ -273,6 +273,9 @@ clean:
 	@$(CLEAN) tests/dynamic/u8recode tests/dynamic/u8xrecode
 	@$(CLEAN) tests/dynamic/echosrv
 	@echo "Cleaned up dynamic test executables"
+	@if test -d debian/libu8; then \
+		rm -rf debian/libu8; echo "Cleaning up debian build"; \
+	 fi
 
 tidy: 
 	$(CLEAN) *~ tests/*~ include/libu8/*~
