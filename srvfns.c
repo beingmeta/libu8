@@ -1801,24 +1801,27 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
   while (i<lim) {
     struct U8_CLIENT *cl=clients[i++]; int tnum;
     u8_string state="I", idle="I"; long long interval=-1;
-    if (!(cl)) continue;
-    else tnum=cl->threadnum;
+    u8_byte bufinfo[128];
+    if (!(cl)) continue; else tnum=cl->threadnum;
     if (cl->reading>0) {state="R"; interval=cur-cl->reading;}
     else if (cl->writing>0) {state="W"; interval=cur-cl->writing;}
     else if (cl->queued>0) {state="Q"; interval=cur-cl->queued;}
     else if (cl->running>0) {state="X"; interval=cur-cl->running;}
     else if (cl->active>0) {state="A"; interval=cur-cl->active;}
     else {}
+    if ((cl->buf)&&((cl->off>0)||(cl->len>0)))
+      sprintf(bufinfo,"\t%lld/%lld bytes",cl->off,cl->len);
+    else bufinfo[0]='\0';
     if (cl->active>0) idle="A";
     if (tnum>=0)
       u8_printf
-	(out,"%d %s%s %lldus\t%d.%lx\ts%/s\n",
-	 cl->clientid,idle,state,interval,
+	(out,"%d %s%s %lldus%s\t%d.%lx\ts%/s\n",
+	 cl->clientid,idle,state,interval,bufinfo,
 	 tnum,threads[tnum].u8st_threadid,
 	 cl->idstring,cl->status);
     else u8_printf
-	   (out,"%d %s%s %lldus\tno thread\ts%/s\n",
-	    cl->clientid,idle,state,interval,
+	   (out,"%d %s%s %lldus%s\tno thread\ts%/s\n",
+	    cl->clientid,idle,state,interval,bufinfo,
 	    cl->idstring,cl->status);}
   u8_unlock_mutex(&(server->lock));
   return out->u8_outbuf;
