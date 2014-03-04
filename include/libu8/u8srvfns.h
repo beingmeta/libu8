@@ -249,31 +249,32 @@ typedef struct U8_SERVER_INFO *u8_server_info;
      This structure represents a server's state and connections.
 **/
 typedef struct U8_SERVER {
-  /* n_servers is the number of sockets being listened on,
-     server_info describes each one. */
   u8_string serverid;
 
   /* Server-wide flags, whether we're shutting down, and
      how many connections to start with/grow by. */
   int flags, shutdown, init_clients, max_clients;
+  
   /* The server addreses we're listening to for new connections */
   struct U8_SERVER_INFO *server_info; int n_servers;
+
   /* The connections (clients) we are currently serving */
   struct U8_CLIENT **clients; int n_clients, clients_len;
   /* free_slot is the first slot where a new client can be stored */
   int free_slot, max_slot;
+
   /* All sockets: n_sockets=n_servers+n_clients
      To simplify things, sockets_len is always the same as clients_len,
      and we just have NULL entries for server sockets. */
   struct pollfd *sockets;
-  /* How many clients are currently busy (in the middle of transactions) */
-  int n_busy; 
-  /* How many connections have been accepted to date */
-  long n_accepted; 
+  long poll_timeout; /* Timeout value to use when selecting */
+
+  int n_busy; /* How many clients are currently active (mid transaction) */
+  long n_accepted; /* How many connections have been accepted to date */
   long n_trans; /* How many transactions have been completed to date */
   long n_errs; /* How many transactions yielded errors */
+
   struct U8_CLIENT_STATS aggrestats;
-  long poll_timeout; /* Timeout value to use when selecting */
 
   /* Handling functions */
   u8_client (*acceptfn)(struct U8_SERVER *,u8_socket sock,
@@ -281,11 +282,15 @@ typedef struct U8_SERVER {
   int (*servefn)(u8_client);
   int (*donefn)(u8_client);
   int (*closefn)(u8_client);
+
+  /* These are functions called with each iteration of the
+     server and client loops */
   int (*xserverfn)(struct U8_SERVER *);
   int (*xclientfn)(struct U8_CLIENT *);
   /* Miscellaneous data */
   void *serverdata;
-  /* We don't handle non-threaded right now. */
+
+  /* We don't handle non-threaded right now */
 #if U8_THREADS_ENABLED
   u8_mutex lock;
   u8_condvar empty, full;

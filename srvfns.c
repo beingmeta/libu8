@@ -902,7 +902,7 @@ struct U8_SERVER *u8_init_server
 {
   int i=0;
   int flags=0, init_clients=DEFAULT_INIT_CLIENTS, n_threads=DEFAULT_NTHREADS;
-  int maxback=MAX_BACKLOG, max_queue=DEFAULT_MAX_QUEUE;
+  int max_backlog=MAX_BACKLOG, max_queue=DEFAULT_MAX_QUEUE;
   int  max_clients=DEFAULT_MAX_CLIENTS, timeout=DEFAULT_TIMEOUT;
   va_list args; int prop;
   if (server==NULL) server=u8_alloc(struct U8_SERVER);
@@ -921,7 +921,7 @@ struct U8_SERVER *u8_init_server
     case U8_SERVER_MAX_CLIENTS:
       max_clients=(va_arg(args,int)); continue;
     case U8_SERVER_BACKLOG:
-      max_clients=(va_arg(args,int)); continue;
+      max_backlog=(va_arg(args,int)); continue;
     case U8_SERVER_TIMEOUT:
       timeout=(va_arg(args,int)); continue;
     case U8_SERVER_LOGLEVEL: {
@@ -948,7 +948,7 @@ struct U8_SERVER *u8_init_server
   memset(server->sockets,0,sizeof(struct pollfd)*init_clients);
   server->free_slot=server->max_slot=0;
   server->poll_timeout=timeout;
-  server->max_backlog=((maxback<=0) ? (MAX_BACKLOG) : (maxback));
+  server->max_backlog=((max_backlog<=0) ? (MAX_BACKLOG) : (max_backlog));
   server->acceptfn=acceptfn;
   server->servefn=servefn;
   server->closefn=closefn;
@@ -980,7 +980,7 @@ struct U8_SERVER *u8_init_server
 U8_EXPORT
 int u8_server_init(struct U8_SERVER *server,
 		   /* max_clients is currently ignored */
-		   int maxback,int max_queue,int n_threads,
+		   int max_backlog,int max_queue,int n_threads,
 		   u8_client (*acceptfn)(u8_server,u8_socket,
 					 struct sockaddr *,size_t),
 		   int (*servefn)(u8_client),
@@ -991,7 +991,7 @@ int u8_server_init(struct U8_SERVER *server,
        U8_SERVER_NTHREADS,n_threads,
        U8_SERVER_INIT_CLIENTS,max_queue,
        U8_SERVER_MAX_QUEUE,max_queue,
-       U8_SERVER_BACKLOG,maxback,
+       U8_SERVER_BACKLOG,max_backlog,
        -1))
     return 1;
   else return 0;
@@ -1128,7 +1128,7 @@ static void init_server_socket(u8_socket socket_id)
 #endif
 }
 
-static u8_socket open_server_socket(struct sockaddr *sockaddr,int maxbacklog)
+static u8_socket open_server_socket(struct sockaddr *sockaddr,int max_backlog)
 {
   u8_socket socket_id=-1, on=1, addrsize, family;
   if (sockaddr->sa_family==AF_INET) {
@@ -1155,7 +1155,7 @@ static u8_socket open_server_socket(struct sockaddr *sockaddr,int maxbacklog)
   if ((bind(socket_id,(struct sockaddr *) sockaddr,addrsize)) < 0) {
     u8_graberr(-1,"open_server_socket:bind",u8_sockaddr_string(sockaddr));
     return -1;}
-  if ((listen(socket_id,maxbacklog)) < 0) {
+  if ((listen(socket_id,max_backlog)) < 0) {
     u8_graberr(-1,"open_server_socket:listen",u8_sockaddr_string(sockaddr));
     return -1;}
   else {
@@ -1369,12 +1369,25 @@ static int server_accept(u8_server server,u8_socket i)
   /* If the activity is on the server socket, open a new socket */
   char addrbuf[1024]; char statebuf[16];
   int addrlen=1024; u8_socket sock;
+  /* This should possibly close the listening socket when we've
+     reached max_clients, but it doesn't currently, instead it accepts
+     and immediately closes.  */
   memset(addrbuf,0,1024);
   sock=accept(i,(struct sockaddr *)addrbuf,&addrlen);
   if (sock < 0) {
     u8_log(LOG_ERR,u8_NetworkError,_("Failed accept on socket %d"),i);
     errno=0;
     return -1;}
+  else if ((server->max_clients>0)&&
+	   (server->n_clients>server->max_clients)) {
+    u8_string connid=
+      u8_sockaddr_string((struct sockaddr *)addrbuf);
+    u8_log(LOG_NOTICE,RejectedConnection,
+	   "Rejected (closed) connection from %s, nclients=%d>%d=max_clients",
+	   server->n_clients,server->max_clients);
+    u8_free(connid);
+    close(sock);
+    return 0;}
   else {
     u8_client cl=server->acceptfn
       (server,sock,(struct sockaddr *)addrbuf,addrlen);
