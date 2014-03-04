@@ -1810,7 +1810,7 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
     else if (cl->active>0) {state="A"; interval=cur-cl->active;}
     else {}
     if ((cl->buf)&&((cl->off>0)||(cl->len>0)))
-      sprintf(bufinfo,"\t%lld/%lld bytes",cl->off,cl->len);
+      sprintf(bufinfo,"\t%ld/%ld bytes",(long)cl->off,(long)cl->len);
     else bufinfo[0]='\0';
     if (cl->active>0) idle="A";
     if (tnum>=0)
