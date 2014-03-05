@@ -1822,7 +1822,7 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
       sprintf(intervalinfo,"\t%10.3fs",(((double)interval)/((double)1000000)));
     else if (interval>1000)
       sprintf(intervalinfo,"\t%9.3fms",(((double)interval)/((double)1000)));
-    else sprintf(intervalinfo,"\t%9dus",interval);
+    else sprintf(intervalinfo,"\t%9ldus",interval);
     if (sock<0) strcpy(sockinfo,"\tdisconn");
     else sprintf(sockinfo,"\ts%d",sock);
     if (cl->active>0) idle="A";
