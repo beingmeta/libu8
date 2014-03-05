@@ -159,7 +159,10 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	/* The m conversion is like s but passes its argument through the
 	   message catalog. */
 	if ((arg)&&(code=='m')) arg=getmessage(arg);
-	if (arg==NULL) string="(null)";
+	if (arg==NULL) {
+	  if ((prefix)||(strchr(cmd,'?')))
+	    string="";
+	  else string="(null)";}
 	else if (strchr(cmd,'l')) {
 	  string=u8_downcase(arg);
 	  if (to_free) u8_free(to_free);
