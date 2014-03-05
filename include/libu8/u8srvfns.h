@@ -148,7 +148,7 @@ U8_EXPORT int u8_client_done(u8_client cl);
 
 typedef struct U8_SERVER_THREAD {
   pthread_t u8st_thread; struct U8_SERVER *u8st_server;
-  unsigned long us8st_flags, u8st_threadid;
+  unsigned long us8st_flags; long u8st_threadid;
   int u8st_slotno, u8st_client;
   void *u8st_data;}
   U8_SERVER_THREAD;
