@@ -454,13 +454,6 @@ static int close_client_core(u8_client cl,int server_locked,u8_context caller)
 
     cl->running=cl->reading=cl->writing=cl->started=0;
 
-    if ((cl->server->flags)&(U8_SERVER_LOG_CONNECT))
-      u8_log(LOG_NOTICE,"u8_client_closed",
-	     "Other end closed @x%lx#%d.%d[%s/%d](%s%:hs)",
-	     ((unsigned long)cl),cl->clientid,cl->socket,
-	     get_client_state(cl,statebuf),
-	     cl->n_trans,cl->idstring,cl->status);
-
     if (server->closefn)
       retval=server->closefn(cl);
     else if (cl->socket>0) 
@@ -488,8 +481,8 @@ static int close_client_core(u8_client cl,int server_locked,u8_context caller)
       cl->stats.qsum2+=(interval*interval);
       if (interval>cl->stats.qmax) cl->stats.qmax=interval;
       cl->stats.qcount++;}
-    else push_task(server,cl,caller);
-    
+    push_task(server,cl,caller);
+
     if (!(server_locked)) u8_unlock_mutex(&(server->lock));
 
     return retval;}
@@ -593,8 +586,10 @@ static u8_client pop_task(struct U8_SERVER *server)
 	   slot,((unsigned long)task),task->clientid,task->socket,
 	   get_client_state(task,statebuf),
 	   task->n_trans,task->idstring,task->status);
+    /* If this ever happened, not freeing the client would be a leak.  However,
+       if it did happen, we'd screw up other logic, so we risk the leak. */
     task->queued=-1; task=NULL;}
-  else if ((task->queued<=0)||(task->socket<0)) {
+  else if ((task->flags&U8_CLIENT_CLOSED)||(task->socket<0)) {
     if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
 	((task->flags)&(U8_CLIENT_LOG_QUEUE)))
       u8_log(LOG_NOTICE,"pop_task(u8)","Final pop (%d) of closed task @x%lx#%d.%d[%s/%d](%s%:hs)",
@@ -629,7 +624,6 @@ static int push_task(struct U8_SERVER *server,u8_client cl,u8_context cxt)
   if (server->n_queued >= server->max_queued) return 0;
   if (cl->queued>0) return 0;
   if (cl->clientid<0) return 0;
-  if ((cl->flags)&(U8_CLIENT_CLOSED)) return 0;
   if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
       ((cl->flags)&(U8_CLIENT_LOG_QUEUE)))
     u8_log(LOG_NOTICE,cxt,"Queueing (%d) client @x%lx#%d.%d[%s/%d](%s%:hs)",
@@ -1845,11 +1839,11 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
     else if (interval>1000)
       sprintf(intervalinfo,"%9.3fms",(((double)interval)/((double)1000)));
     else sprintf(intervalinfo,"%9ldus",interval);
-    if (sock<0) strcpy(sockinfo,"closed  ");
+    if (sock<0) strcpy(sockinfo,"closed ");
     else sprintf(sockinfo,"#%-6d",sock);
     if (cl->active>0) idle="A";
-    if (tnum<0) strcpy(threadinfo,"(idle)  ");
-    else sprintf(threadinfo,"(0x%lx)",threads[tnum].u8st_threadid);
+    if (tnum<0) strcpy(threadinfo,"(idle)   ");
+    else sprintf(threadinfo,"(%9ld)",threads[tnum].u8st_threadid);
     u8_printf
       (out,"%5d   %s%s   %s  %s %s %s %s %?s\n",
        cl->clientid,idle,state,intervalinfo,sockinfo,
