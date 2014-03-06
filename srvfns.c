@@ -1785,7 +1785,7 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
 }
 
 #define CLIENT_LIST_HEADS \
-  "#  (n) (state) (how long) #socket  bytes/total (thread) @origin [status]\n"
+  "#  (n) (state) (how long) #socket  bytes/total\t (thread)\t @origin\t [status]\n"
 #define CLIENT_STATE_DOC \
   "# Connection states: (I)dle, (A)ctive, (R)eading, (W)riting, (X)ecuting, (Q)ueued, (L)istening\n"
 #define CLIENT_LIST_SEP \
@@ -1823,8 +1823,8 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
     else if (cl->active>0) {state="A"; interval=cur-cl->active;}
     else {}
     if ((cl->buf)&&((cl->off>0)||(cl->len>0))) {
-      sprintf(bufinfo,"%ld/%ld",(long)cl->off,(long)cl->len);}
-    else strcpy(bufinfo,"(no data)  ");
+      sprintf(bufinfo,"%ld/%-5ld",(long)cl->off,(long)cl->len);}
+    else strcpy(bufinfo,"no/data    ");
     if (interval<0) strcpy(intervalinfo,"           ");
     else if (interval>259200000000)
       sprintf(intervalinfo,"%10.3fd",(((double)interval)/((double)86400000000L)));
@@ -1840,12 +1840,12 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
       sprintf(intervalinfo,"%9.3fms",(((double)interval)/((double)1000)));
     else sprintf(intervalinfo,"%9ldus",interval);
     if (sock<0) strcpy(sockinfo,"closed ");
-    else sprintf(sockinfo,"#%-6d",sock);
+    else sprintf(sockinfo,"#%-7d",sock);
     if (cl->active>0) idle="A";
     if (tnum<0) strcpy(threadinfo,"(idle)   ");
-    else sprintf(threadinfo,"(%9ld)",threads[tnum].u8st_threadid);
+    else sprintf(threadinfo,"(%ld)   ",threads[tnum].u8st_threadid);
     u8_printf
-      (out,"%5d   %s%s   %s  %s %s %s %s %?s\n",
+      (out,"%5d   %s%s   %s  %s %s\t %s\t %s   \t %?s\n",
        cl->clientid,idle,state,intervalinfo,sockinfo,
        bufinfo,threadinfo,cl->idstring,cl->status);}
   u8_unlock_mutex(&(server->lock));
