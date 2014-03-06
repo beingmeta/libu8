@@ -1465,7 +1465,11 @@ static int server_listen(struct U8_SERVER *server)
       if (sockets!=server->sockets) u8_free(sockets);
       return 0;}
     if (server->flags&U8_SERVER_CLOSED) return 0;
-    update_socketbuf(server,&sockets,&n_socks);}
+    update_socketbuf(server,&sockets,&n_socks);
+    if (server->xserverfn) {
+      u8_lock_mutex(&(server->lock));
+      server->xserverfn(server);
+      u8_unlock_mutex(&(server->lock));}}
   if (server->shutdown) {
     do_shutdown(server,server->shutdown);
     if (sockets!=server->sockets) u8_free(sockets);
@@ -1786,6 +1790,13 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
   return out.u8_outbuf;
 }
 
+#define CLIENT_LIST_HEADS \
+  "#  (n) (state) (how long) #socket bytes/total (thread) @origin [status]\n"
+#define CLIENT_STATE_DOC \
+  "# Connection states: (I)dle, (A)ctive, (R)eading, (W)riting, (X)ecuting, (Q)ueued, (L)istening\n"
+#define CLIENT_LIST_SEP \
+  "#  -------------------------------------------------------------------------------------------\n"
+
 U8_EXPORT
 u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
 {
@@ -1797,8 +1808,11 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
   u8_lock_mutex(&(server->lock));
   clients=server->clients; threads=server->thread_pool;
   sockets=server->sockets;
-  lim=server->max_slot;
+  lim=server->clients_len;
   cur=u8_microtime();
+  u8_printf(out,CLIENT_STATE_DOC);
+  u8_printf(out,CLIENT_LIST_HEADS);
+  u8_printf(out,CLIENT_LIST_SEP);
   while (i<lim) {
     struct U8_CLIENT *cl=clients[i]; int tnum;
     u8_string state="I", idle="I"; long interval=-1;
@@ -1806,32 +1820,40 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
     u8_byte sockinfo[32], threadinfo[128];
     int sock=sockets[i++].fd;
     if (!(cl)) continue; else tnum=cl->threadnum;
-    if (cl->reading>0) {state="R"; interval=cur-cl->reading;}
+    if (cl->reading>0) {
+      if (cl->active>0) state="R"; else state="L";
+      interval=cur-cl->reading;}
     else if (cl->writing>0) {state="W"; interval=cur-cl->writing;}
     else if (cl->queued>0) {state="Q"; interval=cur-cl->queued;}
     else if (cl->running>0) {state="X"; interval=cur-cl->running;}
     else if (cl->active>0) {state="A"; interval=cur-cl->active;}
     else {}
     if ((cl->buf)&&((cl->off>0)||(cl->len>0))) {
-      if (cl->off==cl->len)
-	strcpy(bufinfo,"\t");
-      else sprintf(bufinfo,"\t%ld/%ld",(long)cl->off,(long)cl->len);}
-    else strcpy(bufinfo,"\t");
-    if (interval<0) strcpy(intervalinfo,"\t");
+      sprintf(bufinfo,"%ld/%ld",(long)cl->off,(long)cl->len);}
+    else strcpy(bufinfo,"(no data)  ");
+    if (interval<0) strcpy(intervalinfo,"           ");
+    else if (interval>259200000000)
+      sprintf(intervalinfo,"%10.3fd",(((double)interval)/((double)86400000000L)));
+    else if (interval>4800000000L)
+      sprintf(intervalinfo,"%10.3fh",(((double)interval)/((double)3600000000L)));
+    else if (interval>120000000)
+      sprintf(intervalinfo,"%10.3fm",(((double)interval)/((double)60000000)));
+    else if (interval>60000000)
+      sprintf(intervalinfo,"%10.3fm",(((double)interval)/((double)60000000)));
     else if (interval>1000000)
-      sprintf(intervalinfo,"\t%10.3fs",(((double)interval)/((double)1000000)));
+      sprintf(intervalinfo,"%10.3fs",(((double)interval)/((double)1000000)));
     else if (interval>1000)
-      sprintf(intervalinfo,"\t%9.3fms",(((double)interval)/((double)1000)));
-    else sprintf(intervalinfo,"\t%9ldus",interval);
-    if (sock<0) strcpy(sockinfo,"\tdisconn");
-    else sprintf(sockinfo,"\ts%d",sock);
+      sprintf(intervalinfo,"%9.3fms",(((double)interval)/((double)1000)));
+    else sprintf(intervalinfo,"%9ldus",interval);
+    if (sock<0) strcpy(sockinfo,"disconn");
+    else sprintf(sockinfo,"#%-6d",sock);
     if (cl->active>0) idle="A";
-    if (tnum<0) strcpy(threadinfo,"no thread");
-    else sprintf(threadinfo,"%d/0x%lx",tnum,threads[tnum].u8st_threadid);
+    if (tnum<0) strcpy(threadinfo,"(idle)  ");
+    else sprintf(threadinfo,"(0x%lx)",threads[tnum].u8st_threadid);
     u8_printf
-      (out,"%4d\t%s%s%s%s%s\t%s\t%?s%/s\n",
-       cl->clientid,idle,state,intervalinfo,bufinfo,sockinfo,threadinfo,
-       cl->idstring,cl->status);}
+      (out,"%5d   %s%s   %s  %s %s %s %s %?s\n",
+       cl->clientid,idle,state,intervalinfo,sockinfo,
+       bufinfo,threadinfo,cl->idstring,cl->status);}
   u8_unlock_mutex(&(server->lock));
   return out->u8_outbuf;
 }
