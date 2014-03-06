@@ -1791,11 +1791,11 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
 }
 
 #define CLIENT_LIST_HEADS \
-  "#  (n) (state) (how long) #socket bytes/total (thread) @origin [status]\n"
+  "#  (n) (state) (how long) #socket  bytes/total (thread) @origin [status]\n"
 #define CLIENT_STATE_DOC \
   "# Connection states: (I)dle, (A)ctive, (R)eading, (W)riting, (X)ecuting, (Q)ueued, (L)istening\n"
 #define CLIENT_LIST_SEP \
-  "#  -------------------------------------------------------------------------------------------\n"
+  "#  --------------------------------------------------------------------------------------------\n"
 
 U8_EXPORT
 u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
@@ -1845,7 +1845,7 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
     else if (interval>1000)
       sprintf(intervalinfo,"%9.3fms",(((double)interval)/((double)1000)));
     else sprintf(intervalinfo,"%9ldus",interval);
-    if (sock<0) strcpy(sockinfo,"disconn");
+    if (sock<0) strcpy(sockinfo,"closed  ");
     else sprintf(sockinfo,"#%-6d",sock);
     if (cl->active>0) idle="A";
     if (tnum<0) strcpy(threadinfo,"(idle)  ");
