@@ -72,34 +72,33 @@ STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
 ALL=@TAGS@ libs @I18N@ tests @DOCS@
 
 update: buildmode
-	@echo Building `cat buildmode` configuration
-	make `cat buildmode`
+	@make `cat buildmode`
 normal:
-	make ${ALL}
+	@echo Building NORMAL configuration
+	@make ${ALL}
 debugging:
+	@echo Building DEBUGGING configuration
 	make XCFLAGS="@debugcflags@ $(XCFLAGS)" ${ALL}
 optimizing:
+	@echo Building OPTIMIZING configuration
 	make XCFLAGS="-O3" ${ALL}
 nitpicking:
+	@echo Building NITPICKING configuration
 	make XCFLAGS="-Wall" ${ALL}
 all: ${ALL}
 
 debug:
 	@if test $(BUILDMODE) != "debugging"; then echo debugging > buildmode; fi
-	@echo Building `cat buildmode` configuration
-	make `cat buildmode`
+	@make `cat buildmode`
 standard:
 	@if test $(BUILDMODE) != "normal"; then echo normal > buildmode; fi
-	@echo Building `cat buildmode` configuration
-	make `cat buildmode`
+	@make `cat buildmode`
 nitpick:
 	@if test $(BUILDMODE) != "nitpicking"; then echo nitpicking > buildmode; fi
-	@echo Building `cat buildmode` configuration
-	make `cat buildmode`
+	@make `cat buildmode`
 fast:
 	@if test $(BUILDMODE) != "optimizing"; then echo optimizing > buildmode; fi
-	@echo Building `cat buildmode` configuration
-	make `cat buildmode`
+	@make `cat buildmode`
 
 buildmode:
 	@if test -f buildmode; then       \
