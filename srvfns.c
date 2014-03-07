@@ -1703,7 +1703,7 @@ U8_EXPORT u8_server_stats u8_server_curstats
   (u8_server server,struct U8_SERVER_STATS *stats)
 {
   int i=0, lim;
-  struct U8_CLIENT **clients; long long cur, start=0;
+  struct U8_CLIENT **clients; long long cur;
   if (stats==NULL) stats=u8_alloc(struct U8_SERVER_STATS);
   memset(stats,0,sizeof(struct U8_SERVER_STATS));
   u8_lock_mutex(&(server->lock));

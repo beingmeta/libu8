@@ -401,7 +401,6 @@ U8_EXPORT
 */
 void u8_set_xtime_gmtoff(struct U8_XTIME *xt,int tzoff,int dstoff)
 {
-  int gmtoff=tzoff-dstoff;
   u8_init_xtime(xt,((xt->u8_tick)-tzoff),xt->u8_prec,
 		xt->u8_nsecs,tzoff,dstoff);
 }
