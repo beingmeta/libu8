@@ -1703,7 +1703,7 @@ U8_EXPORT u8_server_stats u8_server_curstats
   (u8_server server,struct U8_SERVER_STATS *stats)
 {
   int i=0, lim;
-  struct U8_CLIENT **clients; long long cur;
+  struct U8_CLIENT **clients; long long cur, start;
   if (stats==NULL) stats=u8_alloc(struct U8_SERVER_STATS);
   memset(stats,0,sizeof(struct U8_SERVER_STATS));
   u8_lock_mutex(&(server->lock));
@@ -1797,8 +1797,7 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
   struct U8_CLIENT **clients;
   struct U8_SERVER_THREAD *threads;
   struct pollfd *sockets;
-  long long cur, start=0;
-  int i=0, lim;
+  long long cur; int i=0, lim;
   u8_lock_mutex(&(server->lock));
   clients=server->clients; threads=server->thread_pool;
   sockets=server->sockets;
