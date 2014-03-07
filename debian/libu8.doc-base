@@ -1,0 +1,18 @@
+Document: libu8
+Title: libu8 Manual
+Author: Ken Haase <kh@beingmeta.com>
+Abstract: This provides documentation for Debian systems
+Section: unknown
+
+Format: debiandoc-sgml
+Files: /usr/share/doc/libu8/libu8*.sgml.gz
+
+Format: PDF
+Files: /usr/share/doc/libu8/refman.pdf.gz
+
+Format: text
+Files: /usr/share/doc/libu8/libu8.text.gz
+
+Format: HTML
+Index: /usr/share/doc/libu8/html/index.html
+Files: /usr/share/doc/libu8/html/*.html /usr/share/doc/libu8/html/*.png /usr/share/doc/libu8/html/*.js /usr/share/doc/libu8/html/*.css

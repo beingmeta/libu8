@@ -1,14 +1,25 @@
 Source: libu8
-Priority: optional
-Maintainer: Kenneth Benefiel Haase <kh@beingmeta.com>
-Build-Depends: debhelper (>= 9), autotools-dev, doxygen
-Standards-Version: 3.7.2
+Priority: extra
+Maintainer: Ken Haase <kh@beingmeta.com>
+Build-Depends: debhelper (>= 8.0.0), autotools-dev
+Standards-Version: 3.9.4
 Section: libs
+Homepage: http://www.libu8.org/
+#Vcs-Git: git://git.debian.org/collab-maint/libu8.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/libu8.git;a=summary
+
+Package: libu8-dev
+Section: libdevel
+Architecture: any
+Depends: libu8 (= ${binary:Version})
+Description: Portability and internationalization library
+ libu8 provides a compatability library for various OS functions
+  and especially for Unicode (UTF-8) text
 
 Package: libu8
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Internationalization, portability library
+Description: Portability and internationalization library
  libu8 provides a compatability library for various OS functions
-  and especially for Unicode 
+  and especially for Unicode (UTF-8) text
