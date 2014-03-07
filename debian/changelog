@@ -1,3 +1,10 @@
+libu8 (2.4.1-1) UNRELEASED; urgency=low
+
+  * Added loop functions to servers, status field to clients, fixed
+	various memory leaks
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Thu, 6 March 2014 19:51:25 -0500
+	
 libu8 (2.3.1-2) UNRELEASED; urgency=low
 
   * Switch to dpkg-source 3.0 (quilt) format
