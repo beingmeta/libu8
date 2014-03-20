@@ -183,6 +183,12 @@ AC_CHECK_SIZEOF(long,4)
 AC_CHECK_SIZEOF(long long,8)
 AC_CHECK_SIZEOF(void *,4)
 
+if test $ac_cv_sizeof_long -eq 4 && test -d ${prefix}/lib32; then
+  libdir=${prefix}/lib32;
+elif test $ac_cv_sizeof_long -eq 8 && test -d ${prefix}/lib64; then
+  libdir=${prefix}/lib64;
+fi
+
 AC_HEADER_STDC
 AC_HEADER_STAT
 
