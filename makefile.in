@@ -350,7 +350,7 @@ dist/rpms.done: dist/rpms.ready
 	     @rpm@ --addsign --define="_gpg_name $(GPGID)" \
 		$(RPMDIR)/libu8-@U8VERSION@*.src.rpm \
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; fi && \
-	createrepo $(RPMDIR) && \
+	createrepo -p -d $(RPMDIR) && \
 	touch dist/rpms.done;
 	ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
