@@ -304,9 +304,9 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 rpms: dist/rpms.done
 debian deb debs: dist/debs.done
 
-cleandist: 
+cleanrpms cleandist cleandeb rpmclean debclean: 
 	rm -rf dist/rpms.done dist/rpms.ready dist/debs.done dist/debs.ready
-	rm -f dist/*.deb dist/*.tar dist/*.gz dist/*.spec
+	rm -f dist/*.deb dist/*.tar dist/*.gz
 	find dist -name "*.rpm" | xargs -r rm
 	rm -rf staging/libu8*
 
@@ -355,7 +355,7 @@ dist/rpms.done: dist/rpms.ready
 	ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
 
-update-rpms:
+update-rpms: cleandist
 	rm -f dist/rpms.done dist/rpms.ready
 	make dist/rpms.done
 
