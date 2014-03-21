@@ -7,10 +7,10 @@ shared_default="yes"
 shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 CLEAN="rm -f"
-U8MAJOR="2"
-U8MINOR="4"
-U8RELEASE="1"
-U8VERSION="2.4.1"
+U8MAJOR=2
+U8MINOR=4
+U8RELEASE=1
+U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
 LD="ld"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
@@ -116,6 +116,11 @@ AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 AC_AIX
+
+AC_DEFINE(U8_VERSION,"$U8VERSION")
+AC_DEFINE_UNQUOTED(U8_MAJOR_VERSION,$U8MAJOR)
+AC_DEFINE_UNQUOTED(U8_MINOR_VERSION,$U8MINOR)
+AC_DEFINE_UNQUOTED(U8_RELEASE_VERSION,$U8RELEASE)
 
 AC_ARG_WITH(encodings_dir,--with-encodings-dir pathname,,with_encodings_dir=$prefix/share/libu8/encodings)
 AC_DEFINE_UNQUOTED(U8_ENCODINGS_DIR,"$with_encodings_dir")
@@ -393,7 +398,5 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT(makefile)
-
-
+AC_OUTPUT(makefile etc/version)
 

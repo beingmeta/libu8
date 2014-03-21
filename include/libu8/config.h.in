@@ -8,6 +8,12 @@
 #define LIBU8_CONFIG_H 1
 #define LIBU8_CONFIG_VERSION "$Id$"
 
+/* Define the libu8 version info (originates in configure.ac) */
+#undef U8_VERSION
+#undef U8_MAJOR_VERSION
+#undef U8_MINOR_VERSION
+#undef U8_RELEASE_VERSION
+
 /* Define if you don't have off_t */
 #undef off_t
 #undef gid_t

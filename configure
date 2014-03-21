@@ -2718,10 +2718,10 @@ shared_default="yes"
 shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 CLEAN="rm -f"
-U8MAJOR="2"
-U8MINOR="4"
-U8RELEASE="1"
-U8VERSION="2.4.1"
+U8MAJOR=2
+U8MINOR=4
+U8RELEASE=1
+U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
 LD="ld"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
@@ -4209,6 +4209,21 @@ else
   RANLIB="$ac_cv_prog_RANLIB"
 fi
 
+
+
+$as_echo "#define U8_VERSION \"\$U8VERSION\"" >>confdefs.h
+
+cat >>confdefs.h <<_ACEOF
+#define U8_MAJOR_VERSION $U8MAJOR
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define U8_MINOR_VERSION $U8MINOR
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define U8_RELEASE_VERSION $U8RELEASE
+_ACEOF
 
 
 
@@ -6895,7 +6910,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files makefile"
+ac_config_files="$ac_config_files makefile etc/version"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7591,6 +7606,7 @@ do
     "include/libu8/u8source.h") CONFIG_HEADERS="$CONFIG_HEADERS include/libu8/u8source.h" ;;
     "include/libu8/config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/libu8/config.h" ;;
     "makefile") CONFIG_FILES="$CONFIG_FILES makefile" ;;
+    "etc/version") CONFIG_FILES="$CONFIG_FILES etc/version" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -8176,7 +8192,5 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
-
-
 
 
