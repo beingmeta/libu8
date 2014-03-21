@@ -224,8 +224,8 @@ U8_EXPORT struct hostent *u8_gethostbyname(u8_string hname,int type)
 {
   char *name=u8_tolibc(hname);
   struct hostent *fetched, *copied;
-  char _buf[1024], *buf=_buf;
-  int bufsiz=0, herrno=0, retval;
+  char MAYBE_UNUSED _buf[1024], *buf=_buf;
+  int MAYBE_UNUSED bufsiz=0, herrno=0, retval;
 #if HAVE_GETHOSTBYNAME2_R
   struct hostent _fetched, *result; fetched=&_fetched;
   if (type>0)
@@ -319,8 +319,8 @@ U8_EXPORT char **u8_lookup_host
 {
   char *name=u8_tolibc(hname);
   struct hostent *fetched;
-  char _buf[1024], *buf=_buf, **addrs;
-  int bufsiz=0, herrno=0, retval, type=*typep;
+  char MAYBE_UNUSED _buf[1024], *buf=_buf, **addrs;
+  int MAYBE_UNUSED bufsiz=0, herrno=0, retval, type=*typep;
 #if HAVE_GETHOSTBYNAME2_R
   struct hostent _fetched, *result; fetched=&_fetched;
   if (type>=0)
