@@ -47,7 +47,7 @@ LIBU8_SOURCES=\
   digestfns.c cryptofns.c pathfns.c filefns.c fileio.c \
   libu8io.c xfiles.c convert.c filestring.c bytebuf.c \
   tests/latin1u8.c tests/xtimetest.c tests/u8recode.c tests/u8xrecode.c tests/echosrv.c
-COMMON_HEADERS= $(LIBU8_HEADERS) include/libu8/revision.h
+COMMON_HEADERS= $(LIBU8_HEADERS)
 
 LIBU8CORE_OBJECTS=libu8.o streamio.o printf.o  contour.o logging.o \
                   ctype.o exceptions.o stringfns.o bytebuf.o cityhash.o
@@ -206,10 +206,19 @@ syslog-shared: lib/libu8syslog.@shared_suffix@
 syslog-static: lib/libu8syslog.a
 
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
-	if test -f etc/revision.h; \
-	then cp etc/revision.h include/libu8/revision.h; \
-	else echo "#define LIBU8_REVISION \""`git describe`"\"" \
-		> include/libu8/revision.h; fi
+	@if test -f etc/revision.h; 					\
+	then cp etc/revision.h etc/use_revision.h; 			\
+	else echo "#define LIBU8_REVISION \""`git describe`"\"" 	\
+		> etc/use_revision.h; fi
+	@if test ! -f $@; then 						\
+	  mv etc/use_revision.h $@; 					\
+	elif diff etc/use_revision.h $@>/dev/null; then			\
+	  rm etc/use_revision.h; 					\
+	else 								\
+	  echo "Revision changed"; 					\
+	  mv $@ etc/old_revision.h; 					\
+	  mv etc/use_revision.h $@; 					\
+	fi
 lib/libu8.a: $(LIBU8_OBJECTS)
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
 lib/libu8.@U8VERSION@.dylib: $(LIBU8_OBJECTS)
