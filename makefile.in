@@ -140,7 +140,7 @@ dbginstall:
 
 # Make rules
 
-%.o: %.c ./fileinfo
+%.o: %.c ./fileinfo include/libu8/revision.h
 	$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo CC $@ $<
 tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a \
@@ -205,7 +205,7 @@ shared-libs: lib/libu8.@shared_suffix@ lib/libu8fns.@shared_suffix@ \
 syslog-shared: lib/libu8syslog.@shared_suffix@
 syslog-static: lib/libu8syslog.a
 
-include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile
 	@if test -f etc/revision.h; 					\
 	then cp etc/revision.h etc/use_revision.h; 			\
 	else echo "#define LIBU8_REVISION \""`git describe`"\"" 	\
