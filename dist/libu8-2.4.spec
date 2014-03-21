@@ -6,7 +6,7 @@ Summary:        utility/compatability for Unicode and other functions
 Group:          System Environment/Libraries
 License:        GNU LGPL
 URL:            http://www.beingmeta.com/
-Source0:        libu8-2.4.1.tar.gz
+Source0:        libu8-2.4.3.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  openssl-devel doxygen
