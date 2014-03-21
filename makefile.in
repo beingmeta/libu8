@@ -208,7 +208,7 @@ syslog-static: lib/libu8syslog.a
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	if test -f etc/revision.h; \
 	then cp etc/revision.h include/libu8/revision.h; \
-	else echo "#define LIBU8_SVNREV \""`git describe`"\"" \
+	else echo "#define LIBU8_REVISION \""`git describe`"\"" \
 		> include/libu8/revision.h; fi
 lib/libu8.a: $(LIBU8_OBJECTS)
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)

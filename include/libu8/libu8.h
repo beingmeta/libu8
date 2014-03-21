@@ -379,7 +379,8 @@ U8_EXPORT void u8_initialize_u8stdio(void) U8_LIBINIT_FN;
 U8_EXPORT void u8_initialize_u8syslog(void) U8_LIBINIT_FN;
 
 /* The current subversion revision */
-U8_EXPORT u8_string u8_svnrev;
+U8_EXPORT u8_string u8_revision;
+U8_EXPORT u8_string u8_getrevision(void);
 
 /* GETTEXT */
 

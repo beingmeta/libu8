@@ -70,7 +70,7 @@ U8_EXPORT void u8_init_cityhash_c(void);
 u8_condition u8_MallocFailed=_("Malloc failed");
 u8_condition u8_NotImplemented=_("Function not available");
 
-u8_string u8_svnrev=LIBU8_SVNREV;
+u8_string u8_revision=LIBU8_REVISION;
 
 static int u8_initialized=0;
 
@@ -292,6 +292,17 @@ u8_utime u8_microtime()
 #else
   return ((int)time(NULL))*1000000;
 #endif
+}
+
+/* Version information */
+
+U8_EXPORT
+/** Returns the current libu8 version identifier
+    @returns a const utf8 string (converted from the value) or NULL
+**/
+u8_string u8_getrevision()
+{
+  return LIBU8_REVISION;
 }
 
 /* Environment access */
