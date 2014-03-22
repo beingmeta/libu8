@@ -9,13 +9,14 @@ SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 CLEAN="rm -f"
 U8MAJOR=2
 U8MINOR=4
-U8RELEASE=3
+U8RELEASE=5
 U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
 LD="ld"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
 INSTALLI18N=""
 SUDO=""
+GITDESCRIBE=""
 TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
@@ -89,6 +90,7 @@ AC_SUBST(definefileinfo)
 AC_SUBST(versionsh)
 AC_SUBST(I18N)
 AC_SUBST(INSTALLI18N)
+AC_SUBST(GITDESCRIBE)
 AC_SUBST(doxygen)
 AC_SUBST(DOCS)
 AC_SUBST(INSTALLDOCS)
@@ -147,6 +149,7 @@ else
   SHARED_LIB=
 fi
 
+AC_CHECK_PROGS(git,"git","na")
 AC_CHECK_PROGS(etags,"etags","na")
 AC_CHECK_PROGS(doxygen,"doxygen","na")
 AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","rpm","na")
@@ -154,6 +157,11 @@ AC_CHECK_PROGS(rpm,"lsb-rpm","rpm","na")
 
 if test $etags = "na"; then
    TAGS=""
+fi
+if test $git = "na"; then
+   GITDESCRIBE="false"
+else
+   GITDESCRIBE="$git describe"
 fi
 if test "x$doxygen" = "xna"; then
    DOCS=""

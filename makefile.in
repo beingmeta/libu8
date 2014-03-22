@@ -217,10 +217,14 @@ syslog-shared: lib/libu8syslog.@shared_suffix@
 syslog-static: lib/libu8syslog.a
 
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile
-	@if test -f etc/revision.h; 					\
-	then cp etc/revision.h etc/use_revision.h; 			\
-	else echo "#define LIBU8_REVISION \""`git describe`"\"" 	\
-		> etc/use_revision.h; fi
+	@if test -f etc/revision.h; then				\
+	    cp etc/revision.h etc/use_revision.h; 			\
+	elif $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
+		> etc/use_revision.h; 					\
+	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
+		> etc/use_revision.h; 					\
+	fi
 	@if test ! -f $@; then 						\
 	  mv etc/use_revision.h $@; 					\
 	elif diff etc/use_revision.h $@>/dev/null; then			\
@@ -301,7 +305,7 @@ clean:
 tidy: 
 	$(CLEAN) *~ tests/*~ include/libu8/*~
 distclean: clean
-	$(CLEAN) makefile include/libu8/config.h
+	$(CLEAN) makefile include/libu8/config.h include/libu8/revision.h
 	$(CLEAN) config.log config.status config.cache
 
 # Internationalization stuff
