@@ -155,12 +155,14 @@ lib/%@suffix@.a:
 	$(MKSTATIC) $@ $^
 	@echo MKSTATIC $@
 lib/%@suffix@.so:
-	$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -Llib -o $@ $^ -lu8 $(LIBS)
+	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -Llib -o $@ $^ -lu8 $(LIBS)
+	@ln -sf $(@F) $(@D)/$(@F).@U8MAJOR@
 	@echo MKSO $@
 lib/%@suffix@.so.@U8MAJOR@: lib/libu8@suffix@.so
 	@ln -sf $(@F) $@
 lib/%@suffix@.dylib:
 	@$(MACLIBTOOL) -install_name $(*F).@U8MAJOR@.dylib -o $@ $^
+	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 	@$(MSG) MACLIBTOOL $@
 lib/%@suffix@.@U8MAJOR@.dylib:
 	@ln -sf $(*F).dylib $@
