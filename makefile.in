@@ -174,7 +174,7 @@ $(LIBINSTALLDIR)/%.a: lib/%.a
 
 $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: lib/%@suffix@.so
 	@echo Installing $@
-	@unset LD_LIBRARY_PATH; $(INSTALL) -d $(LIBINSTALLDIR)
+	@unset LD_LIBRARY_PATH; $(INSTALL) -d $(@D)
 	@unset LD_LIBRARY_PATH; $(INSTALL) $< $@
 $(LIBINSTALLDIR)/%@suffix@.so.@U8MAJOR@: \
 	$(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
