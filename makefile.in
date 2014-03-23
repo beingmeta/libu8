@@ -152,20 +152,16 @@ tests/dynamic/%: tests/%.c
 	@echo CC_DYNAMIC_EXE $@ $<
 
 lib/%@suffix@.a:
-	$(MKSTATIC) $@ $^
 	@echo MKSTATIC $@
+	$(MKSTATIC) $@ $^
 lib/%@suffix@.so:
+	@echo MKSO $@
 	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -Llib -o $@ $^ -lu8 $(LIBS)
 	@ln -sf $(@F) $(@D)/$(@F).@U8MAJOR@
-	@echo MKSO $@
-lib/%@suffix@.so.@U8MAJOR@: lib/libu8@suffix@.so
-	@ln -sf $(@F) $@
 lib/%@suffix@.dylib:
+	@echo MACLIBTOOL $@
 	@$(MACLIBTOOL) -install_name $(*F).@U8MAJOR@.dylib -o $@ $^
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
-	@$(MSG) MACLIBTOOL $@
-lib/%@suffix@.@U8MAJOR@.dylib:
-	@ln -sf $(*F).dylib $@
 
 $(LIBINSTALLDIR)/%.a: lib/%.a
 	@echo Installing $@
