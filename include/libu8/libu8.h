@@ -398,7 +398,7 @@ U8_EXPORT
 /** Returns the current libu8 major version number
     @returns an int
 **/
-int u8_getmajor(void);
+int u8_getmajorversion(void);
 
 /* GETTEXT */
 

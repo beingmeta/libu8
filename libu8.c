@@ -322,7 +322,7 @@ U8_EXPORT
 /** Returns the current libu8 version string
     @returns a const utf8 string (converted from the value) or NULL
 **/
-int u8_getmajor()
+int u8_getmajorversion()
 {
   return U8_MAJOR_VERSION;
 }
