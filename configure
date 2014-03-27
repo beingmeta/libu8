@@ -4215,8 +4215,6 @@ fi
 
 
 
-echo U8VERSION is $U8VERSION
-
 cat >>confdefs.h <<_ACEOF
 #define U8_VERSION "$U8VERSION"
 _ACEOF
