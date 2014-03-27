@@ -71,6 +71,10 @@ u8_condition u8_MallocFailed=_("Malloc failed");
 u8_condition u8_NotImplemented=_("Function not available");
 
 u8_string u8_revision=LIBU8_REVISION;
+u8_string u8_version=U8_VERSION;
+int u8_major_version=U8_MAJOR_VERSION;
+int u8_minor_version=U8_MINOR_VERSION;
+int u8_release_version=U8_RELEASE_VERSION;
 
 static int u8_initialized=0;
 
@@ -297,12 +301,30 @@ u8_utime u8_microtime()
 /* Version information */
 
 U8_EXPORT
-/** Returns the current libu8 version identifier
+/** Returns the current libu8 revision identifier
     @returns a const utf8 string (converted from the value) or NULL
 **/
 u8_string u8_getrevision()
 {
   return LIBU8_REVISION;
+}
+
+U8_EXPORT
+/** Returns the current libu8 version string
+    @returns a const utf8 string (converted from the value) or NULL
+**/
+u8_string u8_getversion()
+{
+  return U8_VERSION;
+}
+
+U8_EXPORT
+/** Returns the current libu8 version string
+    @returns a const utf8 string (converted from the value) or NULL
+**/
+int u8_getmajor()
+{
+  return U8_MAJOR_VERSION;
 }
 
 /* Environment access */

@@ -4215,7 +4215,11 @@ fi
 
 
 
-$as_echo "#define U8_VERSION \"\$U8VERSION\"" >>confdefs.h
+echo U8VERSION is $U8VERSION
+
+cat >>confdefs.h <<_ACEOF
+#define U8_VERSION "$U8VERSION"
+_ACEOF
 
 cat >>confdefs.h <<_ACEOF
 #define U8_MAJOR_VERSION $U8MAJOR

@@ -379,8 +379,26 @@ U8_EXPORT void u8_initialize_u8stdio(void) U8_LIBINIT_FN;
 U8_EXPORT void u8_initialize_u8syslog(void) U8_LIBINIT_FN;
 
 /* The current subversion revision */
-U8_EXPORT u8_string u8_revision;
-U8_EXPORT u8_string u8_getrevision(void);
+U8_EXPORT u8_string u8_revision, u8_version;
+U8_EXPORT int u8_major, u8_minor, u8_release;
+
+U8_EXPORT
+/** Returns the current libu8 revision string (derived from the GIT branch)
+    @returns a utf8 string
+**/
+u8_string u8_getrevision(void);
+
+U8_EXPORT
+/** Returns the current libu8 version string (major.minor.release)
+    @returns a utf8 string
+**/
+u8_string u8_getversion(void);
+
+U8_EXPORT
+/** Returns the current libu8 major version number
+    @returns an int
+**/
+int u8_getmajor(void);
 
 /* GETTEXT */
 

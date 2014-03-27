@@ -6,7 +6,6 @@
 
 #ifndef LIBU8_CONFIG_H
 #define LIBU8_CONFIG_H 1
-#define LIBU8_CONFIG_VERSION "$Id$"
 
 /* Define the libu8 version info (originates in configure.ac) */
 #undef U8_VERSION
