@@ -158,6 +158,7 @@ AC_CHECK_PROGS(etags,"etags","na")
 AC_CHECK_PROGS(doxygen,"doxygen","na")
 AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","rpm","na")
 AC_CHECK_PROGS(rpm,"lsb-rpm","rpm","na")
+AC_CHECK_PROG(CREATEREPO,createrepo,,echo No createrepo for )
 
 if test $etags = "na"; then
    TAGS=""
