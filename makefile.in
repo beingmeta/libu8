@@ -344,9 +344,9 @@ staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
 	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
 	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/libu8-@U8VERSION@/etc/use_revision.h;         \
+		> staging/libu8-@U8VERSION@/etc/revision.h;             \
 	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/libu8-@U8VERSION@/etc/use_revision.h;         \
+		> staging/libu8-@U8VERSION@/etc/revision.h;             \
 	fi
 
 staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
@@ -356,9 +356,9 @@ staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
 	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
 	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/libu8-@U8VERSION@/etc/use_revision.h;         \
+		> staging/libu8-@U8VERSION@/etc/revision.h;             \
 	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/libu8-@U8VERSION@/etc/use_revision.h;         \
+		> staging/libu8-@U8VERSION@/etc/revision.h;             \
 	fi
 
 staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
