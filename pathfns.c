@@ -112,9 +112,14 @@ U8_EXPORT u8_string u8_mkpath(u8_string dir,u8_string base)
       if (lastslash) {
 	*lastslash='\0'; dirlen=(lastslash-result);
 	base=base+3;}
-      else {strcpy(result,base); return result;}}
+      else {
+	result[0]='\0'; dirlen=0;
+	base=base+3;}}
     else break;}
-  result[dirlen]='/'; strcpy(result+dirlen+1,base);
+  if (dirlen>0) {
+    result[dirlen]='/';
+    strcpy(result+dirlen+1,base);}
+  else strcpy(result,base);
   return result;
 }
 
