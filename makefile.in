@@ -344,9 +344,9 @@ staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
 	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
 	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/libu8-@U8VERSION@/include/libu8/revision.h    \
+		> staging/libu8-@U8VERSION@/etc/use_revision.h;         \
 	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/libu8-@U8VERSION@/include/libu8/revision.h    \
+		> staging/libu8-@U8VERSION@/etc/use_revision.h;         \
 	fi
 
 staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
@@ -356,9 +356,9 @@ staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
 	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
 	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/libu8-@U8VERSION@/include/libu8/revision.h    \
+		> staging/libu8-@U8VERSION@/etc/use_revision.h;         \
 	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/libu8-@U8VERSION@/include/libu8/revision.h    \
+		> staging/libu8-@U8VERSION@/etc/use_revision.h;         \
 	fi
 
 staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
@@ -671,7 +671,7 @@ $(LIBU8IO_OBJECTS) $(LIBU8STDIO_OBJECTS) $(LIBU8SYSLOG_OBJECTS): buildmode
 # dependencies
 
 streamio.o printf.o logging.o exceptions.o chardata.o stringfns.o convert.o libu8.o libu8io.o: \
-  $(COMMON_HEADERS)
+  $(COMMON_HEADERS) include/libu8/revision.h
 ctype.o: $(COMMON_HEADERS) entities.h
 cityhash.o: $(COMMON_HEADERS) include/libu8/cityhash.h
 timefns.o: $(COMMON_HEADERS) include/libu8/u8timefns.h
