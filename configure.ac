@@ -11,6 +11,8 @@ U8MAJOR=2
 U8MINOR=4
 U8RELEASE=5
 U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
+RPMVERSION=7
+DEBVERSION=3
 LD="ld"
 MKSTATIC="\$(LD) -r -o"
 I18N=""
@@ -72,6 +74,8 @@ AC_SUBST(U8MAJOR)
 AC_SUBST(U8MINOR)
 AC_SUBST(U8RELEASE)
 AC_SUBST(U8VERSION)
+AC_SUBST(RPMVERSION)
+AC_SUBST(DEBVERSION)
 AC_SUBST(MKSTATIC)
 AC_SUBST(SUDO)
 AC_SUBST(debugcflags)
@@ -154,6 +158,7 @@ AC_CHECK_PROGS(etags,"etags","na")
 AC_CHECK_PROGS(doxygen,"doxygen","na")
 AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","rpm","na")
 AC_CHECK_PROGS(rpm,"lsb-rpm","rpm","na")
+AC_CHECK_PROG(CREATEREPO,createrepo,,echo No createrepo for )
 
 if test $etags = "na"; then
    TAGS=""
@@ -406,5 +411,5 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT(makefile etc/version)
+AC_OUTPUT(makefile etc/version dist/libu8-2.4.spec)
 
