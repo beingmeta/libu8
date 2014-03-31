@@ -342,13 +342,25 @@ staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	git archive --prefix=libu8-@U8VERSION@/ \
 	            -o staging/libu8-@U8VERSION@.tar HEAD
 	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
-	echo "#define LIBU8_SVNREV \""`git describe`"\"" > staging/libu8-@U8VERSION@/include/libu8/revision.h
+	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
+		> staging/libu8-@U8VERSION@/include/libu8/revision.h    \
+	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
+		> staging/libu8-@U8VERSION@/include/libu8/revision.h    \
+	fi
+
 staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	rm -rf staging/libu8_@U8VERSION@
 	git archive --prefix=libu8_@U8VERSION@/ \
 	            -o staging/libu8_@U8VERSION@.tar HEAD
 	cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
-	echo "#define LIBU8_SVNREV \""`git describe`"\"" > staging/libu8_@U8VERSION@/include/libu8/revision.h
+	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
+		> staging/libu8-@U8VERSION@/include/libu8/revision.h    \
+	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
+		> staging/libu8-@U8VERSION@/include/libu8/revision.h    \
+	fi
+
 staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	make staging/libu8-@U8VERSION@
 	tar -czvf $@ -C staging libu8-@U8VERSION@
