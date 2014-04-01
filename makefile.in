@@ -142,7 +142,7 @@ dbginstall:
 # Make rules
 
 %.o: %.c ./fileinfo include/libu8/revision.h
-	$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
+	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo CC $@ $<
 tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a \
          lib/libu8stdio.a lib/libu8core.a
@@ -154,7 +154,7 @@ tests/dynamic/%: tests/%.c
 
 lib/%@suffix@.a:
 	@echo MKSTATIC $@
-	$(MKSTATIC) $@ $^
+	@$(MKSTATIC) $@ $^
 lib/%@suffix@.so:
 	@echo MKSO $@
 	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -Llib -o $@ $^ -lu8 $(LIBS)
@@ -282,7 +282,8 @@ lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
 docs: docs/doxygen.done
 
 docs/doxygen.done: $(LIBU8_HEADERS)
-	$(DOXYGEN) docs/doxygen.cfg && touch docs/doxygen.done
+	@$(DOXYGEN) docs/doxygen.cfg && touch docs/doxygen.done
+	@echo DOXYGEN headers
 
 clean: 
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* 
