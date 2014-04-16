@@ -412,7 +412,7 @@ dist/rpms.zip: dist/rpms.done
 # Rules for debian building
 
 dist/debs.done: staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
-	(cd staging/libu8_@U8VERSION@; dpkg-buildpackage -k $(GPGID:-default) -F -rfakeroot) && \
+	(cd staging/libu8_@U8VERSION@; dpkg-buildpackage -k$(GPGID) -F -rfakeroot) && \
 	(cd staging; mv libu8_@U8VERSION@*.deb libu8_@U8VERSION@*.dsc \
 			libu8_@U8VERSION@*.gz libu8_@U8VERSION@*.changes \
 			../dist) && \
