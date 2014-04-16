@@ -1,3 +1,9 @@
+libu8 (2.4.5-2) testing; urgency=low
+
+  * Changed release distribution
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Thu, 6 March 2014 19:51:25 -0500
+	
 libu8 (2.4.5-1) UNRELEASED; urgency=low
 
   * Updated release

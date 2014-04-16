@@ -416,7 +416,7 @@ dist/debs.done: staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
 	(cd staging; mv libu8_@U8VERSION@*.deb libu8_@U8VERSION@*.dsc \
 			libu8_@U8VERSION@*.gz libu8_@U8VERSION@*.changes \
 			../dist) && \
-	touch dist/debs.done; rm -rf staging/libu8_@U8VERSION@;
+	touch dist/debs.done
 update-repo: dist/debs.done
 	deb-s3 upload --bucket=repo.beingmeta.com \
 		      --component=$(COMPONENT) \
