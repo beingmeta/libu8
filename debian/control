@@ -13,16 +13,23 @@ Section: libdevel
 Architecture: any
 Depends: libu8 (= ${binary:Version})
 Description: <insert up to 60 chars description>
-  Development package for libu8 which provides utility functions
+  Development
   of various sorts, especially for dealing with UTF-8 text, but
   also common layers to libraries for handling times, encryption,
   pathnames, network functions, etc.
+
+Package: libu8-encodings
+Section: libs
+Architecture: any
+Depends: libu8 (= ${binary:Version})
+Description:
+  Additional character encodings for libu8
 
 Package: libu8
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: <insert up to 60 chars description>
+Description:
  Provides utility functions of various sorts, especially for
  dealing with UTF-8 text, but also common layers to libraries
  for handling times, encryption, pathnames, network functions, etc.
