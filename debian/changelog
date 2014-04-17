@@ -1,5 +1,51 @@
-libu8 (2.4.5-1) unstable; urgency=low
+libu8 (2.4.5-2) unstable; urgency=low
 
   * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
 
  -- Ken Haase <kh@beingmeta.com>  Thu, 17 Apr 2014 08:27:52 -0400
+libu8 (2.4.5-1) UNRELEASED; urgency=low
+
+  * Updated release
+  Various cleanups, especially configure
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Thu, 6 March 2014 19:51:25 -0500
+	
+libu8 (2.4.1-1) UNRELEASED; urgency=low
+
+  * Updated release
+  Added loop functions to servers, status field to clients, fixed various memory leaks
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Thu, 6 March 2014 19:51:25 -0500
+	
+libu8 (2.3.1-2) UNRELEASED; urgency=low
+
+  * Switch to dpkg-source 3.0 (quilt) format
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Tue, 18 Feb 2014 16:25:25 -0500
+
+libu8 (2.3.1-1) unstable; urgency=low
+
+  * Updated release 
+    Reorganized headers
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Fri, 26 Apr 2013 15:32:36 -0400
+    
+libu8 (2.2.7-1) unstable; urgency=low
+
+  * Updated release 
+    Switched to tripartite version numbers
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Fri, 26 Apr 2013 15:32:36 -0400
+    
+libu8 (2.2.0-1) unstable; urgency=low
+
+  * Updated release 
+    Includes support for more aysnchronous servers
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Tue,  7 Sep 2012 19:22:18 -0400
+
+libu8 (2.0.0-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Kenneth Benefiel Haase <kh@beingmeta.com>  Tue,  3 Apr 2007 21:00:35 -0400
