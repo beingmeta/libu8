@@ -8,4 +8,4 @@
 	dh $@  --with autotools-dev
 
 override_dh_auto_configure:
-	dh_auto_configure -- --without-sudo
+	dh_auto_configure -- --without-sudo --libdir=$(DESTDIR)/usr/lib
