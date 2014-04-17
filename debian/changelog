@@ -1,0 +1,5 @@
+libu8 (2.4.5-1) unstable; urgency=low
+
+  * Initial release (Closes: #nnnn)  <nnnn is the bug number of your ITP>
+
+ -- Ken Haase <kh@beingmeta.com>  Thu, 17 Apr 2014 08:27:52 -0400
