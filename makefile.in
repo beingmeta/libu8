@@ -166,37 +166,37 @@ lib/%@suffix@.dylib:
 
 $(LIBINSTALLDIR)/%.a: lib/%.a
 	@echo Installing $@
-	@unset LD_LIBRARY_PATH; $(INSTALL) -d $(LIBINSTALLDIR)
-	@unset LD_LIBRARY_PATH; $(INSTALL) $< $(LIBINSTALLDIR)
+	@$(INSTALL) -d $(LIBINSTALLDIR)
+	@$(INSTALL) $< $(LIBINSTALLDIR)
 
 $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: lib/%@suffix@.so
 	@echo Installing $@
-	@unset LD_LIBRARY_PATH; $(INSTALL) -d $(@D)
-	@unset LD_LIBRARY_PATH; $(INSTALL) $< $@
+	@$(INSTALL) -d $(@D)
+	@$(INSTALL) $< $@
 $(LIBINSTALLDIR)/%@suffix@.so.@U8MAJOR@: \
 	$(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 	@echo Linking $< to $@
-	@unset LD_LIBRARY_PATH; @SUDO@ln -sf $(shell basename $<) $@
+	@@SUDO@ln -sf $(shell basename $<) $@
 $(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 	@echo Linking to $@
-	@unset LD_LIBRARY_PATH; @SUDO@ln -sf $(shell basename $<) $@
+	@@SUDO@ln -sf $(shell basename $<) $@
 
 $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: lib/%@suffix@.dylib
 	@echo Installing $@
-	@unset LD_LIBRARY_PATH; $(INSTALL) -d $(LIBINSTALLDIR)
-	@unset LD_LIBRARY_PATH; $(INSTALL) $< $@
+	@$(INSTALL) -d $(LIBINSTALLDIR)
+	@$(INSTALL) $< $@
 $(LIBINSTALLDIR)/%@suffix@.@U8MAJOR@.dylib: \
 	$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
 	@echo Linking $< to $@
-	@unset LD_LIBRARY_PATH; @SUDO@ln -sf $(shell basename $<) $@
+	@@SUDO@ln -sf $(shell basename $<) $@
 $(LIBINSTALLDIR)/%@suffix@.dylib: $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
 	@echo Linking $< to $@
-	@unset LD_LIBRARY_PATH; @SUDO@ln -sf $(shell basename $<) $@
+	@@SUDO@ln -sf $(shell basename $<) $@
 
 $(LIBINSTALLDIR)/%@suffix@.dylib: \
 		$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
 	@echo Linking to $@
-	@unset LD_LIBRARY_PATH; @SUDO@ln -sf $(shell basename $<) $@
+	@@SUDO@ln -sf $(shell basename $<) $@
 
 test: @test_shared@ @test_static@
 test-shared: $(DYTESTBIN)
@@ -435,7 +435,7 @@ install-libs: @install_static@ @install_shared@
 
 install-headers: $(DESTDIR)@prefix@/include/libu8
 	@echo Installing headers in $(DESTDIR)@prefix@/include/libu8
-	@unset LD_LIBRARY_PATH; $(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
+	@$(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
 $(DESTDIR)@prefix@/include/libu8:
 	$(INSTALL) -d $(DESTDIR)@prefix@/include/libu8
 
@@ -569,9 +569,8 @@ MACINTOSH_ALIASES=MACROMAN CSMACINTOSH MAC
 
 install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
 	@echo Installing encodings in $(ENCDIR)
-	@unset LD_LIBRARY_PATH; $(INSTALL) $(ENCODINGS) $(ENCDIR)
-	@unset LD_LIBRARY_PATH; \
-        for x in $(CP1125_ALIASES); do \
+	@$(INSTALL) $(ENCODINGS) $(ENCDIR)
+	@for x in $(CP1125_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
 		then @SUDO@ln -sf CP1125 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1250_ALIASES); do \
