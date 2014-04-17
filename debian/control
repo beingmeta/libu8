@@ -12,8 +12,8 @@ Package: libu8-dev
 Section: libdevel
 Architecture: any
 Depends: libu8 (= ${binary:Version})
-Description: <insert up to 60 chars description>
-  Development
+Description: Dev package for libu8 compatability and i18n library
+  Development package for libu8, which provides utility functions
   of various sorts, especially for dealing with UTF-8 text, but
   also common layers to libraries for handling times, encryption,
   pathnames, network functions, etc.
