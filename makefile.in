@@ -411,24 +411,14 @@ dist/rpms.zip: dist/rpms.done
 
 # Rules for debian building
 
-dist/debs.built: staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
+dist/debs.done: staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
 	(cd staging/libu8_@U8VERSION@; \
-	 dpkg-buildpackage -F -uc -us -petc/dontsign -rfakeroot) && \
+	 dpkg-buildpackage -F -k${GPGID} -rfakeroot) && \
 	(cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
 	(cd staging; mv libu8*_@U8VERSION@*.deb libu8_@U8VERSION@*.dsc \
 			libu8_@U8VERSION@*.changes \
 			../dist) && \
-	touch dist/debs.built
-dist/debs.signed: dist/debs.built
-	(dpkg-sig -k ${GPGID} --sign builder dist/*.deb) && \
-	touch dist/debs.signed
-
-dist/debs.done: dist/debs.built
-	if test "x${GPGID}" != "x"; then 	\
-	    make dist/debs.signed && 	\
-	    touch dist/debs.done; 	\
-	else touch dist/debs.done; 	\
-	fi
+	touch dist/debs.done
 
 update-repo: dist/debs.signed
 	deb-s3 upload --bucket=repo.beingmeta.com \
