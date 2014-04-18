@@ -144,7 +144,10 @@ elif test $with_arch = "allppc"; then
 else archflags=$with_arch
 fi
 
-AC_ARG_ENABLE(shared,--en[able]-shared Build with/without shared libraries,,enable_shared=$shared_default)
+AC_ARG_ENABLE(maintainer-mode,--en[dis]able-maintainer-mode doesn't do anything)
+AC_ARG_ENABLE(dependency-tracking,--en[dis]able-dependency-tracking doesn't do anything)
+
+AC_ARG_ENABLE(shared,--en[dis]able-shared Build with/without shared libraries,,enable_shared=$shared_default)
 if test $target = "i686-pc-mingw32"; then
   CFLAGS="-DU8_DLL=1 $CFLAGS"
 elif test $enable_shared = "yes"; then
