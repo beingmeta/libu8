@@ -420,6 +420,9 @@ dist/debs.done: staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
 			../dist) && \
 	touch dist/debs.done
 
+install-debian install-debs: dist/debs.done
+	@SUDO@dpkg -i dist/libu8*_@U8VERSION@*.deb
+
 update-repo: dist/debs.signed
 	deb-s3 upload --bucket=repo.beingmeta.com \
 		      --component=$(COMPONENT) \
