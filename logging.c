@@ -59,19 +59,36 @@ u8_string u8_logindent=(u8_string)NULL;
 U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent);
 
 #if HAVE_THREAD_STORAGE_CLASS
-static u8_logfn __thread thread_logfn=NULL;
-U8_EXPORT void u8_bind_logfn(u8_logfn f){thread_logfn=f;}
-U8_EXPORT u8_logfn u8_thread_logfn(){return thread_logfn;}
+static u8_tlogfn __thread thread_logfn=NULL;
+static void __thread *thread_logdata=NULL;
+U8_EXPORT void u8_bind_logfn(u8_tlogfn f,void *data){
+  if ((thread_logfn)&&(thread_logdata)) {
+    thread_logfn(thread_logdata,-1,NULL,(u8_string)NULL);}
+  thread_logfn=f; thread_logdata=data;}
+U8_EXPORT u8_tlogfn u8_thread_logfn(){return thread_logfn;}
+U8_EXPORT void *u8_thread_logdata(){return thread_logdata;}
 #elif U8_THREADS_ENABLED
 static u8_tld_key logfn_threadkey;
-#define thread_logfn ((u8_logfn)((u8_tld_get(logfn_threadkey))||NULL))
-U8_EXPORT void u8_bind_logfn(u8_logfn f){
-  u8_tld_set(logfn_threadkey,f);}
-U8_EXPORT u8_logfn u8_thread_logfn(){return u8_tld_get(logfn_threadkey);}
+static u8_tld_key logdata_threadkey;
+#define thread_logfn ((u8_tlogfn)((u8_tld_get(logfn_threadkey))||NULL))
+#define thread_logdata ((void*)((u8_tld_get(logdata_threadkey))||NULL))
+U8_EXPORT void u8_bind_logfn(u8_logfn f,void *data){
+  void *data=((void*)((u8_tld_get(logdata_threadkey))||NULL));
+  u8_tlogfn cur=((u8_tlogfn)((u8_tld_get(logfn_threadkey))||NULL));
+  if ((cur)&&(data)) cur(data,-1,NULL,NULL);
+  u8_tld_set(logfn_threadkey,f);
+  u8_tld_set(logdata_threadkey,data);}
+U8_EXPORT u8_tlogfn u8_thread_logfn(){return u8_tld_get(logfn_threadkey);}
+U8_EXPORT void *u8_thread_logdata(){return u8_tld_get(logdata_threadkey);}
 #else
-static u8_logfn thread_logfn=NULL;
-U8_EXPORT void u8_bind_logfn(u8_logfn f){thread_logfn=f;}
-U8_EXPORT u8_logfn u8_thread_logfn(){return thread_logfn;}
+static u8_tlogfn thread_logfn=NULL;
+static void *thread_logdata=NULL;
+U8_EXPORT void u8_bind_logfn(u8_tlogfn f,void *data){
+  if ((thread_logfn)&&(thread_logdata)) {
+    thread_logfn(thread_logdata,-1,NULL,NULL);}
+  thread_logfn=f;
+  thread_logdata=data;}
+U8_EXPORT u8_tlogfn u8_thread_logfn(){return thread_logfn;}
 #endif
 
 U8_EXPORT void u8_set_logixes(u8_string pre, u8_string post)
@@ -140,12 +157,13 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
 
 U8_EXPORT int u8_logger(int loglevel,u8_condition c,u8_string msg)
 {
-  u8_logfn tlogfn=u8_thread_logfn();
+  u8_tlogfn tlogfn=u8_thread_logfn();
+  void *tlogdata=u8_thread_logdata();
   if ((tlogfn)&&(logfn)) {
-    tlogfn(loglevel,c,msg);
+    tlogfn(tlogdata,loglevel,c,msg);
     return logfn(loglevel,c,msg);}
   else if (logfn) return logfn(loglevel,c,msg);
-  else if (tlogfn) return tlogfn(loglevel,c,msg);
+  else if (tlogfn) return tlogfn(tlogdata,loglevel,c,msg);
   else return u8_default_logger(loglevel,c,msg);
 }
 

@@ -95,9 +95,10 @@ U8_EXPORT int u8_logging_initialized;
 U8_EXPORT u8_string u8_logprefix, u8_logsuffix, u8_logindent;
 
 typedef int (*u8_logfn)(int loglevel,u8_condition condition,u8_string message);
+typedef int (*u8_tlogfn)(void *data,int loglevel,u8_condition condition,u8_string message);
 
-U8_EXPORT void u8_bind_logfn(u8_logfn f);
-U8_EXPORT u8_logfn u8_thread_logfn(void);
+U8_EXPORT void u8_bind_logfn(u8_tlogfn f,void *data);
+U8_EXPORT u8_tlogfn u8_thread_logfn(void);
 
 /** Possibly generates a log message for an (optional) condition.
      Whether and where this produces output depends on how the
