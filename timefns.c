@@ -908,7 +908,7 @@ static u8_string time_printf_handler
     struct tm tmp; copy_xt2tm(&xt,&tmp);
     if (xt.u8_tzoff==0)
       strftime(buf,bufsz,"%d%b%Y@%H:%M:%SZ",&tmp);
-    else strftime(buf,bufsz,"%d%b%Y@%H:%M:%S%z",&tmp);
+    else strftime(buf,bufsz,"%d%b%Y@%H:%M:%S",&tmp);
     return buf;}
   else {
     /* With no flags, just output the time. */
