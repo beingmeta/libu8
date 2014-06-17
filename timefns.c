@@ -906,7 +906,9 @@ static u8_string time_printf_handler
   else if (strchr(cmd,'l')) {
     /* With 'l' output the date together with the time. */
     struct tm tmp; copy_xt2tm(&xt,&tmp);
-    strftime(buf,bufsz,"%d%b%Y@%H:%M:%S%z",&tmp);
+    if (xt.u8_tzoff==0)
+      strftime(buf,bufsz,"%d%b%Y@%H:%M:%SZ",&tmp);
+    else strftime(buf,bufsz,"%d%b%Y@%H:%M:%S%z",&tmp);
     return buf;}
   else {
     /* With no flags, just output the time. */
