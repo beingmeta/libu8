@@ -333,7 +333,8 @@ u8_string u8_gets_x(u8_byte *buf,int len,
   if (found) {
     int size=(found-f->u8_inptr);
     if (sizep) *sizep=size;
-    if ((buf) && (size>len)) return NULL;
+    /* Oversize, return NULL */
+    if ((buf) && (size>=len)) return NULL;
     else if (buf==NULL) buf=u8_malloc(size+1);
     u8_getn(buf,size,f);
     /* Advance past the separator */
