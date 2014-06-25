@@ -82,12 +82,13 @@ in the string it represents
 */
 int u8_strlen_x(u8_string str,int slen)
 {
-  u8_byte *scan=str, *limit=str+slen; int len=0;
-  while (scan < limit) {
+  u8_byte *scan=str, *limit=str+slen; int len=0, rv=0;
+  while ((rv>=0)&&(scan < limit)) {
     len++;
     if (*scan=='\0') {len++; scan++;}
-    else u8_sgetc(&scan);}
-  return len;
+    else rv=u8_sgetc(&scan);}
+  if (rv<0) return rv;
+  else return len;
 }
 
 U8_EXPORT
@@ -100,7 +101,8 @@ int u8_strlen(u8_string str)
 {
   u8_byte *scan=str; int ch=u8_sgetc(&scan), len=0;
   while (ch>=0) {len++; ch=u8_sgetc(&scan);}
-  return len;
+  if (ch<0) return ch;
+  else return len;
 }
 
 U8_EXPORT
