@@ -427,6 +427,7 @@ update-repo: dist/debs.signed
 	deb-s3 upload --bucket=repo.beingmeta.com \
 		      --component=$(COMPONENT) \
 		      --codename=$(CODENAME) \
+		      --sign=$(GPGID)      \
 		dist/libu8*_@U8VERSION@*.deb
 
 # Installation targets
