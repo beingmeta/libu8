@@ -78,9 +78,11 @@ int u8_grow_stream(struct U8_OUTPUT *f,int need)
     f->u8_outbuf=newptr;}
   else {
     u8_byte *newu8_buf=u8_malloc(new_max);
+    size_t off=f->u8_outptr-f->u8_outbuf;
     if (newu8_buf==NULL)
       return f->u8_outlim-f->u8_outptr;
-    strncpy(newu8_buf,f->u8_outbuf,(f->u8_outptr-f->u8_outbuf)+1);
+    strncpy(newu8_buf,f->u8_outbuf,off+1);
+    memset(newu8_buf,0,new_max-(off+1));
     f->u8_streaminfo=f->u8_streaminfo|U8_STREAM_OWNS_BUF;
     f->u8_outbuf=newu8_buf;}
   f->u8_outptr=f->u8_outbuf+n_current;
