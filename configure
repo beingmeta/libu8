@@ -736,6 +736,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_asan
+with_msan
 with_encodings_dir
 with_arch
 enable_maintainer_mode
@@ -1383,6 +1384,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
 --with-asan
+--with-msan
 --with-encodings-dir pathname
 --without-arch build with particular --arch flags
 --without-i18n built and install message catalogs
@@ -2978,6 +2980,32 @@ if test "x$with_asan" = "xyes"; then
    CFLAGS="-fsanitize=address -fno-omit-frame-pointer -O0 -g $CFLAGS"
    LD=clang
    LDFLAGS="-g -fsanitize=address $LDFLAGS"
+   build_static=""
+   test_static=""
+   install_static=""
+fi
+
+
+# Check whether --with-msan was given.
+if test "${with_msan+set}" = set; then :
+  withval=$with_msan;
+else
+  with_msan="no"
+fi
+
+if test "x$with_msan" = "xyes"; then
+   CC=clang
+   CFLAGS="-fsanitize=memory -fPIE -pie -g -fno-omit-frame-pointer $CFLAGS"
+   LD=clang
+   LDFLAGS="-g -fsanitize=memory -fPIE -pie -fno-omit-frame-pointer $LDFLAGS"
+   build_static=""
+   test_static=""
+   install_static=""
+elif test "x$with_msan" = "xfull"; then
+   CC=clang
+   CFLAGS="-fsanitize=memory -fsanitize-memory-track-origins -fPIE -pie -g -fno-omit-frame-pointer $CFLAGS"
+   LD=clang
+   LDFLAGS="-g -fsanitize=memory -fno-omit-frame-pointer -fsanitize-memory-track-origins -fPIE -pie -fno-omit-frame-pointer $LDFLAGS"
    build_static=""
    test_static=""
    install_static=""

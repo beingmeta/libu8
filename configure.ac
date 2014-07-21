@@ -117,6 +117,25 @@ if test "x$with_asan" = "xyes"; then
    install_static=""
 fi
 
+AC_ARG_WITH(msan,--with-msan,,with_msan="no")
+if test "x$with_msan" = "xyes"; then
+   CC=clang
+   CFLAGS="-fsanitize=memory -fPIE -pie -g -fno-omit-frame-pointer $CFLAGS"
+   LD=clang
+   LDFLAGS="-g -fsanitize=memory -fPIE -pie -fno-omit-frame-pointer $LDFLAGS"
+   build_static=""
+   test_static=""
+   install_static=""
+elif test "x$with_msan" = "xfull"; then
+   CC=clang
+   CFLAGS="-fsanitize=memory -fsanitize-memory-track-origins -fPIE -pie -g -fno-omit-frame-pointer $CFLAGS"
+   LD=clang
+   LDFLAGS="-g -fsanitize=memory -fno-omit-frame-pointer -fsanitize-memory-track-origins -fPIE -pie -fno-omit-frame-pointer $LDFLAGS"
+   build_static=""
+   test_static=""
+   install_static=""
+fi
+
 AC_PROG_CC([cc gcc])
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_INSTALL
