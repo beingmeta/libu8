@@ -45,6 +45,8 @@ definefileinfo=""
 versionsh=""
 doxygen=""
 
+CFLAGS="-Wimplicit -fno-strict-aliasing $CFLAGS"
+
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADER(include/libu8/u8source.h include/libu8/config.h)
 AC_CANONICAL_HOST
@@ -194,14 +196,6 @@ if test "x$doxygen" = "xna"; then
    DOCS=""
    INSTALLDOCS=""
 fi
-
-gcc_version=`gcc -dumpversion`
-
-case $gcc_version in
-  4*)
-   CFLAGS="-Wno-pointer-sign -Wimplicit -fno-strict-aliasing $CFLAGS"
-  ;;
-esac
 
 if test $target = "i686-pc-mingw32"; then
    shared_suffix="dll"

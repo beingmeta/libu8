@@ -41,6 +41,10 @@
 #define U8_WITH_STDIO 1
 #endif
 
+#if LIBU8_SOURCE
+#pragma GCC diagnostic ignored "-Wpointer-sign"
+#endif
+
 #ifndef U8_DLL
 #define U8_DLL 0
 #endif

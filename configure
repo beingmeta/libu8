@@ -2767,6 +2767,8 @@ definefileinfo=""
 versionsh=""
 doxygen=""
 
+CFLAGS="-Wimplicit -fno-strict-aliasing $CFLAGS"
+
 ac_aux_dir=
 for ac_dir in etc "$srcdir"/etc; do
   if test -f "$ac_dir/install-sh"; then
@@ -4595,14 +4597,6 @@ if test "x$doxygen" = "xna"; then
    DOCS=""
    INSTALLDOCS=""
 fi
-
-gcc_version=`gcc -dumpversion`
-
-case $gcc_version in
-  4*)
-   CFLAGS="-Wno-pointer-sign -Wimplicit -fno-strict-aliasing $CFLAGS"
-  ;;
-esac
 
 if test $target = "i686-pc-mingw32"; then
    shared_suffix="dll"
