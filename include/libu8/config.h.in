@@ -363,4 +363,7 @@
 #undef HAVE_SIZE_T
 #undef HAVE_SSIZE_T
 
+/* What kind of sanitization (if any) is being applied */
+#undef U8_SANITIZE
+
 #endif

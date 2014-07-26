@@ -108,35 +108,56 @@ AC_SUBST(RPMDIR)
 AC_SUBST(RPMFLAGS)
 AC_SUBST(GPGID)
 
-AC_ARG_WITH(asan,--with-asan,,with_asan="no")
-if test "x$with_asan" = "xyes"; then
-   CC=clang
+AC_PATH_PROG(CLANG,clang,none)
+
+AC_ARG_WITH(sanitize,--with-sanitize[=address*|memory|thread],with_sanitize=$withval,with_sanitize="none")
+
+if test "x$with_sanitize" = "xnone"; then
+   echo "Configuring normal (no sanitization) build";
+elif test "x$with_sanitize" = "xaddress" ||
+     test "x$with_sanitize" = "x" ||
+     test "x$with_sanitize" = "xyes"; then
    CFLAGS="-fsanitize=address -fno-omit-frame-pointer -O0 -g $CFLAGS"
-   LD=clang
    LDFLAGS="-g -fsanitize=address $LDFLAGS"
    build_static=""
    test_static=""
    install_static=""
-fi
-
-AC_ARG_WITH(msan,--with-msan,,with_msan="no")
-if test "x$with_msan" = "xyes"; then
-   CC=clang
-   CFLAGS="-fsanitize=memory -fPIE -pie -g -fno-omit-frame-pointer $CFLAGS"
-   LD=clang
+   custom_malloc="asan"
+   memtest_prefix=builtin_
+   heaptest_prefix=builtin_
+elif test "x$CLANG" = "xnone"; then
+  echo "No clang for sanitizing $with_sanitize";
+  exit;
+elif test "x$with_sanitize" = "xmemory"; then
+   CC=$CLANG
+   CFLAGS="-fsanitize=memory -fPIE -g -fno-omit-frame-pointer $CFLAGS"
+   LD=$CLANG
    LDFLAGS="-g -fsanitize=memory -fPIE -pie -fno-omit-frame-pointer $LDFLAGS"
    build_static=""
    test_static=""
    install_static=""
-elif test "x$with_msan" = "xfull"; then
-   CC=clang
-   CFLAGS="-fsanitize=memory -fsanitize-memory-track-origins -fPIE -pie -g -fno-omit-frame-pointer $CFLAGS"
-   LD=clang
+   custom_malloc="msan"
+elif test "x$with_sanitize" = "xleak"; then
+   CC=$CLANG
+   CFLAGS="-fsanitize=memory -fsanitize-memory-track-origins -fPIE -g -fno-omit-frame-pointer $CFLAGS"
+   LD=$CLANG
    LDFLAGS="-g -fsanitize=memory -fno-omit-frame-pointer -fsanitize-memory-track-origins -fPIE -pie -fno-omit-frame-pointer $LDFLAGS"
    build_static=""
    test_static=""
    install_static=""
+   custom_malloc="msan-full"
+elif test "x$with_sanitize" = "xthread"; then
+   CC=$CLANG
+   CFLAGS="-fsanitize=thread -g -fno-omit-frame-pointer $CFLAGS"
+   LD=$CLANG
+   LDFLAGS="-g -fsanitize=thread -fno-omit-frame-pointer $LDFLAGS"
+   build_static=""
+   test_static=""
+   install_static=""
+   custom_malloc="msan"
 fi
+
+AC_DEFINE_UNQUOTED(U8_SANITIZE,"$with_sanitize")
 
 AC_PROG_CC([cc gcc])
 AC_USE_SYSTEM_EXTENSIONS
