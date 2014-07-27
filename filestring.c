@@ -44,6 +44,7 @@ U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
   to_read=size=ftell(f);
   /* We malloc an extra byte in case we're going to use this as a string. */
   data=u8_malloc(size+1);
+  memset(data,0,size+1);
   fseek(f,0,SEEK_SET);
   while (to_read) {
     int delta=fread(data+bytes_read,1,to_read,f);
