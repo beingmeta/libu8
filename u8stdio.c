@@ -137,8 +137,11 @@ U8_EXPORT void u8_check_stdio()
 {
   if (getenv("U8_STDIOISSTDERR")) stdoutISstderr=1;
 #if (HAVE_ISATTY)
-  else if ((isatty(1)) && (isatty(2))) 
-    stdoutISstderr=(strcmp(ttyname(1),ttyname(2))==0);
+  else if ((isatty(1)) && (isatty(2))) {
+    char *n1=ttyname(1), *n2=ttyname(2);
+    if ((n1==NULL)||(n2==NULL)||(n1==n2))
+      stdoutISstderr=1;
+    else stdoutISstderr=(strcmp(n1,n2)==0);}
   else if ((isatty(1)) || (isatty(2)))
     stdoutISstderr=0;
 #endif
