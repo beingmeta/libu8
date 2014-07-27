@@ -125,23 +125,23 @@ elif test "x$with_sanitize" = "xaddress" ||
    custom_malloc="asan"
    memtest_prefix=builtin_
    heaptest_prefix=builtin_
+elif test "x$with_sanitize" = "xleak"; then
+   CFLAGS="-fsanitize=address -fno-omit-frame-pointer -O0 -g $CFLAGS"
+   LDFLAGS="-g -fsanitize=address $LDFLAGS"
+   build_static=""
+   test_static=""
+   install_static=""
+   custom_malloc="asan"
+   memtest_prefix=builtin_
+   heaptest_prefix=builtin_
 elif test "x$CLANG" = "xnone"; then
   echo "No clang for sanitizing $with_sanitize";
   exit;
 elif test "x$with_sanitize" = "xmemory"; then
    CC=$CLANG
-   CFLAGS="-fsanitize=memory -fPIE -g -fno-omit-frame-pointer $CFLAGS"
-   LD=$CLANG
-   LDFLAGS="-g -fsanitize=memory -fPIE -pie -fno-omit-frame-pointer $LDFLAGS"
-   build_static=""
-   test_static=""
-   install_static=""
-   custom_malloc="msan"
-elif test "x$with_sanitize" = "xleak"; then
-   CC=$CLANG
    CFLAGS="-fsanitize=memory -fsanitize-memory-track-origins -fPIE -g -fno-omit-frame-pointer $CFLAGS"
    LD=$CLANG
-   LDFLAGS="-g -fsanitize=memory -fno-omit-frame-pointer -fsanitize-memory-track-origins -fPIE -pie -fno-omit-frame-pointer $LDFLAGS"
+   LDFLAGS="-g -fsanitize=memory -fsanitize-memory-track-origins -pie -fno-omit-frame-pointer $LDFLAGS"
    build_static=""
    test_static=""
    install_static=""
