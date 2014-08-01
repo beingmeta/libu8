@@ -100,6 +100,12 @@ U8_EXPORT ssize_t u8_file_size(u8_string filename);
 **/
 U8_EXPORT u8_string u8_file_owner(u8_string filename);
 
+/** Returns the name associated with a UID, when available
+    @param a uid_t or int
+    @returns a u8_string
+**/
+U8_EXPORT u8_string u8_username(uid_t uid);
+
 /** Changes the mode of a file
     @param filename a utf-8 pathname
     @param mode the file mode for the file

@@ -61,10 +61,18 @@ static u8_string get_uname(uid_t uid)
   struct passwd *entry=getpwuid(uid);
   return u8_fromlibc(entry->pw_name);
 }
+U8_EXPORT u8_string u8_username(uid_t uid)
+{
+  return get_uname(uid);
+}
 #else
-static u8_string get_uname(int ignored)
+static u8_string get_uname(uid_t ignored)
 {
   return u8_strdup("kilroy");
+}
+U8_EXPORT u8_string u8_username(uid_t uid)
+{
+  return get_uname(uid);
 }
 #endif
 
