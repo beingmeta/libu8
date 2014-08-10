@@ -319,7 +319,8 @@ u8_string u8_gets_x(u8_byte *buf,int len,
 		    struct U8_INPUT *f,u8_string eos,
 		    int *sizep)
 {
-  u8_byte *found=NULL, *start=f->u8_inptr;
+  u8_byte *found=NULL, *start=f->u8_inptr, *end=NULL;
+  int size;
   *(f->u8_inlim)='\0';
   while ((found=strstr(start,eos))==NULL) {
     int start_pos=f->u8_inlim-f->u8_inptr, retval=0;
@@ -331,17 +332,22 @@ u8_string u8_gets_x(u8_byte *buf,int len,
       if (sizep) *sizep=retval;
       return NULL;}
     start=f->u8_inptr+start_pos;}
-  if (found) {
-    int size=(found-f->u8_inptr);
-    if (sizep) *sizep=size;
-    /* Oversize, return NULL */
-    if ((buf) && (size>=len)) return NULL;
-    else if (buf==NULL) buf=u8_malloc(size+1);
-    u8_getn(buf,size,f);
-    /* Advance past the separator */
+  if (!(found)) end=f->u8_inlim; else end=found;
+  size=(end-f->u8_inptr);
+  if (sizep) *sizep=size;
+  /* No data, return NULL */
+  if ((!(found))&&(size==0)) return NULL;
+  /* Oversize, return NULL */
+  else if ((buf) && (size>=len)) return NULL;
+  else if (buf==NULL) buf=u8_malloc(size+1);
+  u8_getn(buf,size,f);
+  /* Advance past the separator */
+  if (found) 
     f->u8_inptr=f->u8_inptr+strlen(eos);
-    return buf;}
-  else return NULL;
+  else {
+    f->u8_inlim=f->u8_inptr=f->u8_inbuf;
+    f->u8_inbuf[0]='\0';}
+  return buf;
 }
 
 U8_EXPORT
