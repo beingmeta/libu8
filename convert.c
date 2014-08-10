@@ -518,7 +518,7 @@ static int encgetc(struct U8_TEXT_ENCODING *e,
   if ((e==NULL) || (e==utf8_encoding))
     if (**scan<0x80) return *((*scan)++);
     else if (get_utf8_size(**scan)>(end-*scan))
-      return -1;
+      return -2;
     else if (e) return u8_sgetc_lim(scan,end);
     else if (u8_validptr(*scan)) return u8_sgetc_lim(scan,end);
     else
@@ -573,7 +573,9 @@ int u8_convert
   while (*scan<end) {
     u8_byte *last_scan=*scan; int retval=0;
     int c=encgetc(e,charset,includes_ascii,is_linear,scan,end);
-    if (c<0) return c;
+    if (c<0) {
+      if (c==-2) return chars_read;
+      else return c;}
     else if ((convert_crlfs) && (c=='\r')) {
       int nc=encgetc(e,charset,includes_ascii,is_linear,scan,end);
       if (nc<0) {*scan=last_scan; break;}
