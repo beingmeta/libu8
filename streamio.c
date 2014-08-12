@@ -320,8 +320,12 @@ u8_string u8_gets_x(u8_byte *buf,int len,
 		    int *sizep)
 {
   u8_byte *found=NULL, *start=f->u8_inptr, *end=NULL;
-  int size;
-  *(f->u8_inlim)='\0';
+  int size, ec=-1;
+  if (f->u8_inptr>=f->u8_inlim) {
+    if (sizep) *sizep=0;
+    return NULL;}
+  if (*(f->u8_inlim)!=0) {
+    ec=*(f->u8_inlim); *(f->u8_inlim)='\0';}
   while ((found=strstr(start,eos))==NULL) {
     int start_pos=f->u8_inlim-f->u8_inptr, retval=0;
     /* Quit if we have length constraints which
@@ -332,22 +336,20 @@ u8_string u8_gets_x(u8_byte *buf,int len,
       if (sizep) *sizep=retval;
       return NULL;}
     start=f->u8_inptr+start_pos;}
-  if (!(found)) end=f->u8_inlim; else end=found;
-  size=(end-f->u8_inptr);
-  if (sizep) *sizep=size;
-  /* No data, return NULL */
-  if ((!(found))&&(size==0)) return NULL;
-  /* Oversize, return NULL */
-  else if ((buf) && (size>=len)) return NULL;
-  else if (buf==NULL) buf=u8_malloc(size+1);
-  u8_getn(buf,size,f);
-  /* Advance past the separator */
-  if (found) 
+  if (ec>0) *(f->u8_inlim);
+  if (found) {
+    size=(found-f->u8_inptr);
+    if (sizep) *sizep=size;
+    /* No data, return NULL */
+    if ((buf) && (size>=len)) return NULL;
+    else if (buf==NULL) buf=u8_malloc(size+1);
+    if (size)
+      u8_getn(buf,size,f);
+    else buf[0]='\0';
+    /* Advance past the separator */
     f->u8_inptr=f->u8_inptr+strlen(eos);
-  else {
-    f->u8_inlim=f->u8_inptr=f->u8_inbuf;
-    f->u8_inbuf[0]='\0';}
-  return buf;
+    return buf;}
+  else return NULL;
 }
 
 U8_EXPORT
