@@ -209,7 +209,7 @@ static u8_condition RandomizeCondition=_("RANDOMIZE");
 U8_EXPORT
 void u8_randomize(unsigned int seed)
 {
-  u8_log(LOG_NOTICE,RandomizeCondition,"Random seed set to 0x%X",seed);
+  u8_log(LOG_NOTICE,RandomizeCondition,"Random seed set to 0x%x",seed);
   srandom(seed);
 }
 
