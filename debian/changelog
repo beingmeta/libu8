@@ -1,3 +1,8 @@
+libu8 (2.4.8-3) unstable; urgency=low
+
+  * Release 8 of libu8 2.4
+
+ -- Ken Haase <kh@beingmeta.com>  Thu, 17 Aug 2014 11:06:52 -0700
 libu8 (2.4.7-2) unstable; urgency=low
 
   * Release 7 of libu8 2.4
@@ -14,14 +19,14 @@ libu8 (2.4.5-1) UNRELEASED; urgency=low
   Various cleanups, especially configure
 
  -- Kenneth Benefiel Haase <kh@beingmeta.com>  Thu, 6 March 2014 19:51:25 -0500
-	
+
 libu8 (2.4.1-1) UNRELEASED; urgency=low
 
   * Updated release
   Added loop functions to servers, status field to clients, fixed various memory leaks
 
  -- Kenneth Benefiel Haase <kh@beingmeta.com>  Thu, 6 March 2014 19:51:25 -0500
-	
+
 libu8 (2.3.1-2) UNRELEASED; urgency=low
 
   * Switch to dpkg-source 3.0 (quilt) format
