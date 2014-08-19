@@ -336,7 +336,7 @@ u8_string u8_gets_x(u8_byte *buf,int len,
       if (sizep) *sizep=retval;
       return NULL;}
     start=f->u8_inptr+start_pos;}
-  if (ec>0) *(f->u8_inlim);
+  if (ec>0) *(f->u8_inlim)=ec;
   if (found) {
     size=(found-f->u8_inptr);
     if (sizep) *sizep=size;
