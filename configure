@@ -2766,7 +2766,7 @@ definefileinfo=""
 versionsh=""
 doxygen=""
 
-CFLAGS="-Wimplicit -fno-strict-aliasing $CFLAGS"
+CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
 
 ac_aux_dir=
 for ac_dir in etc "$srcdir"/etc; do

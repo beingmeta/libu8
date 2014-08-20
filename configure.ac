@@ -45,7 +45,7 @@ definefileinfo=""
 versionsh=""
 doxygen=""
 
-CFLAGS="-Wimplicit -fno-strict-aliasing $CFLAGS"
+CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
 
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADER(include/libu8/u8source.h include/libu8/config.h)
