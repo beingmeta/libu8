@@ -202,7 +202,7 @@ U8_EXPORT unsigned char *u8_client_read
 {
   char statebuf[16];
   if ((cl->reading>0)&&
-      (cl->buf==buf)&&(cl->len=n)&&(cl->off>=cl->len)) {
+      (cl->buf==buf)&&(cl->len==n)&&(cl->off>=cl->len)) {
     cl->reading=0; return cl->buf;}
   else if (cl->reading>0) {
     u8_log(LOG_WARNING,"u8_client_read",
