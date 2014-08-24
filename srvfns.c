@@ -201,6 +201,15 @@ U8_EXPORT unsigned char *u8_client_read
   (u8_client cl,unsigned char *buf,size_t n,size_t off)
 {
   char statebuf[16];
+  u8_server server=cl->server;
+  if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
+      ((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
+    u8_log(LOG_NOTICE,"Reading/request",
+	   "%d bytes for @x%lx#%d.%d[%s/%d](%s%:hs) 0x%lx+%d<%d",
+	   n,((unsigned long)cl),cl->clientid,cl->socket,
+	   get_client_state(cl,statebuf),
+	   cl->n_trans,cl->idstring,cl->status,
+	   (unsigned long)cl->buf,cl->off,cl->len);
   if ((cl->reading>0)&&
       (cl->buf==buf)&&(cl->len==n)&&(cl->off>=cl->len)) {
     cl->reading=0; return cl->buf;}
@@ -231,6 +240,15 @@ U8_EXPORT unsigned char *u8_client_write
   (u8_client cl,unsigned char *buf,size_t n,size_t off)
 {
   char statebuf[16];
+  u8_server server=cl->server;
+  if (((server->flags)&(U8_SERVER_LOG_TRANSACT))||
+      ((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))
+    u8_log(LOG_NOTICE,"Writing/request",
+	   "%d bytes for @x%lx#%d.%d[%s/%d](%s%:hs) 0x%lx+%d<%d",
+	   n,((unsigned long)cl),cl->clientid,cl->socket,
+	   get_client_state(cl,statebuf),
+	   cl->n_trans,cl->idstring,cl->status,
+	   (unsigned long)cl->buf,cl->off,cl->len);
   if ((cl->writing>0)&&(cl->buf==buf)&&(cl->len==n)) {
     /* We're already writing this */
     if (cl->off<cl->len) return NULL;
@@ -722,11 +740,11 @@ static void *event_loop(void *thread_arg)
 			     (cl->reading>0)?
 			     ("event_loop/read"):
 			     ("event_loop/weird")),
-		 "Moved all %d bytes for @x%lx#%d.%d[%s/%d](%s%:hs) 0x%lx",
+		 "All %d bytes for @x%lx#%d.%d[%s/%d](%s%:hs) 0x%lx+%d<%d",
 		 cl->len,((unsigned long)cl),cl->clientid,cl->socket,
 		 get_client_state(cl,statebuf),
 		 cl->n_trans,cl->idstring,cl->status,
-		 (unsigned long)cl->buf);}}
+		 (unsigned long)cl->buf,cl->off,cl->len);}}
     /* Unless there's an I/O error, call the handler */
     if ((cl->flags)&(U8_CLIENT_CLOSED|U8_CLIENT_CLOSING)) {
       u8_log(LOG_WARN,"event_loop/closed",
@@ -836,10 +854,11 @@ static void *event_loop(void *thread_arg)
       if (((server->flags)&(U8_SERVER_LOG_TRANSFER))||
 	  ((cl->flags)&(U8_CLIENT_LOG_TRANSFER)))
 	u8_log(LOG_NOTICE,((cl->writing>0)?("Writing"):("Reading")),
-	       "Processed %d bytes for @x%lx#%d.%d[%s/%d](%s%:hs)",delta,
-	       ((unsigned long)cl),cl->clientid,cl->socket,
+	       "%d bytes for @x%lx#%d.%d[%s/%d](%s%:hs) 0x%lx+%d<%d",
+	       delta,((unsigned long)cl),cl->clientid,cl->socket,
 	       get_client_state(cl,statebuf),
-	       cl->n_trans,cl->idstring,cl->status);
+	       cl->n_trans,cl->idstring,cl->status,
+	       (unsigned long)(cl->buf),cl->off,cl->len);
       if (delta>0) cl->off=cl->off+delta;
       /* If we've still got data to read/write, we continue,
 	 otherwise, we fall through */
