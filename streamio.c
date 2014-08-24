@@ -328,6 +328,7 @@ u8_string u8_gets_x(u8_byte *buf,int len,
     ec=*(f->u8_inlim); *(f->u8_inlim)='\0';}
   while ((found=strstr(start,eos))==NULL) {
     int start_pos=f->u8_inlim-f->u8_inptr, retval=0;
+    if (ec>0) *(f->u8_inlim)=ec;
     /* Quit if we have length constraints which
        we are already past. */
     if (f->u8_fillfn) retval=f->u8_fillfn(f);
@@ -335,6 +336,7 @@ u8_string u8_gets_x(u8_byte *buf,int len,
     else if (retval<0) {
       if (sizep) *sizep=retval;
       return NULL;}
+    if (ec>0) *(f->u8_inlim)='\0';
     start=f->u8_inptr+start_pos;}
   if (ec>0) *(f->u8_inlim)=ec;
   if (found) {
