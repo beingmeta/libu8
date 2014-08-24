@@ -202,7 +202,7 @@ U8_EXPORT unsigned char *u8_client_read
 {
   char statebuf[16];
   if ((cl->reading>0)&&
-      (cl->buf==buf)&&(cl->len=n)&&(cl->off>=cl->len)) {
+      (cl->buf==buf)&&(cl->len==n)&&(cl->off>=cl->len)) {
     cl->reading=0; return cl->buf;}
   else if (cl->reading>0) {
     u8_log(LOG_WARNING,"u8_client_read",
@@ -681,10 +681,11 @@ static void *event_loop(void *thread_arg)
 	if (((server->flags)&(U8_SERVER_LOG_TRANSFER))||
 	    ((cl->flags)&(U8_CLIENT_LOG_TRANSFER)))
 	  u8_log(LOG_NOTICE,((cl->writing>0)?("Writing"):("Reading")),
-		 "Processed %d bytes for @x%lx#%d.%d[%s/%d](%s%:hs)",delta,
-		 ((unsigned long)cl),cl->clientid,cl->socket,
+		 "%d bytes for @x%lx#%d.%d[%s/%d](%s%:hs) 0x%lx+%d<%d",
+		 delta,((unsigned long)cl),cl->clientid,cl->socket,
 		 get_client_state(cl,statebuf),
-		 cl->n_trans,cl->idstring,cl->status);
+		 cl->n_trans,cl->idstring,cl->status,
+		 (unsigned long)cl->buf,cl->off,cl->len);
 	if (delta>0) cl->off=cl->off+delta;}
       /* If we've still got data to read/write, we update the poll
 	 structure to keep listening and continue in the event loop.  */
@@ -721,10 +722,11 @@ static void *event_loop(void *thread_arg)
 			     (cl->reading>0)?
 			     ("event_loop/read"):
 			     ("event_loop/weird")),
-		 "Transferred all %d bytes for @x%lx#%d.%d[%s/%d](%s%:hs)",
+		 "Moved all %d bytes for @x%lx#%d.%d[%s/%d](%s%:hs) 0x%lx",
 		 cl->len,((unsigned long)cl),cl->clientid,cl->socket,
 		 get_client_state(cl,statebuf),
-		 cl->n_trans,cl->idstring,cl->status);}}
+		 cl->n_trans,cl->idstring,cl->status,
+		 (unsigned long)cl->buf);}}
     /* Unless there's an I/O error, call the handler */
     if ((cl->flags)&(U8_CLIENT_CLOSED|U8_CLIENT_CLOSING)) {
       u8_log(LOG_WARN,"event_loop/closed",
