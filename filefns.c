@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -174,7 +174,7 @@ U8_EXPORT int u8_file_existsp(u8_string filename)
   if (retval<0) {
     if (errno) {
       u8_log(LOG_WARN,"u8_file_existsp","Error for '%s' (%s)",
-	     lpath,strerror(errno));
+             lpath,strerror(errno));
       errno=0;}
     else u8_log(LOG_WARN,"u8_file_existsp","Error for '%s'",lpath);
     retval=0;}
@@ -188,7 +188,7 @@ U8_EXPORT int u8_file_readablep(u8_string filename)
   if (retval<0) {
     if (errno) {
       u8_log(LOG_WARN,"u8_file_readablep","Error for '%s' (%s)",
-	     lpath,strerror(errno));
+             lpath,strerror(errno));
       errno=0;}
     else u8_log(LOG_WARN,"u8_file_readablep","Error for '%s'",lpath);
     retval=0;}
@@ -202,7 +202,7 @@ U8_EXPORT int u8_file_writablep(u8_string filename)
   if (retval<0) {
     if (errno) {
       u8_log(LOG_WARN,"u8_file_writablep","Error for '%s' (%s)",
-	     lpath,strerror(errno));
+             lpath,strerror(errno));
       errno=0;}
     else u8_log(LOG_WARN,"u8_file_writeablep","Error for '%s'",lpath);
     retval=0;}
@@ -310,7 +310,7 @@ U8_EXPORT u8_string u8_readlink(u8_string filename,int absolute)
       return NULL;}
     if (linklen>linkinfo.st_size+15) {
       u8_seterr(_("Link grew between lstat and readlink"),"u8_readlink",
-		u8_strdup(filename));
+                u8_strdup(filename));
       u8_free(lpath); u8_free(linkname);
       return NULL;}
     else if (absolute) {
@@ -331,8 +331,8 @@ U8_EXPORT u8_string u8_readlink(u8_string filename,int absolute)
 /* Searching for files */
 
 static void buildname(u8_byte *buf,u8_string name,int namelen,
-		      u8_byte *start,u8_byte *end,
-		      u8_byte *ins,u8_byte *instoo)
+                      u8_byte *start,u8_byte *end,
+                      u8_byte *ins,u8_byte *instoo)
 {
   if ((instoo)&&(ins==NULL)) {ins=instoo; instoo=NULL;}
   if (instoo) {
@@ -341,7 +341,7 @@ static void buildname(u8_byte *buf,u8_string name,int namelen,
     strncpy(buf+((ins-start)+namelen),ins+1,instoo-(ins+1));
     strncpy(buf+((ins-start)+namelen+(instoo-(ins+1))),name,namelen);
     strncpy(buf+((ins-start)+namelen+(instoo-(ins+1))+namelen),
-	    instoo+1,end-(instoo+1));
+            instoo+1,end-(instoo+1));
     buf[(ins-start)+namelen+(instoo-ins)+namelen+end-instoo]='\0';}
   else if (ins) {
     strncpy(buf,start,ins-start);
@@ -358,7 +358,7 @@ static void buildname(u8_byte *buf,u8_string name,int namelen,
 }
 
 U8_EXPORT u8_string u8_find_file(u8_string name,u8_string searchpath,
-				 int (*testp)(u8_string))
+                                 int (*testp)(u8_string))
 {
   int namelen=strlen(name), buflen=strlen(searchpath)+namelen*2+4;
   u8_byte *start=searchpath, *end, *ins, *instoo=NULL;
@@ -389,7 +389,7 @@ U8_EXPORT u8_string u8_find_file(u8_string name,u8_string searchpath,
   if (testp(probename)) {
     u8_free(probename);
     return buf;}
-  else {u8_free(probename); u8_free(buf); return NULL;}    
+  else {u8_free(probename); u8_free(buf); return NULL;}
 }
 
 /* File manipulation functions */
@@ -437,7 +437,7 @@ U8_EXPORT int u8_chmod(u8_string name,mode_t mode)
   struct stat fileinfo;
   char *localized=u8_localpath(name);
   int retval=-1;
-  if (stat(localized,&fileinfo)<0) 
+  if (stat(localized,&fileinfo)<0)
     u8_graberr(-1,"u8_chmod",u8_strdup(name));
   else if (fileinfo.st_mode==mode)
     retval=0;
@@ -469,6 +469,7 @@ static int mkdirs(u8_string dirname,mode_t mode)
   else if (strchr(dirname,'/')) {
     u8_string parent=u8_dirname(dirname);
     int made=mkdirs(parent,mode), retval;
+    u8_free(parent);
     if (made<0) return made;
     else retval=u8_mkdir(dirname,mode);
     if (retval<0) return retval;
@@ -550,20 +551,20 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
   else while ((entry=readdir(dp))) {
       struct stat fileinfo; char *name=entry->d_name;
       if (!(((name[0]=='.')&&(name[1]=='\0'))||
-	    ((name[0]=='.')&&(name[1]=='.')&&(name[2]=='\0')))) {
-	char *fullpath=u8_mkpath(dirpath,name);
-	if (stat(fullpath,&fileinfo)<0) {
-	  u8_free(fullpath); continue;}
-	if (((which==JUST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
-	    ((which==JUST_FILES) && (S_ISREG(fileinfo.st_mode)))) {
-	  if (n_results+1>=max_results) {
-	    results=u8_realloc_n(results,max_results*2,u8_string);
-	    max_results=max_results*2;}
-	  if (ret_fullpath)
-	    results[n_results++]=u8_fromlibc(fullpath);
-	  else results[n_results++]=u8_fromlibc(entry->d_name);
-	  u8_free(fullpath);}
-	else u8_free(fullpath);}}
+            ((name[0]=='.')&&(name[1]=='.')&&(name[2]=='\0')))) {
+        char *fullpath=u8_mkpath(dirpath,name);
+        if (stat(fullpath,&fileinfo)<0) {
+          u8_free(fullpath); continue;}
+        if (((which==JUST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
+            ((which==JUST_FILES) && (S_ISREG(fileinfo.st_mode)))) {
+          if (n_results+1>=max_results) {
+            results=u8_realloc_n(results,max_results*2,u8_string);
+            max_results=max_results*2;}
+          if (ret_fullpath)
+            results[n_results++]=u8_fromlibc(fullpath);
+          else results[n_results++]=u8_fromlibc(entry->d_name);
+          u8_free(fullpath);}
+        else u8_free(fullpath);}}
   results[n_results++]=NULL;
   closedir(dp);
   u8_free(dirpath);
@@ -583,31 +584,31 @@ static int remove_tree_helper(u8_string dirname)
   else while ((entry=readdir(dp))) {
       struct stat fileinfo; char *name=entry->d_name;
       if (!(((name[0]=='.')&&(name[1]=='\0'))||
-	    ((name[0]=='.')&&(name[1]=='.')&&(name[2]=='\0')))) {
-	char *fullpath=u8_mkpath(dirpath,entry->d_name);
-	if (stat(fullpath,&fileinfo)<0) {
-	  u8_free(fullpath); continue;}
-	if ((fileinfo.st_mode)&(S_IFDIR)) {
-	  int retval=remove_tree_helper(fullpath);
-	  if (retval>=0) {
-	    count=count+retval;
-	    retval=u8_rmdir(fullpath);
-	    if (retval>=0) count++;
-	    u8_free(fullpath);}
-	  else {
-	    u8_graberr(-1,"u8_remove_tree",fullpath);
-	    u8_clear_errors(1);}}
-	else if (((fileinfo.st_mode)&(S_IFLNK))||
-		 ((fileinfo.st_mode)&(S_IFREG))||
-		 ((fileinfo.st_mode)&(S_IFSOCK))) {
-	  int retval=u8_removefile(fullpath); 
-	  if (retval<0) {
-	    u8_graberr(-1,"u8_remove_tree",fullpath);
-	    u8_clear_errors(1);}
-	  else {
-	    count++;
-	    u8_free(fullpath);}}
-	else u8_free(fullpath);}}
+            ((name[0]=='.')&&(name[1]=='.')&&(name[2]=='\0')))) {
+        char *fullpath=u8_mkpath(dirpath,entry->d_name);
+        if (stat(fullpath,&fileinfo)<0) {
+          u8_free(fullpath); continue;}
+        if ((fileinfo.st_mode)&(S_IFDIR)) {
+          int retval=remove_tree_helper(fullpath);
+          if (retval>=0) {
+            count=count+retval;
+            retval=u8_rmdir(fullpath);
+            if (retval>=0) count++;
+            u8_free(fullpath);}
+          else {
+            u8_graberr(-1,"u8_remove_tree",fullpath);
+            u8_clear_errors(1);}}
+        else if (((fileinfo.st_mode)&(S_IFLNK))||
+                 ((fileinfo.st_mode)&(S_IFREG))||
+                 ((fileinfo.st_mode)&(S_IFSOCK))) {
+          int retval=u8_removefile(fullpath);
+          if (retval<0) {
+            u8_graberr(-1,"u8_remove_tree",fullpath);
+            u8_clear_errors(1);}
+          else {
+            count++;
+            u8_free(fullpath);}}
+        else u8_free(fullpath);}}
   closedir(dp);
   u8_free(dirpath);
   return count;
