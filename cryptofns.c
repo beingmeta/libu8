@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -64,7 +64,7 @@ U8_EXPORT ssize_t u8_cryptic
   int inlen, outlen, totalout=0, retval=0;
   unsigned char inbuf[1024], outbuf[1024+EVP_MAX_BLOCK_LENGTH];
   const EVP_CIPHER *cipher=((cname)?(EVP_get_cipherbyname(cname)):
-			    (EVP_bf_cbc()));
+                            (EVP_bf_cbc()));
   if (cipher) {
     int needkeylen=EVP_CIPHER_key_length(cipher);
     int needivlen=EVP_CIPHER_iv_length(cipher);
@@ -73,45 +73,45 @@ U8_EXPORT ssize_t u8_cryptic
     /*
     if ((needkeylen)&&(keylen!=needkeylen))
       return u8_reterr(u8_BadCryptoKey,
-		       ((caller)?(caller):((u8_context)"u8_cryptic")),
-		       u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
+                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
     */
     if ((needivlen)&&(ivlen)&&(ivlen!=needivlen))
       return u8_reterr(u8_BadCryptoInit,
-		       ((caller)?(caller):((u8_context)"u8_cryptic")),
-		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
+                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
     EVP_CIPHER_CTX_init(&ctx);
 
     retval=EVP_CipherInit(&ctx, cipher, NULL, NULL, do_encrypt);
     if (retval==0)
       return u8_reterr(u8_CipherInit_Failed,
-		       ((caller)?(caller):((u8_context)"u8_cryptic")),
-		       u8_strdup(cname));
+                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       u8_strdup(cname));
 
     retval=EVP_CIPHER_CTX_set_key_length(&ctx,keylen);
-    if (retval==0) 
+    if (retval==0)
       return u8_reterr(u8_BadCryptoKey,
-		       ((caller)?(caller):((u8_context)"u8_cryptic")),
-		       u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
+                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
 
     retval=EVP_CipherInit(&ctx, cipher, key, iv, do_encrypt);
     if (retval==0)
       return u8_reterr(u8_CipherInit_Failed,
-		       ((caller)?(caller):((u8_context)"u8_cryptic")),
-		       u8_strdup(cname));
+                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       u8_strdup(cname));
 
     while (1) {
       inlen = reader(inbuf,blocksize,readstate);
       if(inlen <= 0) break;
       if(!(EVP_CipherUpdate(&ctx,outbuf,&outlen,inbuf,inlen))) {
-	char *details=u8_malloc(256);
-	unsigned long err=ERR_get_error();
-	ERR_error_string_n(err,details,256);
-	EVP_CIPHER_CTX_cleanup(&ctx);
-	return u8_reterr(u8_InternalCryptoError,
-			 ((caller)?(caller):((u8_context)"u8_cryptic")),
-			 details);}
+        char *details=u8_malloc(256);
+        unsigned long err=ERR_get_error();
+        ERR_error_string_n(err,details,256);
+        EVP_CIPHER_CTX_cleanup(&ctx);
+        return u8_reterr(u8_InternalCryptoError,
+                         ((caller)?(caller):((u8_context)"u8_cryptic")),
+                         details);}
       else writer(outbuf,outlen,writestate);
       totalout=totalout+outlen;}
     if(!(EVP_CipherFinal(&ctx,outbuf,&outlen))) {
@@ -120,8 +120,8 @@ U8_EXPORT ssize_t u8_cryptic
       ERR_error_string_n(err,details,256);
       EVP_CIPHER_CTX_cleanup(&ctx);
       return u8_reterr(u8_InternalCryptoError,
-		       ((caller)?(caller):((u8_context)"u8_cryptic")),
-		       details);}
+                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       details);}
     else {
       writer(outbuf,outlen,writestate);
       EVP_CIPHER_CTX_cleanup(&ctx);
@@ -132,8 +132,8 @@ U8_EXPORT ssize_t u8_cryptic
     unsigned long err=ERR_get_error();
     ERR_error_string_n(err,details,256);
     return u8_reterr("Unknown cipher",
-		     ((caller)?(caller):((u8_context)"u8_cryptic")),
-		     details);}
+                     ((caller)?(caller):((u8_context)"u8_cryptic")),
+                     details);}
 }
 
 static int cryptofns_init=0;

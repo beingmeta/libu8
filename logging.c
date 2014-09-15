@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -78,14 +78,14 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
   int eloglevel=loglevel; u8_string level;
   if (loglevel>U8_MAX_LOGLEVEL) {
     fprintf(stderr,"%s!! Logging call with invalid priority %d (%s)%s",
-	    u8_logprefix,loglevel,c,u8_logsuffix);
+            u8_logprefix,loglevel,c,u8_logsuffix);
     return 0;}
   else if (loglevel>u8_loglevel) return 0;
   else if (loglevel<0) eloglevel=(-loglevel);
   else {}
   level=((loglevel>=(-(U8_MAX_LOGLEVEL)))?
-	 (u8_loglevels[eloglevel]):
-	 ((u8_string)""));
+         (u8_loglevels[eloglevel]):
+         ((u8_string)""));
   prefix=u8_message_prefix(buf,128);
   if ((u8_logindent)&&(u8_logindent[0])&&(strchr(message,'\n')))
     indented=u8_indent_text(message,u8_logindent);
@@ -93,30 +93,30 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
   if ((loglevel<0)||(eloglevel<=u8_stdout_loglevel)) {
     if ((c)&&(*level))
       fprintf(stdout,"%s%s %s (%s) %s%s",
-	      u8_logprefix,prefix,level,c,indented,u8_logsuffix);
+              u8_logprefix,prefix,level,c,indented,u8_logsuffix);
     else if (c)
       fprintf(stdout,"%s%s (%s) %s%s",
-	      u8_logprefix,prefix,c,indented,u8_logsuffix);
+              u8_logprefix,prefix,c,indented,u8_logsuffix);
     else if (*level)
       fprintf(stdout,"%s%s %s: %s%s",
-	      u8_logprefix,prefix,level,indented,u8_logsuffix);
+              u8_logprefix,prefix,level,indented,u8_logsuffix);
     else fprintf(stdout,"%s%s %s%s",
-		 u8_logprefix,prefix,indented,u8_logsuffix);
+                 u8_logprefix,prefix,indented,u8_logsuffix);
     if ((indented)&&(indented!=message)) u8_free(indented);
     fflush(stdout);
     return 1;}
   if (eloglevel<=u8_stderr_loglevel) {
     if ((c)&&(*level))
       fprintf(stderr,"%s%s%s (%s): %s%s",
-	      u8_logprefix,prefix,level,c,indented,u8_logsuffix);
+              u8_logprefix,prefix,level,c,indented,u8_logsuffix);
     else if (c)
       fprintf(stdout,"%s%s (%s) %s%s",
-	      u8_logprefix,prefix,c,indented,u8_logsuffix);
+              u8_logprefix,prefix,c,indented,u8_logsuffix);
     else if (*level)
       fprintf(stderr,"%s%s %s: %s%s",
-	      u8_logprefix,prefix,level,indented,u8_logsuffix);
+              u8_logprefix,prefix,level,indented,u8_logsuffix);
     else fprintf(stderr,"%s%s %s%s",
-		 u8_logprefix,prefix,indented,u8_logsuffix);}
+                 u8_logprefix,prefix,indented,u8_logsuffix);}
   if ((indented)&&(indented!=message)) u8_free(indented);
   return 0;
 }
@@ -174,7 +174,7 @@ U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
   if (u8_log_show_date)
     strftime(clockbuf,32,"%H:%M:%S(%d%b%y)",now);
   else strftime(clockbuf,32,"%H:%M:%S",now);
-  if (u8_log_show_elapsed) 
+  if (u8_log_show_elapsed)
     sprintf(timebuf,"%s(%f)",clockbuf,u8_elapsed_time());
   else sprintf(timebuf,"%s",clockbuf);
   if (!(u8_log_show_procinfo)) {
@@ -191,7 +191,7 @@ if (u8_log_show_appid) appid=u8_appid();
   if ((appid!=NULL)&&((strlen(timebuf)+strlen(procid)+strlen(appid)+5)<buflen))
     sprintf(buf,"%s <%s:%s>",timebuf,appid,procid);
   else if ((u8_log_show_procinfo) &&
-	   ((strlen(timebuf)+strlen(procid)+5)<buflen))
+           ((strlen(timebuf)+strlen(procid)+5)<buflen))
     sprintf(buf,"%s <%s>",timebuf,procid);
   else if ((strlen(timebuf)+2)<buflen)
     sprintf(buf,"%s ",timebuf);
@@ -227,8 +227,3 @@ U8_EXPORT void u8_initialize_logging()
   u8_register_source_file(_FILEINFO);
 }
 #endif
-
-
-
-
-

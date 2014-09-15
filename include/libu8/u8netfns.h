@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -60,7 +60,7 @@ typedef struct U8_CONNPOOL {
   unsigned int u8cp_bits;
   u8_mutex u8cp_lock; /* The lock used to coordinate access to the connection block */
   u8_condvar u8cp_drained; /* This is signalled whenever the "drained" status of the
-			 connection block changes. */
+                         connection block changes. */
   struct timespec u8cp_timeout; /* How long to wait for */
   int u8cp_n_open;  /* how many open sockets in the block */
   int u8cp_n_inuse; /* how many sockets currently being used */
@@ -201,7 +201,7 @@ U8_EXPORT u8_string u8_sockaddr_string(struct sockaddr *sockaddr);
      the connection block structure if neccessary.
      @param cb a pointer to a connection block structure or NULL
      @param id a utf-8 string identifying the connection, passed to u8_connect
-     @param reserve an int indicating the maximum number of open connections 
+     @param reserve an int indicating the maximum number of open connections
        to keep in reserve
      @param cap how many connections to keep alive at any time
      @param init how many initial connections to create
@@ -259,11 +259,11 @@ U8_EXPORT u8_socket u8_reconnect(u8_connpool cb,u8_socket c);
      the resulting structure so that subsequent calls with identical
      ids yield the same structure, which is created if neccessary.
      @param id a utf-8 string identifying the connection, passed to u8_connect
-     @param reserve an int indicating the maximum number of open connections 
+     @param reserve an int indicating the maximum number of open connections
        to keep in reserve
-     @param cap an int indicating the maximum number of open connections 
+     @param cap an int indicating the maximum number of open connections
        for this pool
-     @param init an int indicating the number of initial connections 
+     @param init an int indicating the number of initial connections
        to open
      @returns a pointer to a connpool
      If the cap and reserve values are negative, the current or default
@@ -308,8 +308,8 @@ typedef struct U8_MAILHEADER {
 typedef struct U8_MAILHEADER *u8_mailheader;
 
 U8_EXPORT int u8_smtp(char *mailhost,char *maildomain,
-		      char *from,char *dest,char *ctype,
-		      int n_headers, u8_mailheader *headers,
-		      unsigned char *message,int message_len);
+                      char *from,char *dest,char *ctype,
+                      int n_headers, u8_mailheader *headers,
+                      unsigned char *message,int message_len);
 
 #endif /* U8_U8NETFNS_H */

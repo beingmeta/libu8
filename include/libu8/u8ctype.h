@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -51,7 +51,7 @@ typedef struct U8_DECOMPOSITION {
 typedef struct U8_DECOMPOSITION *u8_decomposition;
 
 /** struct U8_CHARINFO_TABLE
-     is used to store additional character info not provided 
+     is used to store additional character info not provided
      by the statically defined tables.
 **/
 U8_EXPORT const struct U8_CHARINFO_TABLE {
@@ -73,18 +73,18 @@ U8_EXPORT int u8_base_char(unsigned int ch);
   ((c<u8_charinfo_size) ? (u8_chardata[c]) : (u8_lookup_chardata(c)))
 
 /** Returns 1 if its argument is an alphabetic unicode point. **/
-#define u8_isalpha(c) ((c>=0) && ((u8_getcharinfo(c)) < 6)) 
+#define u8_isalpha(c) ((c>=0) && ((u8_getcharinfo(c)) < 6))
 /** Returns 1 if its argument is a lower-case alphabetic unicode point. **/
-#define u8_islower(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_LOWER_LETTER)) 
+#define u8_islower(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_LOWER_LETTER))
 /** Returns 1 if its argument is an upper-case alphabetic unicode point. **/
 #define u8_isupper(c) \
   ((c>=0) && \
    (((u8_getcharinfo(c)) == U8_UPPER_LETTER) || \
     ((u8_getcharinfo(c)) == U8_TITLE_LETTER)))
 /** Returns 1 if its argument is modifier unicode point. **/
-#define u8_ismodifier(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_MODIFIER_LETTER)) 
+#define u8_ismodifier(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_MODIFIER_LETTER))
 /** Returns 1 if its argument is numeric digit unicode point. **/
-#define u8_isdigit(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_NUMBER)) 
+#define u8_isdigit(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_NUMBER))
 /** Returns 1 if its argument is a punctuation character. **/
 #define u8_ispunct(c)                                \
   ((c>=0) &&                                         \
@@ -94,12 +94,12 @@ U8_EXPORT int u8_base_char(unsigned int ch);
     ((u8_getcharinfo(c)) == U8_MARK)))
 /** Returns 1 if its argument is a printing character (letter,digit,punct) **/
 #define u8_isprint(c)                                \
-  ((c>=0) &&					     \
+  ((c>=0) &&                                         \
    ((u8_isalpha(c))                               || \
     (u8_isdigit(c))                               || \
     ((u8_getcharinfo(c)) == U8_GLUE_PUNCTUATION)  || \
     ((u8_getcharinfo(c)) == U8_BREAK_PUNCTUATION) || \
-    ((u8_getcharinfo(c)) == U8_SYMBOL) ||	     \
+    ((u8_getcharinfo(c)) == U8_SYMBOL) ||            \
     ((u8_getcharinfo(c)) == U8_MARK)))
 /** Returns 1 if its argument is whitespace unicode point. **/
 #define u8_isspace(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_SEPARATOR))
@@ -117,7 +117,7 @@ U8_EXPORT int u8_base_char(unsigned int ch);
 /** Returns 1 if its argument is a standard control character. **/
 #define u8_isctrl(c) ((c>=0) && ((c<0x20) || ((c>0x7e) && (c<0x9f))))
 /** Returns 1 if its argument is an alphanumeric unicode point. **/
-#define u8_isalnum(c) ((c>=0) && (((u8_getcharinfo(c)) < 6) || (u8_isdigit(c)))) 
+#define u8_isalnum(c) ((c>=0) && (((u8_getcharinfo(c)) < 6) || (u8_isdigit(c))))
 /** Returns 1 if its argument is an ASCII hex digit. **/
 #define u8_isxdigit(c) ((c>=0) && ((c<128) && (isxdigit(c))))
 /** Returns 1 if its argument is an ASCII octal digit. **/
@@ -141,7 +141,7 @@ U8_EXPORT int u8_base_char(unsigned int ch);
 
 /** Converts an XML entity name into the corresponding code point.
     This returns -1 for unrecognized or invalid entity names.
-    @param name a utf-8 (ASCII) name. 
+    @param name a utf-8 (ASCII) name.
     @returns a unicode code point or -1 on error.
 **/
 U8_EXPORT int u8_entity2code(u8_string name);
@@ -190,4 +190,3 @@ U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_byte **endp);
 U8_EXPORT void u8_set_charinfo(int n,unsigned char *info,short *data);
 
 #endif
-

@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -67,16 +67,16 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
   if (stdoutISstderr<0) u8_check_stdio();
   if (stdoutISstderr) {
     if ((priority<=u8_stderr_loglevel) ||
-	(priority<=u8_stdout_loglevel)) {
+        (priority<=u8_stdout_loglevel)) {
       if ((prefix) && (c))
-	fprintf(stderr,"[%s %s (%s): %s]\n",
-		prefix,u8_loglevels[priority],c,indented);
+        fprintf(stderr,"[%s %s (%s): %s]\n",
+                prefix,u8_loglevels[priority],c,indented);
       else if (prefix)
-	fprintf(stderr,"[%s %s: %s]\n",
-		prefix,u8_loglevels[priority],indented);
+        fprintf(stderr,"[%s %s: %s]\n",
+                prefix,u8_loglevels[priority],indented);
       else if (c)
-	fprintf(stderr,"[%s (%s): %s]\n",
-		u8_loglevels[priority],c,indented);
+        fprintf(stderr,"[%s (%s): %s]\n",
+                u8_loglevels[priority],c,indented);
       else fprintf(stderr,"[%s: %s]\n",u8_loglevels[priority],indented);
       if ((indented)&&(msg!=indented)) u8_free(indented);
       return 1;}
@@ -84,25 +84,25 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
   if (priority<=u8_stderr_loglevel) {
     if ((prefix) && (c))
       fprintf(stderr,"[%s %s (%s): %s]\n",
-	      prefix,u8_loglevels[priority],c,indented);
+              prefix,u8_loglevels[priority],c,indented);
     else if (prefix)
       fprintf(stderr,"[%s %s: %s]\n",
-	      prefix,u8_loglevels[priority],indented);
+              prefix,u8_loglevels[priority],indented);
     else if (c)
       fprintf(stderr,"[%s (%s): %s]\n",
-	      u8_loglevels[priority],c,indented);
+              u8_loglevels[priority],c,indented);
     else fprintf(stderr,"[%s: %s]\n",u8_loglevels[priority],indented);
     output=1;}
   if (priority<=u8_stdout_loglevel) {
     if ((prefix) && (c))
       fprintf(stdout,"[%s %s (%s): %s]\n",
-	      prefix,u8_loglevels[priority],c,indented);
+              prefix,u8_loglevels[priority],c,indented);
     else if (prefix)
       fprintf(stdout,"[%s %s: %s]\n",
-	      prefix,u8_loglevels[priority],indented);
+              prefix,u8_loglevels[priority],indented);
     else if (c)
       fprintf(stdout,"[%s (%s): %s]\n",
-	      u8_loglevels[priority],c,indented);
+              u8_loglevels[priority],c,indented);
     else fprintf(stdout,"[%s: %s]\n",u8_loglevels[priority],indented);
     fflush(stdout);
     output=1;}
@@ -124,11 +124,11 @@ static void raisefn(u8_condition ex,u8_context cxt,u8_string details)
   if (details)
     if (cxt)
       u8_printf(&out,"Aborting due to %m@%s: %m",ex,cxt,details);
-    else u8_printf(&out,"Aborting due to %m: %m",ex,details);  
+    else u8_printf(&out,"Aborting due to %m: %m",ex,details);
   else if (cxt)
     u8_printf(&out,"Aborting due to %m@%s",ex,cxt);
   else u8_printf(&out,"Aborting due to %m",ex);
-  
+
   fprintf(stderr,"%s\n",out.u8_outbuf);
   exit(1);
 }
@@ -151,7 +151,7 @@ U8_EXPORT void u8_check_stdio()
     if (fstat(1,&outstat)<0) stdoutISstderr=0;
     if (fstat(2,&errstat)<0) stdoutISstderr=0;
     else if ((outstat.st_dev==errstat.st_dev) &&
-	     (outstat.st_ino==errstat.st_ino))
+             (outstat.st_ino==errstat.st_ino))
       stdoutISstderr=1;
     else stdoutISstderr=0;}
 #else
@@ -221,7 +221,7 @@ static void warn(u8_string msg)
 
 #define UTF8_ENC 0
 #define LATIN1_ENC 1
-#define ASCII_ENC 2 
+#define ASCII_ENC 2
 
 static int lite_encoding=UTF8_ENC;
 
@@ -248,14 +248,14 @@ U8_EXPORT void u8_fputs(u8_string s,FILE *f)
     u8_byte *scan=s, *start=s;
     while (*scan)
       if (*scan>=0x80) {
-	int c, retval=0;
-	if (scan>start) retval=fwrite(start,1,scan-start,f);
-	if (retval<0) {
-	  u8_log(LOG_WARN,"u8_fputs",u8_strdup(strerror(errno)));
-	  errno=0;}
-	c=u8_sgetc(&scan); start=scan;
-	if (c<maxchar) fputc(c,f);
-	else fprintf(f,"\\u%04x",c);}
+        int c, retval=0;
+        if (scan>start) retval=fwrite(start,1,scan-start,f);
+        if (retval<0) {
+          u8_log(LOG_WARN,"u8_fputs",u8_strdup(strerror(errno)));
+          errno=0;}
+        c=u8_sgetc(&scan); start=scan;
+        if (c<maxchar) fputc(c,f);
+        else fprintf(f,"\\u%04x",c);}
       else scan++;
     nbytes=fwrite(start,1,scan-start,f);
     if (nbytes<0) {
@@ -265,7 +265,7 @@ U8_EXPORT void u8_fputs(u8_string s,FILE *f)
 
 U8_EXPORT void u8_fprintf(FILE *f,u8_string format_string,...)
 {
-  struct U8_OUTPUT out; va_list args; 
+  struct U8_OUTPUT out; va_list args;
   U8_INIT_OUTPUT(&out,512);
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
@@ -277,7 +277,7 @@ U8_EXPORT void u8_fprintf(FILE *f,u8_string format_string,...)
 #if HAVE_SYSLOG
 U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 {
-  struct U8_OUTPUT out; va_list args; 
+  struct U8_OUTPUT out; va_list args;
   U8_INIT_OUTPUT(&out,512);
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
@@ -288,7 +288,7 @@ U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 #else
 U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 {
-  struct U8_OUTPUT out; va_list args; 
+  struct U8_OUTPUT out; va_list args;
   U8_INIT_OUTPUT(&out,512);
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);

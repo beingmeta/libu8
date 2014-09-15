@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -94,7 +94,7 @@ typedef struct U8_SUBSCRIPTION {
   struct U8_SUBSCRIPTION *next;}
   U8_SUBSCRIPTION;
 /** A pointer to a subscription structure. **/
-typedef struct U8_SUBSCRIPTION *u8_subscription; 
+typedef struct U8_SUBSCRIPTION *u8_subscription;
 
 /** Arranges for an action when a file changes.
     Creates a *subscription* which will call fn(filename,data) both

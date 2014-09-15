@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -24,14 +24,14 @@
 #if HAVE_SYSLOG
 #include <syslog.h>
 #else
-#define	LOG_EMERG	0	/* system is unusable */
-#define	LOG_ALERT	1	/* action must be taken immediately */
-#define	LOG_CRIT	2	/* critical conditions */
-#define	LOG_ERR		3	/* error conditions */
-#define	LOG_WARNING	4	/* warning conditions */
-#define	LOG_NOTICE	5	/* normal but significant condition */
-#define	LOG_INFO	6	/* informational */
-#define	LOG_DEBUG	7	/* debug-level messages */
+#define LOG_EMERG       0       /* system is unusable */
+#define LOG_ALERT       1       /* action must be taken immediately */
+#define LOG_CRIT        2       /* critical conditions */
+#define LOG_ERR         3       /* error conditions */
+#define LOG_WARNING     4       /* warning conditions */
+#define LOG_NOTICE      5       /* normal but significant condition */
+#define LOG_INFO        6       /* informational */
+#define LOG_DEBUG       7       /* debug-level messages */
 #endif
 
 /* Our own little addition */
@@ -105,7 +105,7 @@ U8_EXPORT void u8_bind_logfn(u8_logfn f);
    @param c a string describing the condition (possibly NULL)
    @param message the content of the message to be emmited
    @returns 1 if the call actually produced output somewhere
-**/      
+**/
 U8_EXPORT int u8_logger(int priority,u8_condition c,u8_string message);
 
 /** Possibly formats a log message for an (optional) condition.
@@ -116,30 +116,30 @@ U8_EXPORT int u8_logger(int priority,u8_condition c,u8_string message);
    @param format_string a utf-8 printf-like format string
    @param ... arguments for the format string
    @returns 1 if the call actually produced output somewhere
-**/      
+**/
 U8_EXPORT int u8_log(int priority,u8_condition c,u8_string format_string,...);
 U8_EXPORT int u8_message(u8_string format_string,...);
 
 /** Sets the function used for log messages
    @param logfn
    @returns the previous logfn
-**/      
+**/
 U8_EXPORT u8_logfn u8_set_logfn(u8_logfn logfn);
 
 /** Sets the prefix and suffix string for non-syslog log messages
    @param prefix
    @param suffix
    @returns void
-**/      
+**/
 U8_EXPORT void u8_set_logixes(u8_string prefix, u8_string suffix);
 
 /** Sets the indentation string for log messages
    @param indent a string to be used as the indentation for log messages
    @returns void
-**/      
+**/
 U8_EXPORT void u8_set_logindent(u8_string indent);
 
-/** Generates a message prefix into the given buffer, 
+/** Generates a message prefix into the given buffer,
      with output including process information controlled
      by the various u8_log_show variables.
     If buflen doesn't allow all the information to be shown,

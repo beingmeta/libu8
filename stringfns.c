@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -217,19 +217,19 @@ int u8_validate(u8_byte *s,int len)
 {
   int sz=get_utf8_size(*s);
   u8_byte *limit=s+len, *start=s;
-  while ((s<limit) && ((sz=get_utf8_size(*s))>0)) 
+  while ((s<limit) && ((sz=get_utf8_size(*s))>0))
     if (s+sz>limit)
       return s-start;
     else s=s+sz;
   return s-start;
-}  
+}
 
 U8_EXPORT
 /* u8_valid_copy:
      Input: a string which should be UTF-8 encoded
      Output: a utf-8 encoding string
 Copies its argument, converting invalid UTF-8 sequences into
-sequences of latin-1 characters. This always returns a valid UTF8 
+sequences of latin-1 characters. This always returns a valid UTF8
 string. */
 u8_string u8_valid_copy(u8_byte *s)
 {
@@ -247,7 +247,7 @@ U8_EXPORT
      Input: a string which should be UTF-8 encoded
      Output: a utf-8 encoding string
 Copies its argument, converting invalid UTF-8 sequences into
-sequences of latin-1 characters. This always returns a valid UTF8 
+sequences of latin-1 characters. This always returns a valid UTF8
 string. */
 u8_string u8_convert_crlfs(u8_byte *s)
 {
@@ -319,7 +319,7 @@ u8_string u8_string_append(u8_string first_string,...)
 
 U8_EXPORT
 /* u8_decompose:
-    Arguments: a UTF-8 string 
+    Arguments: a UTF-8 string
     Returns: the decomposed string representation
 */
 u8_string u8_decompose(u8_string string)
@@ -417,7 +417,7 @@ U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent)
     u8_byte *read=input, *write=output; scan=read;
     while ((scan=strchr(read,'\n'))) {
       int n_bytes=scan-read;
-      strncpy(write,read,n_bytes); write=write+n_bytes; *write++='\n'; 
+      strncpy(write,read,n_bytes); write=write+n_bytes; *write++='\n';
       strncpy(write,indent,indent_len); write=write+indent_len;
       read=scan+1;}
     strcpy(write,read);

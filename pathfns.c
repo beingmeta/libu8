@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -110,11 +110,11 @@ U8_EXPORT u8_string u8_mkpath(u8_string dir,u8_string base)
     else if ((base[0]=='.')&&(base[1]=='.')&&(base[2]=='/')) {
       u8_byte *lastslash=strrchr(result,'/');
       if (lastslash) {
-	*lastslash='\0'; dirlen=(lastslash-result);
-	base=base+3;}
+        *lastslash='\0'; dirlen=(lastslash-result);
+        base=base+3;}
       else {
-	result[0]='\0'; dirlen=0;
-	base=base+3;}}
+        result[0]='\0'; dirlen=0;
+        base=base+3;}}
     else break;}
   if (dirlen>0) {
     result[dirlen]='/';
@@ -169,7 +169,7 @@ U8_EXPORT u8_string u8_dirname(u8_string path)
     u8_byte *dirend=strrchr(copy,'/');
     if ((dirend)&&(dirend[1]=='\0')) {
       /* If the slash is at the end of the string,
-	 use the next one. */
+         use the next one. */
       *dirend='\0'; dirend=strrchr(copy,'/');}
     if (dirend) {dirend[1]='\0'; return copy;}
     else return copy;}
@@ -200,7 +200,7 @@ U8_EXPORT
 #if HAVE_REALPATH
 u8_string u8_realpath(u8_string path,u8_string wd)
 {
-  u8_string abspath=u8_abspath(path,wd); 
+  u8_string abspath=u8_abspath(path,wd);
   if (abspath) {
     char *result=realpath(abspath,NULL);
     if (result) {
@@ -225,5 +225,3 @@ U8_EXPORT void u8_init_pathfns_c()
 {
   u8_register_source_file(_FILEINFO);
 }
-
-

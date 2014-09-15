@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -52,8 +52,8 @@ int u8_getrusage(int who,struct rusage *r)
     int retval;
     long long total, res, shared, textsize, data, library, dirty_size;
     retval=fscanf(f,"%Ld %Ld %Ld %Ld %Ld %Ld %Ld",
-		  &total,&res,&shared,
-		  &textsize,&library,&data,&dirty_size);
+                  &total,&res,&shared,
+                  &textsize,&library,&data,&dirty_size);
     if (retval<0) return -1;
     /* These numbers are not entirely correct, but they're more
        correct than 0! */
@@ -88,11 +88,11 @@ static MAYBE_UNUSED size_t procfs_memusage()
   if (f==NULL) return 0;
   else
     retval=fscanf(f,"%d %s %c %d %d %d %d %d %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Ld %Ld %Ld %Ld %Ld %Ld %Lu %Lu %Lu %Ld %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu",
-		  &pid,comm,&state,&ppid,&pgrp,&session,&tty,&tpgid,&flags,&minflt,&cminflt,&majflt,
-		  &cmajflt,&utime,&stime,&cutime,&cstime,&priority,&nice,&zero,&itrealvalue,&starttime,
-		  &vsize,&rss,&rlim,&startcode,&endcode,&startstack,&kstkesp,&kstkeip,&signal,&blocked,
-		  &sigignore,&sigcatch,&wchan,&nswap,&cnswap,&exit_signal,&processor,&rt_priority,
-		  &policy,&huh);
+                  &pid,comm,&state,&ppid,&pgrp,&session,&tty,&tpgid,&flags,&minflt,&cminflt,&majflt,
+                  &cmajflt,&utime,&stime,&cutime,&cstime,&priority,&nice,&zero,&itrealvalue,&starttime,
+                  &vsize,&rss,&rlim,&startcode,&endcode,&startstack,&kstkesp,&kstkeip,&signal,&blocked,
+                  &sigignore,&sigcatch,&wchan,&nswap,&cnswap,&exit_signal,&processor,&rt_priority,
+                  &policy,&huh);
   fclose(f);
   if (retval<0)
     return retval;
@@ -117,16 +117,16 @@ U8_EXPORT u8_string u8_rusage_string(struct rusage *r)
   struct U8_OUTPUT out;
   U8_INIT_OUTPUT(&out,256);
   u8_printf(&out,"total=%f",
-	    ((double)(r->ru_utime.tv_sec))+
-	    ((double)(r->ru_stime.tv_sec))+
-	    (((double)(r->ru_utime.tv_usec))/1000000)+
-	    (((double)(r->ru_stime.tv_usec))/1000000));
+            ((double)(r->ru_utime.tv_sec))+
+            ((double)(r->ru_stime.tv_sec))+
+            (((double)(r->ru_utime.tv_usec))/1000000)+
+            (((double)(r->ru_stime.tv_usec))/1000000));
   u8_printf(&out,",user=%f",
-	    ((double)(r->ru_utime.tv_sec))+
-	    (((double)(r->ru_utime.tv_usec))/1000000));
+            ((double)(r->ru_utime.tv_sec))+
+            (((double)(r->ru_utime.tv_usec))/1000000));
   u8_printf(&out,",system=%f",
-	    ((double)(r->ru_stime.tv_sec))+
-	    (((double)(r->ru_stime.tv_usec))/1000000));
+            ((double)(r->ru_stime.tv_sec))+
+            (((double)(r->ru_stime.tv_usec))/1000000));
   if (r->ru_maxrss) u8_printf(&out,",maxrss=%ld",r->ru_maxrss);
   if (r->ru_ixrss) u8_printf(&out,",ixrss=%ld",r->ru_ixrss);
   if (r->ru_idrss) u8_printf(&out,",idrss=%ld",r->ru_idrss);

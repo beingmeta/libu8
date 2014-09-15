@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -25,8 +25,8 @@
      functions are intended to represent most possible timezones, rather
      than just the local time and GMT.  U8_XTIME structures
      are populated by u8_now, u8_localtime, and u8_iso8601_to_xtime.
-     u8_mktime returns a time_t value from a U8_XTIME pointer and 
-     u8_xtime_to_iso8601 outputs a printed representation of U8_XTIME.  
+     u8_mktime returns a time_t value from a U8_XTIME pointer and
+     u8_xtime_to_iso8601 outputs a printed representation of U8_XTIME.
      (Also see the explanation of the %t conversion in the u8printf
      docmentation.)  Finally, u8_xtime_diff and u8_xtime_plus
      do precision-sensitive arithmetic on U8_XTIME structures.
@@ -85,7 +85,7 @@ typedef struct U8_XTIME *u8_xtime;
 
 #define u8_dbltime(tm) \
      (((tm).tv_sec*1000000.0)+(((tm).tv_usec)*1.0))
-#define u8_dbldifftime(later,earlier)				\
+#define u8_dbldifftime(later,earlier)                           \
   (((((later).tv_sec)-((earlier).tv_sec))*1000000.0)+((((later).tv_usec)-((earlier).tv_usec))*1.0))
 
 /** Populates a U8_XTIME structure based on a POSIX time_t value.
@@ -176,8 +176,8 @@ U8_EXPORT time_t u8_mktime(struct U8_XTIME *xt);
 U8_EXPORT time_t u8_mklocaltime(struct U8_XTIME *xt);
 
 /** Sets the time precision of a U8_XTIME structure.
-    @param xt a pointer to a U8_XTIME structure.   
-    @param tp a precision value (u8_tmprec), including 
+    @param xt a pointer to a U8_XTIME structure.
+    @param tp a precision value (u8_tmprec), including
        u8_year, u8_month, u8_day, u8_hour, u8_minute, u8_second,
        u8_millisecond, u8_microsecond, or u8_nanosecond.
     @returns void
@@ -310,7 +310,7 @@ U8_EXPORT
    @returns an array of 16 bytes
  */
 u8_uuid u8_consuuid(struct U8_XTIME *xtime,long long nodeid,short clockid,
-		    u8_uuid buf);
+                    u8_uuid buf);
 
 U8_EXPORT
 /**

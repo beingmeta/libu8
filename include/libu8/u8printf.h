@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -38,7 +38,7 @@
     operators (%d, %s, %f, %%, etc) and generally uses sprintf to
     generate the output string, so most of the optional flags work
     as well.  In addition to any new operators defined by external
-    modules, libu8 provides two special operators %m and %t for 
+    modules, libu8 provides two special operators %m and %t for
     internationalization and date/time display respectively.
     + %m calls gettext on its argument to return a translated version
          appropriate to the current locale;

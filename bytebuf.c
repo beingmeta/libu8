@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -39,19 +39,19 @@ U8_EXPORT int _u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
       bb->u8_lim=buf+bufsize;}
     else return u8_reterr(u8_MallocFailed,"u8_bufwrite",NULL);}
   else if (((bb->u8_ptr)+len)>=(bb->u8_lim)) {
-    if (bb->u8_growbuf==0) 
+    if (bb->u8_growbuf==0)
       return u8_reterr(u8_FixedBufOverflow,"u8_bufwrite",NULL);
     else {
       unsigned int ptroff=(bb->u8_ptr)-(bb->u8_buf);
       unsigned int bufsize=(bb->u8_lim)-(bb->u8_buf);
       unsigned int newsize=
-	((bb->u8_growbuf==1)?(bufsize*2):(bufsize+bb->u8_growbuf));
+        ((bb->u8_growbuf==1)?(bufsize*2):(bufsize+bb->u8_growbuf));
       unsigned char *newbuf=u8_realloc(bb->u8_buf,newsize);
       if (newbuf) {
-	memset(newbuf+ptroff,0,newsize-ptroff);
-	bb->u8_buf=newbuf;
-	bb->u8_ptr=newbuf+ptroff;
-	bb->u8_lim=newbuf+newsize;}
+        memset(newbuf+ptroff,0,newsize-ptroff);
+        bb->u8_buf=newbuf;
+        bb->u8_ptr=newbuf+ptroff;
+        bb->u8_lim=newbuf+newsize;}
       else return u8_reterr(u8_MallocFailed,"u8_bufwrite",NULL);}}
   memcpy(bb->u8_ptr,buf,len);
   bb->u8_ptr=bb->u8_ptr+len;

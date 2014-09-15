@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -114,13 +114,13 @@ static int fill_xinput(struct U8_XINPUT *xf)
   /* input_offset is the read position of the input stream. */
   input_offset=xf->u8_inptr-xf->u8_inbuf;
   /* Position the temporary output stream at the end of the valid input. */
-  tmpout.u8_outptr=xf->u8_inlim; 
+  tmpout.u8_outptr=xf->u8_inlim;
   /* Now we do the actual conversion, where u8_convert writes into the
      string stream passed it as its first argument. If this has any trouble,
      it will stop and reader will hold the most recent conversion state. */
   convert_val=
     u8_convert(xf->encoding,(xf->u8_streaminfo&U8_STREAM_CRLFS),
-	       &tmpout,&reader,limit);
+               &tmpout,&reader,limit);
   /* If tmpout grew its buffer, we need to free the old buffer here. */
   if (((xf->u8_inbuf)!=(tmpout.u8_outbuf)) &&
       ((xf->u8_streaminfo)&(U8_STREAM_OWNS_BUF)))
@@ -205,7 +205,7 @@ U8_EXPORT struct U8_XINPUT *u8_open_input_file
     return xi;}
   else {
     u8_seterr(u8_strerror(errno),"u8_open_input_file",
-	      u8_strdup(filename));
+              u8_strdup(filename));
     return NULL;}
 }
 
@@ -230,8 +230,8 @@ static int flush_xoutput(struct U8_XOUTPUT *xf)
     u8_byte *scan=xf->u8_outbuf, *scan_end=xf->u8_outptr;
     /* Convert the data to the appropriate encoding */
     u8_localize(xf->encoding,&scan,scan_end,
-		xf->escape,(xf->u8_streaminfo&U8_STREAM_CRLFS),
-		buf,&buflen);
+                xf->escape,(xf->u8_streaminfo&U8_STREAM_CRLFS),
+                buf,&buflen);
     /* Write it out to the file descriptor */
     u8_writeall(xf->fd,buf,buflen);
     /* Write over what you just wrote out with what you haven't written
@@ -305,7 +305,7 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
     return out;}
   else {
     u8_seterr(u8_strerror(errno),"u8_open_output_file",
-	      u8_strdup(filename));
+              u8_strdup(filename));
     return NULL;}
 }
 
@@ -351,16 +351,16 @@ U8_EXPORT off_t u8_endpos(struct U8_STREAM *f)
       off_t cur=lseek(out->fd,0,SEEK_CUR);
       off_t end=lseek(out->fd,0,SEEK_END);
       if (lseek(out->fd,cur,SEEK_SET)<0) {
-	u8_seterr("lost current pos","u8_endpos",NULL);
-	return -1;}
+        u8_seterr("lost current pos","u8_endpos",NULL);
+        return -1;}
       else return end;}
     else {
       struct U8_XINPUT *in=(struct U8_XINPUT *)f;
       off_t cur=lseek(in->fd,0,SEEK_CUR);
       off_t end=lseek(in->fd,0,SEEK_END);
       if (lseek(in->fd,cur,SEEK_SET)<0) {
-	u8_seterr("lost current pos","u8_endpos",NULL);
-	return -1;}
+        u8_seterr("lost current pos","u8_endpos",NULL);
+        return -1;}
       else return end;}
   else {
     u8_seterr(u8_nopos,"u8_setpos",NULL);
@@ -376,8 +376,8 @@ U8_EXPORT double u8_getprogress(struct U8_STREAM *f)
       off_t cur=lseek(out->fd,0,SEEK_CUR);
       off_t end=lseek(out->fd,0,SEEK_END);
       if (lseek(out->fd,cur,SEEK_SET)<0) {
-	u8_seterr("lost current pos","u8_endpos",NULL);
-	return -1.0;}
+        u8_seterr("lost current pos","u8_endpos",NULL);
+        return -1.0;}
       else return 100.0*(((double)(cur+delta))/((double)end));}
     else {
       struct U8_XINPUT *in=(struct U8_XINPUT *)f;
@@ -385,8 +385,8 @@ U8_EXPORT double u8_getprogress(struct U8_STREAM *f)
       off_t cur=lseek(in->fd,0,SEEK_CUR);
       off_t end=lseek(in->fd,0,SEEK_END);
       if (lseek(in->fd,cur,SEEK_SET)<0) {
-	u8_seterr("lost current pos","u8_endpos",NULL);
-	return -1.0;}
+        u8_seterr("lost current pos","u8_endpos",NULL);
+        return -1.0;}
       else return 100.0*(((double)(cur-delta))/((double)end));}
   else {
     u8_seterr(u8_nopos,"u8_setpos",NULL);
@@ -425,7 +425,7 @@ U8_EXPORT void u8_deregister_open_xfile(struct U8_XOUTPUT *out)
 {
   struct U8_OPEN_XFILES *scan=open_xfiles, **head=&open_xfiles;
   u8_lock_mutex((&xfile_registry_lock));
-  while (scan) 
+  while (scan)
     if (scan->xfile == out) {
       *head=scan->next; u8_free(scan);
       u8_unlock_mutex((&xfile_registry_lock));

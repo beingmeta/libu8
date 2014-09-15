@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -112,7 +112,7 @@ long long u8_millitime()
     /* In WIN32, ftime doesn't return an error value.
        ?? We should really do something respectable here.*/
     ftime(&now);
-#else 
+#else
     if (ftime(&now) < 0) return -1;
     else return now.time*1000+now.millitm;
 #endif
@@ -402,7 +402,7 @@ U8_EXPORT
 void u8_set_xtime_gmtoff(struct U8_XTIME *xt,int tzoff,int dstoff)
 {
   u8_init_xtime(xt,((xt->u8_tick)-tzoff),xt->u8_prec,
-		xt->u8_nsecs,tzoff,dstoff);
+                xt->u8_nsecs,tzoff,dstoff);
 }
 
 U8_EXPORT
@@ -440,7 +440,7 @@ double u8_xtime_diff(struct U8_XTIME *xt,struct U8_XTIME *yt)
   double ysecs=((double)(yt->u8_tick))+(0.000000001*yt->u8_nsecs);
   double totaldiff=xsecs-ysecs;
 #if 0 /* This doesn't seem to work, but the idea is to only return a result
-	 as precise as is justified. */
+         as precise as is justified. */
   enum u8_timestamp_precision result_precision=
     ((xt->u8_prec<yt->u8_prec) ? (xt->u8_prec) : (yt->u8_prec));
   double precfactor=getprecfactor(result_precision);
@@ -456,7 +456,7 @@ U8_EXPORT
 */
 time_t u8_xtime_to_tptr(struct U8_XTIME *xt,struct tm *tm)
 {
-  
+
   memset(tm,0,sizeof(struct tm));
   copy_xt2tm(xt,tm);
   tm->tm_gmtoff=xt->u8_tzoff;
@@ -491,7 +491,7 @@ static struct TZENTRY tzones[]= {
   {"Z",0,0},
   {"GMT",0,0},
   {"UT",0,0},
-  {"UTC",0,0},  
+  {"UTC",0,0},
   {"EST",-5*3600,0},
   {"EDT",-5*3600,3600},
   {"CST",-6*3600,0},
@@ -564,9 +564,9 @@ void u8_apply_tzspec(struct U8_XTIME *xt,u8_string s)
     struct TZENTRY *zones=tzones;
     while ((*zones).name)
       if (strcasecmp(s,(*zones).name) == 0) {
-	xt->u8_tzoff=(*zones).tzoff;
-	xt->u8_dstoff=(*zones).dstoff;
-	return;}
+        xt->u8_tzoff=(*zones).tzoff;
+        xt->u8_dstoff=(*zones).dstoff;
+        return;}
       else zones++;}
 }
 
@@ -587,17 +587,17 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
   if (strchr(s,'/')) return (time_t) -1;
   memset(xtp,0,sizeof(struct U8_XTIME));
   n_elts=sscanf(s,"%04u-%02hhu-%02hhuT%02hhu:%02hhu:%02hhu.%u",
-		&xtp->u8_year,&xtp->u8_mon,
-		&xtp->u8_mday,&xtp->u8_hour,
-		&xtp->u8_min,&xtp->u8_sec,
-		&nsecs);
+                &xtp->u8_year,&xtp->u8_mon,
+                &xtp->u8_mday,&xtp->u8_hour,
+                &xtp->u8_min,&xtp->u8_sec,
+                &nsecs);
   if ((n_elts == 1)&&(len>4)) {
     /* Assume basic format */
     n_elts=sscanf(s,"%04u%02hhu%02hhuT%02hhu%02hhu%02hhu.%u",
-		  &xtp->u8_year,&xtp->u8_mon,
-		  &xtp->u8_mday,&xtp->u8_hour,
-		  &xtp->u8_min,&xtp->u8_sec,
-		  &nsecs);
+                  &xtp->u8_year,&xtp->u8_mon,
+                  &xtp->u8_mday,&xtp->u8_hour,
+                  &xtp->u8_min,&xtp->u8_sec,
+                  &nsecs);
     pos=basicpos;}
   /* Give up if you can't parse anything */
   if (n_elts == 0) return (time_t) -1;
@@ -647,8 +647,8 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int flags)
   if ((flags)&(U8_ISO8601_UTC)&&
       ((xt->u8_tzoff!=0)||(xt->u8_dstoff!=0))) {
     u8_init_xtime(&utc,xt->u8_tick,prec,
-		  ((prec>u8_second)?(xt->u8_nsecs):(0)),
-		  0,0);
+                  ((prec>u8_second)?(xt->u8_nsecs):(0)),
+                  0,0);
     xtptr=&utc;}
   else xtptr=xt;
   switch (prec) {
@@ -656,49 +656,49 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int flags)
     sprintf(buf,"%04d",xtptr->u8_year); break;
   case u8_month:
     sprintf(buf,"%04d%s%02d",
-	    xtptr->u8_year,dash,xtptr->u8_mon+1); break;
+            xtptr->u8_year,dash,xtptr->u8_mon+1); break;
   case u8_day:
     sprintf(buf,"%04d%s%02d%s%02d",
-	    xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday); break;
+            xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday); break;
   case u8_hour:
     sprintf(buf,"%04d%s%02d%s%02dT%02d",
-	    xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday,
-	    xtptr->u8_hour);
+            xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday,
+            xtptr->u8_hour);
     break;
   case u8_minute:
     sprintf(buf,"%04d%s%02d%s%02dT%02d%s%02d",
-	    xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday,
-	    xtptr->u8_hour,colon,xtptr->u8_min);
+            xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday,
+            xtptr->u8_hour,colon,xtptr->u8_min);
     break;
     /* u8_maxtmprec should never get this var */
   case u8_maxtmprec:
     u8_log(LOG_WARN,"xtime_to_iso8601","Invalid precision %d for tick=%ld",
-	   (int)prec,(long long)(xtptr->u8_tick));
+           (int)prec,(long long)(xtptr->u8_tick));
   case u8_second:
     sprintf(buf,"%04d%s%02d%s%02dT%02d%s%02d%s%02d",
-	    xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday,
-	    xtptr->u8_hour,colon,xtptr->u8_min,colon,xtptr->u8_sec);
+            xtptr->u8_year,dash,xtptr->u8_mon+1,dash,xtptr->u8_mday,
+            xtptr->u8_hour,colon,xtptr->u8_min,colon,xtptr->u8_sec);
     break;
   case u8_millisecond:
     /* The cases here and below don't exist for the basic format */
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%03d",
-	    xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
-	    xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec,
-	    xtptr->u8_nsecs/1000000); break;
+            xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
+            xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec,
+            xtptr->u8_nsecs/1000000); break;
   case u8_microsecond:
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%06d",
-	    xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
-	    xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec,
-	    xtptr->u8_nsecs/1000); break;
+            xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
+            xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec,
+            xtptr->u8_nsecs/1000); break;
   case u8_nanosecond: case u8_picosecond: case u8_femtosecond:
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d.%09d",
-	    xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
-	    xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec,
-	    xtptr->u8_nsecs); break;
+            xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
+            xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec,
+            xtptr->u8_nsecs); break;
   default:
     sprintf(buf,"%04d-%02d-%02dT%02d:%02d:%02d",
-	    xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
-	    xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec);
+            xtptr->u8_year,xtptr->u8_mon+1,xtptr->u8_mday,
+            xtptr->u8_hour,xtptr->u8_min,xtptr->u8_sec);
     break;}
   if ((flags)&(U8_ISO8601_NOZONE)) tzbuf[0]='\0';
   else if ((xtptr->u8_tzoff) ||  (xtptr->u8_dstoff)) {
@@ -778,20 +778,20 @@ time_t u8_rfc822_to_xtime(u8_string s,struct U8_XTIME *xtp)
   if (strchr(s,'/')) return (time_t) -1;
   tzspec[0]='\0'; dow[0]='\0'; mon[0]='\0';
   memset(xtp,0,sizeof(struct U8_XTIME));
-  if (isdigit(*s)) 
+  if (isdigit(*s))
     n_elts=sscanf(s,"%hhd %s %d %hhd:%hhd:%hhd %s",
-		  &xtp->u8_mday,(char *)&mon,
-		  &xtp->u8_year,
-		  &xtp->u8_hour,
-		  &xtp->u8_min,&xtp->u8_sec,
-		  (char *)tzspec);
+                  &xtp->u8_mday,(char *)&mon,
+                  &xtp->u8_year,
+                  &xtp->u8_hour,
+                  &xtp->u8_min,&xtp->u8_sec,
+                  (char *)tzspec);
   else {
     n_elts=sscanf(s,"%s %hhd %s %d %hhd:%hhd:%hhd %s",
-		  (char *)&dow,&xtp->u8_mday,(char *)&mon,
-		  &xtp->u8_year,
-		  &xtp->u8_hour,
-		  &xtp->u8_min,&xtp->u8_sec,
-		  (char *)tzspec);
+                  (char *)&dow,&xtp->u8_mday,(char *)&mon,
+                  &xtp->u8_year,
+                  &xtp->u8_hour,
+                  &xtp->u8_min,&xtp->u8_sec,
+                  (char *)tzspec);
     xtp->u8_mon=getmonthnum(mon);}
   /* Give up if you can't parse anything */
   if (n_elts == 0) return (time_t) -1;
@@ -817,11 +817,11 @@ void u8_xtime_to_rfc822(u8_output ss,struct U8_XTIME *xtp)
   char buf[128];
   u8_init_xtime(&asgmt,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs,0,0);
   sprintf(buf,"%s, %d %s %04d %02d:%02d:%02d",
-	  dow_names[asgmt.u8_wday],
-	  asgmt.u8_mday,
-	  month_names[asgmt.u8_mon],
-	  (asgmt.u8_year),
-	  asgmt.u8_hour,asgmt.u8_min,asgmt.u8_sec);
+          dow_names[asgmt.u8_wday],
+          asgmt.u8_mday,
+          month_names[asgmt.u8_mon],
+          (asgmt.u8_year),
+          asgmt.u8_hour,asgmt.u8_min,asgmt.u8_sec);
   u8_printf(ss,"%s +0000",buf);
 }
 
@@ -847,16 +847,16 @@ void u8_xtime_to_rfc822_x(u8_output ss,struct U8_XTIME *xtp,int zone,int flags)
     u8_local_xtime(&inzone,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs);
   else u8_init_xtime(&inzone,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs,zone,0);
   sprintf(buf,"%s, %d %s %04d %02d:%02d:%02d",
-	  dow_names[inzone.u8_wday],
-	  inzone.u8_mday,
-	  month_names[inzone.u8_mon],
-	  (inzone.u8_year),
-	  inzone.u8_hour,inzone.u8_min,inzone.u8_sec);
+          dow_names[inzone.u8_wday],
+          inzone.u8_mday,
+          month_names[inzone.u8_mon],
+          (inzone.u8_year),
+          inzone.u8_hour,inzone.u8_min,inzone.u8_sec);
   if (flags&U8_RFC822_NOZONE) u8_puts(ss,buf);
   else {
     int minus=(inzone.u8_tzoff+inzone.u8_dstoff)<0;
     int off=((minus)?(-(inzone.u8_tzoff+inzone.u8_dstoff)):
-	     (inzone.u8_tzoff+inzone.u8_dstoff));
+             (inzone.u8_tzoff+inzone.u8_dstoff));
     int hroff=off/3600, minoff=off%3600/60;
     u8_printf(ss,"%s %s%02d%02d",buf,((minus)?"-":"+"),hroff,minoff);}
 }
@@ -883,7 +883,7 @@ static u8_string time_printf_handler
       struct U8_XTIME *xtarg=va_arg(*args,u8_xtime);
       memcpy(&xt,xtarg,sizeof(struct U8_XTIME));}
   /* Otherwise, the argument is time_t value. */
-  else if (strchr(cmd,'G')) 
+  else if (strchr(cmd,'G'))
     /* Use it as GMT. */
     u8_init_xtime(&xt,va_arg(*args,time_t),u8_second,0,0,0);
   else /* Display it as local time */
@@ -923,13 +923,13 @@ long long u8_uuid_node=-1;
 
 static unsigned long long flip64(unsigned long long _w)
 { return ((((u8ull)(_w&(0xFF))) << 56) |
-	  (((u8ull)(_w&(0xFF00))) << 40) |
-	  (((u8ull)(_w&(0xFF0000))) << 24) |
-	  (((u8ull)(_w&(0xFF000000))) << 8) |
-	  (((u8ull)(_w>>56)) & 0xFF) |
-	  (((u8ull)(_w>>40)) & 0xFF00) |
-	  (((u8ull)(_w>>24)) & 0xFF0000) |
-	  (((u8ull)(_w>>8)) & 0xFF000000));}
+          (((u8ull)(_w&(0xFF00))) << 40) |
+          (((u8ull)(_w&(0xFF0000))) << 24) |
+          (((u8ull)(_w&(0xFF000000))) << 8) |
+          (((u8ull)(_w>>56)) & 0xFF) |
+          (((u8ull)(_w>>40)) & 0xFF00) |
+          (((u8ull)(_w>>24)) & 0xFF0000) |
+          (((u8ull)(_w>>8)) & 0xFF000000));}
 
 #define knuth_hash(i)  ((((u8ull)(i))*2654435761LL)%(0x10000000LL))
 
@@ -1004,7 +1004,7 @@ U8_EXPORT u8_uuid u8_consuuid
     u8_now(&timebuf); xtime=&timebuf;}
   if (clockid<0) clockid=u8_random(256*4*16);
   if (nodeid<0) {
-    if (u8_uuid_node<0) 
+    if (u8_uuid_node<0)
       nodeid=generate_nodeid(0);
     else nodeid=u8_uuid_node;}
   if (u8_uuid_node<0) u8_uuid_node=nodeid;
@@ -1015,13 +1015,13 @@ U8_EXPORT u8_string u8_uuidstring(u8_uuid uuid,u8_byte *buf)
 {
   if (buf==NULL) buf=u8_malloc(37);
   sprintf(buf,
-	  "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-	  ((u8uint)(uuid[0])),((u8uint)(uuid[1])),((u8uint)(uuid[2])),
-	  ((u8uint)(uuid[3])),((u8uint)(uuid[4])),((u8uint)(uuid[5])),
-	  ((u8uint)(uuid[6])),((u8uint)(uuid[7])),((u8uint)(uuid[8])),
-	  ((u8uint)(uuid[9])),((u8uint)(uuid[10])),((u8uint)(uuid[11])),
-	  ((u8uint)(uuid[12])),((u8uint)(uuid[13])),((u8uint)(uuid[14])),
-	  ((u8uint)(uuid[15])));
+          "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+          ((u8uint)(uuid[0])),((u8uint)(uuid[1])),((u8uint)(uuid[2])),
+          ((u8uint)(uuid[3])),((u8uint)(uuid[4])),((u8uint)(uuid[5])),
+          ((u8uint)(uuid[6])),((u8uint)(uuid[7])),((u8uint)(uuid[8])),
+          ((u8uint)(uuid[9])),((u8uint)(uuid[10])),((u8uint)(uuid[11])),
+          ((u8uint)(uuid[12])),((u8uint)(uuid[13])),((u8uint)(uuid[14])),
+          ((u8uint)(uuid[15])));
   return buf;
 }
 
@@ -1029,9 +1029,9 @@ U8_EXPORT u8_uuid u8_parseuuid(u8_string buf,u8_uuid uuid)
 {
   unsigned char *ubuf=((uuid)?(uuid):(u8_malloc(16)));
   u8ull high, low, *highp=((u8ull *)ubuf), *lowp=((u8ull *)(ubuf+8));
-  u8ull head, nodelow; unsigned int nodehigh, b1, b2, b3; 
+  u8ull head, nodelow; unsigned int nodehigh, b1, b2, b3;
   int items=sscanf(buf,"%8llx-%4x-%4x-%4x-%4x%8llx",
-		   &head,&b1,&b2,&b3,&nodehigh,&nodelow);
+                   &head,&b1,&b2,&b3,&nodehigh,&nodelow);
   if (items!=6) {
     if (!(uuid)) u8_free(ubuf);
     return NULL;}
@@ -1062,7 +1062,7 @@ U8_EXPORT long long u8_uuid_nodeid(u8_uuid uuid)
   u8ull *lowp=(u8ull *)(ubuf+8), low=*lowp;
 #else
   u8ull *lowp=(u8ull *)(ubuf+8), low=flip64(*lowp);
-#endif  
+#endif
   if (TIMEUUIDP(ubuf))
     return low&(0xFFFFFFFFFFFFLL);
   else return -1;
@@ -1075,7 +1075,7 @@ U8_EXPORT long long u8_uuid_timestamp(u8_uuid uuid)
   u8ull *highp=(u8ull *)(ubuf), high=*highp;
 #else
   u8ull *highp=(u8ull *)(ubuf), high=flip64(*highp);
-#endif  
+#endif
   if (TIMEUUIDP(ubuf))
     return get_nanotick(high);
   else return -1;
@@ -1088,7 +1088,7 @@ U8_EXPORT time_t u8_uuid_tick(u8_uuid uuid)
   u8ull *highp=(u8ull *)(ubuf), high=*lowp;
 #else
   u8ull *highp=(u8ull *)(ubuf), high=flip64(*highp);
-#endif  
+#endif
   u8ull nanotick=get_nanotick(high);
   if (TIMEUUIDP(ubuf)) {
     time_t tick=((nanotick-122192928000000000LL)/100000000);
@@ -1104,7 +1104,7 @@ U8_EXPORT struct U8_XTIME *u8_uuid_xtime(u8_uuid uuid,struct U8_XTIME *xt)
   u8ull *highp=(u8ull *)(ubuf), high=*highp;
 #else
   u8ull *highp=(u8ull *)(ubuf), high=flip64(*highp);
-#endif  
+#endif
   u8ull nanotick=get_nanotick(high);
   if (!(TIMEUUIDP(ubuf))) return NULL;
   if (!(xt)) xt=u8_alloc(struct U8_XTIME);
@@ -1135,7 +1135,7 @@ U8_EXPORT u8_uuid freshuuid(u8_uuid uuid)
 U8_EXPORT u8_uuid u8_getuuid(u8_uuid buf)
 {
 #if HAVE_UUID_GENERATE_TIME
-  uuid_t tmp; 
+  uuid_t tmp;
   uuid_generate_time(tmp);
   if (buf==NULL) buf=u8_malloc(16);
   memcpy(buf,tmp,16);

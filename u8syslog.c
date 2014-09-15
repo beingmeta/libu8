@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -49,7 +49,7 @@ U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
 
 U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 {
-  struct U8_OUTPUT out; va_list args; 
+  struct U8_OUTPUT out; va_list args;
   int epriority=priority;
   if (priority<0) epriority=(-priority)-2;
   if (epriority>LOG_DEBUG) epriority=LOG_DEBUG;
@@ -68,7 +68,7 @@ static void raisefn(u8_condition ex,u8_context cxt,u8_string details)
   if (details)
     if (cxt)
       u8_printf(&out,"Aborting due to %m@%s: %m",ex,cxt,details);
-    else u8_printf(&out,"Aborting due to %m: %m",ex,details);  
+    else u8_printf(&out,"Aborting due to %m: %m",ex,details);
   else if (cxt)
     u8_printf(&out,"Aborting due to %m@%s",ex,cxt);
   else u8_printf(&out,"Aborting due to %m",ex);

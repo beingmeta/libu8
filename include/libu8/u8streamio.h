@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -38,7 +38,7 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 
 /* Generic streams */
 
-/** This bit describes whether the stream is mallocd or static.  
+/** This bit describes whether the stream is mallocd or static.
     Mallocd streams are freed when closed. **/
 #define U8_STREAM_MALLOCD     0x01
 /** This bit describes whether the stream is an output or input stream.  **/
@@ -92,7 +92,7 @@ typedef struct U8_STREAM *u8_stream;
 
 #define U8_OUTPUT_FIELDS                       \
   /* Size of the buffer, and bits. */          \
-  int u8_bufsz, u8_streaminfo; 		       \
+  int u8_bufsz, u8_streaminfo;                 \
   /* The buffer, where we are in it, and where it runs out. */ \
   u8_byte *u8_outbuf, *u8_outptr, *u8_outlim;  \
   /* How we get more space */                  \
@@ -173,7 +173,7 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
     @returns void
 **/
 #define U8_INIT_OUTPUT(s,sz) \
-   U8_INIT_OUTPUT_X((s),sz,NULL,U8_STREAM_GROWS) 
+   U8_INIT_OUTPUT_X((s),sz,NULL,U8_STREAM_GROWS)
 
 /** Initializes a string output stream with a initial buffer.
     This will allocates a buffer if the output grows beyond the initial size.
@@ -183,7 +183,7 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
     @returns void
 **/
 #define U8_INIT_OUTPUT_BUF(s,sz,buf) \
-   U8_INIT_OUTPUT_X((s),sz,buf,U8_STREAM_GROWS) 
+   U8_INIT_OUTPUT_X((s),sz,buf,U8_STREAM_GROWS)
 
 /** U8_INIT_FIXED_OUTPUT
     Initializes a string output stream with a fixed size buffer
@@ -231,9 +231,9 @@ U8_INLINE_FCN int u8_putc(struct U8_OUTPUT *f,int c)
 U8_INLINE_FCN int u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 {
   if (U8_EXPECT_FALSE(len==0)) return 0;
-  if ((f->u8_outptr+len+1>=f->u8_outlim) && (f->u8_flushfn)) 
+  if ((f->u8_outptr+len+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
-  if (f->u8_outptr+len+1>=f->u8_outlim) 
+  if (f->u8_outptr+len+1>=f->u8_outlim)
     u8_grow_stream(f,len);
   if (f->u8_outptr+len+1>=f->u8_outlim) return -1;
   memcpy(f->u8_outptr,data,len);
@@ -251,7 +251,7 @@ U8_INLINE_FCN int u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 
 #define U8_INPUT_FIELDS                                           \
   /* How big the buffer is, and other info. */                    \
-  int u8_bufsz, u8_streaminfo;					  \
+  int u8_bufsz, u8_streaminfo;                                    \
   /* The buffer, the read point, and the end of valid data */     \
   u8_byte *u8_inbuf, *u8_inptr, *u8_inlim;                        \
   /* The function we call to close the stream. */                 \

@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -81,7 +81,7 @@ U8_EXPORT u8_exception u8_push_exception
   u8_tld_set(u8_current_exception_key,newex);
 #else
   u8_current_exception=newex;
-#endif  
+#endif
   return newex;
 }
 
@@ -97,7 +97,7 @@ U8_EXPORT u8_exception u8_extend_exception
   u8_tld_set(u8_current_exception_key,newex);
 #else
   u8_current_exception=newex;
-#endif  
+#endif
   return newex;
 }
 
@@ -130,7 +130,7 @@ U8_EXPORT u8_exception u8_pop_exception()
   u8_tld_set(u8_current_exception_key,prev);
 #else
   u8_current_exception=prev;
-#endif  
+#endif
   u8_free(current);
   return prev;
 }
@@ -155,7 +155,7 @@ U8_EXPORT u8_exception u8_erreify()
   u8_tld_set(u8_current_exception_key,NULL);
 #else
   u8_current_exception=NULL;
-#endif  
+#endif
   return ex;
 }
 
@@ -202,7 +202,7 @@ U8_EXPORT int u8_errout(u8_output out,struct U8_EXCEPTION *ex)
   if (ex==NULL) return 0;
   else if ((ex->u8x_details) && (ex->u8x_context))
     return u8_printf(out,"%m (%s): %s",
-		     ex->u8x_cond,ex->u8x_context,ex->u8x_details);
+                     ex->u8x_cond,ex->u8x_context,ex->u8x_details);
   else if (ex->u8x_context)
     return u8_printf(out,"%m (%s)",ex->u8x_cond,ex->u8x_context);
   else if (ex->u8x_details)
@@ -233,7 +233,7 @@ void u8_clear_errors(int report)
       u8_errout(&out,ex);
       u8_logger(LOG_ERR,NULL,out.u8_outbuf);
       if (out.u8_streaminfo&U8_STREAM_OWNS_BUF)
-	u8_free(out.u8_outbuf);}
+        u8_free(out.u8_outbuf);}
     ex=u8_pop_exception();}
 }
 
@@ -253,7 +253,7 @@ U8_EXPORT int u8_geterr(u8_condition *c,u8_context *cxt,u8_string *details)
     if (cxt) *cxt=current->u8x_context;
     if (details) {
       if (current->u8x_details)
-	*details=u8_strdup(current->u8x_details);
+        *details=u8_strdup(current->u8x_details);
       else *details=NULL;}
     return 1;}
   else return 0;
@@ -297,8 +297,8 @@ U8_EXPORT u8_condition u8_strerror(int num)
     /* Handle the potential race condition */
     scan=sparse_errno_map; while (scan)
       if (scan->num==num) {
-	u8_unlock_mutex(&strerror_lock);
-	return scan->condition;}
+        u8_unlock_mutex(&strerror_lock);
+        return scan->condition;}
       else scan=scan->next;}
 #if ((U8_THREADS_ENABLED) && (HAVE_STRERROR_R))
   {
@@ -349,11 +349,10 @@ U8_EXPORT void u8_init_exceptions_c()
 #if ((U8_THREADS_ENABLED) && (U8_USE_TLS))
   u8_new_threadkey(&u8_current_exception_key,NULL);
 #endif
-  
+
 #if ((U8_THREADS_ENABLED) && (!(HAVE_STRERROR_R)))
   u8_init_mutex(&strerror_lock);
 #endif
 
   u8_register_source_file(_FILEINFO);
 }
-

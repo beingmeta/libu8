@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -117,8 +117,8 @@ typedef DWORD u8_tld_key;
 #define u8_destroy_rwlock(x)
 #define u8_new_threadkey(key_loc,del_fcn)
 
-#define u8_lock_mutex(x) 
-#define u8_unlock_mutex(x) 
+#define u8_lock_mutex(x)
+#define u8_unlock_mutex(x)
 #define u8_read_lock(x)
 #define u8_write_lock(x)
 #define u8_rw_unlock(x)

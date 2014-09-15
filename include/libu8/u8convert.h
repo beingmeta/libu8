@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -64,16 +64,16 @@ U8_EXPORT u8_encoding latin1_encoding;
        functions.  If an encoding already exists with the particular
        definition, the name is added to the aliases for the encoding.
        This function sets up the tables for mapping into and out of the
-       encoding.    
+       encoding.
       @param name the name of the encoding to be defined
       @param charset a character map vector associating 1-4 byte
-	 sequences (zero left padded as an int) with unicode
-	 code points
+         sequences (zero left padded as an int) with unicode
+         code points
       @param size the length of the character map vector
       @param uc2mb a function for generating a multibyte sequence from
-	  a Unicode code point
+          a Unicode code point
       @param mb2uc a function for generating a Unicode code point from
-	 a multibyte sequence 
+         a multibyte sequence
       @param flags esp. (U8_ENCODING_INCLUDES_ASCII and U8_ENCODING_IS_LINEAR)
       @returns a pointer to a U8_TEXT_ENCODING structure
  **/
@@ -83,7 +83,7 @@ U8_EXPORT u8_encoding u8_define_encoding
 
 /** Loads information about an encoding from an external file.
     Reads several external encoding syntaxes and registers the
-     corresponding encoding.  
+     corresponding encoding.
     @param name the name of the encoding to be defined, an ASCII string
     @param filename the file containing the encoding definition
     @returns a pointer to an U8_TEXT_ENCODING structure
@@ -185,7 +185,7 @@ U8_EXPORT unsigned char *u8_localize_string
 
 /** Converts a mime header-encoded string into UTF-8.
     Uses the MIME header-encoding convention to convert the
-     range from @a start to @a end into UTF-8. 
+     range from @a start to @a end into UTF-8.
     @param start the start of some MIME header encoded text
     @param end the end of the MIME header encoded text
     @returns a UTF-8 string
@@ -243,4 +243,3 @@ U8_EXPORT unsigned char *u8_read_base16(char *start,int len,int *sizep);
 U8_EXPORT char *u8_write_base16(unsigned char *data,int len);
 
 #endif
-

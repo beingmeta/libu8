@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 
@@ -78,18 +78,18 @@ int u8_release_version=U8_RELEASE_VERSION;
 
 static int u8_initialized=0;
 
-#define	LOG_EMERG	0	/* system is unusable */
-#define	LOG_ALERT	1	/* action must be taken immediately */
-#define	LOG_CRIT	2	/* critical conditions */
-#define	LOG_ERR		3	/* error conditions */
-#define	LOG_WARNING	4	/* warning conditions */
-#define	LOG_NOTICE	5	/* normal but significant condition */
-#define	LOG_INFO	6	/* informational */
-#define	LOG_DEBUG	7	/* debug-level messages */
+#define LOG_EMERG       0       /* system is unusable */
+#define LOG_ALERT       1       /* action must be taken immediately */
+#define LOG_CRIT        2       /* critical conditions */
+#define LOG_ERR         3       /* error conditions */
+#define LOG_WARNING     4       /* warning conditions */
+#define LOG_NOTICE      5       /* normal but significant condition */
+#define LOG_INFO        6       /* informational */
+#define LOG_DEBUG       7       /* debug-level messages */
 
 /* U8 settings */
 
-u8_condition u8_UnexpectedEOD=_("Unexpected EOD"), 
+u8_condition u8_UnexpectedEOD=_("Unexpected EOD"),
   u8_BadUTF8=_("Invalid UTF-8 encoded text"),
   u8_BadUTF8byte=_("Invalid UTF-8 continuation character"),
   u8_TruncatedUTF8=_("Truncated UTF-8 sequence"),
@@ -232,7 +232,7 @@ U8_EXPORT double u8_elapsed_time()
     if (gettimeofday(&now,NULL) < 0)
       return -1.0;
     else return (now.tv_sec-estart.tv_sec)+
-	   (now.tv_usec-estart.tv_usec)*0.000001;
+           (now.tv_usec-estart.tv_usec)*0.000001;
 #elif HAVE_FTIME
     struct timeb now;
 #if WIN32
@@ -242,7 +242,7 @@ U8_EXPORT double u8_elapsed_time()
     else
 #endif
       return (now.time-estart.time)+
-	(now.millitm-estart.millitm)*0.001;
+        (now.millitm-estart.millitm)*0.001;
 #else
     return (1.0*(time(NULL)-estart));
 #endif
@@ -289,7 +289,7 @@ u8_utime u8_microtime()
   /* In WIN32, ftime doesn't return an error value.
      ?? We should really do something respectable here.*/
   ftime(&now);
-#else 
+#else
   if (ftime(&now) < 0) return -1;
   else return now.time*1000000+now.millitm*1000;
 #endif
@@ -401,7 +401,7 @@ U8_EXPORT void *u8_mallocz(size_t n)
   void *ptr=u8_malloc(n);
   if (!(ptr)) {
     u8_seterr(u8_MallocFailed,"u8_mallocz",NULL);
-    return NULL;} 
+    return NULL;}
   memset(((unsigned char *)ptr),0,n);
   return ptr;
 }
@@ -411,7 +411,7 @@ U8_EXPORT void *u8_reallocz(void *ptr,size_t n,size_t oldsz)
   void *nptr=((ptr)?(realloc(ptr,n)):(malloc(n)));
   if (!(nptr)) {
     u8_seterr(u8_MallocFailed,"u8_reallocz",NULL);
-    return ptr;} 
+    return ptr;}
   if (ptr==NULL) memset(((unsigned char *)nptr),0,n);
   else if (n>oldsz) memset(((unsigned char *)nptr)+oldsz,0,(n-oldsz));
   else {}
@@ -424,7 +424,7 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz)
   unsigned char *cptr=(unsigned char *)nptr;
   if (!(nptr)) {
     u8_seterr(u8_MallocFailed,"u8_mallocz",NULL);
-    return NULL;} 
+    return NULL;}
   if (ptr==NULL) memset(cptr,0,n);
   else {
     memcpy(cptr,ptr,osz);
@@ -444,12 +444,12 @@ U8_EXPORT int _u8_grow_pile(u8_pile p,int delta)
     void *new_elts;
     if (p->u8_elts) {
       if (p->u8_mallocd) {
-	new_elts=u8_realloc(p->u8_elts,sizeof(void *)*new_max);
-	memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}
+        new_elts=u8_realloc(p->u8_elts,sizeof(void *)*new_max);
+        memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}
       else {
-	new_elts=u8_malloc(sizeof(void *)*new_max);
-	memcpy(new_elts,p->u8_elts,sizeof(void *)*(p->u8_len));
-	memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}}
+        new_elts=u8_malloc(sizeof(void *)*new_max);
+        memcpy(new_elts,p->u8_elts,sizeof(void *)*(p->u8_len));
+        memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}}
     else {
       new_elts=u8_malloc(sizeof(void *)*new_max);
       memset(new_elts,0,sizeof(void *)*new_max);}
@@ -589,7 +589,7 @@ U8_EXPORT char *u8_procinfo(char *buf)
   sprintf(buf,"%ld:0x%lx",(unsigned long int)pid,(unsigned long int)self);
   return buf;
 }
-#else 
+#else
 U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid();
@@ -621,7 +621,7 @@ U8_EXPORT long u8_threadid()
   pthread_t self=pthread_self();
   return (unsigned long int)self;
 }
-#else 
+#else
 U8_EXPORT long u8_threadid()
 {
   return (long) getpid();
@@ -725,4 +725,3 @@ U8_EXPORT int u8_initialize()
   u8_initialized=8069;
   return 8069;
 }
-

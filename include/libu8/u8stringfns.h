@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -67,7 +67,7 @@ U8_EXPORT int u8_has_suffix(u8_string string,u8_string suffix,int casefold);
     @param string a UTF-8 string
     @returns a UTF-8 string with all composed characters
       broken down
-      
+
 **/
 U8_EXPORT u8_string u8_decompose(u8_string string);
 
@@ -211,7 +211,7 @@ static int u8_sgetc_lim(u8_byte **sptr,u8_byte *lim)
       if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
       details=u8_grab_bytes(*sptr,n_bytes,NULL);
       u8_log(LOG_WARN,u8_BadUTF8,_("Unexpected UTF-8 continuation byte: '%s'"),
-	     details);
+             details);
       u8_seterr(u8_BadUTF8byte,"u8_sgetc",details);
       (*sptr)++; return -2;}
     else if (u8_utf8warn) {
@@ -219,14 +219,14 @@ static int u8_sgetc_lim(u8_byte **sptr,u8_byte *lim)
       if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
       u8_grab_bytes(*sptr,n_bytes,buf);
       u8_log(LOG_WARN,u8_BadUTF8,_("Unexpected UTF-8 continuation byte: '%s'"),
-	     buf);}
+             buf);}
     (*sptr)++;
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */
   else if (byte < 0xE0) {size=2; ch=byte&0x1F;}
   else if (byte < 0xF0) {size=3; ch=byte&0x0F;}
   else if (byte < 0xF8) {size=4; ch=byte&0x07;}
-  else if (byte < 0xFC) {size=5; ch=byte&0x3;}     
+  else if (byte < 0xFC) {size=5; ch=byte&0x3;}
   else if (byte < 0xFE) {size=6; ch=byte&0x1;}
   else { /* Bad data, return the character */
     if (u8_utf8err) {
@@ -235,7 +235,7 @@ static int u8_sgetc_lim(u8_byte **sptr,u8_byte *lim)
       details=u8_grab_bytes(*sptr,n_bytes,NULL);
       u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: '%s'"),details);
       u8_seterr(u8_BadUTF8byte,"u8_sgetc",details);
-      (*sptr)++; return -2;} 
+      (*sptr)++; return -2;}
     else if (u8_utf8warn) {
       char buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
       if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
@@ -246,17 +246,17 @@ static int u8_sgetc_lim(u8_byte **sptr,u8_byte *lim)
   while (i) {
     if ((*scan<0x80) || (*scan>=0xC0)) {
       if (u8_utf8err) {
-	char *details; int n_bytes=UTF8_BUGWINDOW;
-	if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
-	details=u8_grab_bytes(*sptr,n_bytes,NULL);
-	u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),details);
-	u8_seterr(u8_TruncatedUTF8,"u8_sgetc",details);
-	return -2;} 
+        char *details; int n_bytes=UTF8_BUGWINDOW;
+        if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
+        details=u8_grab_bytes(*sptr,n_bytes,NULL);
+        u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),details);
+        u8_seterr(u8_TruncatedUTF8,"u8_sgetc",details);
+        return -2;}
       else if (u8_utf8warn) {
-	char buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
-	if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
-	u8_grab_bytes(*sptr,n_bytes,buf);
-	u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),buf);}
+        char buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
+        if ((lim)&&((lim-(*sptr))<n_bytes)) n_bytes=lim-*sptr;
+        u8_grab_bytes(*sptr,n_bytes,buf);
+        u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),buf);}
       *sptr=scan;
       return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}
@@ -302,4 +302,3 @@ static MAYBE_UNUSED int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff m
 #endif
 
 #endif /* ndef LIBU8_U8STRINGFNS_H */
-

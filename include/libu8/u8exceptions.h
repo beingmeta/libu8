@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -34,7 +34,7 @@ U8_EXPORT u8_condition u8_strerror(int num);
       more detailed information about the error.
      The u8x_xdata field, if not NULL, is a pointer to
       application-specific data which will be freed by
-      the u8x_free_xdata function.  
+      the u8x_free_xdata function.
      Finally, the u8x_next field points to the error condition
       (or NULL) which was active when this error was indicated.
 **/
@@ -138,7 +138,7 @@ U8_EXPORT u8_exception u8_exception_root(u8_exception ex);
 **/
 U8_EXPORT int u8_exception_stacklen(u8_exception ex);
 
-/** Returns and clears the current error state.  
+/** Returns and clears the current error state.
      This retrieves and clears the current error state
       and the chain of errors beyond it.
    @returns an exception object
@@ -176,7 +176,7 @@ U8_EXPORT U8_NOINLINE u8_exception u8_make_exception
 
 /** Frees an exception object or stack
     This is implicitly called by u8_pop_exception, so it is not
-     normally needed without an intervening call to u8_erreify().   
+     normally needed without an intervening call to u8_erreify().
     Frees its argument, an exception; with a second argument of 1,
      this recursively frees the whole exception stack.
     This returns the previous exception or NULL if the whole
@@ -232,14 +232,14 @@ U8_EXPORT u8_condition u8_strerror(int num);
 /** Takes an errno error and creates a libu8 error, given a particular
     context and details string.
    @param num an errno number
-   @param cxt a context string (a const utf-8 string) 
+   @param cxt a context string (a const utf-8 string)
    @param details a details string (a malloc'd utf-8 string)
 **/
 U8_EXPORT void u8_graberr(int num,u8_context cxt,u8_string details);
 
-/** Takes the current errno value (if non zero) and creates a libu8 error, 
+/** Takes the current errno value (if non zero) and creates a libu8 error,
       given a particular context and details string.
-   @param cxt a context string (a const utf-8 string) 
+   @param cxt a context string (a const utf-8 string)
    @param details a details string (a malloc'd utf-8 string)
 **/
 U8_EXPORT void u8_graberrno(u8_context cxt,u8_string details);

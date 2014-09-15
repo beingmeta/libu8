@@ -100,7 +100,7 @@ U8_EXPORT FILE *u8_fopen(u8_string path,char *mode)
     while (i < mlen)
       if (mode[i] == 'l') {lock=1; i++;}
       else {
-	copied_mode[j++]=mode[i++];}
+        copied_mode[j++]=mode[i++];}
     copied_mode[j]='\0';}
   if (lock) return u8_fopen_locked(path,copied_mode);
   else {
@@ -122,7 +122,7 @@ U8_EXPORT int u8_open_fd(u8_string path,int flags,mode_t mode)
   char *lpath=u8_localpath(path);
   int fd=open(lpath,flags,mode);
   u8_free(lpath);
-  if (fd<0) u8_graberr(errno,"u8_open_fd",u8_strdup(path)); 
+  if (fd<0) u8_graberr(errno,"u8_open_fd",u8_strdup(path));
   return fd;
 }
 
@@ -203,16 +203,16 @@ U8_EXPORT int u8_renew_all()
     while (scan)
       if (scan->callback==NULL) scan=scan->next;
       else if (stat(scan->filename,&fileinfo)<0) {
-	u8_log(LOG_NOTICE,u8_strerror(errno),"u8_renew_all",scan->filename);
-	errno=0; scan=scan->next;}
+        u8_log(LOG_NOTICE,u8_strerror(errno),"u8_renew_all",scan->filename);
+        errno=0; scan=scan->next;}
       else if (scan->mtime<fileinfo.st_mtime) {
-	if (scan->callback(scan->filename,scan->callback_data)<0) {
-	  u8_condition cond; u8_context cxt=NULL; u8_string details=NULL;
-	  if (u8_poperr(&cond,&cxt,&details)) 
-	    u8_log(LOG_ERR,cond,"Renew error for %s",scan->filename);
-	  if (details) u8_free(details);}
-	else count++;
-	scan=scan->next;}
+        if (scan->callback(scan->filename,scan->callback_data)<0) {
+          u8_condition cond; u8_context cxt=NULL; u8_string details=NULL;
+          if (u8_poperr(&cond,&cxt,&details))
+            u8_log(LOG_ERR,cond,"Renew error for %s",scan->filename);
+          if (details) u8_free(details);}
+        else count++;
+        scan=scan->next;}
       else scan=scan->next;
   return count;}
 }
@@ -226,4 +226,3 @@ U8_EXPORT void u8_init_fileio_c()
 #endif
   u8_register_source_file(_FILEINFO);
 }
-

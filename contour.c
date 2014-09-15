@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -90,12 +90,12 @@ U8_EXPORT void u8_contour_free(u8_contour c,void *ptr)
       void **blocks=scan->u8c_blocks;
       int i=scan->u8c_n_blocks-1;
       /* Intentionally scanning backwards because that seems like a more
-	 likely case. */
+         likely case. */
       while (i>=0)
-	if (blocks[i]==ptr) {
-	  blocks[i]=NULL; u8_free(ptr);
-	  return;}
-	else i--;}
+        if (blocks[i]==ptr) {
+          blocks[i]=NULL; u8_free(ptr);
+          return;}
+        else i--;}
     scan=scan->u8c_outer_contour;}
   /* Should this err or warn? */
   u8_free(ptr);
@@ -110,11 +110,11 @@ U8_EXPORT void *u8_contour_realloc(u8_contour c,void *ptr,size_t new_size)
       /* Intentionally scanning backwards */
       int i=scan->u8c_n_blocks-1;
       while (i>=0)
-	if (blocks[i]==ptr) {
-	  void *newptr=u8_realloc(ptr,new_size);
-	  blocks[i]=newptr;
-	  return newptr;}
-	else i++;}
+        if (blocks[i]==ptr) {
+          void *newptr=u8_realloc(ptr,new_size);
+          blocks[i]=newptr;
+          return newptr;}
+        else i++;}
     scan=scan->u8c_outer_contour;}
   /* Should this err or warn? */
   return u8_realloc(ptr,new_size);

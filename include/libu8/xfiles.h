@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -98,7 +98,7 @@ U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *);
 U8_EXPORT void u8_close_xinput(struct U8_XINPUT *);
 
 /** struct U8_OPEN_XFILES
-     is a linked list of open xfiles used to ensure that 
+     is a linked list of open xfiles used to ensure that
      buffers are flushed when the process ends normally.
 **/
 typedef struct U8_OPEN_XFILES {

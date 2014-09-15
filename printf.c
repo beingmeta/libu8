@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -121,66 +121,66 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
     cmd[i++]=*scan++;
     /* Read in the format code */
     while ((i<16) && (*scan) && (!(printf_codep(*scan))))
-      cmd[i++]=*scan++; 
+      cmd[i++]=*scan++;
     /* Read the final byte */
     cmd[i++]=code=*scan++; cmd[i]='\0'; n_directives++;
     if (code == '%') u8_putc(s,'%');
     else {
       char buf[PRINTF_CHUNK_SIZE], *string=buf;
       if ((code == 'd') || (code == 'i') ||
-	  (code == 'u') || (code == 'o') ||
-	  (code == 'x')) {
-	if (strstr(cmd,"ll")) {
-	  long long i=va_arg(*args,long long);
-	  sprintf(buf,cmd,i);}
-	else if (strstr(cmd,"l")) {
-	  long i=va_arg(*args,long);
-	  sprintf(buf,cmd,i);}
-	else {
-	  int i=va_arg(*args,int);
-	  sprintf(buf,cmd,i);}}
+          (code == 'u') || (code == 'o') ||
+          (code == 'x')) {
+        if (strstr(cmd,"ll")) {
+          long long i=va_arg(*args,long long);
+          sprintf(buf,cmd,i);}
+        else if (strstr(cmd,"l")) {
+          long i=va_arg(*args,long);
+          sprintf(buf,cmd,i);}
+        else {
+          int i=va_arg(*args,int);
+          sprintf(buf,cmd,i);}}
       else if ((code == 'f') || (code == 'g') || (code == 'e')) {
-	double f=va_arg(*args,double);
-	sprintf(buf,cmd,f);}
+        double f=va_arg(*args,double);
+        sprintf(buf,cmd,f);}
       else if ((code == 's')||(code == 'm')) {
-	char *prefix=NULL;
-	char *arg=va_arg(*args,char *);
-	/* A - modifer on s indicates that the string arg should be
-	   freed after use.  l and u string indicates upper and lower
-	   case conversions.  Further -:/,.? modifiers indicate a prefix
-	   character that precedes the string when the string is not empty. */
-	if (strchr(cmd,'/')) prefix="/";
-	else if (strchr(cmd,'-')) prefix="-";
-	else if (strchr(cmd,':')) prefix=":";
-	else if (strchr(cmd,'.')) prefix=".";
-	else if (strchr(cmd,',')) prefix=", ";
-	else {}
-	if (strchr(cmd,'-')) to_free=arg;
-	/* The m conversion is like s but passes its argument through the
-	   message catalog. */
-	if ((arg)&&(code=='m')) arg=getmessage(arg);
-	if (arg==NULL) {
-	  if ((prefix)||(strchr(cmd,'?')))
-	    string="";
-	  else string="(null)";}
-	else if (strchr(cmd,'l')) {
-	  string=u8_downcase(arg);
-	  if (to_free) u8_free(to_free);
-	  to_free=string;}
-	else if (strchr(cmd,'u')) {
-	  string=u8_upcase(arg);
-	  if (to_free) u8_free(to_free);
-	  to_free=string;}
-	else string=arg;
-	if ((arg)&&(prefix)) {
-	  string=u8_string_append(prefix,string,NULL);
-	  if (to_free) u8_free(to_free);
-	  to_free=string;}}
+        char *prefix=NULL;
+        char *arg=va_arg(*args,char *);
+        /* A - modifer on s indicates that the string arg should be
+           freed after use.  l and u string indicates upper and lower
+           case conversions.  Further -:/,.? modifiers indicate a prefix
+           character that precedes the string when the string is not empty. */
+        if (strchr(cmd,'/')) prefix="/";
+        else if (strchr(cmd,'-')) prefix="-";
+        else if (strchr(cmd,':')) prefix=":";
+        else if (strchr(cmd,'.')) prefix=".";
+        else if (strchr(cmd,',')) prefix=", ";
+        else {}
+        if (strchr(cmd,'-')) to_free=arg;
+        /* The m conversion is like s but passes its argument through the
+           message catalog. */
+        if ((arg)&&(code=='m')) arg=getmessage(arg);
+        if (arg==NULL) {
+          if ((prefix)||(strchr(cmd,'?')))
+            string="";
+          else string="(null)";}
+        else if (strchr(cmd,'l')) {
+          string=u8_downcase(arg);
+          if (to_free) u8_free(to_free);
+          to_free=string;}
+        else if (strchr(cmd,'u')) {
+          string=u8_upcase(arg);
+          if (to_free) u8_free(to_free);
+          to_free=string;}
+        else string=arg;
+        if ((arg)&&(prefix)) {
+          string=u8_string_append(prefix,string,NULL);
+          if (to_free) u8_free(to_free);
+          to_free=string;}}
       else if ((code<128) && (u8_printf_handlers[(int)code]))
-	/* We pass the pointer args because some stdarg implementations
-	   work better that way. */
-	string=u8_printf_handlers[(int)code]
-	  (s,cmd,buf,PRINTF_CHUNK_SIZE,args);
+        /* We pass the pointer args because some stdarg implementations
+           work better that way. */
+        string=u8_printf_handlers[(int)code]
+          (s,cmd,buf,PRINTF_CHUNK_SIZE,args);
       else return u8_reterr(u8_BadPrintFormat,"u8_do_printf",u8_strdup(cmd));
       if (string == NULL) {} else u8_puts(s,string);
       if (to_free) u8_free(to_free);}

@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -26,7 +26,7 @@
  **/
 
 /** Determines if a pathname refers to a directory.
-    This returns 0 (rather than -1) if the designated path does 
+    This returns 0 (rather than -1) if the designated path does
      not exist.
     @param filename a utf-8 pathname
     @returns 1 if the pathname identifies a directory, 0 otherwise

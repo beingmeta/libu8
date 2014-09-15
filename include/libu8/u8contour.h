@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -127,11 +127,11 @@ static MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
 
 /* Macros for creating dynamic contours */
 
-#define U8_WITH_CONTOUR(label,flags)	                        \
+#define U8_WITH_CONTOUR(label,flags)                            \
    struct U8_CONTOUR _u8_contour_struct;                        \
-   struct U8_CONTOUR *_u8_contour=&_u8_contour_struct;		\
+   struct U8_CONTOUR *_u8_contour=&_u8_contour_struct;          \
    U8_INIT_CONTOUR(&_u8_contour,label,flags);                   \
-   if (setjmp(&(_u8_contour_struct.u8c_jmpbuf)) == 0) {		\
+   if (setjmp(&(_u8_contour_struct.u8c_jmpbuf)) == 0) {         \
      u8_push_contour(&(_u8_contour_struct));
 #define U8_ON_EXCEPTION u8_pop_contour(_u8_contour);} else {
 #define U8_END_EXCEPTION                                     \
@@ -174,12 +174,12 @@ U8_EXPORT void u8_contour_release(u8_contour c,void *ptr)
       void **blocks=scan->u8c_blocks;
       int i=scan->u8c_n_blocks-1;
       /* Intentionally scanning backwards because that seems like a more
-	 likely case. */
+         likely case. */
       while (i>=0)
-	if (blocks[i]==ptr) {
-	  blocks[i]=NULL;
-	  return;}
-	else i--;}
+        if (blocks[i]==ptr) {
+          blocks[i]=NULL;
+          return;}
+        else i--;}
     scan=scan->u8c_outer_contour;}
   /* Should this err or warn? */
   u8_free(ptr);
@@ -199,10 +199,10 @@ U8_EXPORT void _u8_pop_contour(u8_contour);
 static void u8_push_contour(u8_contour contour)
 {
   u8_contour prev=u8_dynamic_contour;
-  
+
   contour->u8c_depth=((prev) ? (1+(prev->u8c_depth)) : (1));
   contour->u8c_outer_contour=prev;
-  
+
 #if (U8_USE_TLS)
   u8_tld_set(u8_dynamic_contour_key,contour);
 #else
@@ -236,7 +236,7 @@ static void u8_pop_contour(u8_contour contour)
 static void u8_throw_contour(u8_contour contour)
 {
   u8_contour next, cur=u8_dynamic_contour;
-  
+
   int i, n; void **blocks;
   if (contour==NULL) contour=cur;
   else if (contour!=cur) {

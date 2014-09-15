@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -56,11 +56,11 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
 
 #define U8_CLIENT_FIELDS                                       \
     u8_socket socket;                                          \
-    int clientid, threadnum;				       \
+    int clientid, threadnum;                                   \
     unsigned int flags, n_trans, n_errs;                       \
     u8_utime started, queued, active;                          \
-    u8_utime reading, writing, running;			       \
-    u8_string idstring, status;				       \
+    u8_utime reading, writing, running;                        \
+    u8_string idstring, status;                                \
     unsigned char *buf;                                        \
     size_t off, len, buflen, delta;                            \
     unsigned int ownsbuf, grows;                               \
@@ -100,8 +100,8 @@ typedef struct U8_CLIENT {
  Returns: a pointer to a client structure, consed if not provided.
 */
 U8_EXPORT u8_client u8_init_client(u8_client client,size_t len,
-				   struct sockaddr *addrbuf,size_t addrlen,
-				   u8_socket sock,u8_server srv);
+                                   struct sockaddr *addrbuf,size_t addrlen,
+                                   u8_socket sock,u8_server srv);
 #define u8_client_init u8_init_client
 
 /* u8_close_client:
@@ -234,9 +234,9 @@ typedef struct U8_SERVER_THREAD *u8_server_thread;
 #define DEFAULT_MAX_QUEUE 128
 #endif
 
-/** struct U8_SERVER_INFO 
+/** struct U8_SERVER_INFO
     describes information about a particular server socket used
-     to listen for new connections. 
+     to listen for new connections.
 **/
 typedef struct U8_SERVER_INFO {
   u8_socket socket; u8_string idstring; int poll_index;
@@ -254,7 +254,7 @@ typedef struct U8_SERVER {
   /* Server-wide flags, whether we're shutting down, and
      how many connections to start with/grow by. */
   int flags, shutdown, init_clients, max_clients;
-  
+
   /* The server addreses we're listening to for new connections */
   struct U8_SERVER_INFO *server_info; int n_servers;
 
@@ -278,7 +278,7 @@ typedef struct U8_SERVER {
 
   /* Handling functions */
   u8_client (*acceptfn)(struct U8_SERVER *,u8_socket sock,
-			struct sockaddr *,size_t);
+                        struct sockaddr *,size_t);
   int (*servefn)(u8_client);
   int (*donefn)(u8_client);
   int (*closefn)(u8_client);
@@ -323,7 +323,7 @@ struct U8_SERVER *u8_init_server
     int (*donefn)(u8_client),
     int (*closefn)(u8_client),
     ...);
-  
+
 U8_EXPORT
 /** Initializes a server
      @param server a pointer to a U8_SERVER struct
@@ -339,12 +339,12 @@ U8_EXPORT
   at least once to add a listening address.
 **/
 int u8_server_init(struct U8_SERVER *server,
-		   /* max_clients is currently ignored */
-		   int maxback,int max_queue,int n_threads,
-		   u8_client (*acceptfn)(u8_server,u8_socket,
-					 struct sockaddr *,size_t),
-		   int (*servefn)(u8_client),
-		   int (*closefn)(u8_client));
+                   /* max_clients is currently ignored */
+                   int maxback,int max_queue,int n_threads,
+                   u8_client (*acceptfn)(u8_server,u8_socket,
+                                         struct sockaddr *,size_t),
+                   int (*servefn)(u8_client),
+                   int (*closefn)(u8_client));
 
 U8_EXPORT
 /** Initializes a server

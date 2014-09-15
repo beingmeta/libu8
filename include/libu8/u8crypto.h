@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -121,14 +121,14 @@ U8_EXPORT void u8_init_cryptofns_c(void);
 U8_EXPORT void u8_init_cryptofns(void);
 
 /** Decrypts a packet which was encrypted with a particular
-       key using a particular named cipher. Cipher names are 
+       key using a particular named cipher. Cipher names are
        determined by the underlying library.
-    @param input	a byte vector of data to decrypt
-    @param len		the length (in bytes) of the byte vector
-    @param cipher	a string identifying the cipher used
-    @param key		a byte vector containing the decryption key
-    @param keylen	the length (in bytes) of the key vector
-    @param result_len	a pointer to a size_t to store the output length
+    @param input        a byte vector of data to decrypt
+    @param len          the length (in bytes) of the byte vector
+    @param cipher       a string identifying the cipher used
+    @param key          a byte vector containing the decryption key
+    @param keylen       the length (in bytes) of the key vector
+    @param result_len   a pointer to a size_t to store the output length
     @returns a decrypted packet of data whose length is deposited in @a outlen
 **/
 U8_EXPORT unsigned char *u8_decrypt
@@ -138,12 +138,12 @@ U8_EXPORT unsigned char *u8_decrypt
 
 /** Encrypts a packet with a particular key using a particular
        named cipher. Cipher names are determined by the underlying library.
-    @param input	a byte vector of data to encrypt
-    @param len		the length (in bytes) of the byte vector
-    @param cipher	a string identifying the cipher to use
-    @param key		a byte vector containing the encryption key
-    @param keylen	the length (in bytes) of the key vector
-    @param result_len	a pointer to a size_t to store the output length
+    @param input        a byte vector of data to encrypt
+    @param len          the length (in bytes) of the byte vector
+    @param cipher       a string identifying the cipher to use
+    @param key          a byte vector containing the encryption key
+    @param keylen       the length (in bytes) of the key vector
+    @param result_len   a pointer to a size_t to store the output length
     @returns an encrypted packet of data whose length is
         deposited in @a outlen
 **/

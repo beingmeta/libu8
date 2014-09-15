@@ -8,7 +8,7 @@
    purpose.
 
     Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory 
+    under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
@@ -42,7 +42,7 @@ struct U8_TEXT_ENCODING *encodings, *utf8_encoding=NULL, *ascii_encoding=NULL;
 struct U8_TEXT_ENCODING *latin0_encoding, *latin1_encoding=NULL;
 
 static char *encname_aliases="+LATIN0:ISO885915;+ISOLATIN0:ISO885915;+LATIN1:ISO88591;+ISOLATIN1:ISO88591;+LATIN2:ISO88592;+ISOLATIN2:ISO88592;+LATIN3:ISO88593;+ISOLATIN3:ISO88593;+ISOLATIN3:ISO88593;+LATIN4:ISO88594;+ISOLATIN4:ISO88594;+ISOLATIN4:ISO88594;+CYRILLIC:ISO88595;+ARABIC:ISO88596;+GREEK:ISO88597;+HEBREW:ISO88598;+ISOHEBREW:ISO88598;LATIN6:ISO885910;ISOLATIN6:ISO885910;ISOLATIN7:ISO885913;LATIN8:ISO885914;ISOLATIN8:ISO885914;LATIN9:ISO885915;ISOLATIN9:ISO885915;";
- 
+
 typedef int xchar;
 
 static int get_utf8_size(u8_byte s1)
@@ -70,7 +70,7 @@ static int compare_encoding_names(char *name1,char *name2)
     else if ((*scan1 == '-') || (*scan1 == '_') || (*scan1 == '/') || (*scan1 == ' '))
       scan1++;
     else if ((*scan2 == '-') || (*scan2 == '_') ||
-	     (*scan2 == '/') || (*scan2 == ' '))
+             (*scan2 == '/') || (*scan2 == ' '))
       scan2++;
     else return 0;
   while ((*scan1) && (isspace(*scan1))) scan1++;
@@ -147,7 +147,7 @@ static int compute_flags(struct U8_MB_MAP *chset,int size)
   if (size >= 256) {
     while (i < 128) {
       if ((chset[i].to != i)||(chset[i].from != i)) {
-	includes_ascii=0; break;}
+        includes_ascii=0; break;}
       else i++;}}
   while (j < size)
     if (chset[j].from != j) {
@@ -155,7 +155,7 @@ static int compute_flags(struct U8_MB_MAP *chset,int size)
     else j++;
   if ((includes_ascii) && (linear))
     return ((U8_ENCODING_INCLUDES_ASCII) |
-	    (U8_ENCODING_IS_LINEAR));
+            (U8_ENCODING_IS_LINEAR));
   else if (includes_ascii) return (U8_ENCODING_INCLUDES_ASCII);
   else if (linear) return (U8_ENCODING_IS_LINEAR);
   else return 0;
@@ -176,7 +176,7 @@ static void add_alias(u8_encoding e,char *name)
 
 U8_EXPORT
 /* u8_define_encoding:
-     Arguments: a name, a pointer to a charset, 
+     Arguments: a name, a pointer to a charset,
         a wide-char to multi-byte conversion function,
         a multi-byte to wide-char conversion function,
         and a set of flags.
@@ -190,9 +190,9 @@ u8_encoding u8_define_encoding
    uc2mb_fn uc2mb,mb2uc_fn mb2uc,int flags)
 {
   struct U8_TEXT_ENCODING *scan=encodings;
-  while (scan) 
+  while (scan)
     if ((scan->charset == charset) && (scan->flags == flags) &&
-	(scan->uc2mb == uc2mb) && (scan->mb2uc == mb2uc)) {
+        (scan->uc2mb == uc2mb) && (scan->mb2uc == mb2uc)) {
       add_alias(scan,name);
       return scan;}
     else scan=scan->next;
@@ -225,8 +225,8 @@ u8_encoding load_unicode_consortium_encoding(char *name,FILE *f)
     int from, to;
     if (sscanf(buf,"0x%x\t0x%x",&from,&to) == 2) {
       if (size >=limit) {
-	map=u8_realloc_n(map,limit+256,struct U8_MB_MAP);
-	limit=limit+256;}
+        map=u8_realloc_n(map,limit+256,struct U8_MB_MAP);
+        limit=limit+256;}
       map[size].from=from; map[size].to=to; size++;}}
   u8_fclose(f);
   return
@@ -247,17 +247,17 @@ u8_encoding load_charmap_encoding(char *name,FILE *f)
     else if (strncmp(buf,"<code_set_name> ",16) == 0) {
       char *copy=u8_strdup(buf+16); int len=strlen(copy);
       if ((strcmp(name,buf+16)) == 0) {
-	if (n_aliases >= max_aliases) {
-	  aliases=u8_realloc_n(aliases,max_aliases*2,u8_charstring);
-	  max_aliases=max_aliases*2;}
-	if (copy[len] == '\n') copy[len]=0;
-	aliases[n_aliases++]=copy;}
+        if (n_aliases >= max_aliases) {
+          aliases=u8_realloc_n(aliases,max_aliases*2,u8_charstring);
+          max_aliases=max_aliases*2;}
+        if (copy[len] == '\n') copy[len]=0;
+        aliases[n_aliases++]=copy;}
       else u8_free(copy);}
     else if (strncmp(buf,"% alias ",8) == 0) {
       char *copy=u8_strdup(buf+8); int len=strlen(copy);
       if (n_aliases >= max_aliases) {
-	aliases=u8_realloc_n(aliases,max_aliases*2,u8_charstring);
-	max_aliases=max_aliases*2;}
+        aliases=u8_realloc_n(aliases,max_aliases*2,u8_charstring);
+        max_aliases=max_aliases*2;}
       if (copy[len] == '\n') copy[len]=0;
       aliases[n_aliases++]=copy;}
     else continue;
@@ -323,7 +323,7 @@ by the Unicode consortium at ftp://ftp.unicode.org/Public/MAPPINGS/.
 */
 u8_encoding u8_load_encoding(char *name,char *file)
 {
-  FILE *f=fopen(file,"r"); char buf[512], *rbuf; 
+  FILE *f=fopen(file,"r"); char buf[512], *rbuf;
   if (f == NULL) return NULL;
   rbuf=fgets(buf,512,f);
   if (rbuf==NULL) {fclose(f); return NULL;}
@@ -344,8 +344,8 @@ static struct U8_TEXT_ENCODING *try_to_load_encoding(char *name)
     if (u8_file_existsp(path)) {
       e=u8_load_encoding(name,path);
       if (e == NULL)
-	fprintf(stderr,"The file '%s' failed to provide the encoding %s\n",
-		path,name);
+        fprintf(stderr,"The file '%s' failed to provide the encoding %s\n",
+                path,name);
       else add_alias(e,name);
       u8_free(path);}}
   if (e) {u8_free(std); return e;}
@@ -355,8 +355,8 @@ static struct U8_TEXT_ENCODING *try_to_load_encoding(char *name)
     if (u8_file_existsp(path)) {
       e=u8_load_encoding(name,path);
       if (e == NULL)
-	fprintf(stderr,"The file '%s' failed to provide the encoding %s\n",
-		path,name);
+        fprintf(stderr,"The file '%s' failed to provide the encoding %s\n",
+                path,name);
       else add_alias(e,name);}
     u8_free(path); u8_free(std);
     if (e) return e;
@@ -408,8 +408,8 @@ struct U8_TEXT_ENCODING *u8_get_default_encoding()
     if (encstart) {
       struct U8_TEXT_ENCODING *encoding=u8_get_encoding(encstart+1);
       if (encoding) {
-	default_encoding=encoding;
-	return encoding;}}}
+        default_encoding=encoding;
+        return encoding;}}}
   default_encoding=utf8_encoding;
   return default_encoding;
 }
@@ -432,7 +432,7 @@ U8_EXPORT int u8_set_default_encoding(char *name)
 U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *buf)
 {
   u8_byte *code_start, *code_end, codename[128];
-  if ((code_start=strstr(buf,"coding:"))) 
+  if ((code_start=strstr(buf,"coding:")))
     code_start=code_start+7;
   else if ((code_start=strstr(buf,"charset=")))
     code_start=code_start+8;
@@ -483,7 +483,7 @@ static int table_mb2uc
       else i++;}
     return -1;}
 }
-  
+
 /* This function uses a lookup table to convert a unicode code point
    to an external encoding. */
 static int table_uc2mb
@@ -509,9 +509,9 @@ static int table_uc2mb
 /* This function reads an encoded unicode code point from a buffer, converting
    as neccessary. */
 static int encgetc(struct U8_TEXT_ENCODING *e,
-		   struct U8_MB_MAP *charset,
-		   int is_linear,int includes_ascii,
-		   unsigned char **scan,unsigned char *end)
+                   struct U8_MB_MAP *charset,
+                   int is_linear,int includes_ascii,
+                   unsigned char **scan,unsigned char *end)
 {
   /* If we have no encoding, we assume UTF-8, which is either ascii
      or uses u8_sgetc */
@@ -523,7 +523,7 @@ static int encgetc(struct U8_TEXT_ENCODING *e,
     else if (u8_validptr(*scan)) return u8_sgetc_lim(scan,end);
     else
       /* If the string isn't valid UTF-8, return the byte values as though
-	 it were latin1 */
+         it were latin1 */
       return *((*scan)++);
   /* Linear table lookup just uses the byte of input as an offset
      into the character map, and also handles the special case
@@ -652,37 +652,37 @@ unsigned char *u8_localize
       buf=u8_realloc(buf,bufsiz+1024); bufsiz=bufsiz+1024;
       write_limit=buf+bufsiz; write=buf+write_off;}
     if (ch<0) {ch=0; scan++;}
-    else if ((e==NULL) || (e == utf8_encoding)) 
+    else if ((e==NULL) || (e == utf8_encoding))
       if (ch<0x80) {*write++=ch; *write=0;}
       else {
-	int n_bytes=scan-last;
-	memcpy(write,last,n_bytes);
-	write=write+n_bytes; *write=0;}
+        int n_bytes=scan-last;
+        memcpy(write,last,n_bytes);
+        write=write+n_bytes; *write=0;}
     else if ((ch<0x80)&&((e->flags)&(U8_ENCODING_INCLUDES_ASCII))) {
       *write++=ch; *write=0;}
     else if ((inv=e->charset_inv)&&
-	     ((outsize=table_uc2mb(write,(xchar)ch,e))>=0)) {
+             ((outsize=table_uc2mb(write,(xchar)ch,e))>=0)) {
       write=write+outsize;}
     else if ((e->uc2mb)&&
-	     ((outsize=e->uc2mb(write,(xchar)ch))>=0)) {
+             ((outsize=e->uc2mb(write,(xchar)ch))>=0)) {
       write=write+outsize;}
     /* If we get here, we know we don't have a native encoding. */
     else if (((escape_char == '\\') ||(escape_char == '&') ||
-	      (escape_char == 'x')) &&
-	     ((e->flags)&(U8_ENCODING_INCLUDES_ASCII))) {
+              (escape_char == 'x')) &&
+             ((e->flags)&(U8_ENCODING_INCLUDES_ASCII))) {
       if (escape_char == '&') {
-	sprintf(write,"&#%d;",ch);
-	write=write+strlen(write);}
+        sprintf(write,"&#%d;",ch);
+        write=write+strlen(write);}
       else if (escape_char == '\\')
-	if (ch < 0x8000) {
-	  sprintf(write,"\\u%04x",ch);
-	  write=write+6;}
-	else {
-	  sprintf(write,"\\U%08x",ch);
-	  write=write+10;}
+        if (ch < 0x8000) {
+          sprintf(write,"\\u%04x",ch);
+          write=write+6;}
+        else {
+          sprintf(write,"\\U%08x",ch);
+          write=write+10;}
       else if (escape_char == 'x') {
-	sprintf(write,"\\x%x;",ch);
-	write=write+strlen(write);}
+        sprintf(write,"\\x%x;",ch);
+        write=write+strlen(write);}
       else {}}
     /* There is another case we could handle here, which is encoding escapes
        in character sets which don't include ASCII but do have representations
@@ -697,7 +697,7 @@ unsigned char *u8_localize
   *scanner=scan;
   return buf;
 }
-  
+
 unsigned char *u8_localize_string
   (struct U8_TEXT_ENCODING *e,u8_byte *start,u8_byte *end)
 {
@@ -766,15 +766,15 @@ char *u8_read_quoted_printable(char *from,char *to,int *sizep)
 {
   char *result=u8_malloc(to-from+1), *read=from, *write=result;
   int size=0;
-  while (read < to) 
+  while (read < to)
     if (*read == '=')
       if (read[1] == '\n') read=read+2;
       else if ((read[1] == '\r') && (read[2] == '\n')) read=read+3;
       else {
-	char buf[4]; int coded_char;
-	buf[0]=read[1]; buf[1]=read[2]; buf[2]=0;
-	sscanf(buf,"%x",&coded_char); size++;
-	*write++=coded_char; read=read+3;}
+        char buf[4]; int coded_char;
+        buf[0]=read[1]; buf[1]=read[2]; buf[2]=0;
+        sscanf(buf,"%x",&coded_char); size++;
+        *write++=coded_char; read=read+3;}
     else {*write++=*read++; size++;}
   *write=0; *sizep=size;
   return result;
@@ -796,10 +796,10 @@ static int encode_base64_block(char *c)
   int first_byte=encode_base64_byte(c[0]);
   if (first_byte<0) return -1;
   else return
-	 (first_byte<<18)|
-	 ((encode_base64_byte(c[1]))<<12)|
-	 ((encode_base64_byte(c[2]))<<6)|
-	 ((encode_base64_byte(c[3]))<<0);
+         (first_byte<<18)|
+         ((encode_base64_byte(c[1]))<<12)|
+         ((encode_base64_byte(c[2]))<<6)|
+         ((encode_base64_byte(c[3]))<<0);
 }
 
 U8_EXPORT
@@ -850,19 +850,19 @@ unsigned char *u8_read_base16(char *data,int len_arg,int *result_len)
       u8_seterr(u8_MallocFailed,"u8_read_base16",NULL);
       *result_len=-1; return NULL;}
     else while (scan<limit) {
-	if ((isspace(*scan))||(ispunct(*scan))) {scan++; continue;}
-	else if ((scan+1)<limit) {
-	  int hival=hexweight(scan[0]), loval=hexweight(scan[1]);
-	  if ((hival<0) || (loval<0)) {
-	    u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
-	    u8_free(result);
-	    return NULL;}
-	  *write=(hival<<4)|loval;
-	  scan=scan+2; write++;}
-	else {
-	  u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
-	  u8_free(result);
-	  return NULL;}}
+        if ((isspace(*scan))||(ispunct(*scan))) {scan++; continue;}
+        else if ((scan+1)<limit) {
+          int hival=hexweight(scan[0]), loval=hexweight(scan[1]);
+          if ((hival<0) || (loval<0)) {
+            u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
+            u8_free(result);
+            return NULL;}
+          *write=(hival<<4)|loval;
+          scan=scan+2; write++;}
+        else {
+          u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
+          u8_free(result);
+          return NULL;}}
     *result_len=len/2;
     return result;}
 }
@@ -970,8 +970,8 @@ u8_string u8_mime_convert(char *start,char *end)
     if ((*scan=='=') && (scan[1]=='?')) {
       char *code_end=strstr(scan,"?=");
       if ((code_end) && (code_end<end)) {
-	convert_mime_header_text(&out,scan,code_end);
-	scan=code_end+1;}
+        convert_mime_header_text(&out,scan,code_end);
+        scan=code_end+1;}
       else {u8_putc(&out,*scan); scan++;}}
     else {u8_putc(&out,*scan); scan++;}}
   return out.u8_outbuf;
@@ -996,14 +996,14 @@ void u8_init_convert_c()
   declare_charset("iso-latin2",iso_8859_2_map);
   declare_charset("iso-8859/2",iso_8859_2_map);
   u8_define_encoding("UTF-8",NULL,0,wctoutf8,utf8towc,
-		     U8_ENCODING_INCLUDES_ASCII);
+                     U8_ENCODING_INCLUDES_ASCII);
   u8_define_encoding("UTF/8",NULL,0,wctoutf8,utf8towc,
-		     U8_ENCODING_INCLUDES_ASCII);
+                     U8_ENCODING_INCLUDES_ASCII);
   u8_define_encoding("UTF/16",NULL,0,wctoutf16,utf16towc,0);
   u8_define_encoding("UTF-16",NULL,0,wctoutf16,utf16towc,0);
   u8_define_encoding("UCS-2",NULL,0,wctoutf16,utf16towc,0);
   u8_define_encoding("UCS/2",NULL,0,wctoutf16,utf16towc,0);
-  
+
   ascii_encoding=u8_get_encoding("ASCII");
   utf8_encoding=u8_get_encoding("UTF-8");
   latin1_encoding=u8_get_encoding("LATIN-1");
