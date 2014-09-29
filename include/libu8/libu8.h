@@ -560,6 +560,11 @@ U8_EXPORT void u8_randomize(unsigned int seed);
 **/
 U8_EXPORT void *u8_dynamic_load(u8_string filename);
 
+/** Returns the system page size
+    @returns long
+**/
+U8_EXPORT long u8_getpagesize(void);
+
 /** Gets a variable specified in the environment.
     @param envvar a variable name
     @returns a utf-8 string, copied

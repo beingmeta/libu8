@@ -261,7 +261,7 @@ AC_CHECK_HEADERS(netinet/in.h netinet/tcp.h)
 AC_CHECK_HEADERS(dirent.h sys/ndir.h sys/dir.h)
 AC_CHECK_HEADERS(sys/timeb.h dlfcn.h malloc.h sys/malloc.h malloc/malloc.h)
 AC_CHECK_HEADERS(sys/resource.h resource.h sys/syscall.h)
-AC_CHECK_FUNCS(getrusage mallinfo syscall mstats)
+AC_CHECK_FUNCS(getrusage mallinfo syscall mstats sysconf getpagesize)
 
 AC_HEADER_STDC
 AC_HEADER_STAT

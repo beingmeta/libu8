@@ -182,6 +182,12 @@
 /* Define if you have syscall */
 #undef HAVE_SYSCALL
 
+/* Define if you have syscall */
+#undef HAVE_SYSCONF
+
+/* Define if you have syscall */
+#undef HAVE_GETPAGESIZE
+
 /* Define if you need the rusage patch which gets meminfo from /proc/self */
 #undef U8_RUSAGE_PROC_PATCH
 

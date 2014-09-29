@@ -27,6 +27,10 @@
 #include <dlfcn.h>
 #endif
 
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #if TIME_WITH_SYS_TIME
 #include <time.h>
 #include <sys/time.h>
@@ -295,6 +299,23 @@ u8_utime u8_microtime()
 #endif
 #else
   return ((int)time(NULL))*1000000;
+#endif
+}
+
+/* Page size */
+
+U8_EXPORT
+/** Returns the current libu8 revision identifier
+    @returns a const utf8 string (converted from the value) or NULL
+**/
+long u8_getpagesize()
+{
+#if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE)))
+  return sysconf(_SC_PAGESIZE);
+#elif (HAVE_GETPAGESIZE)
+  return getpagesize();
+#else
+  return 512;
 #endif
 }
 
