@@ -34,6 +34,9 @@
 /* Define if you have the <sys/malloc.h> header file.  */
 #undef HAVE_SYS_MALLOC_H
 
+/* Define if you have the <malloc/malloc.h> header file.  */
+#undef HAVE_MALLOC_MALLOC_H
+
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 
@@ -313,6 +316,9 @@
 
 /* Define if we have the mallinfo function */
 #undef HAVE_MALLINFO
+
+/* Define if we have the mallinfo function */
+#undef HAVE_MSTATS
 
 /* Define the U8 encodings path based on the prefix */
 #undef U8_ENCODINGS_DIR

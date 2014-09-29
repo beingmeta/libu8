@@ -259,9 +259,9 @@ AC_CHECK_HEADERS(sys/stat.h unistd.h pwd.h grp.h fcntl.h poll.h sys/poll.h)
 AC_CHECK_HEADERS(sys/socket.h sys/select.h sys/un.h netdb.h)
 AC_CHECK_HEADERS(netinet/in.h netinet/tcp.h)
 AC_CHECK_HEADERS(dirent.h sys/ndir.h sys/dir.h)
-AC_CHECK_HEADERS(sys/timeb.h dlfcn.h malloc.h sys/malloc.h)
+AC_CHECK_HEADERS(sys/timeb.h dlfcn.h malloc.h sys/malloc.h malloc/malloc.h)
 AC_CHECK_HEADERS(sys/resource.h resource.h sys/syscall.h)
-AC_CHECK_FUNCS(getrusage mallinfo syscall)
+AC_CHECK_FUNCS(getrusage mallinfo syscall mstats)
 
 AC_HEADER_STDC
 AC_HEADER_STAT

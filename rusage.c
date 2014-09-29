@@ -28,10 +28,14 @@
 /* We use stdio to open the /proc file system */
 #include <stdio.h>
 
-#if ((HAVE_MALLOC_H) && (HAVE_MALLINFO))
+#if ((HAVE_MALLINFO)||(HAVE_MSTATS))
+#if (HAVE_MALLOC_H)
 #include <malloc.h>
-#elif ((HAVE_SYS_MALLOC_H) && (HAVE_MALLINFO))
+#elif (HAVE_SYS_MALLOC_H)
+#include <malloc/malloc.h>
+#elif (HAVE_SYS_MALLOC_H)
 #include <sys/malloc.h>
+#endif
 #endif
 
 /* Getting rusage */
@@ -107,6 +111,9 @@ U8_EXPORT unsigned long u8_memusage()
 #if (HAVE_MALLINFO)
   struct mallinfo minfo=mallinfo();
   return minfo.uordblks;
+#elif (HAVE_MSTATS)
+  struct mstats minfo=mstats();
+  return minfo.bytes_used;
 #else
   return procfs_memusage();
 #endif
