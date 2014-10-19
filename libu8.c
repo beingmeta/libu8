@@ -737,7 +737,7 @@ U8_EXPORT int u8_initialize()
   u8_init_mutex(&threadinitfns_lock);
   u8_init_mutex(&source_registry_lock);
   memset(&mutex_default_attr,0,sizeof(mutex_default_attr));
-#if HAVE_PTHREAD_H
+#if HAVE_PTHREAD_MUTEXATTR_INIT
   pthread_mutexattr_init(&mutex_default_attr);
 #endif
 #if (U8_USE_TLS)

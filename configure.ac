@@ -397,7 +397,7 @@ fi
 
 AC_CHECK_HEADERS(pthread.h)
 AC_CHECK_FUNCS(pthread_rwlock_init pthread_self pthread_create)
-AC_CHECK_FUNCS(pthread_mutexattr_settype)
+AC_CHECK_FUNCS(pthread_mutexattr_init pthread_mutexattr_settype)
 
 AC_ARG_ENABLE(largefiles,--en/disable-largefiles Enable use of large (> 2GB) file support,,largefiles_enabled=yes)
 if test $largefiles_enabled = "yes"; then

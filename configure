@@ -6880,12 +6880,13 @@ _ACEOF
 fi
 done
 
-for ac_func in pthread_mutexattr_settype
+for ac_func in pthread_mutexattr_init pthread_mutexattr_settype
 do :
-  ac_fn_c_check_func "$LINENO" "pthread_mutexattr_settype" "ac_cv_func_pthread_mutexattr_settype"
-if test "x$ac_cv_func_pthread_mutexattr_settype" = xyes; then :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_PTHREAD_MUTEXATTR_SETTYPE 1
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi
