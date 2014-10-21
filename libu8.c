@@ -710,10 +710,17 @@ U8_EXPORT int u8_initialize()
   if (u8_initialized) return u8_initialized;
 
 #if U8_THREADS_ENABLED
-#if (HAVE_PTHREAD_H)
+  u8_init_mutex(&threadinitfns_lock);
+  u8_init_mutex(&source_registry_lock);
+  memset(&mutex_default_attr,0,sizeof(mutex_default_attr));
+#if HAVE_PTHREAD_MUTEXATTR_INIT
+  pthread_mutexattr_init(&mutex_default_attr);
+#endif
 #if HAVE_PTHREAD_MUTEXATTR_SETTYPE
   pthread_mutexattr_settype(&mutex_default_attr,PTHREAD_MUTEX_ERRORCHECK);
 #endif
+#if (U8_USE_TLS)
+  u8_new_threadkey(&u8_initlevel_key,NULL);
 #endif
 #endif
 
@@ -732,18 +739,6 @@ U8_EXPORT int u8_initialize()
 
   bindtextdomain("libu8msg",NULL);
   bindtextdomain_codeset("libu8msg","utf-8");
-
-#if U8_THREADS_ENABLED
-  u8_init_mutex(&threadinitfns_lock);
-  u8_init_mutex(&source_registry_lock);
-  memset(&mutex_default_attr,0,sizeof(mutex_default_attr));
-#if HAVE_PTHREAD_MUTEXATTR_INIT
-  pthread_mutexattr_init(&mutex_default_attr);
-#endif
-#if (U8_USE_TLS)
-  u8_new_threadkey(&u8_initlevel_key,NULL);
-#endif
-#endif
 
   atexit(threadexit_atexit);
 
