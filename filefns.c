@@ -36,6 +36,11 @@
 #include <unistd.h>
 #endif
 
+#if ((HAVE_SYS_TYPES_H)&&(HAVE_UTIME_H))
+#include <sys/types.h>
+#include <utime.h>
+#endif
+
 #include <limits.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -238,6 +243,26 @@ U8_EXPORT time_t u8_file_mtime(u8_string filename)
     return fileinfo.st_mtime;}
 }
 
+#if ((HAVE_SYS_TYPES_H)&&(HAVE_UTIME_H))
+U8_EXPORT time_t u8_set_mtime(u8_string filename,time_t mtime)
+{
+  char *lpath=u8_localpath(filename);
+  struct utimbuf tbuf={-1,mtime};
+  int rv=utime(lpath,&tbuf);
+  if (rv<0) {
+    u8_graberr(-1,"u8_set_mtime",lpath);
+    return (time_t)-1;}
+  else {
+    u8_free(lpath);
+    return mtime;}
+}
+#else
+U8_EXPORT time_t u8_set_mtime(u8_string filename,time_t mtime)
+{
+  return u8_reterr(u8_NotImplemented,"u8_set_mtime",u8_localpath(filename));
+}
+#endif
+
 U8_EXPORT time_t u8_file_atime(u8_string filename)
 {
   char *lpath=u8_localpath(filename);
@@ -250,6 +275,26 @@ U8_EXPORT time_t u8_file_atime(u8_string filename)
     u8_free(lpath);
     return fileinfo.st_atime;}
 }
+
+#if ((HAVE_SYS_TYPES_H)&&(HAVE_UTIME_H))
+U8_EXPORT time_t u8_set_atime(u8_string filename,time_t atime)
+{
+  char *lpath=u8_localpath(filename);
+  struct utimbuf tbuf={atime,-1};
+  int rv=utime(lpath,&tbuf);
+  if (rv<0) {
+    u8_graberr(-1,"u8_set_atime",lpath);
+    return (time_t)-1;}
+  else {
+    u8_free(lpath);
+    return atime;}
+}
+#else
+U8_EXPORT time_t u8_set_mtime(u8_string filename,time_t mtime)
+{
+  return u8_reterr(u8_NotImplemented,"u8_set_mtime",u8_localpath(filename));
+}
+#endif
 
 U8_EXPORT int u8_file_mode(u8_string filename)
 {

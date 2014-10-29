@@ -76,11 +76,23 @@ U8_EXPORT time_t u8_file_ctime(u8_string filename);
 **/
 U8_EXPORT time_t u8_file_mtime(u8_string filename);
 
+/** Sets the latest modification time for a file
+    @param filename a utf-8 pathname
+    @returns time_t (the file modification time)
+**/
+U8_EXPORT time_t u8_set_mtime(u8_string filename,time_t);
+
 /** Returns the latest access time of a file
     @param filename a utf-8 pathname
     @returns time_t (the file modification time)
 **/
 U8_EXPORT time_t u8_file_atime(u8_string filename);
+
+/** Sets the latest access time for a file
+    @param filename a utf-8 pathname
+    @returns time_t (the file access time)
+**/
+U8_EXPORT time_t u8_set_atime(u8_string filename,time_t);
 
 /** Returns the mode (permissions) time of a file
     @param filename a utf-8 pathname
