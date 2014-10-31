@@ -194,8 +194,8 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
 #define U8_INIT_STATIC_OUTPUT(s,sz)	\
   {memset((&s),0,sizeof(s)); U8_INIT_OUTPUT_X((&s),sz,NULL,U8_STREAM_GROWS);}
 #define U8_INIT_STATIC_OUTPUT_BUF(s,sz,buf)	       \
-  {memset((&s),0,sizeof(s)); memset(&buf,0,sz);      \
-    U8_INIT_OUTPUT_X((&s),sz,NULL,U8_STREAM_GROWS);}
+  {memset((&s),0,sizeof(s)); memset(buf,0,sz);      \
+    U8_INIT_OUTPUT_X((&s),sz,buf,U8_STREAM_GROWS);}
 
 /** U8_INIT_FIXED_OUTPUT
     Initializes a string output stream with a fixed size buffer
