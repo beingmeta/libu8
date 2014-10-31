@@ -236,8 +236,8 @@ U8_EXPORT unsigned char *u8_client_read
   else return buf;
 }
 
-U8_EXPORT unsigned char *u8_client_write
-  (u8_client cl,unsigned char *buf,size_t n,size_t off)
+U8_EXPORT unsigned char *u8_client_write_x
+  (u8_client cl,unsigned char *buf,size_t n,size_t off,int flags)
 {
   char statebuf[16];
   u8_server server=cl->server;
@@ -273,10 +273,18 @@ U8_EXPORT unsigned char *u8_client_write
     cl->reading=0;
     return NULL;}
   else if (off<n) {
-    cl->writing=u8_microtime();
+    if ((cl->buf)&&(cl->ownsbuf)&&(buf!=cl->buf)) {
+      u8_free(cl->buf); cl->buf=NULL; cl->ownsbuf=0;}
+    cl->writing=u8_microtime(); cl->reading=-1;
     cl->buflen=cl->len=n; cl->buf=buf; cl->off=off;
+    cl->ownsbuf=((flags&U8_CLIENT_WRITE_OWNBUF)!=0);
     return NULL;}
   else return buf;
+}
+U8_EXPORT unsigned char *u8_client_write
+  (u8_client cl,unsigned char *buf,size_t n,size_t off)
+{
+  return u8_client_write_x(cl,buf,n,off,0);
 }
 
 /* Declaring a client done with a transaction (and available for another) */
@@ -1775,7 +1783,7 @@ u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int buflen)
 {
   struct U8_OUTPUT out;
   if (buf) {U8_INIT_FIXED_OUTPUT(&out,buflen,buf);}
-  else {U8_INIT_OUTPUT(&out,256);}
+  else {U8_INIT_STATIC_OUTPUT(out,256);}
   u8_lock_mutex(&(server->lock));
   u8_printf
     (&out,
@@ -1793,7 +1801,7 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
 {
   struct U8_OUTPUT out;
   if (buf) {U8_INIT_FIXED_OUTPUT(&out,buflen,buf);}
-  else {U8_INIT_OUTPUT(&out,256);}
+  else {U8_INIT_STATIC_OUTPUT(out,256);}
   u8_lock_mutex(&(server->lock));
   u8_printf
     (&out,"%s\t%d\%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
