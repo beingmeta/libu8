@@ -149,12 +149,11 @@ U8_INLINE_FCN void U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
 **/
 static void U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags)
 {
+  char *usebuf;
   assert(sz>0);
-  memset(s,0,sizeof(struct U8_OUTPUT));
-  if (buf) (s)->u8_outptr=(s)->u8_outbuf=buf;
-  else {
-    (s)->u8_outptr=(s)->u8_outbuf=u8_malloc(sz);
-    (s)->u8_outbuf[0]='\0';}
+  if (buf) usebuf=(s)->u8_outptr=(s)->u8_outbuf=buf;
+  else usebuf=(s)->u8_outptr=(s)->u8_outbuf=u8_malloc(sz);
+  memset(usebuf,0,sz);
   (s)->u8_outlim=(s)->u8_outbuf+sz;
   (s)->u8_bufsz=sz;
   (s)->u8_flushfn=NULL; (s)->u8_closefn=_u8_close_soutput;
@@ -173,7 +172,7 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
     @returns void
 **/
 #define U8_INIT_OUTPUT(s,sz) \
-   U8_INIT_OUTPUT_X((s),sz,NULL,U8_STREAM_GROWS)
+  U8_INIT_OUTPUT_X((s),sz,NULL,U8_STREAM_GROWS);
 
 /** Initializes a string output stream with a initial buffer.
     This will allocates a buffer if the output grows beyond the initial size.
@@ -183,7 +182,20 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
     @returns void
 **/
 #define U8_INIT_OUTPUT_BUF(s,sz,buf) \
-   U8_INIT_OUTPUT_X((s),sz,buf,U8_STREAM_GROWS)
+  U8_INIT_OUTPUT_X((s),sz,buf,U8_STREAM_GROWS);
+
+/** Initializes a string output stream with a particular initial size
+    This always allocates a buffer but arranges for the buffer to grow
+    @param s a pointer to a U8_OUTPUT structure
+    @param sz the number of bytes in the buffer
+    @param sz the number of bytes in the buffer
+    @returns void
+**/
+#define U8_INIT_STATIC_OUTPUT(s,sz)	\
+  {memset((&s),0,sizeof(s)); U8_INIT_OUTPUT_X((&s),sz,NULL,U8_STREAM_GROWS);}
+#define U8_INIT_STATIC_OUTPUT_BUF(s,sz,buf)	       \
+  {memset((&s),0,sizeof(s)); memset(&buf,0,sz);      \
+    U8_INIT_OUTPUT_X((&s),sz,NULL,U8_STREAM_GROWS);}
 
 /** U8_INIT_FIXED_OUTPUT
     Initializes a string output stream with a fixed size buffer
