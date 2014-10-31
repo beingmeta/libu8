@@ -168,11 +168,16 @@ U8_EXPORT int u8_message(u8_string format_string,...)
 U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
 {
   time_t now_t=time(NULL);
-  struct tm _now, *now=localtime_r(&now_t,&_now);
   char clockbuf[64], timebuf[64], procbuf[128];
   u8_string appid=NULL, procid=procbuf;
-  memset(buf,0,buflen); u8_init_mem(clockbuf);
-  u8_init_mem(timebuf); u8_init_mem(procbuf);
+#if HAVE_LOCALTIME_R
+  struct tm _now, *now=&_now;
+  u8_zero_struct(_now); now=localtime_r(&now_t,&_now);
+#else
+  struct tm *now=localtime(&now_t);
+#endif
+  memset(buf,0,buflen); u8_zero_arr(clockbuf);
+  u8_zero_arr(timebuf); u8_zero_arr(procbuf);
   if (u8_log_show_date)
     strftime(clockbuf,32,"%H:%M:%S(%d%b%y)",now);
   else strftime(clockbuf,32,"%H:%M:%S",now);
