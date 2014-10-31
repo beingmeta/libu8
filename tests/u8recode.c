@@ -35,7 +35,7 @@ int main(int argc,char **argv)
 	inbuf=realloc(inbuf,bytes_read+1024);
 	writer=inbuf+bytes_read;}}
     if (argc>3) fclose(in);
-    U8_INIT_OUTPUT(&stream,bytes_read*2);
+    U8_INIT_STATIC_OUTPUT(stream,bytes_read*2);
     reader=inbuf;
     u8_convert(in_enc,1,&stream,&reader,inbuf+bytes_read);
     reader=stream.u8_outbuf;

@@ -12,7 +12,7 @@ static u8_string dow_names[7]=
 int main(int argc,char **argv)
 {
   struct U8_XTIME xtime, gmtime;
-  struct U8_OUTPUT out; U8_INIT_OUTPUT(&out,128);
+  struct U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,128);
   if (argc>1)
     u8_iso8601_to_xtime(argv[1],&xtime);
   else u8_now(&xtime);

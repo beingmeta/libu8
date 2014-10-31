@@ -233,7 +233,7 @@ sequences of latin-1 characters. This always returns a valid UTF8
 string. */
 u8_string u8_valid_copy(u8_byte *s)
 {
-  U8_OUTPUT out; U8_INIT_OUTPUT(&out,32);
+  U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,32);
   while (*s)
     if (*s<0x80) u8_putc(&out,*s++);
     else if (check_utf8_ptr(s,get_utf8_size(*s))>0) {
@@ -251,7 +251,7 @@ sequences of latin-1 characters. This always returns a valid UTF8
 string. */
 u8_string u8_convert_crlfs(u8_byte *s)
 {
-  U8_OUTPUT out; U8_INIT_OUTPUT(&out,32);
+  U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,32);
   while (*s)
     if (*s=='\r')
       if (s[1]=='\n') {u8_putc(&out,'\n'); s=s+2;}
@@ -275,7 +275,7 @@ u8_string u8_downcase (u8_string string)
 {
   u8_byte *scan=string;
   struct U8_OUTPUT ss; int c;
-  U8_INIT_OUTPUT(&ss,32);
+  U8_INIT_STATIC_OUTPUT(ss,32);
   while (*scan) {
     if (*scan < 0x80) c=tolower(*scan++);
     else c=u8_tolower(u8_sgetc(&scan));
@@ -292,7 +292,7 @@ u8_string u8_upcase (u8_string string)
 {
   u8_byte *scan=string;
   struct U8_OUTPUT ss; int c;
-  U8_INIT_OUTPUT(&ss,32);
+  U8_INIT_STATIC_OUTPUT(ss,32);
   while (*scan) {
     if (*scan < 0x80) c=toupper(*scan++);
     else c=u8_toupper(u8_sgetc(&scan));
@@ -309,7 +309,7 @@ u8_string u8_string_append(u8_string first_string,...)
 {
   struct U8_OUTPUT out; va_list args; u8_string each;
   va_start(args,first_string);
-  U8_INIT_OUTPUT(&out,512);
+  U8_INIT_STATIC_OUTPUT(out,512);
   if (first_string) {u8_puts(&out,first_string);}
   while ((each=va_arg(args,u8_string))) {
     if (each[0]) u8_puts(&out,each);}
@@ -325,7 +325,7 @@ U8_EXPORT
 u8_string u8_decompose(u8_string string)
 {
   struct U8_OUTPUT out; u8_byte *scan=string; int c;
-  U8_INIT_OUTPUT(&out,512);
+  U8_INIT_STATIC_OUTPUT(out,512);
   while ((c=u8_sgetc(&scan))>0) {
     if (c<0x80) u8_putc(&out,c);
     u8_string str=u8_decompose_char(c);
@@ -347,7 +347,7 @@ u8_string u8_string_subst(u8_string input,u8_string key,u8_string replace)
     struct U8_OUTPUT out;
     int key_len=u8_bytelen(key), replace_len=u8_bytelen(replace);
     while (next) {
-      U8_INIT_OUTPUT(&out,u8_bytelen(input)+(replace_len*4));
+      U8_INIT_STATIC_OUTPUT(out,u8_bytelen(input)+(replace_len*4));
       u8_putn(&out,scan,next-scan);
       u8_putn(&out,replace,replace_len);
       scan=scan+key_len;

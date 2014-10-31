@@ -120,7 +120,7 @@ U8_EXPORT int u8_default_logger(int priority_level,u8_condition c,u8_string msg)
 static void raisefn(u8_condition ex,u8_context cxt,u8_string details)
 {
   U8_OUTPUT out;
-  U8_INIT_OUTPUT(&out,512);
+  U8_INIT_STATIC_OUTPUT(out,512);
   if (details)
     if (cxt)
       u8_printf(&out,"Aborting due to %m@%s: %m",ex,cxt,details);
@@ -266,7 +266,7 @@ U8_EXPORT void u8_fputs(u8_string s,FILE *f)
 U8_EXPORT void u8_fprintf(FILE *f,u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args;
-  U8_INIT_OUTPUT(&out,512);
+  U8_INIT_STATIC_OUTPUT(out,512);
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
@@ -278,7 +278,7 @@ U8_EXPORT void u8_fprintf(FILE *f,u8_string format_string,...)
 U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args;
-  U8_INIT_OUTPUT(&out,512);
+  U8_INIT_STATIC_OUTPUT(out,512);
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
@@ -289,7 +289,7 @@ U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args;
-  U8_INIT_OUTPUT(&out,512);
+  U8_INIT_STATIC_OUTPUT(out,512);
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);

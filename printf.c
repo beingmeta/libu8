@@ -213,7 +213,7 @@ U8_EXPORT
 u8_string u8_mkstring(u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args; int retval=0;
-  U8_INIT_OUTPUT(&out,128);
+  U8_INIT_STATIC_OUTPUT(out,128);
   va_start(args,format_string);
   if ((retval=u8_do_printf(&out,format_string,&args))<0) {
     va_end(args);

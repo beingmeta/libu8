@@ -597,7 +597,7 @@ U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid();
   pid_t tid=syscall(SYS_gettid);
-  if (!(buf)) buf=u8_malloc(128);
+  if (!(buf)) buf=u8_mallocz(128);
   sprintf(buf,"%ld:%ld",(unsigned long int)pid,(unsigned long int)tid);
   return buf;
 }
@@ -606,7 +606,7 @@ U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid();
   pthread_t self=pthread_self();
-  if (!(buf)) buf=u8_malloc(128);
+  if (!(buf)) buf=u8_mallocz(128);
   sprintf(buf,"%ld:0x%lx",(unsigned long int)pid,(unsigned long int)self);
   return buf;
 }
@@ -614,7 +614,7 @@ U8_EXPORT char *u8_procinfo(char *buf)
 U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid();
-  if (!(buf)) buf=u8_malloc(128);
+  if (!(buf)) u8_mallocz(128);
   sprintf(buf,"%ld",(unsigned long int)pid);
   return buf;
 }

@@ -53,7 +53,7 @@ U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
   int epriority=priority;
   if (priority<0) epriority=(-priority)-2;
   if (epriority>LOG_DEBUG) epriority=LOG_DEBUG;
-  U8_INIT_OUTPUT(&out,512);
+  U8_INIT_STATIC_OUTPUT(out,512);
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
@@ -64,7 +64,7 @@ U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 static void raisefn(u8_condition ex,u8_context cxt,u8_string details)
 {
   U8_OUTPUT out;
-  U8_INIT_OUTPUT(&out,512);
+  U8_INIT_STATIC_OUTPUT(out,512);
   if (details)
     if (cxt)
       u8_printf(&out,"Aborting due to %m@%s: %m",ex,cxt,details);

@@ -477,11 +477,16 @@ U8_EXPORT
 **/
 u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server);
 
+#define U8_CLIENT_WRITE_OWNBUF 1
 
+U8_EXPORT unsigned char *u8_client_write_x
+  (u8_client cl,unsigned char *buf,size_t n,size_t off,int flags);
 U8_EXPORT unsigned char *u8_client_write
   (u8_client cl,unsigned char *buf,size_t n,size_t off);
+
 U8_EXPORT unsigned char *u8_client_read
   (u8_client cl,unsigned char *buf,size_t n,size_t off);
+
 U8_EXPORT int u8_client_finished(u8_client cl);
 
 #endif /* U8_U8SRVFNS_H */

@@ -8,7 +8,7 @@ int main(int argc,char **argv)
 {
   U8_OUTPUT f;
   char *scan=argv[1];
-  U8_INIT_OUTPUT(&f,256);
+  U8_INIT_STATIC_OUTPUT(f,256);
   while (*scan) {u8_putc(&f,*scan); scan++;}
   fprintf(stderr,"%s\n",f.u8_outbuf);
   return 0;

@@ -122,7 +122,7 @@ U8_EXPORT unsigned long u8_memusage()
 U8_EXPORT u8_string u8_rusage_string(struct rusage *r)
 {
   struct U8_OUTPUT out;
-  U8_INIT_OUTPUT(&out,256);
+  U8_INIT_STATIC_OUTPUT(out,256);
   u8_printf(&out,"total=%f",
             ((double)(r->ru_utime.tv_sec))+
             ((double)(r->ru_stime.tv_sec))+

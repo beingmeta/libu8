@@ -215,7 +215,7 @@ U8_EXPORT u8_string u8_errstring(struct U8_EXCEPTION *ex)
   if (ex==NULL) ex=u8_current_exception;
   if (ex==NULL) return NULL;
   else {
-    U8_OUTPUT out; U8_INIT_OUTPUT(&out,32);
+    U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,32);
     if (u8_errout(&out,ex)>0) return out.u8_outbuf;
     else {
       strcpy(out.u8_outbuf,"meta error");
@@ -229,7 +229,7 @@ void u8_clear_errors(int report)
   while (ex) {
     if (report) {
       u8_byte buf[128]; struct U8_OUTPUT out;
-      U8_INIT_OUTPUT_BUF(&out,128,buf);
+      U8_INIT_STATIC_OUTPUT_BUF(out,128,buf);
       u8_errout(&out,ex);
       u8_logger(LOG_ERR,NULL,out.u8_outbuf);
       if (out.u8_streaminfo&U8_STREAM_OWNS_BUF)

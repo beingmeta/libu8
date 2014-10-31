@@ -96,7 +96,7 @@ static struct U8_TEXT_ENCODING *lookup_encoding_name(char *name)
 u8_string standardize_encoding_name(u8_string string)
 {
   struct U8_OUTPUT out; int c;
-  U8_INIT_OUTPUT(&out,128);
+  U8_INIT_STATIC_OUTPUT(out,128);
   while ((c=u8_sgetc(&string))>0)
     if ((c<0x80) && (isalnum(c))) {
       int upper=toupper(c);
@@ -598,7 +598,7 @@ u8_string u8_make_string
   (struct U8_TEXT_ENCODING *e,u8_byte *start,u8_byte *end)
 {
   struct U8_OUTPUT out;
-  U8_INIT_OUTPUT(&out,((end-start)+(end-start)/4));
+  U8_INIT_STATIC_OUTPUT(out,((end-start)+(end-start)/4));
   u8_convert(e,1,&out,&start,end);
   return out.u8_outbuf;
 }
@@ -965,7 +965,7 @@ u8_string u8_mime_convert(char *start,char *end)
 {
   U8_OUTPUT out;
   char *scan=start;
-  U8_INIT_OUTPUT(&out,256);
+  U8_INIT_STATIC_OUTPUT(out,256);
   while (scan<end) {
     if ((*scan=='=') && (scan[1]=='?')) {
       char *code_end=strstr(scan,"?=");
