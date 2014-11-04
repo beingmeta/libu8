@@ -176,8 +176,8 @@ U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
 #else
   struct tm *now=localtime(&now_t);
 #endif
-  memset(buf,0,buflen); u8_zero_arr(clockbuf);
-  u8_zero_arr(timebuf); u8_zero_arr(procbuf);
+  memset(buf,0,buflen); u8_zero_array(clockbuf);
+  u8_zero_array(timebuf); u8_zero_array(procbuf);
   if (u8_log_show_date)
     strftime(clockbuf,32,"%H:%M:%S(%d%b%y)",now);
   else strftime(clockbuf,32,"%H:%M:%S",now);

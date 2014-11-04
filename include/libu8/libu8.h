@@ -435,7 +435,7 @@ U8_EXPORT void *u8_dmalloc(size_t);
 #define U8_MALLOC malloc
 #endif
 
-#define u8_zero_arr(r) memset(r,0,sizeof(r))
+#define u8_zero_array(r) memset(r,0,sizeof(r))
 #define u8_zero_struct(r) memset(&r,0,sizeof(r))
 
 #define u8_malloc(sz) U8_MALLOC(sz)

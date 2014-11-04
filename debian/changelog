@@ -1,3 +1,9 @@
+libu8 (2.4.8-9) unstable; urgency=low
+
+  * Various memory fixes, improved server logging
+
+ -- Ken Haase <kh@beingmeta.com>  Tue, 04 Nov 2014 09:00:38 -0500
+
 libu8 (2.4.8-3) unstable; urgency=low
 
   * Release 8 of libu8 2.4
