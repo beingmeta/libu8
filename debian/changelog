@@ -5,7 +5,7 @@ libu8 (2.4.9-1) unstable; urgency=low
   * Better support for building with sanitization/debugging
   * Improved packaging
 
- -- Ken Haase <kh@beingmeta.com>  Tue, 04 Nov 2014 09:09:15 -0500
+ -- Ken Haase <kh@beingmeta.com>  Sat, 13 Dec 2014 11:09:52 -0500
 
 libu8 (2.4.8-9) unstable; urgency=low
 
