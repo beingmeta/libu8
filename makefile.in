@@ -329,6 +329,9 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 
 rpms: dist/rpms.done
 debian deb debs: dist/debs.done
+install-debian: dist/debs.installed
+dist/debs.installed: dist/debs.done
+	${SUDO} dpkg -i dist/*.deb
 
 cleandist cleanrpms cleandeb rpmclean debclean:
 	rm -rf dist/rpms.done dist/rpms.ready dist/debs.done dist/debs.ready
