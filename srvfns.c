@@ -1485,7 +1485,9 @@ static int server_listen(struct U8_SERVER *server)
     if (retval<0) return retval;
     if (server->shutdown) {
       do_shutdown(server,server->shutdown);
-      if (sockets!=server->sockets) u8_free(sockets);
+      if ((server->sockets!=NULL)&&
+	  (sockets!=server->sockets))
+	u8_free(sockets);
       return 0;}
     if (server->flags&U8_SERVER_CLOSED) return 0;
     update_socketbuf(server,&sockets,&n_socks);
@@ -1495,7 +1497,9 @@ static int server_listen(struct U8_SERVER *server)
       u8_unlock_mutex(&(server->lock));}}
   if (server->shutdown) {
     do_shutdown(server,server->shutdown);
-    if (sockets!=server->sockets) u8_free(sockets);
+    if ((server->sockets!=NULL)&&
+	(sockets!=server->sockets))
+      u8_free(sockets);
     return 0;}
   return server_handle_poll(server,sockets,n_socks);
 }
