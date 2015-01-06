@@ -1,3 +1,10 @@
+libu8 (2.4.10-0) unstable; urgency=low
+
+  * Fix free() race condition in server shutdown
+  * Updates to debian package building
+
+ -- Ken Haase <kh@beingmeta.com>  Tue, 06 Jan 2015 13:12:26 -0500
+
 libu8 (2.4.9-1) unstable; urgency=low
 
   * Memory initialization fixes
