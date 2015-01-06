@@ -1,4 +1,4 @@
-libu8 (2.4.10-0) unstable; urgency=low
+libu8 (2.4.10-1) unstable; urgency=low
 
   * Fix free() race condition in server shutdown
   * Updates to debian package building
