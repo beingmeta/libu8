@@ -327,17 +327,25 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 
 # Packaging targets
 
-rpms: dist/rpms.done
 debian deb debs: dist/debs.done
-install-debian install-debian: dist/debs.installed
+rpms: dist/rpms.done 
+.PHONY: rpms debian debs
+
+install-debian install-debian debinstall installdeb: dist/debs.installed
 dist/debs.installed: dist/debs.done
-	@SUDO@ dpkg -i dist/*.deb
+	@SUDO@ dpkg -i dist/*.deb && touch $@
+.PHONY: install-debian install-debian debinstall installdeb
+
+install-rpms rpminstall installrpms: dist/rpms.installed
+dist/rpms.installed: dist/rpms.done
+	@SUDO@ rpm -Uvh dist/*.rpm && touch $@
 
 cleandist cleanrpms cleandeb rpmclean debclean:
 	rm -rf dist/rpms.done dist/rpms.ready dist/debs.done dist/debs.ready
 	rm -f dist/*.deb dist/*.tar dist/*.gz
 	find dist -name "*.rpm" | xargs -r rm
 	rm -rf staging/libu8*
+.PHONY: cleandist cleanrpms cleandeb rpmclean debclean
 
 # Creating staging areas from GIT
 
@@ -411,6 +419,8 @@ dist/rpms.zip: dist/rpms.done
 	@zip dist/rpms.zip \
 		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm
+
+.PHONY: rpms rpmupdate update-rpms freshrpms
 
 # Rules for debian building
 
