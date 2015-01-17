@@ -1,3 +1,9 @@
+libu8 (2.4.10-2) unstable; urgency=low
+
+  * Update copyright dates
+
+ -- Ken Haase <kh@beingmeta.com>  Fri, 16 Jan 2015 22:11:08 -0500
+
 libu8 (2.4.10-1) unstable; urgency=low
 
   * Fix free() race condition in server shutdown
