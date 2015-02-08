@@ -225,7 +225,7 @@ u8_string u8_mkstring(u8_string format_string,...)
 }
 
 static u8_string default_printf_handler
-  (u8_output s,char *cmd,u8_string buf,int bufsiz,va_list *args)
+  (u8_output s,char *cmd,u8_byte *buf,int bufsiz,va_list *args)
 {
   return NULL;
 }

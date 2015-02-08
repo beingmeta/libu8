@@ -358,7 +358,7 @@ U8_EXPORT char **u8_lookup_host
 
 /* Make connections */
 
-U8_EXPORT u8_string u8_parse_addr
+U8_EXPORT u8_byte *u8_parse_addr
     (u8_string spec,int *portp,u8_byte *result,ssize_t buflen)
 {
   u8_byte *split=strchr(spec,'@'); int len=strlen(spec);
@@ -1079,7 +1079,7 @@ int u8_smtp_timeout=250;
 
 static int isasciip(u8_string data,int len)
 {
-  u8_byte *scan=data, *limit=data+len;
+  const u8_byte *scan=data, *limit=data+len;
   while (scan<limit)
     if ((*scan)>=0x80) return 0;
     else scan++;
@@ -1088,7 +1088,7 @@ static int isasciip(u8_string data,int len)
 
 static void output_mime(u8_output out,u8_string data,int len,int pos)
 {
-  u8_byte *scan=data, *limit=scan+len; int escaped=0;
+  const u8_byte *scan=data, *limit=scan+len; int escaped=0;
   if (!(isasciip(data,len))) {
     u8_puts(out,"=?utf-8?Q?");
     escaped=1; pos=pos+10;}

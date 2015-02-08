@@ -74,7 +74,7 @@ U8_EXPORT u8_string u8_filestring(u8_string filename,u8_string encname)
   if (n_bytes==0) return buf;
   if (encname == NULL) enc=NULL;
   else if (strcmp(encname,"auto")==0)
-    enc=u8_guess_encoding(buf);
+    enc=u8_guess_encoding((u8_string)buf);
   else enc=u8_get_encoding(encname);
   if (enc) {
     struct U8_OUTPUT out; int retval=0;

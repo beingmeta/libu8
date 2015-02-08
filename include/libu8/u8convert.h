@@ -29,7 +29,7 @@
 #define U8_ENCODING_INCLUDES_ASCII 1
 #define U8_ENCODING_IS_LINEAR (U8_ENCODING_INCLUDES_ASCII<<1)
 
-typedef int (*mb2uc_fn)(int *,unsigned char *,size_t);
+typedef int (*mb2uc_fn)(int *,const unsigned char *,size_t);
 typedef int (*uc2mb_fn)(unsigned char *,int);
 
 /** struct U8_CHARINFO_TABLE
@@ -78,7 +78,7 @@ U8_EXPORT u8_encoding latin1_encoding;
       @returns a pointer to a U8_TEXT_ENCODING structure
  **/
 U8_EXPORT u8_encoding u8_define_encoding
-  (char *name,struct U8_MB_MAP *charset,int size,
+  (u8_string name,struct U8_MB_MAP *charset,int size,
    uc2mb_fn uc2mb,mb2uc_fn mb2uc,int flags);
 
 /** Loads information about an encoding from an external file.
@@ -88,7 +88,7 @@ U8_EXPORT u8_encoding u8_define_encoding
     @param filename the file containing the encoding definition
     @returns a pointer to an U8_TEXT_ENCODING structure
 **/
-U8_EXPORT u8_encoding u8_load_encoding(char *name,char *filename);
+U8_EXPORT u8_encoding u8_load_encoding(u8_string name,u8_string filename);
 
 /** Gets a particular encoding based on its name.
     Encoding names are normalized by lowercasing and stripping
@@ -96,7 +96,7 @@ U8_EXPORT u8_encoding u8_load_encoding(char *name,char *filename);
     @param name the name of the encoding desired
     @returns a pointer to an U8_TEXT_ENCODING structure or NULL if none exists
 **/
-U8_EXPORT struct U8_TEXT_ENCODING *u8_get_encoding(char *name);
+U8_EXPORT struct U8_TEXT_ENCODING *u8_get_encoding(u8_string name);
 
 /** Returns the default encoding.
     @returns a pointer to an U8_TEXT_ENCODING structure or NULL if none exists
@@ -112,7 +112,7 @@ U8_EXPORT int u8_set_default_encoding(char *name);
     @param data (a buffer of data)
     @returns an encoding if a known named encoding occurs inn the data
 **/
-U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *data);
+U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(u8_string data);
 
 /** Converts @a n bytes of text encoded with @a enc to the stream @a out.
     Scans @a n bytes from @a scan up to @a end or a NUL, converting
@@ -123,7 +123,8 @@ U8_EXPORT struct U8_TEXT_ENCODING *u8_guess_encoding(unsigned char *data);
  **/
 U8_EXPORT int u8_convert
   (struct U8_TEXT_ENCODING *enc,int n,
-   struct U8_OUTPUT *out,unsigned char **scan,unsigned char *end);
+   struct U8_OUTPUT *out,
+   const unsigned char **scan,const unsigned char *end);
 
 /** Converts a range of bytes to a UTF-8 string based on @a enc.
     Operates on the range of bytes between @a start and @a end into
@@ -135,7 +136,8 @@ U8_EXPORT int u8_convert
     @returns a UTF-8 string
  **/
 U8_EXPORT u8_string u8_make_string
-  (struct U8_TEXT_ENCODING *enc,unsigned char *start,unsigned char *end);
+  (struct U8_TEXT_ENCODING *enc,
+   const unsigned char *start,const unsigned char *end);
 
 /** Converts a range of UTF-8 text into an external representation based on @a enc.
     Advances the scanner @a scan (a pointer to a pointer into a string) up until
@@ -164,7 +166,8 @@ U8_EXPORT u8_string u8_make_string
     @returns a locally encoded character string
  **/
 U8_EXPORT unsigned char *u8_localize
-  (struct U8_TEXT_ENCODING *enc,u8_byte **scan,u8_byte *end,
+  (struct U8_TEXT_ENCODING *enc,
+   const u8_byte **scan,const u8_byte *end,
    int escape_char,int crlf,u8_byte *buf,int *sizep);
 
 /** Converts a range of UTF-8 text into an external representation based on @a enc.
@@ -179,7 +182,7 @@ U8_EXPORT unsigned char *u8_localize
     @returns a UTF-8 string
  **/
 U8_EXPORT unsigned char *u8_localize_string
-  (struct U8_TEXT_ENCODING *enc,u8_byte *start,u8_byte *end);
+  (struct U8_TEXT_ENCODING *enc,const u8_byte *start,const u8_byte *end);
 
 /* Convert */
 
@@ -190,7 +193,7 @@ U8_EXPORT unsigned char *u8_localize_string
     @param end the end of the MIME header encoded text
     @returns a UTF-8 string
  **/
-U8_EXPORT u8_string u8_mime_convert(char *start,char *end);
+U8_EXPORT u8_string u8_mime_convert(const char *start,const char *end);
 
 /** Converts a BASE64 ASCII representation into an array of bytes.
     Returns an array of bytes based on the base64 encoding between
@@ -200,7 +203,7 @@ U8_EXPORT u8_string u8_mime_convert(char *start,char *end);
     @param sizep a pointer to an int.
     @returns a pointer to an array of bytes
  **/
-U8_EXPORT unsigned char *u8_read_base64(char *start,char *end,int *sizep);
+U8_EXPORT unsigned char *u8_read_base64(const char *start,const char *end,int *sizep);
 
 /** Converts a byte vector into a BASE64 ASCII representation.
     Returns an array of characters encoding the sequence of @a len bytes
@@ -220,7 +223,7 @@ U8_EXPORT char *u8_write_base64(unsigned char *data,int len,int *sizep);
     @param sizep a pointer to an int.
     @returns a pointer to an array of bytes
  **/
-U8_EXPORT char *u8_read_quoted_printable(char *start,char *end,int *sizep);
+U8_EXPORT char *u8_read_quoted_printable(const char *start,const char *end,int *sizep);
 
 /** Converts a hexademical ASCII representation into an array of bytes.
     Returns an array of bytes based on the hexadecmial encoding of
@@ -231,7 +234,7 @@ U8_EXPORT char *u8_read_quoted_printable(char *start,char *end,int *sizep);
     @param sizep a pointer to an int.
     @returns a pointer to an array of bytes
  **/
-U8_EXPORT unsigned char *u8_read_base16(char *start,int len,int *sizep);
+U8_EXPORT unsigned char *u8_read_base16(const char *start,int len,int *sizep);
 
 /** Converts a byte vector into a BASE64 (hexadecimal) ASCII representation.
     Returns a NUL-terminated array of characters encoding the sequence

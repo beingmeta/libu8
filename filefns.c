@@ -376,8 +376,8 @@ U8_EXPORT u8_string u8_readlink(u8_string filename,int absolute)
 /* Searching for files */
 
 static void buildname(u8_byte *buf,u8_string name,int namelen,
-                      u8_byte *start,u8_byte *end,
-                      u8_byte *ins,u8_byte *instoo)
+                      u8_string start,u8_string end,
+                      u8_string ins,u8_string instoo)
 {
   if ((instoo)&&(ins==NULL)) {ins=instoo; instoo=NULL;}
   if (instoo) {
@@ -406,7 +406,7 @@ U8_EXPORT u8_string u8_find_file(u8_string name,u8_string searchpath,
                                  int (*testp)(u8_string))
 {
   int namelen=strlen(name), buflen=strlen(searchpath)+namelen*2+4;
-  u8_byte *start=searchpath, *end, *ins, *instoo=NULL;
+  const u8_byte *start=searchpath, *end, *ins, *instoo=NULL;
   u8_byte *buf=u8_malloc(buflen);
   u8_string probename;
   memset(buf,0,buflen);
@@ -597,7 +597,7 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
       struct stat fileinfo; char *name=entry->d_name;
       if (!(((name[0]=='.')&&(name[1]=='\0'))||
             ((name[0]=='.')&&(name[1]=='.')&&(name[2]=='\0')))) {
-        char *fullpath=u8_mkpath(dirpath,name);
+        u8_string fullpath=u8_mkpath(dirpath,name);
         if (stat(fullpath,&fileinfo)<0) {
           u8_free(fullpath); continue;}
         if (((which==JUST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
@@ -606,7 +606,7 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
             results=u8_realloc_n(results,max_results*2,u8_string);
             max_results=max_results*2;}
           if (ret_fullpath)
-            results[n_results++]=u8_fromlibc(fullpath);
+	    results[n_results++]=u8_strdup(fullpath);
           else results[n_results++]=u8_fromlibc(entry->d_name);
           u8_free(fullpath);}
         else u8_free(fullpath);}}
@@ -630,16 +630,17 @@ static int remove_tree_helper(u8_string dirname)
       struct stat fileinfo; char *name=entry->d_name;
       if (!(((name[0]=='.')&&(name[1]=='\0'))||
             ((name[0]=='.')&&(name[1]=='.')&&(name[2]=='\0')))) {
-        char *fullpath=u8_mkpath(dirpath,entry->d_name);
-        if (stat(fullpath,&fileinfo)<0) {
-          u8_free(fullpath); continue;}
+	u8_string elt=u8_fromlibc(entry->d_name);
+	u8_string fullpath=u8_mkpath(dirpath,elt);
+	if (stat(fullpath,&fileinfo)<0) {
+	  u8_free(elt); u8_free(fullpath); continue;}
         if ((fileinfo.st_mode)&(S_IFDIR)) {
           int retval=remove_tree_helper(fullpath);
           if (retval>=0) {
             count=count+retval;
             retval=u8_rmdir(fullpath);
             if (retval>=0) count++;
-            u8_free(fullpath);}
+	    u8_free(elt); u8_free(fullpath);}
           else {
             u8_graberr(-1,"u8_remove_tree",fullpath);
             u8_clear_errors(1);}}
@@ -652,8 +653,9 @@ static int remove_tree_helper(u8_string dirname)
             u8_clear_errors(1);}
           else {
             count++;
-            u8_free(fullpath);}}
-        else u8_free(fullpath);}}
+	    u8_free(elt);
+	    u8_free(fullpath);}}
+	else {u8_free(elt); u8_free(fullpath);}}}
   closedir(dp);
   u8_free(dirpath);
   return count;

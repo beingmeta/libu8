@@ -94,7 +94,7 @@ U8_EXPORT int u8_reconnect_tries;
        storing zero for filesystem domain addresses and -1 for an error
        (also returns NULL)
 **/
-U8_EXPORT u8_string u8_parse_addr
+U8_EXPORT u8_byte *u8_parse_addr
    (u8_string spec,int *portp,u8_byte *result,ssize_t buflen);
 
 /** Returns the configured name of the current host.

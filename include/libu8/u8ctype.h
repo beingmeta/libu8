@@ -179,7 +179,7 @@ U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_string *endp);
     @param endp a pointer to a location to store the end of the entity
     @returns a unicode code point
 **/
-U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_byte **endp);
+U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_string *endp);
 
 /** Sets the character information for a particular code point.
     @param n a Unicode code point

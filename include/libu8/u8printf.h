@@ -74,7 +74,7 @@ U8_EXPORT u8_string u8_mkstring(u8_string fmtstring,...);
 U8_EXPORT int u8_do_printf(u8_output stream,u8_string fmtstring,va_list *args);
 
 typedef u8_string (*u8_printf_handler)
-     (u8_output,char *,u8_string ,int,va_list *args);
+     (u8_output,char *,u8_byte *,int,va_list *args);
 U8_EXPORT u8_printf_handler u8_printf_handlers[128];
 
 U8_EXPORT int u8_errout(u8_output,struct U8_EXCEPTION *);

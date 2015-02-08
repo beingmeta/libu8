@@ -92,7 +92,7 @@ U8_EXPORT u8_string u8_string_subst
     @param end a pointer into a later location in the same string
     @returns a UTF-8 string extracted from between the two pointers
 **/
-U8_EXPORT u8_string u8_slice(u8_byte *start,u8_byte *end);
+U8_EXPORT u8_string u8_slice(const u8_byte *start,const u8_byte *end);
 
 /** Returns the number of characters in a UTF-8 string.
     This counts the number of unicode codepoints, so combining
@@ -140,7 +140,7 @@ U8_EXPORT int u8_string_ref(u8_string strptr);
     @param s a possible UTF-8 string
     @returns 1 if the pointer refers to a valid UTF-8 sequence, 0 otherwise
 **/
-U8_EXPORT int u8_validptr(u8_byte *s);
+U8_EXPORT int u8_validptr(const u8_byte *s);
 
 /** Checks if a string is a valid UTF-8 representation.
     @param s a possible UTF-8 string
@@ -186,7 +186,7 @@ U8_EXPORT char *u8_grab_bytes(u8_string s,int n,char *buf);
 /* u8_sgetc */
 
 U8_EXPORT int _u8_sgetc(const u8_byte **sptr);
-U8_EXPORT int _u8_sgetc_lim(const u8_byte **sptr,u8_byte *lim);
+U8_EXPORT int _u8_sgetc_lim(const u8_byte **sptr,const u8_byte *lim);
 
 static MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
 
@@ -196,7 +196,7 @@ static MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
     @param sptr a pointer to a pointer into a UTF-8 encoding
     @returns a unicode code point
 **/
-static int u8_sgetc_lim(const u8_byte **sptr,u8_byte *lim)
+static int u8_sgetc_lim(const u8_byte **sptr,const u8_byte *lim)
 {
   int i, ch, byte=**sptr, size;
   const u8_byte *scan=*sptr;

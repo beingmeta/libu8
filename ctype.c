@@ -308,7 +308,7 @@ U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_string *endp)
 {
   int codepoint;
   u8_byte buf[16];
-  u8_byte *end=((endp)?(*endp):(entity+strlen(entity)));
+  const u8_byte *end=((endp)?(*endp):(entity+strlen(entity)));
   u8_string semi=entity_end(entity);
   if (semi==NULL) return -1;
   else if (*semi=='\0') {*endp=(u8_byte *)semi; return -1;}
@@ -329,7 +329,7 @@ U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_string *endp)
   else {*endp=NULL; return -1;}
 }
 
-U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_byte **endp)
+U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_string *endp)
 {
   int codepoint;
   u8_byte buf[16];

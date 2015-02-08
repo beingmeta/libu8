@@ -374,7 +374,7 @@ U8_EXPORT
      @param port (an int) the port to listen on
      @returns void
 **/
-int u8_add_server(struct U8_SERVER *server,char *hostname,int port);
+int u8_add_server(struct U8_SERVER *server,u8_string hostname,int port);
 
 U8_EXPORT
 /** Starts a loop listening for requests to a server

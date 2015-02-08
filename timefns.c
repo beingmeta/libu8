@@ -504,7 +504,7 @@ static struct TZENTRY tzones[]= {
   {"EET",2*3600,0},
   {NULL,0,0}};
 
-static int lookup_tzname(char *string,int dflt)
+static int lookup_tzname(u8_string string,int dflt)
 {
   struct TZENTRY *zones=tzones;
   while ((*zones).name)
@@ -580,7 +580,7 @@ includes possible timezone and precision information.
 */
 time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
 {
-  char *tzstart;
+  const char *tzstart;
   int stdpos[]={-1,4,7,10,13,16,19,20}, *pos=stdpos;
   int basicpos[]={-1,4,6,8,11,13,15,17};
   int nsecs=0, n_elts, len=strlen(s);
@@ -607,7 +607,7 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
   xtp->u8_prec=n_elts;
   if (n_elts <= 6) xtp->u8_nsecs=0;
   if (n_elts == 7) {
-    char *start=s+pos[n_elts], *scan=start;
+    const char *start=s+pos[n_elts], *scan=start;
     int n_digits=0;
     while (isdigit(*scan)) scan++; n_digits=scan-start;
     if (n_digits==9) {
@@ -864,7 +864,7 @@ void u8_xtime_to_rfc822_x(u8_output ss,struct U8_XTIME *xtp,int zone,int flags)
 /* printf handling for time related values */
 
 static u8_string time_printf_handler
-  (u8_output s,char *cmd,u8_string buf,int bufsz,va_list *args)
+  (u8_output s,char *cmd,u8_byte *buf,int bufsz,va_list *args)
 {
   struct U8_XTIME xt; memset(&xt,0,sizeof(struct U8_XTIME));
   if (strchr(cmd,'*'))

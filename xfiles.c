@@ -87,7 +87,7 @@ static int fill_xinput(struct U8_XINPUT *xf)
   struct U8_OUTPUT tmpout; int input_offset, convert_val;
   int unread_bytes=xf->u8_inlim-xf->u8_inptr;
   int bytes_read, bytes_converted;
-  unsigned char *reader, *limit;
+  const unsigned char *reader, *limit;
   /* First, if we've read anything at all, overwrite it, making more
      space. */
   if (xf->u8_inptr>xf->u8_inbuf) {
@@ -227,7 +227,7 @@ static int flush_xoutput(struct U8_XOUTPUT *xf)
   int buflen=xf->xbuflim;
   while (xf->u8_outptr>xf->u8_outbuf) {
     /* Pick the region to change */
-    u8_byte *scan=xf->u8_outbuf, *scan_end=xf->u8_outptr;
+    const u8_byte *scan=xf->u8_outbuf, *scan_end=xf->u8_outptr;
     /* Convert the data to the appropriate encoding */
     u8_localize(xf->encoding,&scan,scan_end,
                 xf->escape,(xf->u8_streaminfo&U8_STREAM_CRLFS),

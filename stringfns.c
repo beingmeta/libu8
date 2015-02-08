@@ -42,7 +42,7 @@ int _u8_sgetc(const u8_byte **s)
   return u8_sgetc(s);
 }
 
-int _u8_sgetc_lim(const u8_byte **s,u8_byte *lim)
+int _u8_sgetc_lim(const u8_byte **s,const u8_byte *lim)
 {
   return u8_sgetc_lim(s,lim);
 }
@@ -125,7 +125,7 @@ U8_EXPORT
     Arguments: two pointers into a UTF8-encoded string
     Returns: the substring between the pointers
 */
-u8_string u8_slice(u8_byte *start,u8_byte *end)
+u8_string u8_slice(const u8_byte *start,const u8_byte *end)
 {
   if (end<start) return NULL;
   else if (end-start>65536*8) return NULL;
@@ -191,7 +191,7 @@ U8_EXPORT
     Arguments: a possible utf8 string
     Returns: 1 if the string is valid, 0 otherwise.
 */
-int u8_validptr(u8_byte *s)
+int u8_validptr(const u8_byte *s)
 {
   int sz=get_utf8_size(*s);
   if (sz>0) return (check_utf8_ptr(s,sz)>0);
