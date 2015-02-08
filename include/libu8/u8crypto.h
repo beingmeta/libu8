@@ -132,8 +132,8 @@ U8_EXPORT void u8_init_cryptofns(void);
     @returns a decrypted packet of data whose length is deposited in @a outlen
 **/
 U8_EXPORT unsigned char *u8_decrypt
-  (unsigned char *input,size_t len,
-   char *cipher,unsigned char *key,size_t keylen,
+  (const unsigned char *input,size_t len,
+   char *cipher,const unsigned char *key,size_t keylen,
    size_t *result_len);
 
 /** Encrypts a packet with a particular key using a particular
@@ -148,8 +148,8 @@ U8_EXPORT unsigned char *u8_decrypt
         deposited in @a outlen
 **/
 U8_EXPORT unsigned char *u8_encrypt
-  (unsigned char *input,size_t len,
-   char *cipher,unsigned char *key,size_t keylen,
+  (const unsigned char *input,size_t len,
+   char *cipher,const unsigned char *key,size_t keylen,
    size_t *result_len);
 
 #endif

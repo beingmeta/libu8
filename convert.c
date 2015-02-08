@@ -883,10 +883,10 @@ U8_EXPORT
   Converts the data into a base64 representation, returning the representation
    as a NUL-terminated string and storing the length (without the NUL) in
    the provided result length pointer.  */
-char *u8_write_base64(unsigned char *data,int len,int *result_len)
+char *u8_write_base64(const unsigned char *data,int len,int *result_len)
 {
   unsigned int sixbit;
-  unsigned char *scan=data, *limit=data+len;
+  const unsigned char *scan=data, *limit=data+len;
   unsigned char *result=u8_malloc((((len/3)+1)*4)+1);
   unsigned char *write=result;
   int leftover=len%3;
@@ -917,10 +917,10 @@ U8_EXPORT
      Returns: an ASCII character string (malloc'd)
   Converts the data into a hex base16 representation,
    returning the representation as a NUL-terminated string.  */
-char *u8_write_base16(unsigned char *data,int len_arg)
+char *u8_write_base16(const unsigned char *data,int len_arg)
 {
   unsigned int len=((len_arg<0) ? (strlen(data)) : (len_arg));
-  unsigned char *scan=data, *limit=data+len;
+  const unsigned char *scan=data, *limit=data+len;
   unsigned char *result=u8_malloc((len*2)+1);
   unsigned char *write=result;
   while (scan<limit) {

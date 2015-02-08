@@ -54,8 +54,8 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
 
 U8_EXPORT ssize_t u8_cryptic
   (int do_encrypt,char *cname,
-   unsigned char *key,int keylen,
-   unsigned char *iv,int ivlen,
+   const unsigned char *key,int keylen,
+   const unsigned char *iv,int ivlen,
    u8_block_reader reader,u8_block_writer writer,
    void *readstate,void *writestate,
    u8_context caller)
@@ -160,15 +160,15 @@ U8_EXPORT void u8_init_cryptofns()
 #if U8_HAVE_CRYPTO
 
 U8_EXPORT unsigned char *u8_encrypt
-  (unsigned char *input,size_t len,
-   char *cipher,unsigned char *key,size_t keylen,
+  (const unsigned char *input,size_t len,
+   char *cipher,const unsigned char *key,size_t keylen,
    size_t *result_len)
 {
   ssize_t bytecount;
   struct U8_BYTEBUF in, out;
   unsigned char *outbuf=u8_malloc(2*len);
   in.u8_direction=u8_input_buffer;
-  in.u8_buf=in.u8_ptr=input; in.u8_lim=input+len;
+  in.u8_buf=in.u8_ptr=(u8_byte *)input; in.u8_lim=(u8_byte *)(input+len);
   in.u8_direction=u8_output_buffer; out.u8_growbuf=len;
   out.u8_ptr=out.u8_buf=outbuf; out.u8_lim=outbuf+2*len;
   bytecount=u8_cryptic
@@ -181,15 +181,15 @@ U8_EXPORT unsigned char *u8_encrypt
 }
 
 U8_EXPORT unsigned char *u8_decrypt
-  (unsigned char *input,size_t len,
-   char *cipher,unsigned char *key,size_t keylen,
+  (const unsigned char *input,size_t len,
+   char *cipher,const unsigned char *key,size_t keylen,
    size_t *result_len)
 {
   ssize_t bytecount;
   struct U8_BYTEBUF in, out;
   unsigned char *outbuf=u8_malloc(2*len);
   in.u8_direction=u8_input_buffer;
-  in.u8_buf=in.u8_ptr=input; in.u8_lim=input+len;
+  in.u8_buf=in.u8_ptr=(u8_byte *)input; in.u8_lim=(u8_byte *)(input+len);
   in.u8_direction=u8_output_buffer; out.u8_growbuf=len;
   out.u8_ptr=out.u8_buf=outbuf; out.u8_lim=outbuf+2*len;
   bytecount=u8_cryptic

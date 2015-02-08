@@ -55,7 +55,7 @@ static u8_condition SpecialXBUF=_("Stream XBUF is static");
 
 /* Utility functions */
 
-U8_EXPORT int u8_writeall(int sock,unsigned char *data,int len)
+U8_EXPORT int u8_writeall(int sock,const unsigned char *data,int len)
 {
   int bytes_to_write=len;
   while (bytes_to_write>0) {

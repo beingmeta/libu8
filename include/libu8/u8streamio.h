@@ -336,7 +336,7 @@ U8_INLINE_FCN void U8_INIT_INPUT_X(u8_input s,int n,u8_byte *buf,int bits)
 }
 #else
 U8_EXPORT void _U8_INIT_INPUT_X(u8_input s,int n,u8_byte *buf,int bits);
-U8_EXPORT void _U8_INIT_STRING_INPUT(u8_input s,int n,u8_byte *buf);
+U8_EXPORT void _U8_INIT_STRING_INPUT(u8_input s,int n,const u8_byte *buf);
 #define U8_INIT_STRING_INPUT _U8_INIT_STRING_INPUT
 #define U8_INIT_INPUT_X _U8_INIT_INPUT_X
 #endif

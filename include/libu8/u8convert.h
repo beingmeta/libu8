@@ -203,7 +203,8 @@ U8_EXPORT u8_string u8_mime_convert(const char *start,const char *end);
     @param sizep a pointer to an int.
     @returns a pointer to an array of bytes
  **/
-U8_EXPORT unsigned char *u8_read_base64(const char *start,const char *end,int *sizep);
+U8_EXPORT unsigned char *u8_read_base64(const char *start,const char *end,
+					int *sizep);
 
 /** Converts a byte vector into a BASE64 ASCII representation.
     Returns an array of characters encoding the sequence of @a len bytes
@@ -213,7 +214,7 @@ U8_EXPORT unsigned char *u8_read_base64(const char *start,const char *end,int *s
     @param sizep a pointer to an int where the length of the result is stored
     @returns a pointer to an ASCII character string
  **/
-U8_EXPORT char *u8_write_base64(unsigned char *data,int len,int *sizep);
+U8_EXPORT char *u8_write_base64(const unsigned char *data,int len,int *sizep);
 
 /** Converts a quoted printable ASCII representation into an array of bytes.
     Returns an array of bytes based on the base64 encoding between
@@ -223,7 +224,8 @@ U8_EXPORT char *u8_write_base64(unsigned char *data,int len,int *sizep);
     @param sizep a pointer to an int.
     @returns a pointer to an array of bytes
  **/
-U8_EXPORT char *u8_read_quoted_printable(const char *start,const char *end,int *sizep);
+U8_EXPORT char *u8_read_quoted_printable(const char *start,const char *end,
+					 int *sizep);
 
 /** Converts a hexademical ASCII representation into an array of bytes.
     Returns an array of bytes based on the hexadecmial encoding of
@@ -243,6 +245,6 @@ U8_EXPORT unsigned char *u8_read_base16(const char *start,int len,int *sizep);
     @param len   the number of bytes in the array
     @returns a pointer to an ASCII character string
  **/
-U8_EXPORT char *u8_write_base16(unsigned char *data,int len);
+U8_EXPORT char *u8_write_base16(const unsigned char *data,int len);
 
 #endif
