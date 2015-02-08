@@ -294,7 +294,8 @@ U8_EXPORT u8_string u8_identify_session(u8_string newid);
 
 /* Data transmission functions */
 
-U8_EXPORT int u8_getbytes(int msecs,int socket_id,char *data,int len,int flags);U8_EXPORT int u8_sendbytes(int msecs,int socket,char *buf,int size,int flags);
+U8_EXPORT int u8_getbytes(int msecs,int socket_id,char *data,int len,int flags);
+U8_EXPORT int u8_sendbytes(int msecs,int socket,const char *buf,int size,int flags);
 U8_EXPORT int u8_transact(int timeout,int socket,char *msg,char *expect);
 
 /* SMTP */
@@ -307,9 +308,9 @@ typedef struct U8_MAILHEADER {
   u8_string label; u8_string value;} U8_MAILHEADER;
 typedef struct U8_MAILHEADER *u8_mailheader;
 
-U8_EXPORT int u8_smtp(char *mailhost,char *maildomain,
-                      char *from,char *dest,char *ctype,
+U8_EXPORT int u8_smtp(const char *mailhost,const char *maildomain,
+                      const char *from,const char *dest,const char *ctype,
                       int n_headers, u8_mailheader *headers,
-                      unsigned char *message,int message_len);
+                      const unsigned char *message,int message_len);
 
 #endif /* U8_U8NETFNS_H */

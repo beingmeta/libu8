@@ -44,14 +44,18 @@
 
 #if HAVE_COMMONCRYPTO_COMMONDIGEST_H
 /* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_md5(unsigned char *data,int len,unsigned char *result)
+U8_EXPORT unsigned char *u8_md5
+  (const unsigned char *data,int len,unsigned char *result)
 {
   if (len<0) len=strlen(data);
-  return CC_MD5(data,len,((result==NULL) ? (u8_malloc(CC_MD5_DIGEST_LENGTH)) : (result)));
+  return CC_MD5(data,len,((result==NULL) ?
+			  (u8_malloc(CC_MD5_DIGEST_LENGTH)) :
+			  (result)));
 }
 #elif HAVE_OPENSSL_MD5_H
 /* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_md5(unsigned char *data,int len,unsigned char *result)
+U8_EXPORT unsigned char *u8_md5
+   (const unsigned char *data,int len,unsigned char *result)
 {
   if (len<0) len=strlen(data);
   return MD5(data,len,((result==NULL) ? (u8_malloc(16)) : (result)));
@@ -378,7 +382,7 @@ static void Decode (UINT4 *output,unsigned char *input,unsigned int len)
 
 /* Digests a string and returns the result */
 U8_EXPORT unsigned char *u8_md5
-  (unsigned char *data,int len,unsigned char *result)
+  (const unsigned char *data,int len,unsigned char *result)
 {
   MD5_CTX context;
   unsigned char *digest=((result==NULL) ? (u8_malloc(16)) : (result));
@@ -396,38 +400,51 @@ U8_EXPORT unsigned char *u8_md5
 
 #if HAVE_COMMONCRYPTO_COMMONDIGEST_H
 /* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha1(unsigned char *data,int len,unsigned char *result)
+U8_EXPORT unsigned char *u8_sha1(const unsigned char *data,int len,
+				 unsigned char *result)
 {
   if (len<0) len=strlen(data);
-  return CC_SHA1(data,len,((result==NULL) ? (u8_malloc(CC_SHA1_DIGEST_LENGTH)) : (result)));
+  return CC_SHA1(data,len,
+		 ((result==NULL) ?
+		  (u8_malloc(CC_SHA1_DIGEST_LENGTH)) :
+		  (result)));
 }
 /* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha224(unsigned char *data,int len,unsigned char *result)
+U8_EXPORT unsigned char *u8_sha224(const unsigned char *data,int len,
+				   unsigned char *result)
 {
   if (len<0) len=strlen(data);
-  return CC_SHA224(data,len,((result==NULL) ? (u8_malloc(CC_SHA224_DIGEST_LENGTH)) : (result)));
+  return CC_SHA224(data,len,((result==NULL) ?
+			     (u8_malloc(CC_SHA224_DIGEST_LENGTH)) :
+			     (result)));
 }
 /* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha256(unsigned char *data,int len,unsigned char *result)
+U8_EXPORT unsigned char *u8_sha256(const unsigned char *data,int len,
+				   unsigned char *result)
 {
   if (len<0) len=strlen(data);
-  return CC_SHA256(data,len,((result==NULL) ? (u8_malloc(CC_SHA256_DIGEST_LENGTH)) : (result)));
+  return CC_SHA256(data,len,((result==NULL) ?
+			     (u8_malloc(CC_SHA256_DIGEST_LENGTH)) :
+			     (result)));
 }
 #elif HAVE_OPENSSL_SHA_H
 /* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha1(unsigned char *data,int len,unsigned char *result)
+U8_EXPORT unsigned char *u8_sha1(const unsigned char *data,int len,
+				 unsigned char *result)
 {
   if (len<0) len=strlen(data);
   return SHA1(data,len,((result==NULL) ? (u8_malloc(20)) : (result)));
 }
 /* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha224(unsigned char *data,int len,unsigned char *result)
+U8_EXPORT unsigned char *u8_sha224(const unsigned char *data,int len,
+				   unsigned char *result)
 {
   if (len<0) len=strlen(data);
   return SHA224(data,len,((result==NULL) ? (u8_malloc(28)) : (result)));
 }
 /* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_sha256(unsigned char *data,int len,unsigned char *result)
+U8_EXPORT unsigned char *u8_sha256(const unsigned char *data,int len,
+				   unsigned char *result)
 {
   if (len<0) len=strlen(data);
   return SHA256(data,len,((result==NULL) ? (u8_malloc(32)) : (result)));
@@ -637,8 +654,8 @@ U8_EXPORT unsigned char *u8_sha256
 
 #if HAVE_CCHMACINIT
 U8_EXPORT unsigned char *u8_hmac_sha1
-  (unsigned char *key,int key_len,
-   unsigned char *data,int data_len,
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
    unsigned char *result,int *result_len)
 {
   unsigned int buflen=20;
@@ -651,8 +668,8 @@ U8_EXPORT unsigned char *u8_hmac_sha1
 }
 #elif HAVE_OPENSSL_HMAC_H
 U8_EXPORT unsigned char *u8_hmac_sha1
-  (unsigned char *key,int key_len,
-   unsigned char *data,int data_len,
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
    unsigned char *result,int *result_len)
 {
   unsigned char *digestbuf=((result==NULL) ? (u8_malloc(20)) : (result));
@@ -662,8 +679,8 @@ U8_EXPORT unsigned char *u8_hmac_sha1
 }
 #else
 U8_EXPORT unsigned char *u8_hmac_sha1
-  (unsigned char *key,int key_len,
-   unsigned char *data,int data_len,
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
    unsigned char *result,int *result_len)
 {
   u8_raise(u8_NotImplemented,"u8_hmac_sha1",NULL);
@@ -673,8 +690,8 @@ U8_EXPORT unsigned char *u8_hmac_sha1
 
 #if HAVE_CCHMACINIT
 U8_EXPORT unsigned char *u8_hmac_sha256
-  (unsigned char *key,int key_len,
-   unsigned char *data,int data_len,
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
    unsigned char *result,int *result_len)
 {
   unsigned int buflen=32;
@@ -687,8 +704,8 @@ U8_EXPORT unsigned char *u8_hmac_sha256
 }
 #elif HAVE_OPENSSL_HMAC_H
 U8_EXPORT unsigned char *u8_hmac_sha256
-  (unsigned char *key,int key_len,
-   unsigned char *data,int data_len,
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
    unsigned char *result,int *result_len)
 {
   unsigned int buflen=32;
@@ -699,8 +716,8 @@ U8_EXPORT unsigned char *u8_hmac_sha256
 }
 #else
 U8_EXPORT unsigned char *u8_hmac_sha256
-  (unsigned char *key,int key_len,
-   unsigned char *data,int data_len,
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
    unsigned char *result,int *result_len)
 {
   u8_raise(u8_NotImplemented,"u8_hmac_sha256",NULL);

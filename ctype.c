@@ -304,7 +304,7 @@ static u8_string entity_end(u8_string entity)
   return scan;
 }
 
-U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_string *endp)
+U8_EXPORT int u8_parse_entity(const u8_byte *entity,u8_string *endp)
 {
   int codepoint;
   u8_byte buf[16];
@@ -315,7 +315,7 @@ U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_string *endp)
   else if ((end) && (semi>end)) {*endp=NULL; return -1;}
   else if ((semi-entity)>15) {*endp=NULL; return -1;}
   if (*entity=='#') {
-    u8_byte *start; int base;
+    const u8_byte *start; int base;
     if (entity[1]=='x') {
       start=entity+2; base=16;}
     else {start=entity+1; base=10;}
@@ -329,7 +329,7 @@ U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_string *endp)
   else {*endp=NULL; return -1;}
 }
 
-U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_string *endp)
+U8_EXPORT int u8_parse_entity_err(const u8_byte *entity,u8_string *endp)
 {
   int codepoint;
   u8_byte buf[16];
@@ -345,7 +345,7 @@ U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_string *endp)
     u8_seterr(BadEntityRef,"u8_parse_entity",u8_strdup(entity));
     *endp=NULL; return -1;}
   if (*entity=='#') {
-    u8_byte *start; int base;
+    const u8_byte *start; int base;
     if (entity[1]=='x') {
       start=entity+2; base=16;}
     else {start=entity+1; base=10;}

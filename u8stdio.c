@@ -245,7 +245,7 @@ U8_EXPORT void u8_fputs(u8_string s,FILE *f)
     long int nbytes;
     unsigned int maxchar=
       ((lite_encoding==LATIN1_ENC) ? (0x100) : (0x80));
-    u8_byte *scan=s, *start=s;
+    const u8_byte *scan=s, *start=s;
     while (*scan)
       if (*scan>=0x80) {
         int c, retval=0;

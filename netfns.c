@@ -1014,12 +1014,12 @@ U8_EXPORT
 calling send().  This will return -1, indicating a failure, if
 the attempt to write times out.
 */
-int u8_sendbytes(int msecs,int socket,char *buf,int size,int flags)
+int u8_sendbytes(int msecs,int socket,const char *buf,int size,int flags)
 {
   /* This makes sure that all the data is sent. */
   /* result=send(socket,d.start,d.ptr-d.start,0); */
   fd_set writefds;
-  unsigned char *todo;
+  const unsigned char *todo;
   int result, residue;
   todo=buf; residue=size;
   while (residue > 0) {
@@ -1112,10 +1112,10 @@ U8_EXPORT
 
  Uses a local SMTP connection to send mail to a particular individual with
  a particular set of fields and a particular contents. */
-int u8_smtp(char *mailhost,char *maildomain,
-            char *from,char *dest,char *ctype,
+int u8_smtp(const char *mailhost,const char *maildomain,
+            const char *from,const char *dest,const char *ctype,
             int n_headers,u8_mailheader *headers,
-            unsigned char *message,int message_len)
+            const unsigned char *message,int message_len)
 {
   struct U8_OUTPUT out;
   int i=0, socket; char _buf[1024]; char buf[1024];
