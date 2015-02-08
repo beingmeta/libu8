@@ -146,26 +146,26 @@ U8_EXPORT int u8_validptr(u8_byte *s);
     @param s a possible UTF-8 string
     @returns 1 if the string is a valid UTF-8 string, 0 otherwise
 **/
-U8_EXPORT int u8_validp(u8_byte *s);
+U8_EXPORT int u8_validp(u8_string s);
 
 /** Checks if the @a n bytes starting at @a s are a valid UTF-8 string.
     @param s a possible UTF-8 string
     @param n the number of bytes in the string
     @returns 1 if the pointer refers to a valid UTF-8 sequence, 0 otherwise
 **/
-U8_EXPORT int u8_validate(u8_byte *s,int n);
+U8_EXPORT int u8_validate(u8_string s,int n);
 
 /** Checks the validity of a UTF-8 string and copies it
     @param s a possibly (probably) valid UTF-8 string.
     @returns a valid UTF-8 string or NULL
 **/
-U8_EXPORT u8_string u8_valid_copy(u8_byte *s);
+U8_EXPORT u8_string u8_valid_copy(u8_string s);
 
 /** Checks the validity of a UTF-8 string and copies it, converting CRLFS
     @param s a possibly (probably) valid UTF-8 string.
     @returns a valid UTF-8 string or NULL
 **/
-U8_EXPORT u8_string u8_convert_crlfs(u8_byte *s);
+U8_EXPORT u8_string u8_convert_crlfs(u8_string s);
 
 /** Adds indentation at the beginning of every line within a string
     @param input an original string, possibly with newlines
@@ -185,8 +185,8 @@ U8_EXPORT char *u8_grab_bytes(u8_string s,int n,char *buf);
 
 /* u8_sgetc */
 
-U8_EXPORT int _u8_sgetc(u8_byte **sptr);
-U8_EXPORT int _u8_sgetc_lim(u8_byte **sptr,u8_byte *lim);
+U8_EXPORT int _u8_sgetc(const u8_byte **sptr);
+U8_EXPORT int _u8_sgetc_lim(const u8_byte **sptr,u8_byte *lim);
 
 static MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
 
@@ -196,10 +196,10 @@ static MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
     @param sptr a pointer to a pointer into a UTF-8 encoding
     @returns a unicode code point
 **/
-static int u8_sgetc_lim(u8_byte **sptr,u8_byte *lim)
+static int u8_sgetc_lim(const u8_byte **sptr,u8_byte *lim)
 {
   int i, ch, byte=**sptr, size;
-  u8_byte *scan=*sptr;
+  const u8_byte *scan=*sptr;
   /* Catch this error */
   if (U8_EXPECT_FALSE(byte == 0)) return -1;
   else if (U8_EXPECT_TRUE((lim)&&(scan>=lim))) return -1;
@@ -264,7 +264,7 @@ static int u8_sgetc_lim(u8_byte **sptr,u8_byte *lim)
   *sptr=scan;
   return ch;
 }
-static int u8_sgetc(u8_byte **sptr)
+static int u8_sgetc(const u8_byte **sptr)
 {
   return u8_sgetc_lim(sptr,NULL);
 }

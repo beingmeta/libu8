@@ -29,7 +29,7 @@
 
 #include <assert.h>
 
-U8_EXPORT int u8_validate(u8_byte *s,int n);
+U8_EXPORT int u8_validate(u8_string s,int n);
 
 U8_EXPORT u8_condition u8_UnexpectedEOD, u8_BadUNGETC, u8_NoZeroStreams;
 U8_EXPORT u8_condition u8_TruncatedUTF8, u8_BadUTF8, u8_BadUTF8byte;
@@ -214,7 +214,7 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
 #define u8_outlen(s)    (((s)->u8_outptr)-((s)->u8_outbuf))
 
 U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int c);
-U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_byte *string,int len);
+U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string string,int len);
 
 #if U8_INLINE_IO
 /** Writes the unicode code point @a c to the stream @a f.
@@ -306,12 +306,12 @@ U8_EXPORT U8_INPUT *u8_open_input_string(u8_string input);
     @param buf a UTF-8 string
     @returns void
 **/
-U8_INLINE_FCN void U8_INIT_STRING_INPUT(u8_input s,int n,u8_byte *buf)
+U8_INLINE_FCN void U8_INIT_STRING_INPUT(u8_input s,int n,const u8_byte *buf)
 {
   if (n<0) n=strlen(buf);
   (s)->u8_bufsz=n;
-  (s)->u8_inbuf=(s)->u8_inptr=buf;
-  (s)->u8_inlim=buf+n;
+  (s)->u8_inbuf=(s)->u8_inptr=(u8_byte *)buf;
+  (s)->u8_inlim=(u8_byte *)(buf+n);
   (s)->u8_closefn=_u8_close_sinput; (s)->u8_fillfn=NULL;
   (s)->u8_streaminfo=0;
 }

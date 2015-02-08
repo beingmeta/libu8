@@ -109,9 +109,9 @@ u8_printf_handler u8_printf_handlers[128];
    in order. */
 int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 {
-  char *format_string=getmessage(fstring);
+  u8_string format_string=getmessage(fstring);
   int n_directives=0;
-  unsigned char *scan=format_string, *fmt=strchr(scan,'%');
+  const unsigned char *scan=format_string, *fmt=strchr(scan,'%');
   while (fmt) {
     unsigned char cmd[16]; int i=0, code; u8_string to_free=NULL;
     /* First, output everything leading up to the % sign */
@@ -126,7 +126,7 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
     cmd[i++]=code=*scan++; cmd[i]='\0'; n_directives++;
     if (code == '%') u8_putc(s,'%');
     else {
-      char buf[PRINTF_CHUNK_SIZE], *string=buf;
+      unsigned char buf[PRINTF_CHUNK_SIZE], *string=buf;
       if ((code == 'd') || (code == 'i') ||
           (code == 'u') || (code == 'o') ||
           (code == 'x')) {
@@ -158,28 +158,29 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
         if (strchr(cmd,'-')) to_free=arg;
         /* The m conversion is like s but passes its argument through the
            message catalog. */
-        if ((arg)&&(code=='m')) arg=getmessage(arg);
+	if ((arg)&&(code=='m'))
+	  arg=(u8_byte *)getmessage(arg);
         if (arg==NULL) {
           if ((prefix)||(strchr(cmd,'?')))
             string="";
           else string="(null)";}
         else if (strchr(cmd,'l')) {
-          string=u8_downcase(arg);
+	  string=(u8_byte *)u8_downcase(arg);
           if (to_free) u8_free(to_free);
           to_free=string;}
         else if (strchr(cmd,'u')) {
-          string=u8_upcase(arg);
+          string=(u8_byte *)u8_upcase(arg);
           if (to_free) u8_free(to_free);
           to_free=string;}
         else string=arg;
         if ((arg)&&(prefix)) {
-          string=u8_string_append(prefix,string,NULL);
+          string=(u8_byte *)u8_string_append(prefix,string,NULL);
           if (to_free) u8_free(to_free);
           to_free=string;}}
       else if ((code<128) && (u8_printf_handlers[(int)code]))
         /* We pass the pointer args because some stdarg implementations
            work better that way. */
-        string=u8_printf_handlers[(int)code]
+	string=(u8_byte *)u8_printf_handlers[(int)code]
           (s,cmd,buf,PRINTF_CHUNK_SIZE,args);
       else return u8_reterr(u8_BadPrintFormat,"u8_do_printf",u8_strdup(cmd));
       if (string == NULL) {} else u8_puts(s,string);

@@ -96,7 +96,7 @@ U8_EXPORT char *u8_localpath(u8_string path)
 
 U8_EXPORT u8_string u8_mkpath(u8_string dir,u8_string base)
 {
-  u8_string result;
+  u8_byte *result;
   int dirlen=strlen(dir), baselen=strlen(base);
   unsigned int newlen=dirlen+baselen+2;
   if (dirlen==0) return u8_strdup(base);
@@ -120,14 +120,15 @@ U8_EXPORT u8_string u8_mkpath(u8_string dir,u8_string base)
     result[dirlen]='/';
     strcpy(result+dirlen+1,base);}
   else strcpy(result,base);
-  return result;
+  return (u8_string)result;
 }
 
 U8_EXPORT u8_string u8_abspath(u8_string path,u8_string wd)
 {
   if (path[0] == '/') return u8_valid_copy(path);
   else if (path[0] == '~') {
-    u8_byte uname[64], *name_end=strchr(path,'/'), *homedir;
+    const u8_byte *name_end=strchr(path,'/');
+    u8_byte uname[64]; u8_string homedir;
     int namelen;
     if (name_end==NULL) {
       namelen=strlen(path); name_end=path+namelen;}
@@ -178,7 +179,7 @@ U8_EXPORT u8_string u8_dirname(u8_string path)
 
 U8_EXPORT u8_string u8_basename(u8_string path,u8_string suffix)
 {
-  u8_byte *dirend=strrchr(path,'/'); u8_string copy, suff;
+  u8_byte *dirend=strrchr(path,'/'); u8_byte *copy, *suff;
   if (dirend) copy=u8_strdup(dirend+1); else copy=u8_strdup(path);
   if (suffix == NULL) return copy;
   if (strcmp(suffix,"*")==0) suff=strchr(copy,'.');

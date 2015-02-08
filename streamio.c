@@ -402,7 +402,7 @@ int u8_get_entity(struct U8_INPUT *f)
   if ((f->u8_inptr==f->u8_inlim) && (f->u8_fillfn)) f->u8_fillfn(f);
   if (f->u8_inptr==f->u8_inlim) return -1;
   else {
-    u8_byte *start=f->u8_inptr, *end=NULL;
+    u8_byte *start=f->u8_inptr; u8_string end=NULL;
     int code=u8_parse_entity(start,&end);
     if ((code<0) && (end) && (f->u8_fillfn)) {
       /* If code<0 and end was set, that meant it got started but
@@ -411,7 +411,8 @@ int u8_get_entity(struct U8_INPUT *f)
       code=u8_parse_entity(start,&end);}
     else {}
     if (code>=0) {
-      f->u8_inptr=end; return code;}
+      f->u8_inptr=(u8_byte *)end;
+      return code;}
     else return -1;}
 }
 

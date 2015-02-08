@@ -281,7 +281,7 @@ U8_EXPORT char *u8_procinfo(char *buf);
 /* UTF-8 String maniuplation */
 
 typedef unsigned char u8_byte;
-typedef u8_byte *u8_string;
+typedef const u8_byte *u8_string;
 typedef int u8_unicode_char;
 typedef int u8_unichar;
 
@@ -441,7 +441,7 @@ U8_EXPORT void *u8_dmalloc(size_t);
 #define u8_malloc(sz) U8_MALLOC(sz)
 #define u8_realloc(ptr,tosz) \
   ((ptr==NULL) ? (U8_MALLOC(tosz)) : (realloc(ptr,tosz)))
-#define u8_free(ptr) free(ptr)
+#define u8_free(ptr) free((char *)ptr)
 
 #define u8_alloc(t) ((t *)(u8_malloc(sizeof(t))))
 #define u8_alloc_n(n,t) ((t *)(u8_malloc(sizeof(t)*(n))))

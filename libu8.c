@@ -121,7 +121,8 @@ char *u8_2libc(u8_string string)
 {
   if (u8_tolibcfn) {
     char *converted=u8_tolibcfn(string);
-    if (converted != ((char *)string)) u8_free(string);
+    if (converted != ((char *)string))
+      u8_free((u8_byte *)string);
     return converted;}
   else return (char *) string;
 }
@@ -137,7 +138,7 @@ U8_EXPORT
 char *u8_tolibc(u8_string string)
 {
   if (u8_tolibcfn) return u8_tolibcfn(string);
-  else return u8_valid_copy(string);
+  else return (char *) u8_valid_copy(string);
 }
 
 U8_EXPORT

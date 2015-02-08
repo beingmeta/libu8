@@ -304,14 +304,14 @@ static u8_string entity_end(u8_string entity)
   return scan;
 }
 
-U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_byte **endp)
+U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_string *endp)
 {
   int codepoint;
   u8_byte buf[16];
   u8_byte *end=((endp)?(*endp):(entity+strlen(entity)));
-  u8_byte *semi=entity_end(entity);
+  u8_string semi=entity_end(entity);
   if (semi==NULL) return -1;
-  else if (*semi=='\0') {*endp=semi; return -1;}
+  else if (*semi=='\0') {*endp=(u8_byte *)semi; return -1;}
   else if ((end) && (semi>end)) {*endp=NULL; return -1;}
   else if ((semi-entity)>15) {*endp=NULL; return -1;}
   if (*entity=='#') {
@@ -333,7 +333,7 @@ U8_EXPORT int u8_parse_entity_err(u8_byte *entity,u8_byte **endp)
 {
   int codepoint;
   u8_byte buf[16];
-  u8_byte *end=*endp, *semi=entity_end(entity);
+  u8_string end=*endp, semi=entity_end(entity);
   if (semi==NULL) return -1;
   else if (*semi=='\0') {
     u8_seterr(BadEntityRef,"u8_parse_entity",u8_strdup(entity));

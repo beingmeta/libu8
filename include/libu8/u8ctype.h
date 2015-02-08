@@ -165,7 +165,7 @@ U8_EXPORT u8_string u8_code2entity(int code);
     @param endp a pointer to a location to store the end of the entity
     @returns a unicode code point
 **/
-U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_byte **endp);
+U8_EXPORT int u8_parse_entity(u8_byte *entity,u8_string *endp);
 
 /** Parses a unicode entity name from a string, recording the endpoint.
     This version sets an error when an entity cannot be processed.

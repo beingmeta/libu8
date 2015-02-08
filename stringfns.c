@@ -37,12 +37,12 @@
 
 /* Core functions */
 
-int _u8_sgetc(u8_byte **s)
+int _u8_sgetc(const u8_byte **s)
 {
   return u8_sgetc(s);
 }
 
-int _u8_sgetc_lim(u8_byte **s,u8_byte *lim)
+int _u8_sgetc_lim(const u8_byte **s,u8_byte *lim)
 {
   return u8_sgetc_lim(s,lim);
 }
@@ -61,17 +61,17 @@ u8_string _u8_strdup(u8_string s)
 {
   int len=strlen(s); int newlen=len+1;
   newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
-  u8_string nstring=u8_malloc(newlen);
+  u8_byte *nstring=u8_malloc(newlen);
   strncpy(nstring,s,len); nstring[len]='\0';
-  return nstring;
+  return (u8_string)nstring;
 }
 u8_string u8_strndup(u8_string s,int len)
 {
   int newlen=len+1;
   newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
-  u8_string nstring=u8_malloc(newlen);
+  u8_byte *nstring=u8_malloc(newlen);
   strncpy(nstring,s,len); nstring[len]='\0';
-  return nstring;
+  return (u8_string)nstring;
 }
 
 U8_EXPORT
@@ -82,7 +82,7 @@ in the string it represents
 */
 int u8_strlen_x(u8_string str,int slen)
 {
-  u8_byte *scan=str, *limit=str+slen; int len=0, rv=0;
+  const u8_byte *scan=str, *limit=str+slen; int len=0, rv=0;
   while ((rv>=0)&&(scan < limit)) {
     len++;
     if (*scan<0x80) scan++;
@@ -99,7 +99,7 @@ in the string it represents
 */
 int u8_strlen(u8_string str)
 {
-  u8_byte *scan=str; int ch=u8_sgetc(&scan), len=0;
+  const u8_byte *scan=str; int ch=u8_sgetc(&scan), len=0;
   while (ch>=0) {len++; ch=u8_sgetc(&scan);}
   if (ch<-1) return ch;
   else return len;
@@ -113,7 +113,7 @@ U8_EXPORT
 */
 u8_string u8_substring(u8_string str,int index)
 {
-  u8_byte *scan=str, *last=scan; int count=index;
+  const u8_byte *scan=str, *last=scan; int count=index;
   while ((count > 0) && (u8_sgetc(&scan) >= 0)) {
     last=scan; count--;}
   if (count == 0) return last;
@@ -130,12 +130,12 @@ u8_string u8_slice(u8_byte *start,u8_byte *end)
   if (end<start) return NULL;
   else if (end-start>65536*8) return NULL;
   else {
-    unsigned int newlen=(end-start)+1; u8_string slice;
+    unsigned int newlen=(end-start)+1; u8_byte *slice;
     newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
     slice=u8_malloc(newlen);
     strncpy(slice,start,(end-start));
     slice[end-start]='\0';
-    return slice;}
+    return (u8_string)slice;}
 }
 
 U8_EXPORT
@@ -144,7 +144,7 @@ U8_EXPORT
     Returns: returns the first unicode character in the string
 
 */
-int u8_string_ref(u8_byte *str)
+int u8_string_ref(u8_string str)
 {
   int c=u8_sgetc(&str);
   return c;
@@ -164,7 +164,7 @@ static int get_utf8_size(u8_byte s1)
   else return -1;
 }
 
-static int check_utf8_ptr(u8_byte *s,int size)
+static int check_utf8_ptr(u8_string s,int size)
 {
   int i=1;
   if (size == 1) return size;
@@ -176,7 +176,7 @@ static int check_utf8_ptr(u8_byte *s,int size)
   return size;
 }
 
-static int valid_utf8p(u8_byte *s)
+static int valid_utf8p(u8_string s)
 {
   int sz=check_utf8_ptr(s,get_utf8_size(*s));
   while (sz > 0)
@@ -203,7 +203,7 @@ U8_EXPORT
     Arguments: a possible utf8 string
     Returns: 1 if the string is valid, 0 otherwise.
 */
-int u8_validp(u8_byte *s)
+int u8_validp(u8_string s)
 {
   return valid_utf8p(s);
 }
@@ -213,10 +213,10 @@ U8_EXPORT
     Arguments: a possible utf8 string
     Returns: the number of bytes which are valid
 */
-int u8_validate(u8_byte *s,int len)
+int u8_validate(u8_string s,int len)
 {
   int sz=get_utf8_size(*s);
-  u8_byte *limit=s+len, *start=s;
+  const u8_byte *limit=s+len, *start=s;
   while ((s<limit) && ((sz=get_utf8_size(*s))>0))
     if (s+sz>limit)
       return s-start;
@@ -231,7 +231,7 @@ U8_EXPORT
 Copies its argument, converting invalid UTF-8 sequences into
 sequences of latin-1 characters. This always returns a valid UTF8
 string. */
-u8_string u8_valid_copy(u8_byte *s)
+u8_string u8_valid_copy(u8_string s)
 {
   U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,32);
   while (*s)
@@ -249,7 +249,7 @@ U8_EXPORT
 Copies its argument, converting invalid UTF-8 sequences into
 sequences of latin-1 characters. This always returns a valid UTF8
 string. */
-u8_string u8_convert_crlfs(u8_byte *s)
+u8_string u8_convert_crlfs(u8_string s)
 {
   U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,32);
   while (*s)
@@ -260,7 +260,7 @@ u8_string u8_convert_crlfs(u8_byte *s)
     else if (check_utf8_ptr(s,get_utf8_size(*s))>0) {
       int c=u8_sgetc(&s); u8_putc(&out,c);}
     else while (*s>=0x80) u8_putc(&out,*s++);
-  return out.u8_outbuf;
+  return (u8_string)out.u8_outbuf;
 }
 
 /* Additional functions */
@@ -273,14 +273,14 @@ U8_EXPORT
  */
 u8_string u8_downcase (u8_string string)
 {
-  u8_byte *scan=string;
+  const u8_byte *scan=string;
   struct U8_OUTPUT ss; int c;
   U8_INIT_STATIC_OUTPUT(ss,32);
   while (*scan) {
     if (*scan < 0x80) c=tolower(*scan++);
     else c=u8_tolower(u8_sgetc(&scan));
     u8_putc(&ss,c);}
-  return ss.u8_outbuf;
+  return (u8_string) ss.u8_outbuf;
 }
 
 U8_EXPORT
@@ -290,14 +290,14 @@ U8_EXPORT
 */
 u8_string u8_upcase (u8_string string)
 {
-  u8_byte *scan=string;
+  const u8_byte *scan=string;
   struct U8_OUTPUT ss; int c;
   U8_INIT_STATIC_OUTPUT(ss,32);
   while (*scan) {
     if (*scan < 0x80) c=toupper(*scan++);
     else c=u8_toupper(u8_sgetc(&scan));
     u8_putc(&ss,c);}
-  return ss.u8_outbuf;
+  return (u8_string)ss.u8_outbuf;
 }
 
 U8_EXPORT
@@ -324,14 +324,15 @@ U8_EXPORT
 */
 u8_string u8_decompose(u8_string string)
 {
-  struct U8_OUTPUT out; u8_byte *scan=string; int c;
+  struct U8_OUTPUT out;
+  const u8_byte *scan=string; int c;
   U8_INIT_STATIC_OUTPUT(out,512);
   while ((c=u8_sgetc(&scan))>0) {
     if (c<0x80) u8_putc(&out,c);
     u8_string str=u8_decompose_char(c);
     if (str) u8_puts(&out,str);
     else u8_putc(&out,c);}
-  return out.u8_outbuf;
+  return (u8_string)out.u8_outbuf;
 }
 
 U8_EXPORT
@@ -341,7 +342,7 @@ U8_EXPORT
 */
 u8_string u8_string_subst(u8_string input,u8_string key,u8_string replace)
 {
-  u8_byte *scan=input, *next=strstr(scan,key);
+  const u8_byte *scan=input, *next=strstr(scan,key);
   if (next==NULL) return u8_strdup(input);
   else {
     struct U8_OUTPUT out;
@@ -353,7 +354,7 @@ u8_string u8_string_subst(u8_string input,u8_string key,u8_string replace)
       scan=scan+key_len;
       next=strstr(scan,key);}
     u8_puts(&out,scan);
-    return out.u8_outbuf;}
+    return (u8_string) out.u8_outbuf;}
 }
 
 U8_EXPORT int u8_has_prefix(u8_string string,u8_string prefix,int casefold)
@@ -386,7 +387,7 @@ U8_EXPORT
 char *u8_grab_bytes(u8_string s,int n,char *buf)
 {
   char *result=((buf)?(buf):(u8_malloc(n))), *write=result, *lim=result+(n-1);
-  u8_byte *scan=s; int c=*scan++;
+  const u8_byte *scan=s; int c=*scan++;
   while ((c>0)&&(write<lim)) {
     if ((c<128)&&((isprint((char)c))||(c==32))) *write++=c;
     else if ((write+2)>lim) break;
@@ -408,20 +409,21 @@ char *u8_grab_bytes(u8_string s,int n,char *buf)
 U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent)
 {
   int len=strlen(input), n_lines=1, indent_len=strlen(indent);
-  u8_byte *scan=input, *output;
+  const u8_byte *scan=input; u8_byte *output;
   while ((scan=strchr(scan+1,'\n'))) n_lines++;
   output=u8_malloc(len+(n_lines*indent_len)+1);
   if (output==NULL) {
     errno=0; return NULL;}
   else {
-    u8_byte *read=input, *write=output; scan=read;
+    const u8_byte *read=input; scan=read;
+    u8_byte *write=output;
     while ((scan=strchr(read,'\n'))) {
       int n_bytes=scan-read;
       strncpy(write,read,n_bytes); write=write+n_bytes; *write++='\n';
       strncpy(write,indent,indent_len); write=write+indent_len;
       read=scan+1;}
     strcpy(write,read);
-    return output;}
+    return (u8_string)output;}
 }
 
 /* Initialization function (just records source file info) */
