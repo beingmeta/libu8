@@ -78,7 +78,7 @@ U8_EXPORT u8_string u8_filestring(u8_string filename,u8_string encname)
   else enc=u8_get_encoding(encname);
   if (enc) {
     struct U8_OUTPUT out; int retval=0;
-    unsigned char *scan=buf;
+    const unsigned char *scan=buf;
     U8_INIT_STATIC_OUTPUT(out,n_bytes+n_bytes/2);
     retval=u8_convert(enc,1,&out,&scan,buf+n_bytes);
     u8_free(buf);
