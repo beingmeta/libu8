@@ -88,18 +88,20 @@ static int fill_xinput(struct U8_XINPUT *xf)
   int unread_bytes=xf->u8_inlim-xf->u8_inptr;
   int bytes_read, bytes_converted;
   const unsigned char *reader, *limit;
+  u8_byte *start=(u8_byte *)xf->u8_inbuf, *cur=(u8_byte *)xf->u8_inptr;
   /* First, if we've read anything at all, overwrite it, making more
      space. */
-  if (xf->u8_inptr>xf->u8_inbuf) {
-    memmove(xf->u8_inbuf,xf->u8_inptr,unread_bytes);
+  if (cur>start) {
+    memmove(start,cur,unread_bytes);
     /* Now we're reading form the front of the buffer. */
     xf->u8_inptr=xf->u8_inbuf;
     /* And the limit of valid data is just unread_bytes further on */
     xf->u8_inlim=xf->u8_inbuf+unread_bytes;
     /* Null terminate it, if there's space (there has to be) */
-    xf->u8_inptr[unread_bytes]='\0';}
+    start[unread_bytes]='\0';
+    cur=start+unread_bytes;}
   /* Fill the read buffer */
-  bytes_read=read(xf->fd,xf->xbuf+xf->xbuflen,xf->xbuflim-xf->xbuflen);
+  bytes_read=read(xf->fd,start+xf->xbuflen,xf->xbuflim-xf->xbuflen);
   /* If you had trouble or didn't get any data, return zero or the error code. */
   if (bytes_read<=0) return bytes_read;
   /* Update the buflen */
@@ -109,12 +111,12 @@ static int fill_xinput(struct U8_XINPUT *xf)
   /* Now we initialize the temporary output stream from our buffer,
      arranging the output to write to the end of the valid input. */
   if ((xf->u8_streaminfo)&(U8_STREAM_MALLOCD)) {
-    U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz,xf->u8_inbuf,U8_STREAM_MALLOCD);}
-  else {U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz,xf->u8_inbuf,0);}
+    U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz,start,U8_STREAM_MALLOCD);}
+  else {U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz,start,0);}
   /* input_offset is the read position of the input stream. */
   input_offset=xf->u8_inptr-xf->u8_inbuf;
   /* Position the temporary output stream at the end of the valid input. */
-  tmpout.u8_outptr=xf->u8_inlim;
+  tmpout.u8_outptr=cur;
   /* Now we do the actual conversion, where u8_convert writes into the
      string stream passed it as its first argument. If this has any trouble,
      it will stop and reader will hold the most recent conversion state. */
@@ -336,7 +338,8 @@ U8_EXPORT off_t u8_setpos(struct U8_STREAM *f,off_t off)
       return lseek(out->fd,off,SEEK_SET);}
     else {
       struct U8_XINPUT *in=(struct U8_XINPUT *)f;
-      in->u8_inptr=in->u8_inlim=in->u8_inbuf; *(in->u8_inptr)='\0';
+      u8_byte *buf=(u8_byte *)in->u8_inbuf;
+      in->u8_inptr=in->u8_inlim=in->u8_inbuf; *buf='\0';
       return lseek(in->fd,off,SEEK_SET);}
   else {
     u8_seterr(u8_nopos,"u8_setpos",NULL);

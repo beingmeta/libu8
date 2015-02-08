@@ -136,7 +136,7 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 U8_EXPORT int _u8_getc(struct U8_INPUT *f)
 {
   int i, ch, byte, size;
-  u8_byte *scan;
+  const u8_byte *scan;
   if (f->u8_inptr>=f->u8_inlim) {
     /* Try to get more data */
     if (f->u8_fillfn) f->u8_fillfn(f);
@@ -223,7 +223,7 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
 U8_EXPORT int u8_probec(struct U8_INPUT *f)
 {
   int i, ch, byte, size;
-  u8_byte *start=f->u8_inptr, *scan=start;
+  const u8_byte *start=f->u8_inptr, *scan=start;
   if (f->u8_inptr>=f->u8_inlim) {
     /* Try to get more data */
     if (f->u8_fillfn) f->u8_fillfn(f);
@@ -319,16 +319,13 @@ u8_string u8_gets_x(u8_byte *buf,int len,
                     struct U8_INPUT *f,u8_string eos,
                     int *sizep)
 {
-  u8_byte *found=NULL, *start=f->u8_inptr, *end=NULL;
+  const u8_byte *found=NULL, *start=f->u8_inptr, *end=NULL;
   int size, ec=-1;
   if (f->u8_inptr>=f->u8_inlim) {
     if (sizep) *sizep=0;
     return NULL;}
-  if (*(f->u8_inlim)!=0) {
-    ec=*(f->u8_inlim); *(f->u8_inlim)='\0';}
-  while ((found=strstr(start,eos))==NULL) {
+  while (((found=strstr(start,eos))==NULL)||(found>f->u8_inlim)) {
     int start_pos=f->u8_inlim-f->u8_inptr, retval=0;
-    if (ec>0) *(f->u8_inlim)=ec;
     /* Quit if we have length constraints which
        we are already past. */
     if (f->u8_fillfn) retval=f->u8_fillfn(f);
@@ -336,9 +333,7 @@ u8_string u8_gets_x(u8_byte *buf,int len,
     else if (retval<0) {
       if (sizep) *sizep=retval;
       return NULL;}
-    if (ec>0) *(f->u8_inlim)='\0';
     start=f->u8_inptr+start_pos;}
-  if (ec>0) *(f->u8_inlim)=ec;
   if (found) {
     size=(found-f->u8_inptr);
     if (sizep) *sizep=size;
@@ -402,7 +397,7 @@ int u8_get_entity(struct U8_INPUT *f)
   if ((f->u8_inptr==f->u8_inlim) && (f->u8_fillfn)) f->u8_fillfn(f);
   if (f->u8_inptr==f->u8_inlim) return -1;
   else {
-    u8_byte *start=f->u8_inptr; u8_string end=NULL;
+    const u8_byte *start=f->u8_inptr; u8_string end=NULL;
     int code=u8_parse_entity(start,&end);
     if ((code<0) && (end) && (f->u8_fillfn)) {
       /* If code<0 and end was set, that meant it got started but

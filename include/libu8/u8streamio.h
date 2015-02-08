@@ -265,7 +265,7 @@ U8_INLINE_FCN int u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
   /* How big the buffer is, and other info. */                    \
   int u8_bufsz, u8_streaminfo;                                    \
   /* The buffer, the read point, and the end of valid data */     \
-  u8_byte *u8_inbuf, *u8_inptr, *u8_inlim;                        \
+  const u8_byte *u8_inbuf, *u8_inptr, *u8_inlim;                  \
   /* The function we call to close the stream. */                 \
   int (*u8_closefn)(struct U8_INPUT *);                           \
   /* The function to get more data */                             \
