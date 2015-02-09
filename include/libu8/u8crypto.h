@@ -133,7 +133,7 @@ U8_EXPORT void u8_init_cryptofns(void);
 **/
 U8_EXPORT unsigned char *u8_decrypt
   (const unsigned char *input,size_t len,
-   char *cipher,const unsigned char *key,size_t keylen,
+   const char *cipher,const unsigned char *key,size_t keylen,
    size_t *result_len);
 
 /** Encrypts a packet with a particular key using a particular
@@ -149,7 +149,7 @@ U8_EXPORT unsigned char *u8_decrypt
 **/
 U8_EXPORT unsigned char *u8_encrypt
   (const unsigned char *input,size_t len,
-   char *cipher,const unsigned char *key,size_t keylen,
+   const char *cipher,const unsigned char *key,size_t keylen,
    size_t *result_len);
 
 #endif

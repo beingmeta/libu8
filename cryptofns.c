@@ -53,7 +53,7 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
 #if HAVE_EVP_CIPHER_CTX_INIT
 
 U8_EXPORT ssize_t u8_cryptic
-  (int do_encrypt,char *cname,
+  (int do_encrypt,const char *cname,
    const unsigned char *key,int keylen,
    const unsigned char *iv,int ivlen,
    u8_block_reader reader,u8_block_writer writer,
@@ -161,7 +161,7 @@ U8_EXPORT void u8_init_cryptofns()
 
 U8_EXPORT unsigned char *u8_encrypt
   (const unsigned char *input,size_t len,
-   char *cipher,const unsigned char *key,size_t keylen,
+   const char *cipher,const unsigned char *key,size_t keylen,
    size_t *result_len)
 {
   ssize_t bytecount;
@@ -182,7 +182,7 @@ U8_EXPORT unsigned char *u8_encrypt
 
 U8_EXPORT unsigned char *u8_decrypt
   (const unsigned char *input,size_t len,
-   char *cipher,const unsigned char *key,size_t keylen,
+   const char *cipher,const unsigned char *key,size_t keylen,
    size_t *result_len)
 {
   ssize_t bytecount;
