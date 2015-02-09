@@ -1,3 +1,9 @@
+libu8 (2.4.11-3) unstable; urgency=low
+
+  * Switched type u8_string to being const u8_byte *
+
+ -- Ken Haase <kh@beingmeta.com>  Sun, 08 Feb 2015 21:54:38 -0500
+
 libu8 (2.4.10-2) unstable; urgency=low
 
   * Update copyright dates

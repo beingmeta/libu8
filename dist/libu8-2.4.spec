@@ -1,12 +1,12 @@
 Name:           libu8
-Version:        2.4.10
-Release:        10%{?dist}
+Version:        2.4.11
+Release:        11%{?dist}
 Summary:        utility/compatability for Unicode and other functions
 
 Group:          System Environment/Libraries
 License:        GNU LGPL
 URL:            http://www.beingmeta.com/
-Source0:        libu8-2.4.10.tar.gz
+Source0:        libu8-2.4.11.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildRequires:  openssl-devel doxygen
