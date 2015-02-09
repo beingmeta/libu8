@@ -2729,7 +2729,7 @@ shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 CLEAN="rm -f"
 U8MAJOR=2
-U8MINOR=4
+U8MINOR=5
 U8RELEASE=`cat etc/release`
 U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
 RPMVERSION=${U8RELEASE}
@@ -7156,7 +7156,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files makefile etc/version dist/libu8-2.4.spec"
+ac_config_files="$ac_config_files makefile etc/version dist/libu8-2.5.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -7853,7 +7853,7 @@ do
     "include/libu8/config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/libu8/config.h" ;;
     "makefile") CONFIG_FILES="$CONFIG_FILES makefile" ;;
     "etc/version") CONFIG_FILES="$CONFIG_FILES etc/version" ;;
-    "dist/libu8-2.4.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-2.4.spec" ;;
+    "dist/libu8-2.5.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-2.5.spec" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

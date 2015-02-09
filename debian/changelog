@@ -1,3 +1,10 @@
+libu8 (2.5.1-1) unstable; urgency=low
+
+  * Bumped minor version number for switch to const u8_strings and number
+    other changes
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 09 Feb 2015 11:22:32 -0500
+
 libu8 (2.4.11-3) unstable; urgency=low
 
   * Switched type u8_string to being const u8_byte *
