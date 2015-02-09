@@ -205,18 +205,18 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
         u8_log(LOG_WARN,u8_BadUTF8,
                _("Truncated UTF-8 sequence: '%s'"),details);
         u8_seterr(u8_TruncatedUTF8,"u8_getc",details);
-        f->u8_inptr=scan; /* Consume the bad sequence */
+	f->u8_inptr=(u8_byte *)scan; /* Consume the bad sequence */
         return -2;}
       else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN)) {
         char window[UTF8_BUGWINDOW];
         u8_grab_bytes(scan,UTF8_BUGWINDOW,window);
         u8_log(LOG_WARN,u8_BadUTF8,
                _("Truncated UTF-8 sequence: '%s'"),window);}
-      f->u8_inptr=scan; /* Consume the truncated byte sequence */
+      f->u8_inptr=(u8_byte *)scan; /* Consume the truncated byte sequence */
       return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}
   /* And now we update the data structure */
-  f->u8_inptr=scan;
+  f->u8_inptr=(u8_byte *)scan;
   return ch;
 }
 
@@ -265,7 +265,7 @@ U8_EXPORT int u8_probec(struct U8_INPUT *f)
   i=size=1; scan=f->u8_inptr;
   while (i) {
     if ((*scan<0x80) || (*scan>=0xC0)) {
-      f->u8_inptr=scan;
+      f->u8_inptr=(u8_byte *)scan;
       return u8_reterr(u8_BadUTF8,"u8_getc",u8_strdup(start));}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}
   return ch;
