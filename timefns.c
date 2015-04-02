@@ -792,6 +792,14 @@ time_t u8_rfc822_to_xtime(u8_string s,struct U8_XTIME *xtp)
                   &xtp->u8_hour,
                   &xtp->u8_min,&xtp->u8_sec,
                   (char *)tzspec);
+    if (n_elts<2)
+      n_elts=sscanf(s,"%s %s %hhd %d %hhd:%hhd:%hhd %s",
+		    (char *)&dow,&xtp->u8_mday,(char *)&mon,
+		    &xtp->u8_year,
+		    &xtp->u8_hour,
+		    &xtp->u8_min,&xtp->u8_sec,
+		    (char *)tzspec);
+
     xtp->u8_mon=getmonthnum(mon);}
   /* Give up if you can't parse anything */
   if (n_elts == 0) return (time_t) -1;
