@@ -594,7 +594,7 @@ U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
 
 #if (HAVE_GETPID)
 #if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL)&& \
-     (defined(__linux__))&&(defined(SYS_gettid)))
+     (defined(__linux__)))
 U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid();
