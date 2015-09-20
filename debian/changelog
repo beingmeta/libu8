@@ -1,7 +1,7 @@
 libu8 (2.5.1-5) unstable; urgency=low
 
   * Add u8_pathsuffix
-  * git patch version 2.5.1-7
+  * git patch version 2.5.1-8
 
  -- Ken Haase <kh@beingmeta.com>  Sun, 20 Sep 2015 07:59:45 -0400
 
