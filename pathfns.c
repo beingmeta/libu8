@@ -179,7 +179,7 @@ U8_EXPORT u8_string u8_dirname(u8_string path)
 
 U8_EXPORT u8_string u8_basename(u8_string path,u8_string suffix)
 {
-  u8_byte *dirend=strrchr(path,'/'); u8_byte *copy, *suff;
+  u8_string dirend=strrchr(path,'/'); u8_byte *copy, *suff;
   if (dirend) copy=u8_strdup(dirend+1); else copy=u8_strdup(path);
   if (suffix == NULL) return copy;
   if (strcmp(suffix,"*")==0) suff=strchr(copy,'.');
@@ -193,6 +193,14 @@ U8_EXPORT u8_string u8_basename(u8_string path,u8_string suffix)
   if ((suff>copy) && (suff[-1]=='.')) suff--;
   if (suff) *suff='\0';
   return copy;
+}
+
+U8_EXPORT u8_string u8_pathsuffix(u8_string path)
+{
+  u8_string slash=strrchr(path,'/'), dot=strrchr(path,'.');
+  if ((dot)&&((!(slash))&&(dot>slash)))
+    return u8_strdup(dot);
+  else return NULL;
 }
 
 /* Getting realpaths */
