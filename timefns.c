@@ -288,7 +288,7 @@ static time_t mktime_x(struct U8_XTIME *xt,int islocal)
   }
   else {
 #if HAVE_TM_GMTOFF
-    localoff=tptr.tm_gmtoff;
+    localoff=tptr.tm_gmtoff+((tptr.tm_isdst)?(-3600):(0));
 #else
     localoff=(timezone+((daylight>1)?(daylight):(daylight*3600)));
 #endif

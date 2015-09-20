@@ -67,7 +67,7 @@ U8_EXPORT u8_string u8_abspath(u8_string path,u8_string wd);
 **/
 U8_EXPORT u8_string u8_dirname(u8_string path);
 
-/** Returns the path suffix of a pathname
+/** Returns the suffix component of a pathname
     @param path a utf-8 pathname
     @returns a (copied) path suffix or NULL
 **/
