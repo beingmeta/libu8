@@ -16,7 +16,7 @@
 #define MAXQUEUE 500
 
 struct ECHO_SERVER_DATA {
-  char *prefix;};
+  const unsigned char *prefix;};
 
 struct ECHO_CONN {
   U8_CLIENT_FIELDS;

@@ -101,6 +101,8 @@ fast:
 	@if test $(BUILDMODE) != "optimizing"; then echo optimizing > buildmode; fi
 	@make `cat buildmode`
 
+tests: $(TESTBIN) $(DYTESTBIN)
+
 buildmode:
 	@if test -f buildmode; then       \
 	    touch buildmode;              \

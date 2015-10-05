@@ -28,6 +28,7 @@
 /* String input */
 
 #include <assert.h>
+#include <string.h>
 
 U8_EXPORT int u8_validate(u8_string s,int n);
 
