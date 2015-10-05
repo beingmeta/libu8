@@ -737,6 +737,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_sanitize
+with_optlib
 with_optdir
 with_encodings_dir
 with_arch
@@ -1385,7 +1386,8 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
 --with-sanitize=address*|memory|thread
---with-optdir pathname
+--with-optlib Use optional library directory
+--with-optdir Use optional header/lib
 --with-encodings-dir pathname
 --without-arch build with particular --arch flags
 --without-i18n built and install message catalogs
@@ -4331,25 +4333,42 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+if test "x$prefix" != "x/user"; then
+  CFLAGS="$CFLAGS -I$prefix/include"
+  CPPFLAGS="$CPPFLAGS -I$prefix/include"
+  LDFLAGS="$LDFLAGS -L$prefix/lib"
+fi
+
+
+# Check whether --with-optlib was given.
+if test "${with_optlib+set}" = set; then :
+  withval=$with_optlib;
+else
+  with_optlib="none"
+fi
+
+if test $with_optlib != "none"; then
+  LDFLAGS="$LDFLAGS -L$with_optlib"
+fi
+
 
 # Check whether --with-optdir was given.
 if test "${with_optdir+set}" = set; then :
   withval=$with_optdir;
 else
-  with_optdir=""
+  with_optdir="/opt/local"
 fi
 
-
-if test "x$with_optdir" != "x"; then
-  LDFLAGS="$LDFLAGS -L$with_optdir/lib"
-  CFLAGS="$CFLAGS -I$with_optdir/include"
+if test -d $with_optdir/include; then
   CPPFLAGS="$CPPFLAGS -I$with_optdir/include"
+  CFLAGS="$CFLAGS -I$with_optdir/include"
+  APXSFLAGS="$APXSFLAGS -I$with_optdir/include"
 fi
-
-if test "x$prefix" != "x/usr"; then
-  LDFLAGS="$LDFLAGS -L$prefix/lib"
-  CFLAGS="$CFLAGS -I$prefix/include"
-  CPPFLAGS="$CPPFLAGS -I$prefix/include"
+if test -d $with_optdir/lib; then
+  LDFLAGS="$LDFLAGS -L$with_optdir/lib"
+fi
+if test -d $with_optdir/bin; then
+  PATH="$PATH:$with_optdir/bin"
 fi
 
 
