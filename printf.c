@@ -143,14 +143,15 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
         double f=va_arg(*args,double);
         sprintf(buf,cmd,f);}
       else if ((code == 's')||(code == 'm')) {
-        char *prefix=NULL;
-        char *arg=va_arg(*args,char *);
+	char *prefix=NULL;
+	char *arg=va_arg(*args,char *); string=arg;
         /* A - modifer on s indicates that the string arg should be
-           freed after use.  l and u string indicates upper and lower
-           case conversions.  Further -:/,.? modifiers indicate a prefix
-           character that precedes the string when the string is not empty. */
+           freed after use.  A modifier # indicates that the argument
+	   is a libc string and will need to be converted to UTF-8.
+	   Modifiers l and u indicates upper and lower case conversions.
+	   Further :/,.? modifiers indicate a prefix character which
+	   precedes the string when the string is not empty. */
         if (strchr(cmd,'/')) prefix="/";
-        else if (strchr(cmd,'-')) prefix="-";
         else if (strchr(cmd,':')) prefix=":";
         else if (strchr(cmd,'.')) prefix=".";
         else if (strchr(cmd,',')) prefix=", ";
@@ -160,19 +161,23 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
            message catalog. */
 	if ((arg)&&(code=='m'))
 	  arg=(u8_byte *)getmessage(arg);
-        if (arg==NULL) {
+	if (strchr(cmd,'#')) {
+	  string=(u8_byte *)u8_fromlibc(string);
+	  if (to_free) u8_free(to_free);
+	  to_free=string;}
+	if (arg==NULL) {
           if ((prefix)||(strchr(cmd,'?')))
             string="";
           else string="(null)";}
         else if (strchr(cmd,'l')) {
-	  string=(u8_byte *)u8_downcase(arg);
+	  string=(u8_byte *)u8_downcase(string);
           if (to_free) u8_free(to_free);
           to_free=string;}
         else if (strchr(cmd,'u')) {
-          string=(u8_byte *)u8_upcase(arg);
+          string=(u8_byte *)u8_upcase(string);
           if (to_free) u8_free(to_free);
           to_free=string;}
-        else string=arg;
+	else {}
         if ((arg)&&(prefix)) {
           string=(u8_byte *)u8_string_append(prefix,string,NULL);
           if (to_free) u8_free(to_free);

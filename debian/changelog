@@ -1,3 +1,10 @@
+libu8 (2.5.1-7) unstable; urgency=low
+
+  * Added %#s operator when the argument needs to be converted to utf-8
+  * git patch version 2-5.1-10
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 05 Oct 2015 08:12:09 -0400
+
 libu8 (2.5.1-6) unstable; urgency=low
 
   * Fixed u8_memusage to always use procfs under Linux
