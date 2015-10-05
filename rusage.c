@@ -106,9 +106,11 @@ static MAYBE_UNUSED size_t procfs_memusage()
 #endif
 }
 
-U8_EXPORT unsigned long u8_memusage()
+U8_EXPORT ssize_t u8_memusage()
 {
-#if (HAVE_MALLINFO)
+#if __linux
+  return procfs_memusage();
+#elif (HAVE_MALLINFO)
   struct mallinfo minfo=mallinfo();
   return minfo.uordblks;
 #elif (HAVE_MSTATS)

@@ -52,6 +52,6 @@ U8_EXPORT u8_string u8_rusage_string(struct rusage *r);
 /** Returns the virtual memory size of the current process
     @returns virtual memory size in bytes, as an unsigned long
 **/
-U8_EXPORT unsigned long u8_memusage(void);
+U8_EXPORT ssize_t u8_memusage(void);
 
 #endif
