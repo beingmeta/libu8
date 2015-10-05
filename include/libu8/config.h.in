@@ -362,6 +362,12 @@
 /* For openssl crypto header */
 #undef HAVE_OPENSSL_SHA_H
 
+/* For openssl crypto header */
+#undef HAVE_OPENSSL_ERR_H
+
+/* For openssl crypto header */
+#undef HAVE_OPENSSL_EVP_H
+
 /* For openssl crypto libraries */
 #undef HAVE_LIBSSL
 

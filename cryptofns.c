@@ -22,8 +22,13 @@
 #include "libu8/u8bytebuf.h"
 
 #include <string.h>
+
+#if HAVE_OPENSSL_ERR_H
 #include <openssl/err.h>
+#endif
+#if HAVE_OPENSSL_EVP_H
 #include <openssl/evp.h>
+#endif
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
@@ -50,7 +55,7 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
   else return vec;
 }
 
-#if HAVE_EVP_CIPHER_CTX_INIT
+#if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H))
 
 U8_EXPORT ssize_t u8_cryptic
   (int do_encrypt,const char *cname,

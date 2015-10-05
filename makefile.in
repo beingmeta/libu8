@@ -2,7 +2,7 @@ CC	  = @CC@
 LD	  = @LD@
 XCFLAGS   =
 ARCHFLAGS = @archflags@
-CFLAGS    =-DLIBU8_SOURCE=1 -g -O2 @CFLAGS@ -I./include $(XCFLAGS) $(ARCHFLAGS)
+CFLAGS    =-DLIBU8_SOURCE=1 -g -O2  -I./include @CFLAGS@ -I./include $(XCFLAGS) $(ARCHFLAGS)
 XLDFLAGS  =
 LDFLAGS   = @LDFLAGS@ $(EFENCE)
 LIBS      = @LIBS@ $(EFENCE) -lm

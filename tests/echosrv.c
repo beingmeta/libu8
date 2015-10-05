@@ -34,6 +34,7 @@ static u8_client echosrv_accept
     u8_client_init(NULL,sizeof(struct ECHO_CONN),
 		   (struct sockaddr *)addr,addr_len,
 		   sock,srv);
+  consed->lastin[0]='\0';
   u8_set_nodelay(sock,1);
   u8_message("Accepted connection from %s",consed->idstring);
   return (u8_client) consed;
@@ -49,7 +50,7 @@ static int echosrv_handle(u8_client ucl)
   if (n_bytes<0) return -1;
   else if (n_bytes==0) {
     return 0;}
-  else if ((ec->lastin) && ((strcmp(inbuf,ec->lastin))==0)) {
+  else if ((strcmp(inbuf,ec->lastin))==0) {
     int retval=send(ucl->socket,"ditto\n",6,0);
     if (retval<0) return -1;}
   else {

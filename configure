@@ -737,6 +737,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_sanitize
+with_optdir
 with_encodings_dir
 with_arch
 enable_maintainer_mode
@@ -1384,6 +1385,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
 --with-sanitize=address*|memory|thread
+--with-optdir pathname
 --with-encodings-dir pathname
 --without-arch build with particular --arch flags
 --without-i18n built and install message catalogs
@@ -4330,6 +4332,27 @@ _ACEOF
 
 
 
+# Check whether --with-optdir was given.
+if test "${with_optdir+set}" = set; then :
+  withval=$with_optdir;
+else
+  with_optdir=""
+fi
+
+
+if test "x$with_optdir" != "x"; then
+  LDFLAGS="$LDFLAGS -L$with_optdir/lib"
+  CFLAGS="$CFLAGS -I$with_optdir/include"
+  CPPFLAGS="$CPPFLAGS -I$with_optdir/include"
+fi
+
+if test "x$prefix" != "x/usr"; then
+  LDFLAGS="$LDFLAGS -L$prefix/lib"
+  CFLAGS="$CFLAGS -I$prefix/include"
+  CPPFLAGS="$CPPFLAGS -I$prefix/include"
+fi
+
+
 # Check whether --with-encodings_dir was given.
 if test "${with_encodings_dir+set}" = set; then :
   withval=$with_encodings_dir;
@@ -7022,6 +7045,30 @@ do :
 if test "x$ac_cv_header_openssl_sha_h" = xyes; then :
   cat >>confdefs.h <<_ACEOF
 #define HAVE_OPENSSL_SHA_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in openssl/err.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "openssl/err.h" "ac_cv_header_openssl_err_h" "$ac_includes_default"
+if test "x$ac_cv_header_openssl_err_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_OPENSSL_ERR_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_header in openssl/evp.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "openssl/evp.h" "ac_cv_header_openssl_evp_h" "$ac_includes_default"
+if test "x$ac_cv_header_openssl_evp_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_OPENSSL_EVP_H 1
 _ACEOF
 
 fi
