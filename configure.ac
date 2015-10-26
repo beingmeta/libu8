@@ -170,6 +170,30 @@ AC_DEFINE_UNQUOTED(U8_MAJOR_VERSION,$U8MAJOR)
 AC_DEFINE_UNQUOTED(U8_MINOR_VERSION,$U8MINOR)
 AC_DEFINE_UNQUOTED(U8_RELEASE_VERSION,$U8RELEASE)
 
+if test "x$prefix" != "x/user"; then
+  CFLAGS="$CFLAGS -I$prefix/include"
+  CPPFLAGS="$CPPFLAGS -I$prefix/include"
+  LDFLAGS="$LDFLAGS -L$prefix/lib"
+fi
+
+AC_ARG_WITH(optlib,--with-optlib Use optional library directory,,with_optlib="none")
+if test $with_optlib != "none"; then
+  LDFLAGS="$LDFLAGS -L$with_optlib"
+fi
+
+AC_ARG_WITH(optdir,--with-optdir Use optional header/lib,,with_optdir="/opt/local")
+if test -d $with_optdir/include; then
+  CPPFLAGS="$CPPFLAGS -I$with_optdir/include"
+  CFLAGS="$CFLAGS -I$with_optdir/include"
+  APXSFLAGS="$APXSFLAGS -I$with_optdir/include"
+fi
+if test -d $with_optdir/lib; then
+  LDFLAGS="$LDFLAGS -L$with_optdir/lib"
+fi
+if test -d $with_optdir/bin; then
+  PATH="$PATH:$with_optdir/bin"
+fi
+
 AC_ARG_WITH(encodings_dir,--with-encodings-dir pathname,,with_encodings_dir=$prefix/share/libu8/encodings)
 AC_DEFINE_UNQUOTED(U8_ENCODINGS_DIR,"$with_encodings_dir")
 
@@ -440,6 +464,8 @@ AC_CHECK_FUNCS(CCHmacInit)
 AC_CHECK_HEADERS(openssl/hmac.h)
 AC_CHECK_HEADERS(openssl/md5.h)
 AC_CHECK_HEADERS(openssl/sha.h)
+AC_CHECK_HEADERS(openssl/err.h)
+AC_CHECK_HEADERS(openssl/evp.h)
 AC_CHECK_LIB(crypto,EVP_CIPHER_CTX_init)
 AC_CHECK_FUNCS(EVP_get_cipherbyname EVP_CIPHER_CTX_init SHA1_Init)
 
