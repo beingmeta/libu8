@@ -46,7 +46,7 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 #define U8_OUTPUT_STREAM      0x02
 /** This bit describes whether the stream can grow to accomodate more input
     or output. **/
-#define U8_STREAM_GROWS       0x04
+#define U8_FIXED_STREAM       0x04
 /** This bit describes whether the stream is responsible for freeing its
      buffer when closed.  **/
 #define U8_STREAM_OWNS_BUF    0x08
@@ -176,7 +176,7 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
     @returns void
 **/
 #define U8_INIT_OUTPUT(s,sz) \
-  U8_INIT_OUTPUT_X((s),sz,NULL,U8_STREAM_GROWS);
+  U8_INIT_OUTPUT_X((s),sz,NULL,0);
 
 /** Initializes a string output stream with a initial buffer.
     This will allocates a buffer if the output grows beyond the initial size.
@@ -186,7 +186,7 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
     @returns void
 **/
 #define U8_INIT_OUTPUT_BUF(s,sz,buf) \
-  U8_INIT_OUTPUT_X((s),sz,buf,U8_STREAM_GROWS);
+  U8_INIT_OUTPUT_X((s),sz,buf,0);
 
 /** Initializes a string output stream with a particular initial size
     This always allocates a buffer but arranges for the buffer to grow
@@ -196,10 +196,10 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
     @returns void
 **/
 #define U8_INIT_STATIC_OUTPUT(s,sz)	\
-  {memset((&s),0,sizeof(s)); U8_INIT_OUTPUT_X((&s),sz,NULL,U8_STREAM_GROWS);}
+  {memset((&s),0,sizeof(s)); U8_INIT_OUTPUT_X((&s),sz,NULL,0);}
 #define U8_INIT_STATIC_OUTPUT_BUF(s,sz,buf)	       \
   {memset((&s),0,sizeof(s)); memset(buf,0,sz);      \
-    U8_INIT_OUTPUT_X((&s),sz,buf,U8_STREAM_GROWS);}
+    U8_INIT_OUTPUT_X((&s),sz,buf,0);}
 
 /** U8_INIT_FIXED_OUTPUT
     Initializes a string output stream with a fixed size buffer
@@ -210,7 +210,7 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
     @returns void
 **/
 #define U8_INIT_FIXED_OUTPUT(s,sz,buf)                              \
-  U8_INIT_OUTPUT_X(s,sz,buf,0)
+  U8_INIT_OUTPUT_X(s,sz,buf,U8_FIXED_STREAM)
 
 /** Returns the string content of the output stream. **/
 #define u8_outstring(s) ((s)->u8_outbuf)

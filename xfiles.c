@@ -111,8 +111,10 @@ static int fill_xinput(struct U8_XINPUT *xf)
   /* Now we initialize the temporary output stream from our buffer,
      arranging the output to write to the end of the valid input. */
   if ((xf->u8_streaminfo)&(U8_STREAM_MALLOCD)) {
-    U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,cur,U8_STREAM_MALLOCD);}
-  else {U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,cur,0);}
+    U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,cur,
+		     U8_STREAM_MALLOCD);}
+  else {U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,cur,
+			 U8_FIXED_STREAM);}
   /* input_offset is the read position of the input stream. */
   input_offset=xf->u8_inptr-xf->u8_inbuf;
   /* Position the temporary output stream at the end of the valid input. */
