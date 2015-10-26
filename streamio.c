@@ -58,15 +58,22 @@ U8_EXPORT void _U8_INIT_INPUT_X(u8_input s,int n,u8_byte *buf,int bits)
 U8_EXPORT
 /* u8_grow_stream:
      Arguments: a pointer to a string stream and a number of u8_inbuf
-     Returns: void
+     Returns: int
 
   Grows the data structures for the string stream to include delta
 more u8_inbuf
 */
-int u8_grow_stream(struct U8_OUTPUT *f,int need)
+ssize_t u8_grow_stream(struct U8_OUTPUT *f,int need)
 {
   int n_current=f->u8_outptr-f->u8_outbuf, n_needed=n_current+need+1;
   int current_max=f->u8_bufsz, new_max=current_max;
+  int flags=f->u8_streaminfo;
+  if (current_max>n_needed) return f->u8_outlim-f->u8_outptr;
+  if (flags&U8_STREAM_OVERFLOW) {
+    if (flags&U8_STREAM_GROWS) return -1; else return 0;}
+  else if (!(flags&U8_STREAM_GROWS)) {
+    f->u8_streaminfo!=U8_STREAM_OVERFLOW;
+    return 0;}
   while (new_max<=n_needed)
     if (new_max>=U8_BUF_THROTTLE_POINT)
       new_max=new_max+U8_BUF_THROTTLE_POINT;
@@ -79,8 +86,9 @@ int u8_grow_stream(struct U8_OUTPUT *f,int need)
   else {
     u8_byte *newu8_buf=u8_malloc(new_max);
     size_t off=f->u8_outptr-f->u8_outbuf;
-    if (newu8_buf==NULL)
-      return f->u8_outlim-f->u8_outptr;
+    if (newu8_buf==NULL) {
+      f->u8_streaminfo!=U8_STREAM_OVERFLOW;
+      return -1;}
     strncpy(newu8_buf,f->u8_outbuf,off+1);
     f->u8_streaminfo=f->u8_streaminfo|U8_STREAM_OWNS_BUF;
     f->u8_outbuf=newu8_buf;}
@@ -108,11 +116,15 @@ U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int ch)
   else return u8_reterr(u8_BadUnicodeChar,"u8_putc",NULL);
   if ((f->u8_outptr+size+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
-  if (f->u8_outptr+size+1>=f->u8_outlim)
-    u8_grow_stream(f,size);
   if (f->u8_outptr+size+1>=f->u8_outlim) {
-    u8_graberr(-1,"u8_putc",NULL);
-    return -1;}
+    ssize_t rv=u8_grow_stream(f,size);
+    if (rv==0) return 0;
+    else if (rv<0) {
+      u8_graberr(-1,"u8_putc",NULL);
+      return -1;}
+    if (f->u8_outptr+size+1>=f->u8_outlim) {
+      u8_graberr(-1,"u8_putc",NULL);
+      return -1;}}
   shift=(size-1)*6; write=f->u8_outptr;
   *write++=off[size-1]|(masks[size-1]&(ch>>shift));
   shift=shift-6; size--;
@@ -126,9 +138,15 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
   if (U8_EXPECT_FALSE(len==0)) return 0;
   else if ((f->u8_outptr+len+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
-  if (f->u8_outptr+len+1>=f->u8_outlim)
-    u8_grow_stream(f,len);
-  if (f->u8_outptr+len+1>=f->u8_outlim) return -1;
+  if (f->u8_outptr+len+1>=f->u8_outlim) {
+    ssize_t rv=u8_grow_stream(f,len);
+    if (rv==0) return 0;
+    else if (rv<0) {
+      u8_graberr(-1,"u8_putc",NULL);
+      return -1;}
+    if (f->u8_outptr+len+1>=f->u8_outlim) {
+      u8_graberr(-1,"u8_putc",NULL);
+      return -1;}}
   memcpy(f->u8_outptr,data,len);
   f->u8_outptr=f->u8_outptr+len; *(f->u8_outptr)='\0';
   return len;

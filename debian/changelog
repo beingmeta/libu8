@@ -1,3 +1,10 @@
+libu8 (2.5.1-9) unstable; urgency=low
+
+  * Fixes to fixed size string streams
+  * git patch version libu8-2.5.13
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 26 Oct 2015 10:26:59 -0400
+
 libu8 (2.5.1-8) unstable; urgency=low
 
   * Added a missing <string.h> header to declare memset
