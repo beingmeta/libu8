@@ -47,38 +47,38 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 /** This bit describes whether the stream can grow to accomodate more input
     or output. **/
 #define U8_STREAM_GROWS       0x04
-/** This bit describes whether the stream can grow to accomodate more input
-    or output. **/
-#define U8_STREAM_OVERFLOW    0x08
 /** This bit describes whether the stream is responsible for freeing its
      buffer when closed.  **/
-#define U8_STREAM_OWNS_BUF    0x10
+#define U8_STREAM_OWNS_BUF    0x08
 /* These bits are for streams which are XFILES */
 /** This bit describes whether an XFILE stream is responsible for freeing its
      translation buffer when closed.  **/
-#define U8_STREAM_OWNS_XBUF   0x20
+#define U8_STREAM_OWNS_XBUF   0x10
 /** This bit describes whether an XFILE stream is responsible for closing
      its socket/file descriptor when closed.  **/
-#define U8_STREAM_OWNS_SOCKET 0x40
+#define U8_STREAM_OWNS_SOCKET 0x20
 /** This bit describes whether seeks are possible on an XFILE's underlying
     socket/file descriptor.  **/
-#define U8_STREAM_CAN_SEEK    0x80
+#define U8_STREAM_CAN_SEEK    0x40
 /** This bit describes whether the XFILE should do CRLF translation.
     This is mostly neccessary for dealing with DOS/Windows, and causes
     newlines (0x) to turn into the sequence (0x0x). **/
-#define U8_STREAM_CRLFS       0x100
+#define U8_STREAM_CRLFS       0x80
 /** This bit describes a verbosity level for the stream.  This may be
      consulted by I/O routines to determine detail or decoration. **/
-#define U8_STREAM_TACITURN     0x200
+#define U8_STREAM_TACITURN     0x100
 /** This bit describes whether the stream should emit warnings for invalid
     UTF-8 bytes or sequences. **/
-#define U8_STREAM_UTF8WARN   0x400
+#define U8_STREAM_UTF8WARN   0x200
 /** This bit describes whether the stream generate errors and stop on UTF-8
     errors. **/
-#define U8_STREAM_UTF8ERR   0x800
+#define U8_STREAM_UTF8ERR   0x400
 /** This bit describes whether the stream should try to fix UTF-8
     errors. (Not yet implemented.) **/
-#define U8_STREAM_UTF8FIX   0x1000
+#define U8_STREAM_UTF8FIX   0x800
+/** This bit describes whether the stream is fixed length and
+    has overflowed.  **/
+#define U8_STREAM_OVERFLOW  0x1000
 
 #define U8_STREAM_FIELDS \
   int u8_bufsz; unsigned int u8_streaminfo;   \

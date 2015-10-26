@@ -1,7 +1,14 @@
+libu8 (2.5.1-10) unstable; urgency=low
+
+  * Disable fixed-length string streams (for now) 
+  * git patch version libu8-2.5.1-17
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 26 Oct 2015 11:11:40 -0400
+
 libu8 (2.5.1-9) unstable; urgency=low
 
   * Fixes to fixed size string streams
-  * git patch version libu8-2.5.13
+  * git patch version libu8-2.5.1-16
 
  -- Ken Haase <kh@beingmeta.com>  Mon, 26 Oct 2015 10:26:59 -0400
 

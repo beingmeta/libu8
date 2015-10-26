@@ -71,9 +71,11 @@ ssize_t u8_grow_stream(struct U8_OUTPUT *f,int need)
   if (current_max>n_needed) return f->u8_outlim-f->u8_outptr;
   if (flags&U8_STREAM_OVERFLOW) {
     if (flags&U8_STREAM_GROWS) return -1; else return 0;}
+  /*
   else if (!(flags&U8_STREAM_GROWS)) {
     f->u8_streaminfo!=U8_STREAM_OVERFLOW;
     return 0;}
+  */
   while (new_max<=n_needed)
     if (new_max>=U8_BUF_THROTTLE_POINT)
       new_max=new_max+U8_BUF_THROTTLE_POINT;
