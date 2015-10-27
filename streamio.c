@@ -72,7 +72,7 @@ ssize_t u8_grow_stream(struct U8_OUTPUT *f,int need)
   if (flags&U8_STREAM_OVERFLOW) {
     if (flags&U8_FIXED_STREAM) return 0; else return -1;}
   else if (flags&U8_FIXED_STREAM) {
-    f->u8_streaminfo!=U8_STREAM_OVERFLOW;
+    f->u8_streaminfo|=U8_STREAM_OVERFLOW;
     return 0;}
   while (new_max<=n_needed)
     if (new_max>=U8_BUF_THROTTLE_POINT)
@@ -87,7 +87,7 @@ ssize_t u8_grow_stream(struct U8_OUTPUT *f,int need)
     u8_byte *newu8_buf=u8_malloc(new_max);
     size_t off=f->u8_outptr-f->u8_outbuf;
     if (newu8_buf==NULL) {
-      f->u8_streaminfo!=U8_STREAM_OVERFLOW;
+      f->u8_streaminfo|=U8_STREAM_OVERFLOW;
       return -1;}
     strncpy(newu8_buf,f->u8_outbuf,off+1);
     f->u8_streaminfo=f->u8_streaminfo|U8_STREAM_OWNS_BUF;
