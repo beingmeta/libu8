@@ -1,3 +1,10 @@
+libu8 (2.5.2-12) unstable; urgency=low
+
+  * Fix bug in updated buffer grow implementation
+  * git patch version libu8-2.5.2-4
+
+ -- Ken Haase <kh@beingmeta.com>  Sun, 01 Nov 2015 14:02:25 -0500
+
 libu8 (2.5.2-11) unstable; urgency=low
 
   * Re-enabled fixed buffer length string streams
