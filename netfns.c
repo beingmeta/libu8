@@ -233,7 +233,10 @@ U8_EXPORT struct hostent *u8_gethostbyname(u8_string hname,int type)
       gethostbyname2_r(name,type,fetched,buf,1024,&result,&herrno);
   else retval=gethostbyname_r(name,fetched,buf,1024,&result,&herrno);
   while (retval==ERANGE) {
-    if (bufsiz) bufsiz=2048; else {u8_free(buf); bufsiz=bufsiz*2;}
+    if (bufsiz) {
+      u8_free(buf);
+      bufsiz=bufsiz*2;}
+    else bufsiz=2048;
     buf=u8_malloc(bufsiz);
     if (type>0)
       retval=
@@ -328,12 +331,15 @@ U8_EXPORT char **u8_lookup_host
       gethostbyname2_r(name,type,fetched,buf,1024,&result,&herrno);
   else retval=gethostbyname_r(name,fetched,buf,1024,&result,&herrno);
   while (retval==ERANGE) {
-    if (bufsiz) bufsiz=2048; else {u8_free(buf); bufsiz=bufsiz*2;}
+    if (bufsiz) {
+      u8_free(buf);
+      bufsiz=bufsiz*2;}
+    else bufsiz=2048;
     buf=u8_malloc(bufsiz);
     if (type>=0)
       retval=
-        gethostbyname2_r(name,type,fetched,buf,1024,&result,&herrno);
-    else retval=gethostbyname_r(name,fetched,buf,1024,&result,&herrno);}
+	gethostbyname2_r(name,type,fetched,buf,bufsiz,&result,&herrno);
+    else retval=gethostbyname_r(name,fetched,buf,bufsiz,&result,&herrno);}
   if (result==NULL) {
     if (bufsiz) u8_free(buf);
     u8_graberr(herrno,"u8_lookup_host",u8_strdup(hname));
