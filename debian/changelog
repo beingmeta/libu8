@@ -1,3 +1,10 @@
+libu8 (2.5.2-13) unstable; urgency=low
+
+  * Fixed buffer allocation bugs in getaddress/gethostname wrappers
+  * git patch version libu8-2.5.2-6
+
+ -- Ken Haase <kh@beingmeta.com>  Sat, 14 Nov 2015 20:24:50 +0000
+
 libu8 (2.5.2-12) unstable; urgency=low
 
   * Fix bug in updated buffer grow implementation
