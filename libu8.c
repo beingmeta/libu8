@@ -747,3 +747,4 @@ U8_EXPORT int u8_initialize()
   u8_initialized=8069;
   return 8069;
 }
+

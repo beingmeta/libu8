@@ -376,6 +376,7 @@ U8_EXPORT int _u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f);
 **/
 U8_EXPORT u8_string u8_gets_x
   (u8_byte *buf,int len,struct U8_INPUT *f,u8_string eos,int *sizep);
+
 /** Puts the character @a c back into the input stream @a f.
     This can be used by parsing algorithms which get a character, look
      at it and then put it back before calling another procedure.
@@ -384,13 +385,25 @@ U8_EXPORT u8_string u8_gets_x
     @returns -1 on error
 **/
 U8_EXPORT int u8_ungetc(struct U8_INPUT *f,int c);
+
 /** Returns the next character to be read from @a f.
-    This does not advance the buffer point and provides another
-     way to write parsing functions which inspect and then use data.
+    This does not advance the buffer point but will
+    try to fetch data if needed.  If there is a UTF-8
+    parsing error, this either returns -2 or issues
+    a warning and returns \uFFFD, depending on whether
+    the stream has its U8_STREAM_UTFERR bit set.
     @param f a pointer to a U8_INPUT stream
     @returns -1 on error
 **/
 U8_EXPORT int u8_probec(struct U8_INPUT *f);
+
+/** Returns the next character to be read from @a f.
+    This does not advance the buffer point and does not
+     attempt to fill the buffer.
+    @param f a pointer to a U8_INPUT stream
+    @returns -1 on error
+**/
+U8_EXPORT int u8_peekc(struct U8_INPUT *f);
 
 /** Returns a UTF-8 string from @a f terminated by @a eos or
      the end of the stream.  The terminating sequence itself

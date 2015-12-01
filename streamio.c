@@ -223,7 +223,7 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
         u8_log(LOG_WARN,u8_BadUTF8,
                _("Truncated UTF-8 sequence: '%s'"),details);
         u8_seterr(u8_TruncatedUTF8,"u8_getc",details);
-	f->u8_inptr=(u8_byte *)scan; /* Consume the bad sequence */
+        f->u8_inptr=(u8_byte *)scan; /* Consume the bad sequence */
         return -2;}
       else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN)) {
         char window[UTF8_BUGWINDOW];
@@ -238,15 +238,17 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
   return ch;
 }
 
-U8_EXPORT int u8_probec(struct U8_INPUT *f)
+static int peekc(struct U8_INPUT *f,int fill)
 {
   int i, ch, byte, size;
   const u8_byte *start=f->u8_inptr, *scan=start;
   if (f->u8_inptr>=f->u8_inlim) {
-    /* Try to get more data */
-    if (f->u8_fillfn) f->u8_fillfn(f);
-    /* If you can't, just return */
-    if (f->u8_inptr>=f->u8_inlim) return -1;}
+    if (fill) {
+      /* Try to get more data */
+      if (f->u8_fillfn) f->u8_fillfn(f);
+      /* If you can't, just return */
+      if (f->u8_inptr>=f->u8_inlim) return -1;}
+    else return -1;}
   byte=*(f->u8_inptr);
   if (byte < 0x80) return byte;
   else if (byte < 0xc0) {   /* Catch this error */
@@ -271,7 +273,8 @@ U8_EXPORT int u8_probec(struct U8_INPUT *f)
   /* Now, we now how many u8_inbuf we need, so we check if we have
      that much data. */
   if (f->u8_inptr+size>f->u8_inlim) /* Not enough data */
-    if (f->u8_fillfn) {
+    if (!(fill)) return -1;
+    else if (f->u8_fillfn) {
       /* Try to fill the buffer */
       int n_u8_inbuf=f->u8_inlim-f->u8_inptr;
       while (n_u8_inbuf<size) {
@@ -284,10 +287,15 @@ U8_EXPORT int u8_probec(struct U8_INPUT *f)
   while (i) {
     if ((*scan<0x80) || (*scan>=0xC0)) {
       f->u8_inptr=(u8_byte *)scan;
-      return u8_reterr(u8_BadUTF8,"u8_getc",u8_strdup(start));}
+      if ((u8_utf8err)||
+	  ((f->u8_streaminfo&U8_STREAM_UTF8ERR)==U8_STREAM_UTF8ERR)) {
+	return u8_reterr(u8_BadUTF8,"u8_getc",u8_strdup(start));}
+      else return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}
   return ch;
 }
+U8_EXPORT int u8_probec(struct U8_INPUT *f) { return peekc(f,1); }
+U8_EXPORT int u8_peekc(struct U8_INPUT *f) { return peekc(f,0); }
 
 U8_EXPORT
 /* u8_getn:
@@ -587,3 +595,9 @@ U8_EXPORT void u8_init_streamio_c()
 
   u8_register_source_file(_FILEINFO);
 }
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/
