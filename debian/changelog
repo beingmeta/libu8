@@ -1,3 +1,10 @@
+libu8 (2.5.2-14) unstable; urgency=medium
+
+  * Added u8_peekc to probe without filling stream
+  * git patch version libu8-2.5.2-8
+
+ -- Ken Haase <kh@beingmeta.com>  Tue, 01 Dec 2015 11:36:11 -0500
+
 libu8 (2.5.2-13) unstable; urgency=low
 
   * Fixed buffer allocation bugs in getaddress/gethostname wrappers
