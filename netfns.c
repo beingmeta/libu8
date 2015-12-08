@@ -323,30 +323,33 @@ U8_EXPORT char **u8_lookup_host
   char *name=u8_tolibc(hname);
   struct hostent *fetched;
   char MAYBE_UNUSED _buf[1024], *buf=_buf, **addrs;
-  int MAYBE_UNUSED bufsiz=0, herrno=0, retval, type=*typep;
+  int MAYBE_UNUSED bufsiz=0, herrno=0, retval, type=((typep)?(*typep):(-1));
+  int retries=0;
 #if HAVE_GETHOSTBYNAME2_R
   struct hostent _fetched, *result; fetched=&_fetched;
   if (type>=0)
     retval=
       gethostbyname2_r(name,type,fetched,buf,1024,&result,&herrno);
   else retval=gethostbyname_r(name,fetched,buf,1024,&result,&herrno);
-  while (retval==ERANGE) {
-    if (bufsiz) {
-      u8_free(buf);
-      bufsiz=bufsiz*2;}
-    else bufsiz=2048;
-    buf=u8_malloc(bufsiz);
+  while ((retries<7)&&((retval==ERANGE)||(herrno==ERANGE)||(herrno==EINTR))) {
+    if ((retval==ERANGE)||(herrno==ERANGE)) {
+      if (bufsiz) {
+	u8_free(buf);
+	bufsiz=bufsiz*2;}
+      else bufsiz=2048;
+      buf=u8_malloc(bufsiz);}
     if (type>=0)
       retval=
 	gethostbyname2_r(name,type,fetched,buf,bufsiz,&result,&herrno);
-    else retval=gethostbyname_r(name,fetched,buf,bufsiz,&result,&herrno);}
+    else retval=gethostbyname_r(name,fetched,buf,bufsiz,&result,&herrno);
+    retries++;}
   if (result==NULL) {
     if (bufsiz) u8_free(buf);
     u8_graberr(herrno,"u8_lookup_host",u8_strdup(hname));
     u8_free(name);
     return NULL;}
   addrs=copy_addrs(fetched,addr_len,NULL);
-  *typep=fetched->h_addrtype;
+  if (typep) *typep=fetched->h_addrtype;
   if (bufsiz) u8_free(buf);
 #else
   u8_lock_mutex(&netfns_lock);
