@@ -1,3 +1,10 @@
+libu8 (2.5.2-15) unstable; urgency=medium
+
+  * Fix bugs with DNS lookup
+  * git patch version libu8-2.5.2-10
+
+ -- Ken Haase <kh@beingmeta.com>  Tue, 08 Dec 2015 10:53:04 -0500
+
 libu8 (2.5.2-14) unstable; urgency=medium
 
   * Added u8_peekc to probe without filling stream
