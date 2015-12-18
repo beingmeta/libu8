@@ -916,7 +916,7 @@ U8_EXPORT u8_string u8_sessionid()
       return sessionid;}
     U8_INIT_STATIC_OUTPUT(out,64);
     u8_local_xtime(&now,-1,u8_second,0);
-    u8_printf(&out,"%s:P%dD%XGit@%s",
+    u8_printf(&out,"%s:p%dt%XGit@%s",
               ((appid)?(appid):((u8_string)"??")),
               getu8pid(),&now,hostname);
     u8_free(hostname);
