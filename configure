@@ -7021,12 +7021,25 @@ fi
 
 done
 
-for ac_func in CCHmacInit
+for ac_header in CommonCrypto/CommonCryptor.h
 do :
-  ac_fn_c_check_func "$LINENO" "CCHmacInit" "ac_cv_func_CCHmacInit"
-if test "x$ac_cv_func_CCHmacInit" = xyes; then :
+  ac_fn_c_check_header_mongrel "$LINENO" "CommonCrypto/CommonCryptor.h" "ac_cv_header_CommonCrypto_CommonCryptor_h" "$ac_includes_default"
+if test "x$ac_cv_header_CommonCrypto_CommonCryptor_h" = xyes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_CCHMACINIT 1
+#define HAVE_COMMONCRYPTO_COMMONCRYPTOR_H 1
+_ACEOF
+
+fi
+
+done
+
+for ac_func in CCHmacInit CCCryptorCreate
+do :
+  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
+ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
+if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  cat >>confdefs.h <<_ACEOF
+#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
 _ACEOF
 
 fi

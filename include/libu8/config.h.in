@@ -345,13 +345,19 @@
 #undef U8_FORCE_TLS
 
 /* For OS X crypto libraries */
+#undef HAVE_COMMONCRYPTO_COMMONCRYPTOR_H
+
+/* For OS X digest libraries */
 #undef HAVE_COMMONCRYPTO_COMMONDIGEST_H
 
-/* For OS X crypto libraries */
+/* For OS X signature libraries */
 #undef HAVE_COMMONCRYPTO_COMMONHMAC_H
 
 /* For OS X crypto libraries */
 #undef HAVE_CCHMACINIT
+
+/* For OS X crypto libraries */
+#undef HAVE_CCCRYPTORCREATE
 
 /* For openssl crypto libraries */
 #undef HAVE_OPENSSL_HMAC_H

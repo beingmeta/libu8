@@ -23,11 +23,15 @@
 
 #include <string.h>
 
+#if HAVE_COMMONCRYPTO_COMMONCRYPTOR_H
+#include <CommonCrypto/CommonCryptor.h>
+#else
 #if HAVE_OPENSSL_ERR_H
 #include <openssl/err.h>
 #endif
 #if HAVE_OPENSSL_EVP_H
 #include <openssl/evp.h>
+#endif
 #endif
 
 #ifndef _FILEINFO
@@ -55,7 +59,106 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
   else return vec;
 }
 
-#if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H))
+#if ((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))
+
+typedef struct U8_CIPHER {
+  u8_string name; CCAlgorithm algorithm; int keymin, keymax, blocksize;}
+  *u8_cipher;
+static struct U8_CIPHER *get_cipher(u8_string s);
+
+U8_EXPORT ssize_t u8_cryptic
+  (int do_encrypt,const char *cname,
+   const unsigned char *key,int keylen,
+   const unsigned char *iv,int ivlen,
+   u8_block_reader reader,u8_block_writer writer,
+   void *readstate,void *writestate,
+   u8_context caller)
+{
+  CCCryptorRef ctx;
+  CCOptions options=0;
+  ssize_t inlen, outlen, totalout=0, retval=0;
+  unsigned char inbuf[1024], outbuf[1024];
+  struct U8_CIPHER *cipher=get_cipher(cname);
+  size_t blocksize=cipher->blocksize;
+
+  CCCryptorStatus status=CCCryptorCreate
+    (((do_encrypt)? (kCCEncrypt) : (kCCDecrypt)),
+     cipher->algorithm,options,key,keylen,iv,&ctx);
+  
+    
+    while (1) {
+      inlen = reader(inbuf,blocksize,readstate);
+      if (inlen <= 0) break;
+      if ((status=CCCryptorUpdate(ctx,inbuf,inlen,outbuf,1024,&outlen))!=kCCSuccess) {
+	CCCryptorRelease(ctx);
+        return u8_reterr(u8_InternalCryptoError,
+                         ((caller)?(caller):((u8_context)"u8_cryptic")),
+                         NULL);}
+      else writer(outbuf,outlen,writestate);
+      totalout=totalout+outlen;}
+
+    if ((status=CCCryptorFinal(ctx,outbuf,1024,&outlen))!=kCCSuccess) {
+      CCCryptorRelease(ctx);
+      return u8_reterr(u8_InternalCryptoError,
+                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       NULL);}
+    else {
+      writer(outbuf,outlen,writestate);
+      CCCryptorRelease(ctx);
+      totalout=totalout+outlen;
+      return totalout;}
+}
+
+static int n_ciphers=0;
+static u8_cipher ciphers[16]=
+  {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
+
+static struct U8_CIPHER *get_cipher(u8_string name)
+{
+  int i=0, lim=n_ciphers;
+  while (i<lim) {
+    if (strcasecmp(name,ciphers[i]->name)==0)
+      return ciphers[i];
+    else i++;}
+  return NULL;
+}
+
+static void add_cipher(u8_string name,CCAlgorithm alg,
+		       ssize_t keymin,ssize_t keymax,ssize_t blocksize)
+{
+  u8_cipher fresh=u8_malloc(sizeof(struct U8_CIPHER));
+  fresh->name=name; fresh->algorithm=alg; 
+  fresh->keymin=keymin; fresh->keymax=keymax;
+  fresh->blocksize=blocksize;
+  ciphers[n_ciphers++]=fresh;
+}
+
+static int cryptofns_init=0;
+
+U8_EXPORT void u8_init_cryptofns_c()
+{
+  if (cryptofns_init) return;
+
+  cryptofns_init=1;
+
+  add_cipher("AES",kCCAlgorithmAES,kCCKeySizeAES128,kCCKeySizeAES256,
+	     kCCBlockSizeAES128);
+  add_cipher("3DES",kCCAlgorithm3DES,kCCKeySize3DES,kCCKeySize3DES,kCCBlockSize3DES);
+  add_cipher("DES",kCCAlgorithmDES,kCCKeySizeDES,kCCKeySizeDES,kCCBlockSizeDES);
+  add_cipher("RC4",kCCAlgorithmRC4,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,16); /* ?? */
+  add_cipher("CAST",kCCAlgorithmCAST,kCCKeySizeMinCAST,kCCKeySizeMaxCAST,kCCBlockSizeCAST);
+  add_cipher("BLOWFISH",kCCAlgorithmBlowfish,kCCKeySizeMinBlowfish,kCCKeySizeMaxBlowfish,
+	     kCCBlockSizeBlowfish);
+
+  u8_register_source_file(_FILEINFO);
+}
+
+U8_EXPORT void u8_init_cryptofns()
+{
+  u8_init_cryptofns_c();
+}
+
+#elif ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H))
 
 U8_EXPORT ssize_t u8_cryptic
   (int do_encrypt,const char *cname,

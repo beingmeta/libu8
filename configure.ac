@@ -458,7 +458,8 @@ AC_TRY_COMPILE([],[
 
 # OS X crypto
 AC_CHECK_HEADERS(CommonCrypto/CommonDigest.h CommonCrypto/CommonHMAC.h)
-AC_CHECK_FUNCS(CCHmacInit)
+AC_CHECK_HEADERS(CommonCrypto/CommonCryptor.h)
+AC_CHECK_FUNCS(CCHmacInit CCCryptorCreate)
 
 # OpenSSL crypto
 AC_CHECK_HEADERS(openssl/hmac.h)
