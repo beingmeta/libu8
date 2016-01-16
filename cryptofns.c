@@ -34,6 +34,8 @@
 #endif
 #endif
 
+#define DEBUG_CRYPTO 1
+
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
 #endif
@@ -100,17 +102,34 @@ U8_EXPORT ssize_t u8_cryptic
     (((do_encrypt)? (kCCEncrypt) : (kCCDecrypt)),
      cipher->algorithm,cipher->opts,key,keylen,iv,&ctx);
   
-    
+  u8_log(LOG_WARN,"u8_cryptic(CommonCrypto)",
+	 " %s cipher=%s, keylen=%d/[%d,%d], ivlen=%d, blocksize=%d\n",
+	 ((do_encrypt)?("encrypt"):("decrypt")),
+	 cname,keylen,cipher->keymin,cipher->keymax,
+	 ivlen,blocksize);
+
     while (1) {
       inlen = reader(inbuf,blocksize,readstate);
-      if (inlen <= 0) break;
+      if (inlen <= 0) {
+	u8_log(LOG_WARN,"u8_cryptic(CommonCrypto)",
+	       "Finished %s(%s) with %ld in, %ld out",
+	       ((do_encrypt)?("encrypt"):("decrypt")),cname,
+	       totalin,totalout);
+	break;}
       if ((status=CCCryptorUpdate(ctx,inbuf,inlen,outbuf,1024,&outlen))!=kCCSuccess) {
 	CCCryptorRelease(ctx);
         return u8_reterr(u8_InternalCryptoError,
                          ((caller)?(caller):((u8_context)"u8_cryptic")),
                          NULL);}
-      else writer(outbuf,outlen,writestate);
-      totalout=totalout+outlen;}
+      else {
+	u8_log(LOG_WARN,"u8_cryptic(CommonCrypto)",
+	       "%s(%s) consumed %d/%ld bytes, emitted %d/%ld bytes"
+	       " in=<%v>\n out=<%v>",
+	       ((do_encrypt)?("encrypt"):("decrypt")),cname,
+	       inlen,totalin,outlen,totalout+outlen,
+	       inbuf,inlen,outbuf,outlen);
+	writer(outbuf,outlen,writestate);
+	totalout=totalout+outlen;}}
 
     if ((status=CCCryptorFinal(ctx,outbuf,1024,&outlen))!=kCCSuccess) {
       CCCryptorRelease(ctx);
@@ -119,6 +138,12 @@ U8_EXPORT ssize_t u8_cryptic
                        NULL);}
     else {
       writer(outbuf,outlen,writestate);
+      u8_log(LOG_WARN,"u8_cryptic(CommonCrypto)",
+	     "%s(%s) done after consuming %ld/%ld bytes, emitting %ld/%ld bytes"
+	     "\n final out=<%v>",
+	     ((do_encrypt)?("encrypt"):("decrypt")),cname,
+	     inlen,totalin,outlen,totalout+outlen,
+	     outbuf,outlen);
       CCCryptorRelease(ctx);
       totalout=totalout+outlen;
       return totalout;}
@@ -202,16 +227,22 @@ U8_EXPORT ssize_t u8_cryptic
    u8_context caller)
 {
   EVP_CIPHER_CTX ctx;
-  int inlen, outlen, totalout=0, retval=0;
+  int inlen, outlen, retval=0;
+  ssize_t totalout=0, totalin=0;
   unsigned char inbuf[1024], outbuf[1024+EVP_MAX_BLOCK_LENGTH];
   const EVP_CIPHER *cipher=((cname)?(EVP_get_cipherbyname(cname)):
                             (EVP_bf_cbc()));
+
   if (cipher) {
     int needkeylen=EVP_CIPHER_key_length(cipher);
     int needivlen=EVP_CIPHER_iv_length(cipher);
     int blocksize=EVP_CIPHER_block_size(cipher);
     if (blocksize>1024) blocksize=1024;
-
+    u8_log(LOG_WARN,"u8_cryptic(openssl)",
+	   " %s cipher=%s, keylen=%d/%d, ivlen=%d/%d, blocksize=%d\n",
+	   ((do_encrypt)?("encrypt"):("decrypt")),
+	   cname,keylen,needkeylen,ivlen,needivlen,blocksize);
+    
     if ((needivlen)&&(ivlen)&&(ivlen!=needivlen))
       return u8_reterr(u8_BadCryptoInit,
                        ((caller)?(caller):((u8_context)"u8_cryptic")),
@@ -239,8 +270,14 @@ U8_EXPORT ssize_t u8_cryptic
 
     while (1) {
       inlen = reader(inbuf,blocksize,readstate);
-      if(inlen <= 0) break;
-      if(!(EVP_CipherUpdate(&ctx,outbuf,&outlen,inbuf,inlen))) {
+      if (inlen <= 0) {
+	u8_log(LOG_WARN,"u8_cryptic(openssl)",
+	       "Finished %s(%s) with %ld in, %ld out",
+	       ((do_encrypt)?("encrypt"):("decrypt")),
+	       cname,totalin,totalout);
+	break;}
+      else totalin=totalin+inlen;
+      if (!(EVP_CipherUpdate(&ctx,outbuf,&outlen,inbuf,inlen))) {
         char *details=u8_malloc(256);
         unsigned long err=ERR_get_error();
         ERR_error_string_n(err,details,256);
@@ -248,9 +285,16 @@ U8_EXPORT ssize_t u8_cryptic
         return u8_reterr(u8_InternalCryptoError,
                          ((caller)?(caller):((u8_context)"u8_cryptic")),
                          details);}
-      else writer(outbuf,outlen,writestate);
-      totalout=totalout+outlen;}
-    if(!(EVP_CipherFinal(&ctx,outbuf,&outlen))) {
+      else {
+	u8_log(LOG_WARN,"u8_cryptic(openssl)",
+	       "%s(%s) consumed %d/%ld bytes, emitted %d/%ld bytes"
+	       " in=<%v>\n out=<%v>",
+	       ((do_encrypt)?("encrypt"):("decrypt")),cname,
+	       inlen,totalin,outlen,totalout+outlen,
+	       inbuf,inlen,outbuf,outlen);
+	writer(outbuf,outlen,writestate);
+	totalout=totalout+outlen;}}
+    if (!(EVP_CipherFinal(&ctx,outbuf,&outlen))) {
       char *details=u8_malloc(256);
       unsigned long err=ERR_get_error();
       ERR_error_string_n(err,details,256);
@@ -260,6 +304,12 @@ U8_EXPORT ssize_t u8_cryptic
                        details);}
     else {
       writer(outbuf,outlen,writestate);
+      u8_log(LOG_WARN,"u8_cryptic(openssl)",
+	     "%s(%s) done after consuming %ld/%ld bytes, emitting %ld/%ld bytes"
+	     "\n final out=<%v>",
+	     ((do_encrypt)?("encrypt"):("decrypt")),cname,
+	     inlen,totalin,outlen,totalout+outlen,
+	     outbuf,outlen);
       EVP_CIPHER_CTX_cleanup(&ctx);
       totalout=totalout+outlen;
       return totalout;}}
