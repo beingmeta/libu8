@@ -182,6 +182,19 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
           string=(u8_byte *)u8_string_append(prefix,string,NULL);
           if (to_free) u8_free(to_free);
           to_free=string;}}
+      else if (code == 'v') {
+	unsigned char *start=va_arg(*args,unsigned char *);
+	unsigned char *scan=start, *limit;
+	ssize_t len=
+	  ((strchr(cmd,'l'))?(va_arg(*args,ssize_t)):(va_arg(*args,int)));
+	if (len>=0) limit=start+len;
+	else {limit=start; while (*limit) limit++;}
+	while (scan<limit) {
+	  int ch=*scan++; char buf[8]; 
+	  if (scan<limit) sprintf(buf,"%02x:",ch);
+	  else sprintf(buf,"%02x",ch);
+	  u8_puts(s,buf);}
+	string=NULL;}
       else if ((code<128) && (u8_printf_handlers[(int)code]))
         /* We pass the pointer args because some stdarg implementations
            work better that way. */
@@ -247,6 +260,7 @@ U8_EXPORT void u8_init_printf_c()
   u8_printf_handlers['e']=default_printf_handler;
   u8_printf_handlers['f']=default_printf_handler;
   u8_printf_handlers['g']=default_printf_handler;
+  u8_printf_handlers['v']=default_printf_handler;
   u8_printf_handlers['%']=default_printf_handler;
 #if ((U8_THREADS_ENABLED) && (HAVE_GETTEXT))
   u8_init_mutex(&textdomains_lock);
