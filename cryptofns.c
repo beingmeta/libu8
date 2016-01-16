@@ -34,7 +34,7 @@
 #endif
 #endif
 
-#define CRYPTO_LOGLEVEL LOG_DEBUG
+#define CRYPTO_LOGLEVEL LOG_DEBUG /* LOG_WARN */
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
@@ -63,7 +63,7 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
 
 #if ((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))
 
-statuc u8_context COMMONCRYPTO_CRYPTIC="u8_cryptic(CommonCrypto)";
+static u8_context COMMONCRYPTO_CRYPTIC="u8_cryptic(CommonCrypto)";
 
 typedef struct U8_CIPHER {
   u8_string name; CCAlgorithm algorithm; CCOptions opts;
@@ -81,7 +81,7 @@ U8_EXPORT ssize_t u8_cryptic
 {
   CCCryptorRef ctx;
   CCOptions options=0;
-  ssize_t inlen, outlen, totalout=0, retval=0;
+  ssize_t inlen, outlen, totalin=0, totalout=0, retval=0;
   unsigned char inbuf[1024], outbuf[1024];
   struct U8_CIPHER *cipher=get_cipher(cname);
   size_t blocksize=cipher->blocksize;
@@ -195,8 +195,7 @@ U8_EXPORT void u8_init_cryptofns_c()
 	     kCCKeySize3DES,kCCKeySize3DES,kCCBlockSize3DES);
   add_cipher("DES",kCCAlgorithmDES,kCCOptionPKCS7Padding,
 	     kCCKeySizeDES,kCCKeySizeDES,kCCBlockSizeDES);
-  add_cipher("RC4",kCCAlgorithmRC4,kCCOptionPKCS7Padding,
-	     kCCKeySizeMinRC4,kCCKeySizeMaxRC4,1);
+  add_cipher("RC4",kCCAlgorithmRC4,0,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,1);
   add_cipher("CAST",kCCAlgorithmCAST,kCCOptionPKCS7Padding,
 	     kCCKeySizeMinCAST,kCCKeySizeMaxCAST,kCCBlockSizeCAST);
   add_cipher("BLOWFISH",kCCAlgorithmBlowfish,kCCOptionPKCS7Padding,
