@@ -34,7 +34,7 @@
 #endif
 #endif
 
-#define DEBUG_CRYPTO 1
+#define CRYPTO_LOGLEVEL LOG_DEBUG
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
@@ -62,6 +62,8 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
 }
 
 #if ((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))
+
+statuc u8_context COMMONCRYPTO_CRYPTIC="u8_cryptic(CommonCrypto)";
 
 typedef struct U8_CIPHER {
   u8_string name; CCAlgorithm algorithm; CCOptions opts;
@@ -102,7 +104,7 @@ U8_EXPORT ssize_t u8_cryptic
     (((do_encrypt)? (kCCEncrypt) : (kCCDecrypt)),
      cipher->algorithm,cipher->opts,key,keylen,iv,&ctx);
   
-  u8_log(LOG_WARN,"u8_cryptic(CommonCrypto)",
+  u8_log(CRYPTO_LOGLEVEL,COMMONCRYPTO_CRYPTIC,
 	 " %s cipher=%s, keylen=%d/[%d,%d], ivlen=%d, blocksize=%d\n",
 	 ((do_encrypt)?("encrypt"):("decrypt")),
 	 cname,keylen,cipher->keymin,cipher->keymax,
@@ -111,7 +113,7 @@ U8_EXPORT ssize_t u8_cryptic
     while (1) {
       inlen = reader(inbuf,blocksize,readstate);
       if (inlen <= 0) {
-	u8_log(LOG_WARN,"u8_cryptic(CommonCrypto)",
+	u8_log(CRYPTO_LOGLEVEL,COMMONCRYPTO_CRYPTIC,
 	       "Finished %s(%s) with %ld in, %ld out",
 	       ((do_encrypt)?("encrypt"):("decrypt")),cname,
 	       totalin,totalout);
@@ -122,7 +124,7 @@ U8_EXPORT ssize_t u8_cryptic
                          ((caller)?(caller):((u8_context)"u8_cryptic")),
                          NULL);}
       else {
-	u8_log(LOG_WARN,"u8_cryptic(CommonCrypto)",
+	u8_log(CRYPTO_LOGLEVEL,COMMONCRYPTO_CRYPTIC,
 	       "%s(%s) consumed %d/%ld bytes, emitted %d/%ld bytes"
 	       " in=<%v>\n out=<%v>",
 	       ((do_encrypt)?("encrypt"):("decrypt")),cname,
@@ -138,7 +140,7 @@ U8_EXPORT ssize_t u8_cryptic
                        NULL);}
     else {
       writer(outbuf,outlen,writestate);
-      u8_log(LOG_WARN,"u8_cryptic(CommonCrypto)",
+      u8_log(CRYPTO_LOGLEVEL,COMMONCRYPTO_CRYPTIC,
 	     "%s(%s) done after consuming %ld/%ld bytes, emitting %ld/%ld bytes"
 	     "\n final out=<%v>",
 	     ((do_encrypt)?("encrypt"):("decrypt")),cname,
@@ -218,6 +220,8 @@ U8_EXPORT void u8_init_cryptofns()
 
 #elif ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H))
 
+static u8_context OPENSSL_CRYPTIC="u8_cryptic(openssl)";
+
 U8_EXPORT ssize_t u8_cryptic
   (int do_encrypt,const char *cname,
    const unsigned char *key,int keylen,
@@ -238,14 +242,14 @@ U8_EXPORT ssize_t u8_cryptic
     int needivlen=EVP_CIPHER_iv_length(cipher);
     int blocksize=EVP_CIPHER_block_size(cipher);
     if (blocksize>1024) blocksize=1024;
-    u8_log(LOG_WARN,"u8_cryptic(openssl)",
+    u8_log(CRYPTO_LOGLEVEL,OPENSSL_CRYPTIC,
 	   " %s cipher=%s, keylen=%d/%d, ivlen=%d/%d, blocksize=%d\n",
 	   ((do_encrypt)?("encrypt"):("decrypt")),
 	   cname,keylen,needkeylen,ivlen,needivlen,blocksize);
     
     if ((needivlen)&&(ivlen)&&(ivlen!=needivlen))
       return u8_reterr(u8_BadCryptoInit,
-                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       ((caller)?(caller):(OPENSSL_CRYPTIC)),
                        u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
     EVP_CIPHER_CTX_init(&ctx);
@@ -253,25 +257,30 @@ U8_EXPORT ssize_t u8_cryptic
     retval=EVP_CipherInit(&ctx, cipher, NULL, NULL, do_encrypt);
     if (retval==0)
       return u8_reterr(u8_CipherInit_Failed,
-                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       ((caller)?(caller):(OPENSSL_CRYPTIC)),
                        u8_strdup(cname));
 
     retval=EVP_CIPHER_CTX_set_key_length(&ctx,keylen);
     if (retval==0)
       return u8_reterr(u8_BadCryptoKey,
-                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       ((caller)?(caller):(OPENSSL_CRYPTIC)),
                        u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
+
+    if ((needivlen)&&(ivlen!=needivlen))
+      return u8_reterr(u8_BadCryptoKey,
+		       ((caller)?(caller):(OPENSSL_CRYPTIC)),
+		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
     retval=EVP_CipherInit(&ctx, cipher, key, iv, do_encrypt);
     if (retval==0)
       return u8_reterr(u8_CipherInit_Failed,
-                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+                       ((caller)?(caller):(OPENSSL_CRYPTIC)),
                        u8_strdup(cname));
 
     while (1) {
       inlen = reader(inbuf,blocksize,readstate);
       if (inlen <= 0) {
-	u8_log(LOG_WARN,"u8_cryptic(openssl)",
+	u8_log(CRYPTO_LOGLEVEL,OPENSSL_CRYPTIC,
 	       "Finished %s(%s) with %ld in, %ld out",
 	       ((do_encrypt)?("encrypt"):("decrypt")),
 	       cname,totalin,totalout);
@@ -286,7 +295,7 @@ U8_EXPORT ssize_t u8_cryptic
                          ((caller)?(caller):((u8_context)"u8_cryptic")),
                          details);}
       else {
-	u8_log(LOG_WARN,"u8_cryptic(openssl)",
+	u8_log(CRYPTO_LOGLEVEL,OPENSSL_CRYPTIC,
 	       "%s(%s) consumed %d/%ld bytes, emitted %d/%ld bytes"
 	       " in=<%v>\n out=<%v>",
 	       ((do_encrypt)?("encrypt"):("decrypt")),cname,
@@ -300,11 +309,11 @@ U8_EXPORT ssize_t u8_cryptic
       ERR_error_string_n(err,details,256);
       EVP_CIPHER_CTX_cleanup(&ctx);
       return u8_reterr(u8_InternalCryptoError,
-                       ((caller)?(caller):((u8_context)"u8_cryptic")),
+		       ((caller)?(caller):(OPENSSL_CRYPTIC)),
                        details);}
     else {
       writer(outbuf,outlen,writestate);
-      u8_log(LOG_WARN,"u8_cryptic(openssl)",
+      u8_log(CRYPTO_LOGLEVEL,OPENSSL_CRYPTIC,
 	     "%s(%s) done after consuming %ld/%ld bytes, emitting %ld/%ld bytes"
 	     "\n final out=<%v>",
 	     ((do_encrypt)?("encrypt"):("decrypt")),cname,
@@ -345,9 +354,11 @@ U8_EXPORT void u8_init_cryptofns()
 
 #if U8_HAVE_CRYPTO
 
-U8_EXPORT unsigned char *u8_encrypt
+U8_EXPORT unsigned char *u8_encrypt_x
   (const unsigned char *input,size_t len,
-   const char *cipher,const unsigned char *key,size_t keylen,
+   const char *cipher,
+   const unsigned char *key,size_t keylen,
+   const unsigned char *iv,size_t ivlen,
    size_t *result_len)
 {
   ssize_t bytecount;
@@ -358,17 +369,26 @@ U8_EXPORT unsigned char *u8_encrypt
   in.u8_direction=u8_output_buffer; out.u8_growbuf=len;
   out.u8_ptr=out.u8_buf=outbuf; out.u8_lim=outbuf+2*len;
   bytecount=u8_cryptic
-    (1,cipher,key,keylen,NULL,0,
+    (1,cipher,key,keylen,iv,ivlen,
      (u8_block_reader)u8_bbreader,(u8_block_writer)u8_bbwriter,
      &in,&out,"u8_encrypt");
   if (bytecount<0) return NULL;
   else *result_len=bytecount;
   return out.u8_buf;
 }
-
-U8_EXPORT unsigned char *u8_decrypt
+U8_EXPORT unsigned char *u8_encrypt
   (const unsigned char *input,size_t len,
    const char *cipher,const unsigned char *key,size_t keylen,
+   size_t *result_len)
+{
+  return u8_encrypt_x(input,len,cipher,key,keylen,NULL,0,result_len);
+}
+
+U8_EXPORT unsigned char *u8_decrypt_x
+  (const unsigned char *input,size_t len,
+   const char *cipher,
+   const unsigned char *key,size_t keylen,
+   const unsigned char *iv,size_t ivlen,
    size_t *result_len)
 {
   ssize_t bytecount;
@@ -379,12 +399,19 @@ U8_EXPORT unsigned char *u8_decrypt
   in.u8_direction=u8_output_buffer; out.u8_growbuf=len;
   out.u8_ptr=out.u8_buf=outbuf; out.u8_lim=outbuf+2*len;
   bytecount=u8_cryptic
-    (0,cipher,key,keylen,NULL,0,
+    (0,cipher,key,keylen,iv,ivlen,
      (u8_block_reader)u8_bbreader,(u8_block_writer)u8_bbwriter,
-     &in,&out,"u8_encrypt");
+     &in,&out,"u8_decrypt");
   if (bytecount<0) return NULL;
   else *result_len=bytecount;
   return out.u8_buf;
+}
+U8_EXPORT unsigned char *u8_decrypt
+  (const unsigned char *input,size_t len,
+   const char *cipher,const unsigned char *key,size_t keylen,
+   size_t *result_len)
+{
+  return u8_decrypt_x(input,len,cipher,key,keylen,NULL,0,result_len);
 }
 
 
