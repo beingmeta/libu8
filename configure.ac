@@ -460,6 +460,14 @@ AC_TRY_COMPILE([],[
 AC_CHECK_HEADERS(CommonCrypto/CommonDigest.h CommonCrypto/CommonHMAC.h)
 AC_CHECK_HEADERS(CommonCrypto/CommonCryptor.h)
 AC_CHECK_FUNCS(CCHmacInit CCCryptorCreate)
+AC_ARG_WITH(commoncrypto,--with[out]-commoncrypto Force use of commoncrypto when available,,with_commoncrypto=no)
+if test $with_commoncrypto = "yes"; then
+  AC_DEFINE(U8_FORCE_COMMONCRYPTO,1)
+else
+  AC_DEFINE(U8_FORCE_COMMONCRYPTO,0)
+fi
+
+AC_ARG_WITH(commoncrypto)
 
 # OpenSSL crypto
 AC_CHECK_HEADERS(openssl/hmac.h)
