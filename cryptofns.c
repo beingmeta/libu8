@@ -220,10 +220,10 @@ U8_EXPORT ssize_t u8_cryptic
 		       u8_mkstring("%d!=[%d,%d](%s)",keylen,
 				   cipher->keymin,cipher->keymax,
 				   cname));
-    if ((ivlen)&&(cipher->ivlen)&&(ivlen!=cipher->ivlen))
+    if ((ivlen)&&(cipher->blocksize)&&(ivlen!=cipher->blocksize))
       return u8_reterr(u8_BadCryptoIV,
-		       ((caller)?(caller):(OPENSSL_CRYPTIC)),
-		       u8_mkstring("%d!=%d(%s)",ivlen,cipher->ivlen,cname));
+		       ((caller)?(caller):(COMMONCRYPTO_CRYPTIC)),
+		       u8_mkstring("%d!=%d(%s)",ivlen,cipher->blocksize,cname));
 
     CCCryptorStatus status=CCCryptorCreate
       (((do_encrypt)? (kCCEncrypt) : (kCCDecrypt)),
@@ -311,8 +311,6 @@ static void add_cc_cipher(u8_string name,CCAlgorithm alg,CCOptions opts,
   fresh->blocksize=blocksize;
   ciphers[n_ciphers++]=fresh;
 }
-
-static int cryptofns_init=0;
 
 U8_EXPORT void u8_init_cryptofns_c()
 {
