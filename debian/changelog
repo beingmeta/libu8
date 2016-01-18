@@ -1,3 +1,12 @@
+libu8 (2.5.3-17) unstable; urgency=low
+
+  * Change u8_encrypt/u8_decrypt signatures to always include an initial
+    vector
+  * Cryptography functions cleanup, include CommonCrypto support on OS X
+  * git patch version libu8-2.5.3-1
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 18 Jan 2016 20:25:33 +0000
+
 libu8 (2.5.2-16) unstable; urgency=low
 
   * Tweak appearance of session IDs
