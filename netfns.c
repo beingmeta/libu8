@@ -125,9 +125,7 @@ U8_EXPORT u8_string u8_sockaddr_string(struct sockaddr *s)
 #if HAVE_SYS_UN_H
   else if (s->sa_family==AF_UNIX) {
     struct sockaddr_un *unaddr=(struct sockaddr_un *)s;
-    if (unaddr->sun_path)
-      return u8_mkstring("%s@unix",unaddr->sun_path);
-    else return u8_strdup("@unix");}
+    return u8_mkstring("%s@unix",unaddr->sun_path);}
 #endif
 #ifdef AF_INET6
   else if (s->sa_family==AF_INET6) {
