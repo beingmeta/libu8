@@ -359,9 +359,6 @@
 /* For OS X crypto libraries */
 #undef HAVE_CCCRYPTORCREATE
 
-/* For OS X signature libraries */
-#undef U8_FORCE_COMMONCRYPTO
-
 /* For openssl crypto libraries */
 #undef HAVE_OPENSSL_HMAC_H
 

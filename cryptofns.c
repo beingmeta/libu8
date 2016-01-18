@@ -23,18 +23,17 @@
 
 #include <string.h>
 
-#if HAVE_COMMONCRYPTO_COMMONCRYPTOR_H
+#if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H)&& \
+     (HAVE_OPENSSL_ERR_H)&&(HAVE_OPENSSL_EVP_H)&& \
+     (!((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))))
+#include <openssl/err.h>
+#include <openssl/evp.h>
+#elif ((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))
 #include <CommonCrypto/CommonCryptor.h>
 #else
-#if HAVE_OPENSSL_ERR_H
-#include <openssl/err.h>
-#endif
-#if HAVE_OPENSSL_EVP_H
-#include <openssl/evp.h>
-#endif
 #endif
 
-#define CRYPTO_LOGLEVEL LOG_DEBUG /* LOG_WARN */
+#define CRYPTO_LOGLEVEL LOG_WARN /* LOG_WARN */
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
@@ -65,9 +64,10 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
 }
 
 #if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H)&& \
-     (!((U8_FORCE_COMMONCRYPTO)&&(HAVE_CCCRYPTORCREATE))))
+     (HAVE_OPENSSL_ERR_H)&&(HAVE_OPENSSL_EVP_H)&& \
+     (!((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))))
 
-static u8_context OPENSSL_CRYPTIC="u8_cryptic(openssl)";
+static u8_context OPENSSL_CRYPTIC="u8_cryptic/OpenSSL";
 
 U8_EXPORT ssize_t u8_cryptic
 (int do_encrypt,const char *cname,
@@ -191,13 +191,13 @@ U8_EXPORT void u8_init_cryptofns_c()
 
 #elif ((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))
 
-static u8_context COMMONCRYPTO_CRYPTIC="u8_cryptic(CommonCrypto)";
+static u8_context COMMONCRYPTO_CRYPTIC="u8_cryptic/CommonCrypto";
 
-typedef struct U8_CIPHER {
-  u8_string name; CCAlgorithm algorithm; CCOptions opts;
-  int keymin, keymax, blocksize;}
+typedef struct U8_CCCIPHER {
+  u8_string cc_name; CCAlgorithm cc_algorithm; CCOptions cc_opts;
+  int cc_ivlen, cc_keymin, cc_keymax, cc_blocksize;}
   *u8_cipher;
-static struct U8_CIPHER *get_cipher(u8_string s);
+static struct U8_CCCIPHER *get_cipher(u8_string s);
 
 U8_EXPORT ssize_t u8_cryptic
 (int do_encrypt,const char *cname,
@@ -211,28 +211,29 @@ U8_EXPORT ssize_t u8_cryptic
   CCOptions options=0;
   ssize_t inlen, outlen, totalin=0, totalout=0, retval=0;
   unsigned char inbuf[1024], outbuf[1024];
-  struct U8_CIPHER *cipher=get_cipher(cname);
+  struct U8_CCCIPHER *cipher=get_cipher(cname);
   if (cipher) {
-    size_t blocksize=cipher->blocksize;
-    if (!((keylen<=cipher->keymax)&&(keylen>=cipher->keymin)))
+    size_t blocksize=cipher->cc_blocksize;
+    ssize_t needivlen=cipher->cc_ivlen;
+    if (!((keylen<=cipher->cc_keymax)&&(keylen>=cipher->cc_keymin)))
       return u8_reterr(u8_BadCryptoKey,
 		       ((caller)?(caller):((u8_context)"u8_cryptic")),
 		       u8_mkstring("%d!=[%d,%d](%s)",keylen,
-				   cipher->keymin,cipher->keymax,
+				   cipher->cc_keymin,cipher->cc_keymax,
 				   cname));
-    if ((ivlen)&&(cipher->blocksize)&&(ivlen!=cipher->blocksize))
+    if ((needivlen)&&(ivlen!=needivlen))
       return u8_reterr(u8_BadCryptoIV,
 		       ((caller)?(caller):(COMMONCRYPTO_CRYPTIC)),
-		       u8_mkstring("%d!=%d(%s)",ivlen,cipher->blocksize,cname));
+		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
     CCCryptorStatus status=CCCryptorCreate
       (((do_encrypt)? (kCCEncrypt) : (kCCDecrypt)),
-       cipher->algorithm,cipher->opts,key,keylen,iv,&ctx);
+       cipher->cc_algorithm,cipher->cc_opts,key,keylen,iv,&ctx);
 
     u8_log(CRYPTO_LOGLEVEL,COMMONCRYPTO_CRYPTIC,
 	   " %s cipher=%s, keylen=%d/[%d,%d], ivlen=%d, blocksize=%d\n",
 	   ((do_encrypt)?("encrypt"):("decrypt")),
-	   cname,keylen,cipher->keymin,cipher->keymax,
+	   cname,keylen,cipher->cc_keymin,cipher->cc_keymax,
 	   ivlen,blocksize);
 
     while (1) {
@@ -280,36 +281,49 @@ U8_EXPORT ssize_t u8_cryptic
 			u8_strdup(cname));
 }
 
+#define MAX_CIPHERS 64
+
 static int n_ciphers=0;
-static u8_cipher ciphers[16]=
+static u8_cipher ciphers[64]=
   {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+   NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+   NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+   NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+   NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+   NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
+   NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL,
    NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 static u8_string default_cipher_name="BLOWFISH";
-static struct U8_CIPHER default_cipher=
+static struct U8_CCCIPHER default_cipher=
   {"BLOWFISH",kCCAlgorithmBlowfish,kCCOptionPKCS7Padding,
    kCCKeySizeMinBlowfish,kCCKeySizeMaxBlowfish,
-   kCCBlockSizeBlowfish};
+   kCCBlockSizeBlowfish,kCCBlockSizeBlowfish};
 
-static struct U8_CIPHER *get_cipher(u8_string name)
+static struct U8_CCCIPHER *get_cipher(u8_string name)
 {
   if (name==NULL) return &default_cipher;
   else {
     int i=0, lim=n_ciphers;
     if (name) while (i<lim) {
-	if (strcasecmp(name,ciphers[i]->name)==0)
+	if (strcasecmp(name,ciphers[i]->cc_name)==0)
 	  return ciphers[i];
 	else i++;}
     return NULL;}
 }
 
+/* This isn't entirely threadsafe */
 static void add_cc_cipher(u8_string name,CCAlgorithm alg,CCOptions opts,
-			  ssize_t keymin,ssize_t keymax,ssize_t blocksize)
+			  ssize_t keymin,ssize_t keymax,
+			  ssize_t ivlen,ssize_t blocksize)
 {
-  u8_cipher fresh=u8_malloc(sizeof(struct U8_CIPHER));
-  fresh->name=name; fresh->algorithm=alg; fresh->opts=opts;
-  fresh->keymin=keymin; fresh->keymax=keymax;
-  fresh->blocksize=blocksize;
-  ciphers[n_ciphers++]=fresh;
+  if (n_ciphers<MAX_CIPHERS) {
+    u8_cipher fresh=u8_malloc(sizeof(struct U8_CCCIPHER));
+    fresh->cc_name=name; fresh->cc_algorithm=alg; fresh->cc_opts=opts;
+    fresh->cc_keymin=keymin; fresh->cc_keymax=keymax;
+    fresh->cc_ivlen=ivlen; fresh->cc_blocksize=blocksize;
+    ciphers[n_ciphers++]=fresh;}
+  else u8_log(LOG_CRIT,_("TooManyCiphers"),"Can't declare cipher#%d %s",
+	      n_ciphers,name);
 }
 
 U8_EXPORT void u8_init_cryptofns_c()
@@ -320,25 +334,49 @@ U8_EXPORT void u8_init_cryptofns_c()
 
   add_cc_cipher("AES",kCCAlgorithmAES,kCCOptionPKCS7Padding,
 		kCCKeySizeAES128,kCCKeySizeAES256,
-		kCCBlockSizeAES128);
+		kCCBlockSizeAES128,kCCBlockSizeAES128);
   add_cc_cipher("3DES",kCCAlgorithm3DES,kCCOptionPKCS7Padding,
-		kCCKeySize3DES,kCCKeySize3DES,kCCBlockSize3DES);
+		kCCKeySize3DES,kCCKeySize3DES,
+		kCCBlockSize3DES,kCCBlockSize3DES);
+  add_cc_cipher("DES3",kCCAlgorithm3DES,kCCOptionPKCS7Padding,
+		kCCKeySize3DES,kCCKeySize3DES,
+		kCCBlockSize3DES,kCCBlockSize3DES);
   add_cc_cipher("DES",kCCAlgorithmDES,kCCOptionPKCS7Padding,
-		kCCKeySizeDES,kCCKeySizeDES,kCCBlockSizeDES);
-  add_cc_cipher("RC4",kCCAlgorithmRC4,0,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,1);
+		kCCKeySizeDES,kCCKeySizeDES,
+		kCCBlockSizeDES,kCCBlockSizeDES);
+  add_cc_cipher("RC4",kCCAlgorithmRC4,0,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,0,4096);
+  add_cc_cipher("ARC4",kCCAlgorithmRC4,0,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,0,4096);
   add_cc_cipher("CAST",kCCAlgorithmCAST,kCCOptionPKCS7Padding,
-		kCCKeySizeMinCAST,kCCKeySizeMaxCAST,kCCBlockSizeCAST);
+		kCCKeySizeMinCAST,kCCKeySizeMaxCAST,
+		kCCBlockSizeCAST,kCCBlockSizeCAST);
   add_cc_cipher("BLOWFISH",kCCAlgorithmBlowfish,kCCOptionPKCS7Padding,
 		kCCKeySizeMinBlowfish,kCCKeySizeMaxBlowfish,
-		kCCBlockSizeBlowfish);
+		kCCBlockSizeBlowfish,kCCBlockSizeBlowfish);
   add_cc_cipher("BF",kCCAlgorithmBlowfish,kCCOptionPKCS7Padding,
 		kCCKeySizeMinBlowfish,kCCKeySizeMaxBlowfish,
-		kCCBlockSizeBlowfish);
-  add_cc_cipher("AES128",kCCAlgorithmAES,kCCOptionPKCS7Padding,
-		kCCKeySizeAES128,kCCKeySizeAES128,kCCBlockSizeAES128);
-  add_cc_cipher("AES256",kCCAlgorithmAES,kCCOptionPKCS7Padding,
-		kCCKeySizeAES256,kCCKeySizeAES256,kCCBlockSizeAES128);
+		kCCBlockSizeBlowfish,kCCBlockSizeBlowfish);
 
+  add_cc_cipher("AES-ECB",kCCAlgorithmAES,kCCOptionPKCS7Padding|kCCOptionECBMode,
+		kCCKeySizeAES128,kCCKeySizeAES256,
+		kCCBlockSizeAES128,kCCBlockSizeAES128);
+  add_cc_cipher("3DES-ECB",kCCAlgorithm3DES,kCCOptionPKCS7Padding|kCCOptionECBMode,
+		kCCKeySize3DES,kCCKeySize3DES,kCCBlockSize3DES,kCCBlockSize3DES);
+  add_cc_cipher("DES3-ECB",kCCAlgorithm3DES,kCCOptionPKCS7Padding|kCCOptionECBMode,
+		kCCKeySize3DES,kCCKeySize3DES,kCCBlockSize3DES,kCCBlockSize3DES);
+  add_cc_cipher("DES-ECB",kCCAlgorithmDES,kCCOptionPKCS7Padding|kCCOptionECBMode,
+		kCCKeySizeDES,kCCKeySizeDES,kCCBlockSizeDES,kCCBlockSizeDES);
+  add_cc_cipher("RC4-ECB",kCCAlgorithmRC4,0|kCCOptionECBMode,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,1,1);
+  add_cc_cipher("ARC4-ECB",kCCAlgorithmRC4,0|kCCOptionECBMode,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,1,1);
+  add_cc_cipher("CAST-ECB",kCCAlgorithmCAST,kCCOptionPKCS7Padding|kCCOptionECBMode,
+		kCCKeySizeMinCAST,kCCKeySizeMaxCAST,
+		kCCBlockSizeCAST,kCCBlockSizeCAST);
+  add_cc_cipher("BLOWFISH-ECB",kCCAlgorithmBlowfish,kCCOptionPKCS7Padding|kCCOptionECBMode,
+		kCCKeySizeMinBlowfish,kCCKeySizeMaxBlowfish,
+		kCCBlockSizeBlowfish,kCCBlockSizeBlowfish);
+  add_cc_cipher("BF-ECB",kCCAlgorithmBlowfish,kCCOptionPKCS7Padding|kCCOptionECBMode,
+		kCCKeySizeMinBlowfish,kCCKeySizeMaxBlowfish,
+		kCCBlockSizeBlowfish,kCCBlockSizeBlowfish);
+  
   u8_register_source_file(_FILEINFO);
 }
 
@@ -416,3 +454,10 @@ U8_EXPORT void u8_init_cryptofns()
 }
 
 
+/* Testing notes:
+   openssl enc -e -a -aes128 -in sample -nosalt -out sample.aes128 -md md5 -p -k testing -iv 0
+     key=AE2B1FCA515949E5D54FB22B8ED95575
+     iv =00000000000000000000000000000000
+   openssl enc -e -a -rc4 -in sample -nosalt -out sample.rc4 -md md5 -p -k testing
+     key=AE2B1FCA515949E5D54FB22B8ED95575
+*/

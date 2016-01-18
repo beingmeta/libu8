@@ -751,7 +751,6 @@ with_tcmalloc
 enable_threads
 with_tls
 enable_largefiles
-with_commoncrypto
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1396,8 +1395,6 @@ Optional Packages:
 --without-sudo use sudo with install
 --without-tcmalloc Use the Google malloc library
 --without-tls Force use of threadlocal storage
---without-commoncrypto Force use of commoncrypto when available
-
 
 Some influential environment variables:
   RPMDIR      "Location for writing built RPMs"
@@ -7047,28 +7044,6 @@ _ACEOF
 
 fi
 done
-
-
-# Check whether --with-commoncrypto was given.
-if test "${with_commoncrypto+set}" = set; then :
-  withval=$with_commoncrypto;
-else
-  with_commoncrypto=no
-fi
-
-if test $with_commoncrypto = "yes"; then
-  $as_echo "#define U8_FORCE_COMMONCRYPTO 1" >>confdefs.h
-
-else
-  $as_echo "#define U8_FORCE_COMMONCRYPTO 0" >>confdefs.h
-
-fi
-
-
-# Check whether --with-commoncrypto was given.
-if test "${with_commoncrypto+set}" = set; then :
-  withval=$with_commoncrypto;
-fi
 
 
 # OpenSSL crypto
