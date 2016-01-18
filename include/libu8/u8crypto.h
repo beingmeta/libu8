@@ -133,26 +133,10 @@ U8_EXPORT void u8_init_cryptofns(void);
     @param result_len   a pointer to a size_t to store the output length
     @returns a decrypted packet of data whose length is deposited in @a outlen
 **/
-U8_EXPORT unsigned char *u8_decrypt_x
-  (const unsigned char *input,size_t len,
-   const char *cipher,const unsigned char *key,size_t keylen,
-   const unsigned char *iv,size_t ivlen,
-   size_t *result_len);
-
-/** Decrypts a packet which was encrypted with a particular
-       key using a particular named cipher. Cipher names are
-       determined by the underlying library.
-    @param input        a byte vector of data to decrypt
-    @param len          the length (in bytes) of the byte vector
-    @param cipher       a string identifying the cipher used
-    @param key          a byte vector containing the decryption key
-    @param keylen       the length (in bytes) of the key vector
-    @param result_len   a pointer to a size_t to store the output length
-    @returns a decrypted packet of data whose length is deposited in @a outlen
-**/
 U8_EXPORT unsigned char *u8_decrypt
   (const unsigned char *input,size_t len,
    const char *cipher,const unsigned char *key,size_t keylen,
+   const unsigned char *iv,size_t ivlen,
    size_t *result_len);
 
 /** Encrypts a packet with a particular key using a particular
@@ -168,27 +152,11 @@ U8_EXPORT unsigned char *u8_decrypt
     @returns an encrypted packet of data whose length is
         deposited in @a outlen
 **/
-U8_EXPORT unsigned char *u8_encrypt_x
+U8_EXPORT unsigned char *u8_encrypt
   (const unsigned char *input,size_t len,
    const char *cipher,
    const unsigned char *key,size_t keylen,
    const unsigned char *iv,size_t ivlen,
-   size_t *result_len);
-
-/** Encrypts a packet with a particular key using a particular
-       named cipher. Cipher names are determined by the underlying library.
-    @param input        a byte vector of data to encrypt
-    @param len          the length (in bytes) of the byte vector
-    @param cipher       a string identifying the cipher to use
-    @param key          a byte vector containing the encryption key
-    @param keylen       the length (in bytes) of the key vector
-    @param result_len   a pointer to a size_t to store the output length
-    @returns an encrypted packet of data whose length is
-        deposited in @a outlen
-**/
-U8_EXPORT unsigned char *u8_encrypt
-  (const unsigned char *input,size_t len,
-   const char *cipher,const unsigned char *key,size_t keylen,
    size_t *result_len);
 
 #endif

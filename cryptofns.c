@@ -43,7 +43,7 @@
 static int cryptofns_init=0;
 
 u8_condition u8_BadCryptoKey=_("bad crypto key value");
-u8_condition u8_BadCryptoInit=_("bad crypto init value");
+u8_condition u8_BadCryptoIV=_("bad crypto initial value (iv)");
 u8_condition u8_CipherInit_Failed=_("cipher init failed");
 u8_condition u8_InternalCryptoError=_("internal libcrypto error");
 u8_condition u8_UnknownCipher=_("Unknown cipher name");
@@ -95,7 +95,7 @@ U8_EXPORT ssize_t u8_cryptic
 	   cname,keylen,needkeylen,ivlen,needivlen,blocksize);
 
     if ((needivlen)&&(ivlen)&&(ivlen!=needivlen))
-      return u8_reterr(u8_BadCryptoInit,
+      return u8_reterr(u8_BadCryptoIV,
 		       ((caller)?(caller):(OPENSSL_CRYPTIC)),
 		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
@@ -114,7 +114,7 @@ U8_EXPORT ssize_t u8_cryptic
 		       u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
 
     if ((needivlen)&&(ivlen!=needivlen))
-      return u8_reterr(u8_BadCryptoKey,
+      return u8_reterr(u8_BadCryptoIV,
 		       ((caller)?(caller):(OPENSSL_CRYPTIC)),
 		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
@@ -220,6 +220,10 @@ U8_EXPORT ssize_t u8_cryptic
 		       u8_mkstring("%d!=[%d,%d](%s)",keylen,
 				   cipher->keymin,cipher->keymax,
 				   cname));
+    if ((ivlen)&&(cipher->ivlen)&&(ivlen!=cipher->ivlen))
+      return u8_reterr(u8_BadCryptoIV,
+		       ((caller)?(caller):(OPENSSL_CRYPTIC)),
+		       u8_mkstring("%d!=%d(%s)",ivlen,cipher->ivlen,cname));
 
     CCCryptorStatus status=CCCryptorCreate
       (((do_encrypt)? (kCCEncrypt) : (kCCDecrypt)),
@@ -363,7 +367,7 @@ U8_EXPORT void u8_init_cryptofns_c()
 
 #endif
 
-U8_EXPORT unsigned char *u8_encrypt_x
+U8_EXPORT unsigned char *u8_encrypt
 (const unsigned char *input,size_t len,
  const char *cipher,
  const unsigned char *key,size_t keylen,
@@ -385,15 +389,8 @@ U8_EXPORT unsigned char *u8_encrypt_x
   else *result_len=bytecount;
   return out.u8_buf;
 }
-U8_EXPORT unsigned char *u8_encrypt
-(const unsigned char *input,size_t len,
- const char *cipher,const unsigned char *key,size_t keylen,
- size_t *result_len)
-{
-  return u8_encrypt_x(input,len,cipher,key,keylen,NULL,0,result_len);
-}
 
-U8_EXPORT unsigned char *u8_decrypt_x
+U8_EXPORT unsigned char *u8_decrypt
 (const unsigned char *input,size_t len,
  const char *cipher,
  const unsigned char *key,size_t keylen,
@@ -415,14 +412,6 @@ U8_EXPORT unsigned char *u8_decrypt_x
   else *result_len=bytecount;
   return out.u8_buf;
 }
-U8_EXPORT unsigned char *u8_decrypt
-(const unsigned char *input,size_t len,
- const char *cipher,const unsigned char *key,size_t keylen,
- size_t *result_len)
-{
-  return u8_decrypt_x(input,len,cipher,key,keylen,NULL,0,result_len);
-}
-
 U8_EXPORT void u8_init_cryptofns()
 {
   u8_init_cryptofns_c();
