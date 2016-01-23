@@ -99,7 +99,7 @@ U8_EXPORT ssize_t u8_cryptic
 		       ((caller)?(caller):(OPENSSL_CRYPTIC)),
 		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
-    memset(&cxt,0,sizeof(ctx));
+    memset(&ctx,0,sizeof(ctx));
 
     EVP_CIPHER_CTX_init(&ctx);
 
@@ -229,6 +229,8 @@ U8_EXPORT ssize_t u8_cryptic
 		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
     if (needivlen==0) iv=NULL;
+
+    memset(&ctx,0,sizeof(ctx));
 
     CCCryptorStatus status=CCCryptorCreate
       (((do_encrypt)? (kCCEncrypt) : (kCCDecrypt)),
