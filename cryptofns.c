@@ -99,6 +99,8 @@ U8_EXPORT ssize_t u8_cryptic
 		       ((caller)?(caller):(OPENSSL_CRYPTIC)),
 		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
+    memset(&cxt,0,sizeof(ctx));
+
     EVP_CIPHER_CTX_init(&ctx);
 
     retval=EVP_CipherInit(&ctx, cipher, NULL, NULL, do_encrypt);
@@ -226,6 +228,8 @@ U8_EXPORT ssize_t u8_cryptic
 		       ((caller)?(caller):(COMMONCRYPTO_CRYPTIC)),
 		       u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
+    if (needivlen==0) iv=NULL;
+
     CCCryptorStatus status=CCCryptorCreate
       (((do_encrypt)? (kCCEncrypt) : (kCCDecrypt)),
        cipher->cc_algorithm,cipher->cc_opts,key,keylen,iv,&ctx);
@@ -350,8 +354,8 @@ U8_EXPORT void u8_init_cryptofns_c()
   add_cc_cipher("DES",kCCAlgorithmDES,kCCOptionPKCS7Padding,
 		kCCKeySizeDES,kCCKeySizeDES,
 		kCCBlockSizeDES,kCCBlockSizeDES);
-  add_cc_cipher("RC4",kCCAlgorithmRC4,0,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,0,4096);
-  add_cc_cipher("ARC4",kCCAlgorithmRC4,0,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,0,4096);
+  add_cc_cipher("RC4",kCCAlgorithmRC4,0,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,0,1);
+  add_cc_cipher("ARC4",kCCAlgorithmRC4,0,kCCKeySizeMinRC4,kCCKeySizeMaxRC4,0,1);
   add_cc_cipher("CAST",kCCAlgorithmCAST,kCCOptionPKCS7Padding,
 		kCCKeySizeMinCAST,kCCKeySizeMaxCAST,
 		kCCBlockSizeCAST,kCCBlockSizeCAST);
