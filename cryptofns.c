@@ -33,7 +33,7 @@
 #else
 #endif
 
-#define CRYPTO_LOGLEVEL LOG_WARN /* LOG_WARN */
+#define CRYPTO_LOGLEVEL LOG_DEBUG /* LOG_WARN */
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
