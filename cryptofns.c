@@ -82,7 +82,7 @@ U8_EXPORT ssize_t u8_cryptic
   ssize_t totalout=0, totalin=0;
   unsigned char inbuf[1024], outbuf[1024+EVP_MAX_BLOCK_LENGTH];
   const EVP_CIPHER *cipher=((cname)?(EVP_get_cipherbyname(cname)):
-			    (EVP_aes_cbc()));
+			    (EVP_aes_128_cbc()));
 
   if (cipher) {
     int needkeylen=EVP_CIPHER_key_length(cipher);
@@ -295,8 +295,8 @@ static u8_cipher ciphers[64]=
    NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL};
 static u8_string default_cipher_name="BLOWFISH";
 static struct U8_CCCIPHER default_cipher=
-  {"AES",kCCAlgorithmAES,kCCOptionPKCS7Padding,
-   kCCKeySizeAES128,kCCKeySizeAES256,
+  {"AES128",kCCAlgorithmAES,kCCOptionPKCS7Padding,
+   kCCKeySizeAES256,kCCKeySizeAES256,
    kCCBlockSizeAES128,kCCBlockSizeAES128};
 
 static struct U8_CCCIPHER *get_cipher(u8_string name)
@@ -336,7 +336,10 @@ U8_EXPORT void u8_init_cryptofns_c()
 		kCCKeySizeAES128,kCCKeySizeAES256,
 		kCCBlockSizeAES128,kCCBlockSizeAES128);
   add_cc_cipher("AES128",kCCAlgorithmAES,kCCOptionPKCS7Padding,
-		kCCKeySizeAES128,kCCKeySizeAES256,
+		kCCKeySizeAES128,kCCKeySizeAES128,
+		kCCBlockSizeAES128,kCCBlockSizeAES128);
+  add_cc_cipher("AES256",kCCAlgorithmAES,kCCOptionPKCS7Padding,
+		kCCKeySizeAES256,kCCKeySizeAES256,
 		kCCBlockSizeAES128,kCCBlockSizeAES128);
   add_cc_cipher("3DES",kCCAlgorithm3DES,kCCOptionPKCS7Padding,
 		kCCKeySize3DES,kCCKeySize3DES,
