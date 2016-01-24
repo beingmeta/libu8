@@ -84,14 +84,14 @@ static int fill_xinput(struct U8_XINPUT *xf)
        * Writing that data as UTF-8 into the buffer
        * Updating all the various pointers in the structure.
   */
-  struct U8_OUTPUT tmpout; int input_offset, convert_val;
+  struct U8_OUTPUT tmpout; int convert_val;
   int unread_bytes=xf->u8_inlim-xf->u8_inptr;
   int bytes_read, bytes_converted;
   const unsigned char *reader, *limit;
   u8_byte *start=(u8_byte *)xf->u8_inbuf, *cur=(u8_byte *)xf->u8_inptr;
-  /* First, if we've read anything at all, overwrite it, making more
-     space. */
   if (cur>start) {
+    /* First, if we've read anything at all, overwrite it, compressing the
+       input buffer to make more space. */
     memmove(start,cur,unread_bytes);
     /* Now we're reading form the front of the buffer. */
     xf->u8_inptr=xf->u8_inbuf;
@@ -100,23 +100,24 @@ static int fill_xinput(struct U8_XINPUT *xf)
     /* Null terminate it, if there's space (there has to be) */
     start[unread_bytes]='\0';
     cur=start+unread_bytes;}
-  /* Fill the read buffer */
+  /* Now, fill the read buffer from the input socket */
   bytes_read=read(xf->fd,xf->xbuf+xf->xbuflen,xf->xbuflim-xf->xbuflen);
   /* If you had trouble or didn't get any data, return zero or the error code. */
   if (bytes_read<=0) return bytes_read;
-  /* Update the buflen */
+  /* Update the buflen to reflect what we read from the socket */
   xf->xbuflen=xf->xbuflen+bytes_read;
-  /* Do the conversion.  First we set up to scan the data we just read. */
+  /* Do the conversion.  First we set up _reader_ and _limit_ to scan
+     the data we just read from the socket */
   reader=xf->xbuf; limit=reader+xf->xbuflen;
-  /* Now we initialize the temporary output stream from our buffer,
-     arranging the output to write to the end of the valid input. */
+  /* Now we initialize a temporary output stream from our input
+     buffer, arranging the output to write to the end of the valid
+     input. Conversion will write to this output stream, filling up
+     the input buffer. */
   if ((xf->u8_streaminfo)&(U8_STREAM_MALLOCD)) {
-    U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,cur,
+    U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,xf->u8_inbuf,
 		     U8_STREAM_MALLOCD);}
-  else {U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,cur,
+  else {U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,xf->u8_inbuf,
 			 U8_FIXED_STREAM);}
-  /* input_offset is the read position of the input stream. */
-  input_offset=xf->u8_inptr-xf->u8_inbuf;
   /* Position the temporary output stream at the end of the valid input. */
   tmpout.u8_outptr=cur;
   /* Now we do the actual conversion, where u8_convert writes into the
@@ -125,21 +126,26 @@ static int fill_xinput(struct U8_XINPUT *xf)
   convert_val=
     u8_convert(xf->encoding,(xf->u8_streaminfo&U8_STREAM_CRLFS),
                &tmpout,&reader,limit);
-  /* If tmpout grew its buffer, we need to free the old buffer here. */
-  if (((xf->u8_inbuf)!=(tmpout.u8_outbuf)) &&
-      ((xf->u8_streaminfo)&(U8_STREAM_OWNS_BUF)))
+  /* Now we start updating the input stream to reflect all of the new
+     data (and possibly a new buffer) */
+  if (((start)!=(tmpout.u8_outbuf)) &&
+      ((xf->u8_streaminfo)&(U8_STREAM_OWNS_BUF))) { 
+    /* If tmpout grew its buffer during the write, we need to free the
+       old buffer here. */
     u8_free(xf->u8_inbuf);
+    xf->u8_inbuf=tmpout.u8_outbuf;}
+  else xf->u8_inbuf=tmpout.u8_outbuf;
   /* Now we copy stuff back into the input stream. */
-  xf->u8_inbuf=tmpout.u8_outbuf;
-  xf->u8_inptr=tmpout.u8_outbuf+input_offset;
+  xf->u8_inptr=tmpout.u8_outbuf;
+  /* The limit of the valid input is the end of the tmpout stream. */
   xf->u8_inlim=tmpout.u8_outptr;
   xf->u8_bufsz=tmpout.u8_bufsz;
   /* Just in case tmpout grew while being filled but was originally static */
   if ((tmpout.u8_streaminfo)&(U8_STREAM_MALLOCD))
     xf->u8_streaminfo=(xf->u8_streaminfo)|(U8_STREAM_MALLOCD);
-  bytes_converted=reader-xf->xbuf;
   /* Now, overwrite what you've converted with what you haven't converted
      yet and updated the buflen. */
+  bytes_converted=reader-xf->xbuf;
   memmove(xf->xbuf,xf->xbuf+bytes_converted,xf->xbuflen-bytes_converted);
   xf->xbuflen=xf->xbuflen-bytes_converted;
   if (convert_val<0)
