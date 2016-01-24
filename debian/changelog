@@ -1,3 +1,11 @@
+libu8 (2.5.3-19) unstable; urgency=low
+
+  * Fix some conversion/buffering issues with streamio
+  * Be careful in initializing exception objects
+  * git patch version libu8-2.5.3-12
+
+ -- Ken Haase <kh@beingmeta.com>  Sun, 24 Jan 2016 21:50:16 +0000
+
 libu8 (2.5.3-18) unstable; urgency=low
 
   * Fixes to commoncrypto bindings and declarations
