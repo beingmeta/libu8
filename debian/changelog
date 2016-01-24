@@ -1,3 +1,10 @@
+libu8 (2.5.3-18) unstable; urgency=low
+
+  * Fixes to commoncrypto bindings and declarations
+  * git patch veresion libu8-2.5.3-6
+
+ -- Ken Haase <kh@beingmeta.com>  Sat, 23 Jan 2016 21:36:09 +0000
+
 libu8 (2.5.3-17) unstable; urgency=low
 
   * Change u8_encrypt/u8_decrypt signatures to always include an initial
