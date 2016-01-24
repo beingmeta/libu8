@@ -49,6 +49,7 @@ U8_EXPORT u8_exception u8_make_exception
   newex->u8x_details=details;
   newex->u8x_xdata=xdata;
   newex->u8x_free_xdata=freefn;
+  newex->u8x_prev=NULL;
   return newex;
 }
 
