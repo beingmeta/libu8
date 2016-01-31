@@ -1,3 +1,10 @@
+libu8 (2.5.3-20) unstable; urgency=low
+
+  * Bump copyright dates, etc
+  * git patch version libu8-2.5.3-14
+
+ -- Ken Haase <kh@beingmeta.com>  Sun, 31 Jan 2016 01:26:09 +0000
+
 libu8 (2.5.3-19) unstable; urgency=low
 
   * Fix some conversion/buffering issues with streamio
