@@ -790,21 +790,26 @@ static int encode_base64_byte(char c)
   if ((c>='A') && (c<='Z')) return c-'A';
   else if ((c>='a') && (c<='z')) return 26+(c-'a');
   else if ((c>='0') && (c<='9')) return 52+(c-'0');
-  else if (c == '+') return 62;
-  else if (c == '/') return 63;
+  else if ((c == '+')||(c == '-')) return 62;
+  else if ((c == '/')||(c == '_')) return 63;
   else if (c == '=') return 0;
   else return -1;
 }
 
-static int encode_base64_block(const char *c)
+static int encode_base64_block(const char *c,int n)
 {
   int first_byte=encode_base64_byte(c[0]);
   if (first_byte<0) return -1;
+  else if (n>3)
+    return (first_byte<<18)|
+	 ((encode_base64_byte(c[1]))<<12)|
+	 ((encode_base64_byte(c[2]))<<6)|
+	 ((encode_base64_byte(c[3]))<<0);
   else return
          (first_byte<<18)|
-         ((encode_base64_byte(c[1]))<<12)|
-         ((encode_base64_byte(c[2]))<<6)|
-         ((encode_base64_byte(c[3]))<<0);
+	 ((n>1)?((encode_base64_byte(c[1]))<<12):(0))|
+	 ((n>2)?((encode_base64_byte(c[2]))<<6):(0))|
+	 ((n>3)?((encode_base64_byte(c[3]))<<0):(0));
 }
 
 U8_EXPORT
@@ -819,11 +824,16 @@ unsigned char *u8_read_base64(const char *from,const char *to,int *sizep)
   char *result=u8_malloc(to-from+1), *write=result;
   int size=0;
   while (read < to) {
-    int bytes=encode_base64_block(read);
+    int bytes=((read+3)<to)?(encode_base64_block(read,4)):
+      (encode_base64_block(read,to-read));
     if (bytes < 0) read++;
     else {
       *write++=bytes>>16; *write++=(bytes>>8)&0xFF; *write++=(bytes)&0xFF;
-      if (read[2] == '=') {size=size+1; break;}
+      if ((read+1)==to) {size=size+1; break;}
+      else if ((read+2)==to) {size=size+1; read=to; break;}
+      else if ((read+3)==to) {size=size+2; read=to; break;}
+      else if ((read+3)==to) {size=size+3; read=to; break;}
+      else if (read[2] == '=') {size=size+1; break;}
       else if (read[3] == '=') {size=size+2; break;}
       else {size=size+3; read=read+4;}}}
   *sizep = size;
