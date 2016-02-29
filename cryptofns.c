@@ -92,7 +92,7 @@ U8_EXPORT ssize_t u8_cryptic
     int pubkeyin=(strncasecmp(cname,"rsapub",6)==0);
     const unsigned char *scankey=key;
     struct U8_BYTEBUF bb;
-    int retval;
+    int retval=-1;
     if (pubkeyin) pkey=d2i_PUBKEY(NULL,&scankey,keylen);
     else pkey=d2i_PrivateKey((EVP_PKEY_RSA),NULL,&scankey,keylen);
     if (!(pkey)) ctx=NULL;
