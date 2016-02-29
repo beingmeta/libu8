@@ -97,6 +97,7 @@ U8_EXPORT ssize_t u8_cryptic
     else pkey=d2i_PrivateKey((EVP_PKEY_RSA),NULL,&scankey,keylen);
     if (!(pkey)) ctx=NULL;
     else {
+      memset(&bb,0,sizeof(bb));
       bb.u8_direction=u8_output_buffer;
       bb.u8_buf=bb.u8_ptr=(u8_byte *)u8_malloc(1024);
       bb.u8_lim=(u8_byte *)(bb.u8_buf+1024);
@@ -489,6 +490,7 @@ U8_EXPORT unsigned char *u8_encrypt
   ssize_t bytecount;
   struct U8_BYTEBUF in, out;
   unsigned char *outbuf=u8_malloc(2*len);
+  memset(&in,0,sizeof(in)); memset(&out,0,sizeof(in));
   in.u8_direction=u8_input_buffer;
   in.u8_buf=in.u8_ptr=(u8_byte *)input; in.u8_lim=(u8_byte *)(input+len);
   in.u8_direction=u8_output_buffer; out.u8_growbuf=len;
@@ -512,6 +514,7 @@ U8_EXPORT unsigned char *u8_decrypt
   ssize_t bytecount;
   struct U8_BYTEBUF in, out;
   unsigned char *outbuf=u8_malloc(2*len);
+  memset(&in,0,sizeof(in)); memset(&out,0,sizeof(in));
   in.u8_direction=u8_input_buffer;
   in.u8_buf=in.u8_ptr=(u8_byte *)input; in.u8_lim=(u8_byte *)(input+len);
   in.u8_direction=u8_output_buffer; out.u8_growbuf=len;

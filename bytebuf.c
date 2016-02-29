@@ -44,14 +44,15 @@ U8_EXPORT int _u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
     else {
       unsigned int ptroff=(bb->u8_ptr)-(bb->u8_buf);
       unsigned int bufsize=(bb->u8_lim)-(bb->u8_buf);
-      unsigned int newsize=
-        ((bb->u8_growbuf==1)?(bufsize*2):(bufsize+bb->u8_growbuf));
-      unsigned char *newbuf=u8_realloc(bb->u8_buf,newsize);
+      unsigned int need_size=(bb->u8_ptr-bb->u8_buf)+len+1;
+      unsigned int new_size=(((bufsize*2)>need_size)?(bufsize*2):
+			     (1024*(1+(need_size/1024))));
+      unsigned char *newbuf=u8_realloc(bb->u8_buf,new_size);
       if (newbuf) {
-        memset(newbuf+ptroff,0,newsize-ptroff);
-        bb->u8_buf=newbuf;
-        bb->u8_ptr=newbuf+ptroff;
-        bb->u8_lim=newbuf+newsize;}
+	memset(newbuf+ptroff,0,new_size-ptroff);
+	bb->u8_buf=newbuf;
+	bb->u8_ptr=newbuf+ptroff;
+	bb->u8_lim=newbuf+new_size;}
       else return u8_reterr(u8_MallocFailed,"u8_bufwrite",NULL);}}
   memcpy(bb->u8_ptr,buf,len);
   bb->u8_ptr=bb->u8_ptr+len;
