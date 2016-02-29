@@ -111,14 +111,14 @@ U8_EXPORT ssize_t u8_cryptic
 	      ((retval=EVP_PKEY_decrypt_init(ctx))<0))) {}
     else {
       unsigned char *in=bb.u8_buf; size_t inlen=bb.u8_ptr-bb.u8_buf;
-      unsigned char *out; size_t outlen;
+      unsigned char *out=NULL; size_t outlen;
       if (pubkeyin) {
 	if (do_encrypt) retval=EVP_PKEY_encrypt(ctx,NULL,&outlen,in,inlen);
 	else retval=EVP_PKEY_verify_recover(ctx,NULL,&outlen,in,inlen);}
       else if (do_encrypt) retval=EVP_PKEY_sign(ctx,NULL,&outlen,in,inlen);
       else retval=EVP_PKEY_decrypt(ctx,NULL,&outlen,in,inlen);
       if (retval<0) {}
-      else if ((out=OPENSSL_malloc(outlen))==NULL) {}
+      else if ((out=u8_malloc(outlen))==NULL) {}
       else if (pubkeyin) {
 	if (do_encrypt) retval=EVP_PKEY_encrypt(ctx,out,&outlen,in,inlen);
 	else retval=EVP_PKEY_verify_recover(ctx,out,&outlen,in,inlen);}
@@ -126,7 +126,7 @@ U8_EXPORT ssize_t u8_cryptic
       else retval=EVP_PKEY_decrypt(ctx,out,&outlen,in,inlen);
       if (retval<0) {}
       else retval=writer(out,outlen,writestate);
-      if (out) OPENSSL_free(out);}
+      if (out) u8_free(out);}
     if (retval<0) {
       unsigned long err=ERR_get_error(); char buf[512];
       buf[0]='\0'; ERR_error_string_n(err,buf,512);
