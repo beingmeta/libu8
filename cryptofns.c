@@ -24,8 +24,7 @@
 #include <string.h>
 
 #if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H)&& \
-     (HAVE_OPENSSL_ERR_H)&&(HAVE_OPENSSL_EVP_H)&& \
-     (!((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))))
+     (HAVE_OPENSSL_ERR_H)&&(HAVE_OPENSSL_EVP_H))
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
@@ -75,8 +74,7 @@ static void fill_bytebuf(U8_BYTEBUF *out,u8_block_reader reader,void *readstate)
 }
 
 #if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H)&& \
-     (HAVE_OPENSSL_ERR_H)&&(HAVE_OPENSSL_EVP_H)&& \
-     (!((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))))
+     (HAVE_OPENSSL_ERR_H)&&(HAVE_OPENSSL_EVP_H))
 
 static u8_context OPENSSL_CRYPTIC="u8_cryptic/OpenSSL";
 
@@ -96,7 +94,7 @@ U8_EXPORT ssize_t u8_cryptic
     struct U8_BYTEBUF bb;
     int retval;
     if (pubkeyin) pkey=d2i_PUBKEY(NULL,&scankey,keylen);
-    else pkey=d2i_PrivateKey(EVP_PKEY_RSA,NULL,&scankey,keylen);
+    else pkey=d2i_PrivateKey((EVP_PKEY_RSA),NULL,&scankey,keylen);
     if (!(pkey)) ctx=NULL;
     else {
       bb.u8_direction=u8_output_buffer;
@@ -127,7 +125,7 @@ U8_EXPORT ssize_t u8_cryptic
       else if (do_encrypt) retval=EVP_PKEY_encrypt(ctx,out,&outlen,in,inlen);
       else retval=EVP_PKEY_decrypt(ctx,out,&outlen,in,inlen);
       if (retval<0) {}
-      else retval=retval=writer(out,outlen,writestate);}
+      else retval=writer(out,outlen,writestate);}
     if (retval<0) {
       unsigned long err=ERR_get_error(); char buf[512];
       buf[0]='\0'; ERR_error_string_n(err,buf,512);
@@ -270,7 +268,7 @@ U8_EXPORT ssize_t u8_cryptic
  u8_context caller)
 {
   if (strncasecmp(cname,"rsa",3)==0) {
-    u8_seterr(_("RSA support NYI"),"u8_cryptic",u8_strdup(cname));
+    u8_seterr(_("RSA support NYI"),"u8_cryptic/CommonCrypto",u8_strdup(cname));
     return -1;}
   else {
     CCCryptorRef ctx;
