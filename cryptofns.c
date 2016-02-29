@@ -107,9 +107,9 @@ U8_EXPORT ssize_t u8_cryptic
       ctx=EVP_PKEY_CTX_new(pkey,eng);}
     if (!(ctx)) {}
     else if ((pubkeyin)?
-	     ((do_encrypt)?((retval=EVP_PKEY_sign_init(ctx))<0):
-	      ((retval=EVP_PKEY_verify_recover_init(ctx))<0)):
 	     ((do_encrypt)?((retval=EVP_PKEY_encrypt_init(ctx))<0):
+	      ((retval=EVP_PKEY_verify_recover_init(ctx))<0)):
+	     ((do_encrypt)?((retval=EVP_PKEY_sign_init(ctx))<0):
 	      ((retval=EVP_PKEY_decrypt_init(ctx))<0))) {}
     else {
       unsigned char *in=bb.u8_buf; size_t inlen=bb.u8_ptr-bb.u8_buf;
