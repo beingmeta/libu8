@@ -1,3 +1,11 @@
+libu8 (2.5.3-22) unstable; urgency=medium
+
+  * Add RSA support to cryptofns
+  * Made OSX default to openssl to use RSA
+  * git patch version libu8-2.5.3-25-g42ca2cf (pre changelog)
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 29 Feb 2016 18:03:03 -0500
+
 libu8 (2.5.3-21) unstable; urgency=low
 
   * Fix and extend base64 encoding
