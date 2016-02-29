@@ -29,6 +29,8 @@
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
+#include <openssl/engine.h>
+#include <openssl/err.h>
 #elif ((HAVE_COMMONCRYPTO_COMMONCRYPTOR_H)&&(HAVE_CCCRYPTORCREATE))
 #include <CommonCrypto/CommonCryptor.h>
 #else
@@ -87,43 +89,52 @@ U8_EXPORT ssize_t u8_cryptic
  u8_context caller)
 {
   if (strncasecmp(cname,"rsa",3)==0) {
-#if 0
-    EVP_PKEY _pkey, *pkey; EVP_PKEY_CTX *ctx; ENGINE *eng;
-    int padding=RSA_PKCS1_OAEP_PADDING;
-    int pubkey=(strncasecmp(cname,"rsapub",6)==0);
+    ENGINE *eng=ENGINE_get_default_RSA();
+    EVP_PKEY _pkey, *pkey; EVP_PKEY_CTX *ctx; 
+    int pubkeyin=(strncasecmp(cname,"rsapub",6)==0);
     const unsigned char *scankey=key;
     struct U8_BYTEBUF bb;
     int retval;
-    if (pubkey)
-      pkey=d2i_PublicKey(EVP_PKEY_RSA,NULL,&scankey,keylen);
+    if (pubkeyin) pkey=d2i_PUBKEY(NULL,&scankey,keylen);
     else pkey=d2i_PrivateKey(EVP_PKEY_RSA,NULL,&scankey,keylen);
-    bb.u8_direction=u8_output_buffer;
-    bb.u8_buf=bb.u8_ptr=(u8_byte *)u8_malloc(1024);
-    bb.u8_lim=(u8_byte *)(bb.u8_buf+1024);
-    bb.u8_growbuf=1;
-    fill_bytebuf(&bb,reader,readstate);
-    ctx=EVP_PKEY_CTX_new(pkey,eng);
+    if (!(pkey)) ctx=NULL;
+    else {
+      bb.u8_direction=u8_output_buffer;
+      bb.u8_buf=bb.u8_ptr=(u8_byte *)u8_malloc(1024);
+      bb.u8_lim=(u8_byte *)(bb.u8_buf+1024);
+      bb.u8_growbuf=1;
+      fill_bytebuf(&bb,reader,readstate);
+      ctx=EVP_PKEY_CTX_new(pkey,eng);}
     if (!(ctx)) {}
-    else if ((EVP_PKEY_encrypt_init(ctx)<0)||
-	     (EVP_PKEY_CTX_set_rsa_padding(ctx,padding)<0)) {}
+    else if ((pubkeyin)?
+	     ((do_encrypt)?((retval=EVP_PKEY_sign_init(ctx))<0):
+	      ((retval=EVP_PKEY_verify_recover_init(ctx))<0)):
+	     ((do_encrypt)?((retval=EVP_PKEY_encrypt_init(ctx))<0):
+	      ((retval=EVP_PKEY_decrypt_init(ctx))<0))) {}
     else {
       unsigned char *in=bb.u8_buf; size_t inlen=bb.u8_ptr-bb.u8_buf;
       unsigned char *out; size_t outlen;
-      if (do_encrypt) retval=EVP_PKEY_encrypt(ctx,NULL,&outlen,in,inlen);
-      else retval=retval=EVP_PKEY_decrypt(ctx,NULL,&outlen,in,inlen);
+      if (pubkeyin) {
+	if (do_encrypt) retval=EVP_PKEY_sign(ctx,NULL,&outlen,in,inlen);
+	else retval=EVP_PKEY_verify_recover(ctx,NULL,&outlen,in,inlen);}
+      else if (do_encrypt) retval=EVP_PKEY_encrypt(ctx,NULL,&outlen,in,inlen);
+      else retval=EVP_PKEY_decrypt(ctx,NULL,&outlen,in,inlen);
       if (retval<0) {}
       else if ((out=OPENSSL_malloc(outlen))==NULL) {}
-      else if (do_encrypt)
-	retval=EVP_PKEY_encrypt(ctx,out,&outlen,in,inlen);
+      else if (pubkeyin) {
+	if (do_encrypt) retval=EVP_PKEY_sign(ctx,out,&outlen,in,inlen);
+	else retval=EVP_PKEY_verify_recover(ctx,out,&outlen,in,inlen);}
+      else if (do_encrypt) retval=EVP_PKEY_encrypt(ctx,out,&outlen,in,inlen);
       else retval=EVP_PKEY_decrypt(ctx,out,&outlen,in,inlen);
       if (retval<0) {}
-      else retval=writer(out,outlen,writestate);
-      return retval;}
-    #else
-    u8_seterr(_("RSA NYI"),"u8_cryptic",u8_strdup(cname));
-    return -1;
-    #endif
-  }
+      else retval=retval=writer(out,outlen,writestate);}
+    if (retval<0) {
+      unsigned long err=ERR_get_error(); char buf[512];
+      buf[0]='\0'; ERR_error_string_n(err,buf,512);
+      u8_seterr(u8_InternalCryptoError,OPENSSL_CRYPTIC,u8_fromlibc((char *)buf));
+      ERR_clear_error();
+      return -1;}
+    else return retval;}
   else {
     EVP_CIPHER_CTX ctx;
     int inlen, outlen, retval=0;
