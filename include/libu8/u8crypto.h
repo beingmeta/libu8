@@ -56,6 +56,28 @@ U8_EXPORT unsigned char *u8_sha1
 U8_EXPORT unsigned char *u8_sha256
   (const unsigned char *data,int len,unsigned char *result);
 
+/** Returns the SHA-384 hash (48 bytes) of a data buffer
+    @param data a pointer to a data buffer
+    @param len the number of bytes in the data buffer (or -1)
+    @param result a result buffer (at least 20 bytes) or NULL
+    @returns the SHA1 hash of the provided data
+  If @a len is negative, strlen() is called on the input data.
+  If @a result is NULL, a buffer of appropriate size is created with malloc()
+**/
+U8_EXPORT unsigned char *u8_sha384
+  (const unsigned char *data,int len,unsigned char *result);
+
+/** Returns the SHA-512 hash (64 bytes) of a data buffer
+    @param data a pointer to a data buffer
+    @param len the number of bytes in the data buffer (or -1)
+    @param result a result buffer (at least 20 bytes) or NULL
+    @returns the SHA1 hash of the provided data
+  If @a len is negative, strlen() is called on the input data.
+  If @a result is NULL, a buffer of appropriate size is created with malloc()
+**/
+U8_EXPORT unsigned char *u8_sha512
+  (const unsigned char *data,int len,unsigned char *result);
+
 /** Returns a signed HMAC-SHA1 signature (20 bytes) of a data buffer
     @param key         a pointer to a key buffer
     @param key_len     the length of the key buffer in bytes (or -1)
@@ -92,6 +114,41 @@ U8_EXPORT u8_condition u8_CipherInit_Failed;
   If @a result is NULL, a buffer of appropriate size is created with malloc()
 **/
 U8_EXPORT unsigned char *u8_hmac_sha256
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
+   unsigned char *result,int *result_len);
+
+
+/** Returns a signed HMAC-SHA384 signature (48 bytes) of a data buffer
+    @param key         a pointer to a key buffer
+    @param key_len     the length of the key buffer in bytes (or -1)
+    @param data        a pointer to a data buffer
+    @param data_len    the number of bytes in the data buffer (or -1)
+    @param result      a result buffer (at least 32 bytes) or NULL
+    @param result_len  the byte length of the result buffer
+    @returns the SHA1 hash of the provided data
+  If @a len or @a key_len is negative, strlen() is called on the
+    corresponding input buffers;
+  If @a result is NULL, a buffer of appropriate size is created with malloc()
+**/
+U8_EXPORT unsigned char *u8_hmac_384
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
+   unsigned char *result,int *result_len);
+
+/** Returns a signed HMAC-SHA512 signature (64 bytes) of a data buffer
+    @param key         a pointer to a key buffer
+    @param key_len     the length of the key buffer in bytes (or -1)
+    @param data        a pointer to a data buffer
+    @param data_len    the number of bytes in the data buffer (or -1)
+    @param result      a result buffer (at least 32 bytes) or NULL
+    @param result_len  the byte length of the result buffer
+    @returns the SHA1 hash of the provided data
+  If @a len or @a key_len is negative, strlen() is called on the
+    corresponding input buffers;
+  If @a result is NULL, a buffer of appropriate size is created with malloc()
+**/
+U8_EXPORT unsigned char *u8_hmac_sha512
   (const unsigned char *key,int key_len,
    const unsigned char *data,int data_len,
    unsigned char *result,int *result_len);

@@ -449,6 +449,20 @@ U8_EXPORT unsigned char *u8_sha256(const unsigned char *data,int len,
   if (len<0) len=strlen(data);
   return SHA256(data,len,((result==NULL) ? (u8_malloc(32)) : (result)));
 }
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha384(const unsigned char *data,int len,
+				   unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return SHA384(data,len,((result==NULL) ? (u8_malloc(48)) : (result)));
+}
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha512(const unsigned char *data,int len,
+				   unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return SHA512(data,len,((result==NULL) ? (u8_malloc(64)) : (result)));
+}
 #else
 /*
 SHA-1 in C
@@ -714,6 +728,28 @@ U8_EXPORT unsigned char *u8_hmac_sha256
   return HMAC(EVP_sha256(),(const void *)key,key_len,
               data,data_len,digestbuf,result_len);
 }
+U8_EXPORT unsigned char *u8_hmac_sha384
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
+   unsigned char *result,int *result_len)
+{
+  unsigned int buflen=48;
+  unsigned char *digestbuf=((result==NULL) ? (u8_malloc(buflen)) : (result));
+
+  return HMAC(EVP_sha384(),(const void *)key,key_len,
+              data,data_len,digestbuf,result_len);
+}
+U8_EXPORT unsigned char *u8_hmac_sha512
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
+   unsigned char *result,int *result_len)
+{
+  unsigned int buflen=64;
+  unsigned char *digestbuf=((result==NULL) ? (u8_malloc(buflen)) : (result));
+
+  return HMAC(EVP_sha512(),(const void *)key,key_len,
+              data,data_len,digestbuf,result_len);
+}
 #else
 U8_EXPORT unsigned char *u8_hmac_sha256
   (const unsigned char *key,int key_len,
@@ -721,6 +757,22 @@ U8_EXPORT unsigned char *u8_hmac_sha256
    unsigned char *result,int *result_len)
 {
   u8_raise(u8_NotImplemented,"u8_hmac_sha256",NULL);
+  return NULL;
+}
+U8_EXPORT unsigned char *u8_hmac_sha384
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
+   unsigned char *result,int *result_len)
+{
+  u8_raise(u8_NotImplemented,"u8_hmac_sha384",NULL);
+  return NULL;
+}
+U8_EXPORT unsigned char *u8_hmac_sha512
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
+   unsigned char *result,int *result_len)
+{
+  u8_raise(u8_NotImplemented,"u8_hmac_sha512",NULL);
   return NULL;
 }
 #endif
