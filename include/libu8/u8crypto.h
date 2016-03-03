@@ -131,7 +131,7 @@ U8_EXPORT unsigned char *u8_hmac_sha256
     corresponding input buffers;
   If @a result is NULL, a buffer of appropriate size is created with malloc()
 **/
-U8_EXPORT unsigned char *u8_hmac_384
+U8_EXPORT unsigned char *u8_hmac_sha384
   (const unsigned char *key,int key_len,
    const unsigned char *data,int data_len,
    unsigned char *result,int *result_len);
