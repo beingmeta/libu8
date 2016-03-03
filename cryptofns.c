@@ -132,9 +132,10 @@ U8_EXPORT ssize_t u8_cryptic
       unsigned long err=ERR_get_error(); char buf[512];
       buf[0]='\0'; ERR_error_string_n(err,buf,512);
       u8_seterr(u8_InternalCryptoError,OPENSSL_CRYPTIC,u8_fromlibc((char *)buf));
-      ERR_clear_error();
-      return -1;}
-    else return retval;}
+      ERR_clear_error();}
+    if (ctx) EVP_PKEY_CTX_free(ctx);
+    if (pkey)  EVP_PKEY_free(pkey);
+    return retval;}
   else {
     EVP_CIPHER_CTX ctx;
     int inlen, outlen, retval=0;
