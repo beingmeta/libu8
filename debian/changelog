@@ -1,9 +1,10 @@
 libu8 (2.5.3-23) unstable; urgency=low
 
   * Add additional hash and hmac functions
-  * git patch version libu8-2.5.3-27-gfd97d9e
+  * Clean up asymmetric cryptography wrappers
+  * git patch version libu8-2.5.3-31-gc636e23
 
- -- Ken Haase <kh@beingmeta.com>  Thu, 03 Mar 2016 15:54:49 -0500
+ -- Ken Haase <kh@beingmeta.com>  Thu, 03 Mar 2016 16:08:03 -0500
 
 libu8 (2.5.3-22) unstable; urgency=medium
 
