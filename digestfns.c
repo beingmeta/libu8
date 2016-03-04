@@ -399,6 +399,7 @@ U8_EXPORT unsigned char *u8_md5
 #endif
 
 #if HAVE_COMMONCRYPTO_COMMONDIGEST_H
+
 /* Digests a string and returns the result */
 U8_EXPORT unsigned char *u8_sha1(const unsigned char *data,int len,
 				 unsigned char *result)
@@ -409,6 +410,7 @@ U8_EXPORT unsigned char *u8_sha1(const unsigned char *data,int len,
 		  (u8_malloc(CC_SHA1_DIGEST_LENGTH)) :
 		  (result)));
 }
+
 /* Digests a string and returns the result */
 U8_EXPORT unsigned char *u8_sha224(const unsigned char *data,int len,
 				   unsigned char *result)
@@ -418,6 +420,7 @@ U8_EXPORT unsigned char *u8_sha224(const unsigned char *data,int len,
 			     (u8_malloc(CC_SHA224_DIGEST_LENGTH)) :
 			     (result)));
 }
+
 /* Digests a string and returns the result */
 U8_EXPORT unsigned char *u8_sha256(const unsigned char *data,int len,
 				   unsigned char *result)
@@ -425,6 +428,25 @@ U8_EXPORT unsigned char *u8_sha256(const unsigned char *data,int len,
   if (len<0) len=strlen(data);
   return CC_SHA256(data,len,((result==NULL) ?
 			     (u8_malloc(CC_SHA256_DIGEST_LENGTH)) :
+			     (result)));
+}
+
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha384(const unsigned char *data,int len,
+				   unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return CC_SHA384(data,len,((result==NULL) ?
+			     (u8_malloc(CC_SHA384_DIGEST_LENGTH)) :
+			     (result)));
+}
+/* Digests a string and returns the result */
+U8_EXPORT unsigned char *u8_sha512(const unsigned char *data,int len,
+				   unsigned char *result)
+{
+  if (len<0) len=strlen(data);
+  return CC_SHA512(data,len,((result==NULL) ?
+			     (u8_malloc(CC_SHA512_DIGEST_LENGTH)) :
 			     (result)));
 }
 #elif HAVE_OPENSSL_SHA_H
@@ -714,6 +736,32 @@ U8_EXPORT unsigned char *u8_hmac_sha256
   if (data_len<0) data_len=strlen(data);
   CCHmac(kCCHmacAlgSHA256,key,key_len,data,data_len,digestbuf);
   if (result_len) *result_len=32;
+  return digestbuf;
+}
+U8_EXPORT unsigned char *u8_hmac_sha384
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
+   unsigned char *result,int *result_len)
+{
+  unsigned int buflen=32;
+  unsigned char *digestbuf=((result==NULL) ? (u8_malloc(buflen)) : (result));
+  if (key_len<0) key_len=strlen(key);
+  if (data_len<0) data_len=strlen(data);
+  CCHmac(kCCHmacAlgSHA384,key,key_len,data,data_len,digestbuf);
+  if (result_len) *result_len=CC_SHA384_DIGEST_LENGTH;
+  return digestbuf;
+}
+U8_EXPORT unsigned char *u8_hmac_sha512
+  (const unsigned char *key,int key_len,
+   const unsigned char *data,int data_len,
+   unsigned char *result,int *result_len)
+{
+  unsigned int buflen=32;
+  unsigned char *digestbuf=((result==NULL) ? (u8_malloc(buflen)) : (result));
+  if (key_len<0) key_len=strlen(key);
+  if (data_len<0) data_len=strlen(data);
+  CCHmac(kCCHmacAlgSHA512,key,key_len,data,data_len,digestbuf);
+  if (result_len) *result_len=CC_SHA512_DIGEST_LENGTH;
   return digestbuf;
 }
 #elif HAVE_OPENSSL_HMAC_H
