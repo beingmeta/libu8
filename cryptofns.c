@@ -23,8 +23,7 @@
 
 #include <string.h>
 
-#if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H)&& \
-     (HAVE_OPENSSL_ERR_H)&&(HAVE_OPENSSL_EVP_H))
+#if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H)&&(HAVE_OPENSSL_ERR_H))
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
@@ -35,7 +34,7 @@
 #else
 #endif
 
-#define CRYPTO_LOGLEVEL LOG_DEBUG /* LOG_WARN */
+#define CRYPTO_LOGLEVEL LOG_NOTICE /* LOG_DEBUG */
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
@@ -73,8 +72,7 @@ static void fill_bytebuf(U8_BYTEBUF *out,u8_block_reader reader,void *readstate)
   
 }
 
-#if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H)&& \
-     (HAVE_OPENSSL_ERR_H)&&(HAVE_OPENSSL_EVP_H))
+#if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H)&&(HAVE_OPENSSL_ERR_H))
 
 static u8_context OPENSSL_CRYPTIC="u8_cryptic/OpenSSL";
 
