@@ -407,7 +407,13 @@ U8_EXPORT int _u8_init_mutex(u8_mutex *mutex) {
 
 U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details)
 {
-  exit(1);
+  u8_contour c=u8_dynamic_contour;
+  if (!(c)) {
+    u8_log(LOG_CRIT,ex,"In context %s: %s",cxt,details);
+    exit(1);}
+  else {
+    u8_seterr(ex,cxt,details);
+    u8_throw_contour(c);}
 }
 
 U8_EXPORT void u8_set_error_handler

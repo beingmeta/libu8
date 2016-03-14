@@ -68,7 +68,7 @@ U8_EXPORT u8_condition u8_BadDynamicContour;
 
 /* Maybe this should also have a queue of cleanup functions */
 #define U8_CONTOUR_FIELDS \
-  u8_string u8_contour_label; unsigned int u8c_flags;    \
+  const unsigned char *u8c_label; unsigned int u8c_flags;    \
   int u8c_depth; jmp_buf u8c_jmpbuf;              \
   struct U8_CONTOUR *u8c_outer_contour;                          \
   int u8c_n_blocks, u8c_max_blocks;               \
@@ -130,14 +130,14 @@ static MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
 #define U8_WITH_CONTOUR(label,flags)                            \
    struct U8_CONTOUR _u8_contour_struct;                        \
    struct U8_CONTOUR *_u8_contour=&_u8_contour_struct;          \
-   U8_INIT_CONTOUR(&_u8_contour,label,flags);                   \
-   if (setjmp(&(_u8_contour_struct.u8c_jmpbuf)) == 0) {         \
+   U8_INIT_CONTOUR(_u8_contour,label,flags);                   \
+   if (setjmp(_u8_contour_struct.u8c_jmpbuf) == 0) {         \
      u8_push_contour(&(_u8_contour_struct));
 #define U8_ON_EXCEPTION u8_pop_contour(_u8_contour);} else {
 #define U8_END_EXCEPTION                                     \
-  if ((_u8_contour_struct.flags)&(U8_CONTOUR_EXCEPTIONAL))   \
+  if ((_u8_contour_struct.u8c_flags)&(U8_CONTOUR_EXCEPTIONAL))   \
      u8_throw_contour(&_u8_contour_struct);                  \
-  else u8_pop_contour(&_u8_contour_struct);}}
+  else u8_pop_contour(&_u8_contour_struct);}
 
 #define UNWIND_PROTECT U8_WITH_CONTOUR
 #define U8_ON_UNWIND }
