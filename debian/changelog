@@ -1,3 +1,10 @@
+libu8 (2.5.3-25) unstable; urgency=low
+
+  * Improve dynamic contours and use with u8_raise
+  * git patch version libu8-2.5.3-36-gfedf08e
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 14 Mar 2016 18:04:49 -0400
+
 libu8 (2.5.3-24) unstable; urgency=low
 
   * Fixes to hash and hmac functions, especially for OS X
