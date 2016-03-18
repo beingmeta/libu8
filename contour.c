@@ -124,5 +124,8 @@ U8_EXPORT void *u8_contour_realloc(u8_contour c,void *ptr,size_t new_size)
 
 U8_EXPORT void u8_init_contour_c()
 {
+#if (U8_USE_TLS)
+  u8_new_threadkey(&u8_dynamic_contour_key,NULL);
+#endif
   u8_register_source_file(_FILEINFO);
 }
