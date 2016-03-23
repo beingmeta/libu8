@@ -34,7 +34,7 @@
 #else
 #endif
 
-#define CRYPTO_LOGLEVEL LOG_NOTICE /* LOG_DEBUG */
+#define CRYPTO_LOGLEVEL LOG_DEBUG
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
