@@ -95,13 +95,19 @@ U8_EXPORT ssize_t u8_cryptic
     else pkey=d2i_PrivateKey((EVP_PKEY_RSA),NULL,&scankey,keylen);
     if (!(pkey)) ctx=NULL;
     else {
+#if (OPENSSL_VERSION_NUMBER>=0x1000204fL)
+      ctx=EVP_PKEY_CTX_new(pkey,eng);
+#else
+      ctx=EVP_PKEY_CTX_new(pkey,NULL);
+#endif
+    }
+    if (ctx) {
       memset(&bb,0,sizeof(bb));
       bb.u8_direction=u8_output_buffer;
       bb.u8_buf=bb.u8_ptr=(u8_byte *)u8_malloc(1024);
       bb.u8_lim=(u8_byte *)(bb.u8_buf+1024);
       bb.u8_growbuf=1;
-      fill_bytebuf(&bb,reader,readstate);
-      ctx=EVP_PKEY_CTX_new(pkey,eng);}
+      fill_bytebuf(&bb,reader,readstate);}
     if (!(ctx)) {}
     else if ((pubkeyin)?
 	     ((do_encrypt)?((retval=EVP_PKEY_encrypt_init(ctx))<0):
