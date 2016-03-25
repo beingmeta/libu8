@@ -431,7 +431,7 @@ dist/debs.done: staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
 	(cd staging/libu8_@U8VERSION@; \
 	 dpkg-buildpackage -b -sa -k${GPGID} -rfakeroot) && \
 	(cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
-	(cd staging; mv -f libu8*_@U8VERSION@* ../dist) && \
+	(cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && \
 	touch dist/debs.done
 
 install-debian install-debs: dist/debs.done
