@@ -1,3 +1,10 @@
+libu8 (2.5.3-28) unstable; urgency=low
+
+  * Update debian/apt build/deploy process
+  * git patch version libu8-2.5.3-43-gfd13b46
+
+ -- Ken Haase <kh@beingmeta.com>  Fri, 25 Mar 2016 16:04:14 +0000
+
 libu8 (2.5.3-27) unstable; urgency=low
 
   * Fix RSA wrapper for older SSL versions
