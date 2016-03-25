@@ -26,6 +26,7 @@ BUILDRPM="lsbrpmbuild"
 RPMDIR=${RPMDIR:-dist}
 RPMFLAGS=${RPMFLAGS:-}
 GPGID=${GPGID:-repoman@beingmeta.com}
+APTREPO=/srv/repo/apt
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
@@ -104,9 +105,11 @@ AC_SUBST(INSTALLDOCS)
 AC_ARG_VAR(RPMDIR,"Location for writing built RPMs")
 AC_ARG_VAR(RPMFLAGS,"Default flags for building RPMs")
 AC_ARG_VAR(GPGID,"Default GnuPG id for signing packages")
+AC_ARG_VAR(APTREPO,"Location of the APT repository")
 AC_SUBST(RPMDIR)
 AC_SUBST(RPMFLAGS)
 AC_SUBST(GPGID)
+AC_SUBST(APTREPO)
 
 AC_PATH_PROG(CLANG,clang,none)
 

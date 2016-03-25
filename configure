@@ -646,6 +646,7 @@ LDFLAGS
 CFLAGS
 CC
 CLANG
+APTREPO
 GPGID
 RPMFLAGS
 RPMDIR
@@ -758,6 +759,7 @@ target_alias
 RPMDIR
 RPMFLAGS
 GPGID
+APTREPO
 CC
 CFLAGS
 LDFLAGS
@@ -1400,6 +1402,7 @@ Some influential environment variables:
   RPMDIR      "Location for writing built RPMs"
   RPMFLAGS    "Default flags for building RPMs"
   GPGID       "Default GnuPG id for signing packages"
+  APTREPO     "Location of the APT repository"
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -2751,6 +2754,7 @@ BUILDRPM="lsbrpmbuild"
 RPMDIR=${RPMDIR:-dist}
 RPMFLAGS=${RPMFLAGS:-}
 GPGID=${GPGID:-repoman@beingmeta.com}
+APTREPO=/srv/repo/apt
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
@@ -2930,6 +2934,8 @@ case $target_os in
 
    ;;
 esac
+
+
 
 
 
