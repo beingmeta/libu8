@@ -456,7 +456,7 @@ update-apt: dist/debs.done
 
 apt-upload upload-apt: dist/debs.done
 	cd dist; for change in *.changes; do \
-	  dupload -c --to ${CODENAME} $${change} && \
+	  dupload -c --nomail --to ${CODENAME} $${change} && \
 	  rm -f $${change}; \
 	done
 
