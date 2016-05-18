@@ -118,13 +118,13 @@ makefile: makefile.in config.status
 	./config.status
 ./config.status: configure
 	./config.status --recheck
-configure: configure.ac
+configure: configure.ac etc/release
 	@if test -f .autoautoconf; then \
 	     echo "REBUILDING configure"; autoconf; \
 	else echo "WARNING: configure may be out of date"; fi
-include/libu8/config.h: include/libu8/config.h.in config.status
+include/libu8/config.h: include/libu8/config.h.in
 	./config.status
-include/libu8/u8source.h: include/libu8/u8source.h.in config.status
+include/libu8/u8source.h: include/libu8/u8source.h.in
 	./config.status
 
 # Fileinfo gets version-related information about a file to pass in
@@ -436,11 +436,13 @@ dist/rpms.zip: dist/rpms.done
 
 # Rules for debian building
 
-dist/debs.done: staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.orig.tar.gz
+dist/debs.built: staging/libu8_@U8VERSION@
 	(cd staging/libu8_@U8VERSION@; \
 	 dpkg-buildpackage -b -sa -k${GPGID} -rfakeroot) && \
 	(cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
 	(cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && \
+	touch dist/debs.built
+dist/debs.done: dist/debs.built
 	touch dist/debs.done
 
 install-debian install-debs: dist/debs.done
