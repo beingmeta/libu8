@@ -646,6 +646,7 @@ LDFLAGS
 CFLAGS
 CC
 CLANG
+CODENAME
 APTREPO
 GPGID
 RPMFLAGS
@@ -715,6 +716,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -737,6 +739,7 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+with_codename
 with_sanitize
 with_optlib
 with_optdir
@@ -804,6 +807,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1056,6 +1060,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1193,7 +1206,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1346,6 +1359,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1387,6 +1401,7 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+--with-codename for distribution
 --with-sanitize=address*|memory|thread
 --with-optlib Use optional library directory
 --with-optdir Use optional header/lib
@@ -2773,6 +2788,7 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
+CODENAME=`lsb_release -cs || echo beingmeta`
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
 
@@ -2978,6 +2994,7 @@ esac
 
 
 
+
 # Extract the first word of "clang", so it can be a program name with args.
 set dummy clang; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
@@ -3019,6 +3036,16 @@ $as_echo "no" >&6; }
 fi
 
 
+
+
+# Check whether --with-codename was given.
+if test "${with_codename+set}" = set; then :
+  withval=$with_codename; with_codename=$withval
+else
+  with_codename=$CODENAME
+fi
+
+CODENAME=$with_codename
 
 
 # Check whether --with-sanitize was given.

@@ -1,0 +1,13 @@
+PACKAGE=${1-:stable}
+DISTRIBUTION=${2-:stable}
+URGENCY=medium
+DATE=`date -R`
+gitid=`git describe`
+version=`git describe | sed -e "s/-g[0123456789ABCDEFabcdef]*$//" | sed -e "s/^framerd-//"`
+echo ${PACKAGE} \(${version}-${DISTRIBUTION}\) ${DISTRIBUTION}\; urgency=${URGENCY}
+echo
+echo "  * ${gitid} point release"
+echo
+echo " -- Repository Manager <repoman@beingmeta.com>  ${DATE}"
+echo
+cat -

@@ -45,6 +45,7 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
+CODENAME=`lsb_release -cs || echo beingmeta`
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
 
@@ -110,8 +111,12 @@ AC_SUBST(RPMDIR)
 AC_SUBST(RPMFLAGS)
 AC_SUBST(GPGID)
 AC_SUBST(APTREPO)
+AC_SUBST(CODENAME)
 
 AC_PATH_PROG(CLANG,clang,none)
+
+AC_ARG_WITH(codename,--with-codename for distribution,with_codename=$withval,with_codename=$CODENAME)
+CODENAME=$with_codename
 
 AC_ARG_WITH(sanitize,--with-sanitize[=address*|memory|thread],with_sanitize=$withval,with_sanitize="none")
 
