@@ -244,5 +244,16 @@ U8_EXPORT u8_string *u8_getfiles(u8_string dirname,int fullpath);
  **/
 U8_EXPORT u8_string *u8_getdirs(u8_string dirname,int fullpath);
 
+/** Returns a selection of the files within a directory.
+    This handles ingoing and outoing conversion of pathnames to the
+    local character set.  Symbolic links are included whether they 
+    resolve to real files or not.
+    @param dirname a utf-8 pathname
+    @param which a mask specifying the kinds of files to return
+    @param fullpath if non-zero, return absolute pathnames
+    @returns a NULL-terminated array of utf-8 strings.
+ **/
+U8_EXPORT u8_string *u8_readdir(u8_string dirname,int which,int fullpath);
+
 #endif
 

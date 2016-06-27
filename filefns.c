@@ -582,7 +582,7 @@ U8_EXPORT u8_string u8_tempdir(u8_string template)
 #define U8_LIST_DIRS 2
 #define JUST_DIRS U8_LIST_DIRS
 #define U8_LIST_LINKS 4
-#define U8_LIST_MAGIC 8 /* None of the above */
+#define U8_LIST_MAGIC 8
 
 #if HAVE_DIRENT_H
 static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
@@ -601,12 +601,21 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
       struct stat fileinfo; char *name=entry->d_name;
       if (!(((name[0]=='.')&&(name[1]=='\0'))||
             ((name[0]=='.')&&(name[1]=='.')&&(name[2]=='\0')))) {
-        u8_string fullpath=u8_mkpath(dirpath,name);
+        u8_string fullpath=u8_mkpath(dirpath,name); int forced=0;
         if (stat(fullpath,&fileinfo)<0) {
           u8_free(fullpath); continue;}
-        if ((which == 0) ||
+	/* If you're listing links and the file isn't a link, check
+	   if the reference itself is a link and force a return. */
+	if ((which&&U8_LIST_LINKS) && (!(S_ISLNK(fileinfo.st_mode))) &&
+	    (!((which&&U8_LIST_DIRS)||(which&&U8_LIST_FILES)))) {
+	  struct stat linkinfo;
+	  if (lstat(fullpath,&linkinfo)<0) {
+	    u8_free(fullpath); continue;}
+	  else if (S_ISLNK(fileinfo.st_mode)) forced=1;
+	  else {}}
+        if ((which == 0) || (forced) ||
 	    ((which&&U8_LIST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
-            ((which&&U8_LIST_FILES) && (S_ISREG(fileinfo.st_mode))) ||
+	    ((which&&U8_LIST_FILES) && (S_ISREG(fileinfo.st_mode))) ||
 	    ((which&&U8_LIST_LINKS) && (S_ISLNK(fileinfo.st_mode))) ||
 	    ((which&&U8_LIST_MAGIC) && 
 	     (!((S_ISDIR(fileinfo.st_mode))||
@@ -689,11 +698,15 @@ U8_EXPORT int u8_rmtree(u8_string dirname)
   else return count;
 }
 
+U8_EXPORT u8_string *u8_readdir(u8_string dirname,int which,int fullpath)
+{
+  return getfiles_helper(dirname,which,fullpath);
+}
+
 U8_EXPORT u8_string *u8_getfiles(u8_string dirname,int fullpath)
 {
   return getfiles_helper(dirname,JUST_FILES,fullpath);
 }
-
 
 U8_EXPORT u8_string *u8_getdirs(u8_string dirname,int fullpath)
 {
