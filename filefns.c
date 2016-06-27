@@ -577,13 +577,6 @@ U8_EXPORT u8_string u8_tempdir(u8_string template)
 
 /* Scanning directories */
 
-#define U8_LIST_FILES 1
-#define JUST_FILES U8_LIST_FILES
-#define U8_LIST_DIRS 2
-#define JUST_DIRS U8_LIST_DIRS
-#define U8_LIST_LINKS 4
-#define U8_LIST_MAGIC 8
-
 #if HAVE_DIRENT_H
 static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
 {
@@ -606,18 +599,18 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
           u8_free(fullpath); continue;}
 	/* If you're listing links and the file isn't a link, check
 	   if the reference itself is a link and force a return. */
-	if ((which&&U8_LIST_LINKS) && (!(S_ISLNK(fileinfo.st_mode))) &&
-	    (!((which&&U8_LIST_DIRS)||(which&&U8_LIST_FILES)))) {
+	if ((which&U8_LIST_LINKS) && (!(S_ISLNK(fileinfo.st_mode))) &&
+	    (!((which&U8_LIST_DIRS)||(which&U8_LIST_FILES)))) {
 	  struct stat linkinfo;
 	  if (lstat(fullpath,&linkinfo)<0) {
 	    u8_free(fullpath); continue;}
-	  else if (S_ISLNK(fileinfo.st_mode)) forced=1;
+	  else if (S_ISLNK(linkinfo.st_mode)) forced=1;
 	  else {}}
         if ((which == 0) || (forced) ||
-	    ((which&&U8_LIST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
-	    ((which&&U8_LIST_FILES) && (S_ISREG(fileinfo.st_mode))) ||
-	    ((which&&U8_LIST_LINKS) && (S_ISLNK(fileinfo.st_mode))) ||
-	    ((which&&U8_LIST_MAGIC) && 
+	    ((which&U8_LIST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
+	    ((which&U8_LIST_FILES) && (S_ISREG(fileinfo.st_mode))) ||
+	    ((which&U8_LIST_LINKS) && (S_ISLNK(fileinfo.st_mode))) ||
+	    ((which&U8_LIST_MAGIC) && 
 	     (!((S_ISDIR(fileinfo.st_mode))||
 		(S_ISREG(fileinfo.st_mode))||
 		(S_ISLNK(fileinfo.st_mode)))))) {
@@ -705,12 +698,12 @@ U8_EXPORT u8_string *u8_readdir(u8_string dirname,int which,int fullpath)
 
 U8_EXPORT u8_string *u8_getfiles(u8_string dirname,int fullpath)
 {
-  return getfiles_helper(dirname,JUST_FILES,fullpath);
+  return getfiles_helper(dirname,U8_LIST_FILES,fullpath);
 }
 
 U8_EXPORT u8_string *u8_getdirs(u8_string dirname,int fullpath)
 {
-  return getfiles_helper(dirname,JUST_DIRS,fullpath);
+  return getfiles_helper(dirname,U8_LIST_DIRS,fullpath);
 }
 
 /* Init function */

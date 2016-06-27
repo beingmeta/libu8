@@ -255,5 +255,10 @@ U8_EXPORT u8_string *u8_getdirs(u8_string dirname,int fullpath);
  **/
 U8_EXPORT u8_string *u8_readdir(u8_string dirname,int which,int fullpath);
 
+#define U8_LIST_FILES 1
+#define U8_LIST_DIRS 2
+#define U8_LIST_LINKS 4
+#define U8_LIST_MAGIC 8
+
 #endif
 
