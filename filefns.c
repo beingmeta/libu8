@@ -577,8 +577,12 @@ U8_EXPORT u8_string u8_tempdir(u8_string template)
 
 /* Scanning directories */
 
-#define JUST_FILES 1
-#define JUST_DIRS 2
+#define U8_LIST_FILES 1
+#define JUST_FILES U8_LIST_FILES
+#define U8_LIST_DIRS 2
+#define JUST_DIRS U8_LIST_DIRS
+#define U8_LIST_LINKS 4
+#define U8_LIST_MAGIC 8 /* None of the above */
 
 #if HAVE_DIRENT_H
 static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
@@ -600,8 +604,14 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
         u8_string fullpath=u8_mkpath(dirpath,name);
         if (stat(fullpath,&fileinfo)<0) {
           u8_free(fullpath); continue;}
-        if (((which==JUST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
-            ((which==JUST_FILES) && (S_ISREG(fileinfo.st_mode)))) {
+        if ((which == 0) ||
+	    ((which&&U8_LIST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
+            ((which&&U8_LIST_FILES) && (S_ISREG(fileinfo.st_mode))) ||
+	    ((which&&U8_LIST_LINKS) && (S_ISLNK(fileinfo.st_mode))) ||
+	    ((which&&U8_LIST_MAGIC) && 
+	     (!((S_ISDIR(fileinfo.st_mode))||
+		(S_ISREG(fileinfo.st_mode))||
+		(S_ISLNK(fileinfo.st_mode)))))) {
           if (n_results+1>=max_results) {
             results=u8_realloc_n(results,max_results*2,u8_string);
             max_results=max_results*2;}
