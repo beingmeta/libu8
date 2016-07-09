@@ -420,8 +420,10 @@ U8_EXPORT
 */
 int u8_get_entity(struct U8_INPUT *f)
 {
-  if ((f->u8_inptr>(f->u8_inlim-16)) && (f->u8_fillfn))
+  const u8_byte *semi=strchr(f->u8_inptr,';');
+  if (((semi==NULL)||(semi>=f->u8_inlim))&&(f->u8_fillfn)) {
     f->u8_fillfn(f);
+    semi=strchr(f->u8_inptr,';');}
   if (f->u8_inptr==f->u8_inlim) return -1;
   else {
     const u8_byte *start=f->u8_inptr; u8_string end=NULL;
