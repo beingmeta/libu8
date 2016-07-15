@@ -515,6 +515,15 @@ U8_EXPORT u8_output u8_default_output;
 **/
 U8_EXPORT int u8_get_entity(U8_INPUT *in);
 
+/** Reads and interprets an XML character entity from @a in.
+    @param in a pointer to a U8_INPUT stream positioned just after
+      the ampersand (&) of an XML character entity
+    @param chars a string of ascii characters which can terminate
+      entity references
+    @returns a unicode code point
+**/
+U8_EXPORT int u8_get_entity_x(U8_INPUT *in,char *chars);
+
 U8_EXPORT void u8_flush(struct U8_OUTPUT *);
 U8_EXPORT void u8_flush_input(struct U8_INPUT *);
 

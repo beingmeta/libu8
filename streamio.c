@@ -55,6 +55,18 @@ U8_EXPORT void _U8_INIT_INPUT_X(u8_input s,int n,u8_byte *buf,int bits)
   U8_INIT_INPUT_X(s,n,buf,bits);
 }
 
+static u8_string strchrs(u8_string s,char *chars,u8_string lim)
+{
+  char *c=chars; 
+  u8_string result=NULL;
+  while (*c != '\0') {
+    u8_string attempt=strchr(s,*c++);
+    if ((attempt!=NULL)&&((lim==NULL)||(attempt<lim))) {
+      if (result==NULL) result=attempt;
+      else if (attempt<result) result=attempt;}}
+  return result;
+}
+
 U8_EXPORT
 /* u8_grow_stream:
      Arguments: a pointer to a string stream and a number of u8_inbuf
@@ -440,6 +452,32 @@ int u8_get_entity(struct U8_INPUT *f)
     else return -1;}
 }
 
+U8_EXPORT
+/* u8_get_entity:
+     Arguments: an input stream
+     Result: a unicode pointer or -1
+*/
+int u8_get_entity_x(struct U8_INPUT *f,char *chars)
+{
+  const u8_byte *semi=strchrs(f->u8_inptr,chars,f->u8_inlim);
+  if (((semi==NULL)||(semi>=f->u8_inlim))&&(f->u8_fillfn)) {
+    f->u8_fillfn(f);
+    semi=strchrs(f->u8_inptr,chars,f->u8_inlim);}
+  if (f->u8_inptr==f->u8_inlim) return -1;
+  else {
+    const u8_byte *start=f->u8_inptr; u8_string end=NULL;
+    int code=u8_parse_entity(start,&end);
+    if ((code<0) && (end) && (f->u8_fillfn)) {
+      /* If code<0 and end was set, that meant it got started but
+         didn't finish, so we call the u8_fillfn and try again. */
+      f->u8_fillfn(f);
+      code=u8_parse_entity(start,&end);}
+    else {}
+    if (code>=0) {
+      f->u8_inptr=(u8_byte *)end;
+      return code;}
+    else return -1;}
+}
 
 /* Opening string input and output streams */
 
