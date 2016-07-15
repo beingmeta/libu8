@@ -1,3 +1,9 @@
+libu8 (2.5.3-30) stable; urgency=low
+
+  * Am I stable now?
+
+ -- Ken Haase <kh@beingmeta.com>  Sat, 26 Mar 2016 16:29:05 -0400
+
 libu8 (2.5.3-29) unstable; urgency=low
 
   * Updated build for new repo
