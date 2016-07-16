@@ -1,7 +1,7 @@
 Source: libu8
 Priority: optional
 Maintainer: Ken Haase <kh@beingmeta.com>
-Build-Depends: debhelper (>= 8.0.0), autotools-dev
+Build-Depends: debhelper (>= 8.0.0), autotools-dev, debsigs, devscripts
 Standards-Version: 3.9.4
 Section: libs
 Homepage: http://www.libu8.org/
