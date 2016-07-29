@@ -22,6 +22,7 @@
 
 #include "libu8/u8stringfns.h"
 #include "libu8/u8streamio.h"
+#include "libu8/u8logging.h"
 #include "libu8/libu8io.h"
 #include "libu8/u8stdio.h"
 
@@ -58,8 +59,10 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
   else {}
 #endif
   if (priority<0) {
-    if (c) fprintf(stdout,"[%s (%s) %s]\n",prefix,c,indented);
-    else fprintf(stdout,"[%s %s]\n",prefix,indented);
+    if (c) fprintf(stdout,"%s%s (%s) %s%s",
+		   u8_logprefix,prefix,c,indented,u8_logsuffix);
+    else fprintf(stdout,"%s%s %s%s",
+		 u8_logprefix,prefix,indented,u8_logsuffix);
     fflush(stdout);
     if ((indented)&&(msg!=indented)) u8_free(indented);
     return 1;}
@@ -69,41 +72,46 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
     if ((priority<=u8_stderr_loglevel) ||
         (priority<=u8_stdout_loglevel)) {
       if ((prefix) && (c))
-        fprintf(stderr,"[%s %s (%s): %s]\n",
-                prefix,u8_loglevels[priority],c,indented);
+        fprintf(stderr,"%s%s %s (%s): %s%s",
+                u8_logprefix,prefix,u8_loglevels[priority],
+		c,indented,u8_logsuffix);
       else if (prefix)
-        fprintf(stderr,"[%s %s: %s]\n",
-                prefix,u8_loglevels[priority],indented);
+        fprintf(stderr,"%s%s %s: %s%s",
+                u8_logprefix,prefix,u8_loglevels[priority],indented,
+		u8_logsuffix);
       else if (c)
-        fprintf(stderr,"[%s (%s): %s]\n",
-                u8_loglevels[priority],c,indented);
-      else fprintf(stderr,"[%s: %s]\n",u8_loglevels[priority],indented);
+        fprintf(stderr,"%s%s (%s): %s%s",
+                u8_logprefix,u8_loglevels[priority],c,indented,u8_logsuffix);
+      else fprintf(stderr,"%s%s: %s%s",
+		   u8_logprefix,u8_loglevels[priority],indented,u8_logsuffix);
       if ((indented)&&(msg!=indented)) u8_free(indented);
       return 1;}
     else return 0;}
   if (priority<=u8_stderr_loglevel) {
     if ((prefix) && (c))
-      fprintf(stderr,"[%s %s (%s): %s]\n",
-              prefix,u8_loglevels[priority],c,indented);
+      fprintf(stderr,"%s%s %s (%s): %s%s",
+              u8_logprefix,prefix,u8_loglevels[priority],c,indented,u8_logsuffix);
     else if (prefix)
-      fprintf(stderr,"[%s %s: %s]\n",
-              prefix,u8_loglevels[priority],indented);
+      fprintf(stderr,"%s%s %s: %s%s",
+              u8_logprefix,prefix,u8_loglevels[priority],indented,u8_logsuffix);
     else if (c)
-      fprintf(stderr,"[%s (%s): %s]\n",
-              u8_loglevels[priority],c,indented);
-    else fprintf(stderr,"[%s: %s]\n",u8_loglevels[priority],indented);
+      fprintf(stderr,"%s%s (%s): %s%s",
+              u8_logprefix,u8_loglevels[priority],c,indented,u8_logsuffix);
+    else fprintf(stderr,"%s%s: %s%s",
+		 u8_logprefix,u8_loglevels[priority],indented,u8_logsuffix);
     output=1;}
   if (priority<=u8_stdout_loglevel) {
     if ((prefix) && (c))
-      fprintf(stdout,"[%s %s (%s): %s]\n",
-              prefix,u8_loglevels[priority],c,indented);
+      fprintf(stdout,"%s%s %s (%s): %s%s",
+              u8_logprefix,prefix,u8_loglevels[priority],c,indented,u8_logsuffix);
     else if (prefix)
-      fprintf(stdout,"[%s %s: %s]\n",
-              prefix,u8_loglevels[priority],indented);
+      fprintf(stdout,"%s%s %s: %s%s",
+              u8_logprefix,prefix,u8_loglevels[priority],indented,u8_logsuffix);
     else if (c)
-      fprintf(stdout,"[%s (%s): %s]\n",
-              u8_loglevels[priority],c,indented);
-    else fprintf(stdout,"[%s: %s]\n",u8_loglevels[priority],indented);
+      fprintf(stdout,"%s%s (%s): %s%s",
+              u8_logprefix,u8_loglevels[priority],c,indented,u8_logsuffix);
+    else fprintf(stdout,"%s%s: %s%s",
+		 u8_logprefix,u8_loglevels[priority],indented,u8_logsuffix);
     fflush(stdout);
     output=1;}
     if ((indented)&&(msg!=indented)) u8_free(indented);
@@ -170,47 +178,6 @@ U8_EXPORT void u8_use_syslog(int flag)
 {
   use_syslog=flag;
 }
-
-#if 0
-static void notice(u8_string msg)
-{
-  u8_byte buf[512];
-  u8_string prefix=u8_message_prefix(buf,512);
-  if (prefix)
-    fprintf(stdout,"[%s %s]\n",prefix,msg);
-  else fprintf(stdout,"[%s]\n",msg);
-#if HAVE_SYSLOG
-  if (use_syslog>1) {
-    if (u8_logging_initialized==0) u8_initialize_logging();
-    syslog(LOG_NOTICE,msg);}
-#endif
-  fflush(stdout);
-}
-
-static void warn(u8_string msg)
-{
-  u8_byte buf[512];
-  u8_string prefix=u8_message_prefix(buf,512);
-#if HAVE_SYSLOG
-  if (use_syslog>1) {
-    if (u8_logging_initialized==0) u8_initialize_logging();
-    syslog(LOG_WARNING,"%s",msg);}
-  else {}
-#endif
-  if (stdoutISstderr<0) u8_check_stdio();
-  if (!(stdoutISstderr))
-    if (prefix)
-      fprintf(stdout,"[%s %s]\n",prefix,msg);
-    else fprintf(stdout,"[%s]\n",msg);
-  else {}
-  if (prefix)
-    fprintf(stderr,"[%s %s]\n",prefix,msg);
-  else fprintf(stderr,"[%s]\n",msg);
-  /* Usually not neccessary on stderr */
-  fflush(stdout);
-  fflush(stderr);
-}
-#endif
 
 /* u8_fprintf */
 
