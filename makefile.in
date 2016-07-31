@@ -463,8 +463,13 @@ apt-upload upload-apt: dist/debs.done
 
 .PHONY: upload-apt apt-upload update-apt install-debian install-debs
 
-build-setup.apt setup-build.apt:
+
+build-setup.debian:
 	@SUDO@apt-get install libssl-dev uuid uuid-dev
+
+build-setup-ubuntu: build-setup.debian
+
+.PHONY: build-setup.debian build-setup.ubuntu
 
 #	deb-s3 upload --bucket=repo.beingmeta.com \
 #		      --component=$(COMPONENT) \
