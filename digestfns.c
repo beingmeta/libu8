@@ -122,7 +122,7 @@ typedef struct {
 } MD5_CTX;
 
 void MD5Init(MD5_CTX *);
-void MD5Update(MD5_CTX *, unsigned char *, unsigned int);
+void MD5Update(MD5_CTX *, const unsigned char *, unsigned int);
 void MD5Final(unsigned char [16], MD5_CTX *);
 
 /* Constants for MD5Transform routine.
@@ -145,9 +145,9 @@ void MD5Final(unsigned char [16], MD5_CTX *);
 #define S43 15
 #define S44 21
 
-static void MD5Transform (UINT4 [4], unsigned char [64]);
+static void MD5Transform (UINT4 [4], const unsigned char [64]);
 static void Encode (unsigned char *, UINT4 *, unsigned int);
-static void Decode (UINT4 *, unsigned char *, unsigned int);
+static void Decode (UINT4 *, const unsigned char *, unsigned int);
 
 static unsigned char PADDING[64] = {
   0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -205,7 +205,7 @@ void MD5Init (MD5_CTX *context) /* context */
   operation, processing another message block, and updating the
   context. */
 void MD5Update (MD5_CTX *context, /* context */
-                unsigned char *input, /* input block */
+                const unsigned char *input, /* input block */
                 unsigned int inputLen) /* length of input block */
 {
   unsigned int i, index, partLen;
@@ -268,7 +268,7 @@ void MD5Final (unsigned char digest[16],MD5_CTX *context)
 }
 
 /* MD5 basic transformation. Transforms state based on block. */
-static void MD5Transform (UINT4 state[4],unsigned char block[64])
+static void MD5Transform (UINT4 state[4],const unsigned char block[64])
 {
   UINT4 a = state[0], b = state[1], c = state[2], d = state[3], x[16];
 
@@ -371,7 +371,7 @@ static void Encode (unsigned char *output,UINT4 *input,unsigned int len)
 
 /* Decodes input (unsigned char) into output (UINT4). Assumes len is
   a multiple of 4. */
-static void Decode (UINT4 *output,unsigned char *input,unsigned int len)
+static void Decode (UINT4 *output,const unsigned char *input,unsigned int len)
 {
   unsigned int i, j;
 
@@ -512,9 +512,9 @@ typedef struct {
     unsigned char buffer[64];
 } SHA1_CTX;
 
-void SHA1Transform(unsigned long state[5], unsigned char buffer[64]);
+void SHA1Transform(unsigned long state[5], const unsigned char buffer[64]);
 void SHA1Init(SHA1_CTX* context);
-void SHA1Update(SHA1_CTX* context, unsigned char* data, unsigned int len);
+void SHA1Update(SHA1_CTX* context, const unsigned char* data, unsigned int len);
 void SHA1Final(unsigned char digest[20], SHA1_CTX* context);
 
 #define rol(value, bits) (((value) << (bits)) | ((value) >> (32 - (bits))))
@@ -540,7 +540,7 @@ void SHA1Final(unsigned char digest[20], SHA1_CTX* context);
 
 /* Hash a single 512-bit block. This is the core of the algorithm. */
 
-void SHA1Transform(unsigned long state[5], unsigned char buffer[64])
+void SHA1Transform(unsigned long state[5], const unsigned char buffer[64])
 {
 unsigned long a, b, c, d, e;
 typedef union {
@@ -609,7 +609,7 @@ void SHA1Init(SHA1_CTX* context)
 
 /* Run your data through this. */
 
-void SHA1Update(SHA1_CTX* context, unsigned char* data, unsigned int len)
+void SHA1Update(SHA1_CTX* context, const unsigned char* data, unsigned int len)
 {
 unsigned int i, j;
 
@@ -662,7 +662,7 @@ unsigned char finalcount[8];
 
 /* Digests a string and returns the result */
 U8_EXPORT unsigned char *u8_sha1
-  (unsigned char *data,int len,unsigned char *result)
+  (const unsigned char *data,int len,unsigned char *result)
 {
   SHA1_CTX context;
   unsigned char *digest=((result==NULL) ? (u8_malloc(20)) : (result));
@@ -675,13 +675,13 @@ U8_EXPORT unsigned char *u8_sha1
 
 /* Not implemented */
 U8_EXPORT unsigned char *u8_sha224
-  (unsigned char *data,int len,unsigned char *result)
+  (const unsigned char *data,int len,unsigned char *result)
 {
   u8_seterr("SHA224 not available","u8_sha224",NULL);
   return NULL;
 }
 U8_EXPORT unsigned char *u8_sha256
-  (unsigned char *data,int len,unsigned char *result)
+  (const unsigned char *data,int len,unsigned char *result)
 {
   u8_seterr("SHA256 not available","u8_sha256",NULL);
   return NULL;
