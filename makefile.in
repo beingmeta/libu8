@@ -166,7 +166,7 @@ lib/%@suffix@.so:
 lib/%@suffix@.dylib:
 	@echo MACLIBTOOL $@
 	@$(MACLIBTOOL) -install_name @rpath/lib/$(*F).@U8MAJOR@.dylib \
-		$DYLIB_FLAGS -o $@ $^
+		$(DYLIB_FLAGS) -o $@ $^
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 
 $(LIBINSTALLDIR)/%.a: lib/%.a
