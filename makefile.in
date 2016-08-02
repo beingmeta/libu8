@@ -6,6 +6,7 @@ CFLAGS    =-DLIBU8_SOURCE=1 -g -O2  -I./include @CFLAGS@ -I./include $(XCFLAGS) 
 XLDFLAGS  =
 LDFLAGS   = @LDFLAGS@ $(EFENCE)
 LIBS      = @LIBS@ $(EFENCE) -lm
+DYLIB_FLAGS = -compatibility_version @U8MAJOR@.0.0 -current_version @U8MAJOR@.@U8MINOR@.@U8RELEASE@
 U8VERSION = @U8VERSION@
 BUILDMODE:= `cat buildmode`
 
@@ -164,7 +165,8 @@ lib/%@suffix@.so:
 	@ln -sf $(@F) $(@D)/$(@F).@U8MAJOR@
 lib/%@suffix@.dylib:
 	@echo MACLIBTOOL $@
-	@$(MACLIBTOOL) -install_name $(*F).@U8MAJOR@.dylib -o $@ $^
+	@$(MACLIBTOOL) -install_name @rpath/lib/$(*F).@U8MAJOR@.dylib \
+		@DYLIB_FLAGS@ -o $@ $^
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 
 $(LIBINSTALLDIR)/%.a: lib/%.a
