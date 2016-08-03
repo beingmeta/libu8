@@ -45,7 +45,10 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
-CODENAME=`lsb_release -cs || echo beingmeta`
+
+if which lsb_release 2>&1 > /dev/null; then
+   CODENAME=`lsb_release -cs || echo beingmeta`
+fi
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
 
