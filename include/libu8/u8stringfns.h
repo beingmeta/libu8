@@ -63,11 +63,45 @@ U8_EXPORT int u8_has_prefix(u8_string string,u8_string prefix,int casefold);
 **/
 U8_EXPORT int u8_has_suffix(u8_string string,u8_string suffix,int casefold);
 
+/** Searches for a character in a string
+    @param string a UTF-8 string
+    @param chars a sequence of characters in a UTF-8 string
+    @param order an integer indicating which match is returned
+    @returns a substring of 'string' or NULL
+
+    This returns a pointer to the place in 'string' where any of the
+    characters 'chars' is found or NULL if none of them are found.  If
+    order is 0 , return the string based on the first character (in
+    'chars') to match, otherwise priority is based on where the match
+    occurs in the searched 'string'.
+
+    If order is > 0, this returns the earliest first occurence,
+    if order is < 0, this return the furthest first result.
+**/
+U8_EXPORT u8_string u8_strchrs(u8_string s,u8_string chars,int order);
+
+/** Searches for a set of strings in a string
+    @param string a UTF-8 string
+    @param chars a NUL-terminated 
+    @param order an int
+    @returns a substring of 'string' or NULL
+
+    This returns a place in 'string' where any of the strings in
+    'strings' occurs; order determines which match is returned (when
+    there are several).  If order is 0, priority is based on the order
+    of the strings in 'strings', otherwise, priority is based on where
+    the match occurs in the searched 'string'.
+
+    If order is > 0, this returns the earliest first occurence,
+    if order is < 0, this return the furthest first result.
+
+**/
+U8_EXPORT u8_string u8_strstrs(u8_string s,u8_string strings[],int order);
+
 /** Returns a decomposed version of a UTF-8 string.
     @param string a UTF-8 string
     @returns a UTF-8 string with all composed characters
       broken down
-
 **/
 U8_EXPORT u8_string u8_decompose(u8_string string);
 

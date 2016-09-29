@@ -426,6 +426,49 @@ U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent)
     return (u8_string)output;}
 }
 
+/* Seimp */
+
+U8_EXPORT u8_string u8_strchrs(u8_string s,u8_string chars,int order)
+{
+  u8_string result=NULL;
+  const u8_byte *scan=chars; while (*scan) {
+    u8_byte _buf[12], *needle=NULL;
+    const u8_byte *start=scan;
+    int c=u8_sgetc(&scan);
+    const u8_byte *end=scan; 
+    if (end>start+1) {
+      memcpy(_buf,start,end-start);
+      _buf[end-start]='\0';
+      needle=_buf;}
+    u8_string match=(c<128)? (strchr(s,c)) : (strstr(s,needle));
+    if (match==NULL) {}
+    else if (order==0)
+      return match;
+    else if (result==NULL)
+      result=match;
+    else if ((order>0)?(match>result):(match<result))
+      result=match;
+    else {}}
+  return result;
+}
+
+U8_EXPORT u8_string u8_strstrs(u8_string s,u8_string strings[],int order)
+{
+  u8_string result=NULL;
+  u8_string *scan=strings; while (*scan) {
+    u8_string needle=*scan++;
+    u8_string match=strstr(s,needle);
+    if (match==NULL) {}
+    else if (order == 0)
+      return match;
+    else if (result==NULL)
+      result=match;
+    else if ((order>0)?(match>result):(match<result))
+      result=match;
+    else {}}
+  return result;
+}
+
 /* Initialization function (just records source file info) */
 
 U8_EXPORT void u8_init_stringfns_c()
