@@ -411,7 +411,7 @@ U8_EXPORT u8_string u8_find_file(u8_string name,u8_string searchpath,
   u8_string probename;
   memset(buf,0,buflen);
   if (testp==NULL) testp=u8_file_existsp;
-  while ((end=strchr(start,':'))) {
+  while ((end=u8_strchrs(start,":, ;"))) {
     ins=strchr(start,'%');
     if ((ins==NULL) || (ins>end)) ins=NULL;
     if (ins) instoo=strchr(ins+1,'%');
