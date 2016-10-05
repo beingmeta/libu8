@@ -441,11 +441,13 @@ dist/rpms.zip: dist/rpms.done
 dist/debs.built: staging/libu8_@U8VERSION@
 	(cd staging/libu8_@U8VERSION@; \
 	 dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
+	touch debs.built
+dist/debs.signed: dist/debs.built
 	(cd staging; debsign --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
 	(cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
 	(cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && \
-	touch dist/debs.built
-dist/debs.done: dist/debs.built
+	touch dist/debs.signed
+dist/debs.done: dist/debs.signed
 	touch dist/debs.done
 
 install-debian install-debs: dist/debs.done
@@ -457,7 +459,7 @@ update-apt: dist/debs.done
 	  rm -f $${change}; \
 	done
 
-apt-upload upload-apt: dist/debs.done
+apt-upload upload-apt upload-deb: dist/debs.done
 	cd dist; for change in *.changes; do \
 	  dupload -c --nomail --to ${CODENAME} $${change} && \
 	  rm -f $${change}; \
