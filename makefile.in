@@ -441,7 +441,7 @@ dist/rpms.zip: dist/rpms.done
 dist/debs.built: staging/libu8_@U8VERSION@
 	(cd staging/libu8_@U8VERSION@; \
 	 dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
-	touch debs.built
+	touch dist/debs.built
 dist/debs.signed: dist/debs.built
 	(cd staging; debsign --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
 	(cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
