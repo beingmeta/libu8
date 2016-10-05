@@ -346,7 +346,8 @@ dist/rpms.installed: dist/rpms.done
 	@SUDO@ rpm -Uvh dist/*.rpm && touch $@
 
 cleandist cleanrpms cleandeb rpmclean debclean:
-	rm -rf dist/rpms.done dist/rpms.ready dist/debs.done dist/debs.ready
+	rm -rf dist/rpms.done dist/rpms.ready
+	rm -rf dist/debs.built dist/debs.signed dist/debs.done
 	rm -f dist/*.deb dist/*.tar dist/*.gz dist/*.changes dist/*.dsc
 	find dist -name "*.rpm" | xargs -r rm
 	rm -rf staging/libu8*
