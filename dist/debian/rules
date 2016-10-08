@@ -10,3 +10,5 @@
 override_dh_auto_configure:
 	dh_auto_configure -- --without-sudo --libdir=$(DESTDIR)/usr/lib
 
+override_dh_strip:
+	dh_strip -plibu8 --dbg-package=libu8-dbg

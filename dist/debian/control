@@ -33,3 +33,13 @@ Description:
  Provides utility functions of various sorts, especially for
  dealing with UTF-8 text, but also common layers to libraries
  for handling times, encryption, pathnames, network functions, etc.
+
+Package: libu8-dbg
+Architecture: any
+Section: debug
+Depends: 
+    libu8 (= ${binary:Version}),
+    ${misc:Depends}
+Description: This package contains the debugging symbols for libu8
+
+
