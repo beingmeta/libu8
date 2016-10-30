@@ -419,8 +419,11 @@ U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details)
     exit(1);}
   else {
     if (!(cxt)) cxt=c->u8c_label;
-    u8_seterr(ex,cxt,details);
-    u8_throw_contour(c);}
+    c->u8c_condition=ex; c->u8c_excontext=cxt;
+    if (details) {
+      strncpy(c->u8c_exdetails,details,sizeof(c->u8c_exdetails)-1);}
+    c->u8c_flags|=U8_CONTOUR_EXCEPTIONAL;
+    u8_throw_contour(NULL);}
 }
 
 U8_EXPORT void u8_set_error_handler
