@@ -409,9 +409,16 @@ U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details)
 {
   u8_contour c=u8_dynamic_contour;
   if (!(c)) {
-    u8_log(LOG_CRIT,ex,"In context %s: %s",cxt,details);
+    if ((cxt)&&(details))
+      u8_log(LOG_CRIT,ex,"In context %s: %s",cxt,details);
+    else if (cxt)
+      u8_log(LOG_CRIT,ex,"In context %s",cxt);
+    else if (details)
+      u8_log(LOG_CRIT,ex,"Somewhere: %s",details);
+    else u8_log(LOG_CRIT,ex,"somewhere");
     exit(1);}
   else {
+    if (!(cxt)) cxt=c->u8c_label;
     u8_seterr(ex,cxt,details);
     u8_throw_contour(c);}
 }
