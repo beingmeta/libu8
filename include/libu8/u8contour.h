@@ -69,7 +69,7 @@ U8_EXPORT u8_condition u8_BadDynamicContour;
 /* Maybe this should also have a queue of cleanup functions */
 #define U8_CONTOUR_FIELDS \
   const unsigned char *u8c_label; unsigned int u8c_flags;    \
-  int u8c_depth; jmp_buf u8c_jmpbuf;              \
+  int u8c_depth; sigjmp_buf u8c_jmpbuf;              \
   struct U8_CONTOUR *u8c_outer_contour;                          \
   int u8c_n_blocks, u8c_max_blocks;               \
   void **u8c_blocks
@@ -130,8 +130,8 @@ static MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
 #define U8_WITH_CONTOUR(label,flags)                            \
    struct U8_CONTOUR _u8_contour_struct;                        \
    struct U8_CONTOUR *_u8_contour=&_u8_contour_struct;          \
-   U8_INIT_CONTOUR(_u8_contour,label,flags);                   \
-   if (setjmp(_u8_contour_struct.u8c_jmpbuf) == 0) {         \
+   U8_INIT_CONTOUR(_u8_contour,label,flags);                    \
+   if (sigsetjmp(_u8_contour_struct.u8c_jmpbuf, 1) == 0) {      \
      u8_push_contour(&(_u8_contour_struct));
 #define U8_ON_EXCEPTION u8_pop_contour(_u8_contour);} else {
 #define U8_END_EXCEPTION                                     \
@@ -253,7 +253,7 @@ static void u8_throw_contour(u8_contour contour)
 #else
   u8_dynamic_contour=next;
 #endif
-  longjmp(next->u8c_jmpbuf,1);
+  siglongjmp(next->u8c_jmpbuf,1);
 }
 #else
 #define u8_push_contour(ctr) _u8_push_contour(ctr)
