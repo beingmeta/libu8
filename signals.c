@@ -69,19 +69,7 @@ static u8_condition signum_names[]=
   {"SIG0", "SIG1", "SIG2", "SIG3", "SIG4", "SIG5", "SIG6", "SIG7", "SIG8",
    "SIG9", "SIG10", "SIG11", "SIG12", "SIG13", "SIG14", "SIG15", "SIG16", 
    "SIG17", "SIG18", "SIG19", "SIG20", "SIG21", "SIG22", "SIG23", "SIG24",
-   "SIG25", "SIG26", "SIG27", "SIG28", "SIG29", "SIG30", "SIG31", "SIG32",
-   "SIG33", "SIG34", "SIG35", "SIG36", "SIG37", "SIG38", "SIG39", "SIG40",
-   "SIG41", "SIG42", "SIG43", "SIG44", "SIG45", "SIG46", "SIG47", "SIG48",
-   "SIG49", "SIG50", "SIG51", "SIG52", "SIG53", "SIG54", "SIG55", "SIG56",
-   "SIG57", "SIG58", "SIG59", "SIG60", "SIG61", "SIG62", "SIG63", "SIG64",
-   "SIG65", "SIG66", "SIG67", "SIG68", "SIG69", "SIG70", "SIG71", "SIG72",
-   "SIG73", "SIG74", "SIG75", "SIG76", "SIG77", "SIG78", "SIG79", "SIG80",
-   "SIG81", "SIG82", "SIG83", "SIG84", "SIG85", "SIG86", "SIG87", "SIG88",
-   "SIG89", "SIG90", "SIG91", "SIG92", "SIG93", "SIG94", "SIG95", "SIG96",
-   "SIG97", "SIG98", "SIG99", "SIG100", "SIG101", "SIG102", "SIG103", "SIG104",
-   "SIG105", "SIG106", "SIG107", "SIG108", "SIG109", "SIG110", "SIG111", "SIG112",
-   "SIG113", "SIG114", "SIG115", "SIG116", "SIG117", "SIG118", "SIG119", "SIG120",
-   "SIG121", "SIG122", "SIG123", "SIG124", "SIG125", "SIG126", "SIG127"};
+   "SIG25", "SIG26", "SIG27", "SIG28", "SIG29", "SIG30", "SIG31", "SIG32"};
 
 U8_EXPORT u8_string u8_signal_name(int signum)
 {
@@ -163,7 +151,7 @@ U8_EXPORT u8_string u8_signal_name(int signum)
   case SIGUNUSED: return u8_SIGUNUSED;
 #endif
   default:
-    if (signum<128)
+    if (signum<32)
       return signum_names[signum];
     else return u8_UnknownSignal;
   }
