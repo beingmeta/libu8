@@ -64,6 +64,12 @@ U8_EXPORT u8_condition u8_UnknownSignal,
 **/
 U8_EXPORT u8_string u8_signal_name(int signum);
 
+/** Gets a signal number for a name
+   @param name the name of a signal (e.g. SIGSEGV)
+   @returns a signal (1-31) or -1
+**/
+U8_EXPORT int u8_name2signal(u8_string name);
+
 /** Raises a u8_condition based on a signal number.
     This is designed to be used as a signal handler with the
     signal() call. Note that it is usually preferred to use sigaction,

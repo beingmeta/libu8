@@ -157,6 +157,127 @@ U8_EXPORT u8_string u8_signal_name(int signum)
   }
 }
 
+U8_EXPORT int u8_name2signal(u8_string name)
+{
+  int off=0;
+  if (strncasecmp(name,"sig",3)==0) off=3;
+  if (strcasecmp(name+off,"HUP")==0)
+    return SIGHUP;
+  else if (strcasecmp(name+off,"INT")==0)
+    return SIGINT;
+  else if (strcasecmp(name+off,"QUIT")==0)
+    return SIGQUIT;
+  else if (strcasecmp(name+off,"ILL")==0)
+    return SIGILL;
+  else if (strcasecmp(name+off,"ABRT")==0)
+    return SIGABRT;
+  else if (strcasecmp(name+off,"FPE")==0)
+    return SIGFPE;
+  else if (strcasecmp(name+off,"KILL")==0)
+    return SIGKILL;
+  else if (strcasecmp(name+off,"SEGV")==0)
+    return SIGSEGV;
+  else if (strcasecmp(name+off,"PIPE")==0)
+    return SIGPIPE;
+  else if (strcasecmp(name+off,"ALRM")==0)
+    return SIGALRM;
+  else if (strcasecmp(name+off,"TERM")==0)
+    return SIGTERM;
+  else if (strcasecmp(name+off,"USR1")==0)
+    return SIGUSR1;
+  else if (strcasecmp(name+off,"USR2")==0)
+    return SIGUSR2;
+  else if (strcasecmp(name+off,"CHLD")==0)
+    return SIGCHLD;
+  else if (strcasecmp(name+off,"CONT")==0)
+    return SIGCONT;
+  else if (strcasecmp(name+off,"STOP")==0)
+    return SIGSTOP;
+  else if (strcasecmp(name+off,"TSTP")==0)
+    return SIGTSTP;
+  else if (strcasecmp(name+off,"TTIN")==0)
+    return SIGTTIN;
+  else if (strcasecmp(name+off,"TTOU")==0)
+    return SIGTTOU;
+#ifdef SIGBUS
+  else if (strcasecmp(name+off,"BUS")==0)
+    return SIGBUS;
+#endif
+#ifdef SIGPOLL
+  else if (strcasecmp(name+off,"POLL")==0)
+    return SIGPOLL;
+#endif
+#ifdef SIGPROF
+  else if (strcasecmp(name+off,"PROF")==0)
+    return SIGPROF;
+#endif
+#ifdef SIGSYS
+  else if (strcasecmp(name+off,"SYS")==0)
+    return SIGSYS;
+#endif
+#ifdef SIGTRAP
+  else if (strcasecmp(name+off,"TRAP")==0)
+    return SIGTRAP;
+#endif
+#ifdef SIGURG
+  else if (strcasecmp(name+off,"URG")==0)
+    return SIGURG;
+#endif
+#ifdef SIGVTALRM
+  else if (strcasecmp(name+off,"VTALRM")==0)
+    return SIGVTALRM;
+#endif
+#ifdef SIGXCPU
+  else if (strcasecmp(name+off,"XCPU")==0)
+    return SIGXCPU;
+#endif
+#ifdef SIGXFSZ
+  else if (strcasecmp(name+off,"XFSZ")==0)
+    return SIGXFSZ;
+#endif
+#if (defined(SIGIOT) && (SIGIOT!=SIGABRT))
+  else if (strcasecmp(name+off,"IOT")==0)
+    return SIGIOT;
+#endif
+#ifdef SIGEMT
+  else if (strcasecmp(name+off,"EMT")==0)
+    return SIGEMT;
+#endif
+#ifdef SIGSTKFLT
+  else if (strcasecmp(name+off,"STKFLT")==0)
+    return SIGSTKFLT;
+#endif
+#if (defined(SIGIO) && (SIGIO!=SIGPOLL))
+  else if (strcasecmp(name+off,"IO")==0)
+    return SIGIO;
+#endif
+#if (defined(SIGCLD) && (SIGCLD!=SIGCHLD))
+  else if (strcasecmp(name+off,"CLD")==0)
+    return SIGCLD;
+#endif
+#ifdef SIGPWR
+  else if (strcasecmp(name+off,"PWR")==0)
+    return SIGPWR;
+#endif
+#ifdef SIGINFO
+  else if (strcasecmp(name+off,"INFO")==0)
+    return SIGINFO;
+#endif
+#ifdef SIGLOST
+  else if (strcasecmp(name+off,"LOST")==0)
+    return SIGLOST;
+#endif
+#ifdef SIGWINCH
+  else if (strcasecmp(name+off,"WINCH")==0)
+    return SIGWINCH;
+#endif
+#if (defined(SIGUNUSED) && (SIGUNUSED!=SIGSYS))
+  else if (strcasecmp(name+off,"UNUSED")==0)
+    return SIGUNUSED;
+#endif
+  else return -1;
+}
+
 U8_EXPORT void u8_signal_raise(int signum)
 {
   u8_raise(u8_signal_name(signum),NULL,NULL);
