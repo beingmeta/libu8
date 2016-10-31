@@ -1,3 +1,9 @@
+libu8 (2.5.4-1) stable; urgency=medium
+
+  * Added improved contours and exception processing
+
+ -- Ken Haase <kh@beingmeta.com>  Sun, 30 Oct 2016 20:04:05 -0400
+
 libu8 (2.5.3-30) stable; urgency=low
 
   * Am I stable now?
