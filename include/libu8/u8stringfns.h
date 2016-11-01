@@ -98,6 +98,42 @@ U8_EXPORT u8_string u8_strchrs(u8_string s,u8_string chars,int order);
 **/
 U8_EXPORT u8_string u8_strstrs(u8_string s,u8_string strings[],int order);
 
+/** Generates a base-ten representation of a long long int
+    This should be safe to use in, for example, signal handlers, where printf
+    is verboten.
+    @param n a long long int (may be automatically cast up, of course)
+    @param n a static 24-byte buffer (long enough to contain the largest N)
+    @returns pointer to that buffer
+**/
+U8_EXPORT char *u8_itoa10(long long int n,char buf[32]);
+
+/** Generates a base-ten representation of a long long int
+    This should be safe to use in, for example, signal handlers, where printf
+    is verboten.
+    @param n a long long int (may be automatically cast up, of course)
+    @param n a static 24-byte buffer (long enough to contain the largest N)
+    @returns pointer to that buffer
+**/
+U8_EXPORT char *u8_uitoa10(unsigned long long int n,char buf[32]);
+
+/** Generates a base-ten representation of a long long int
+    This should be safe to use in, for example, signal handlers, where printf
+    is verboten.
+    @param n a long long int (may be automatically cast up, of course)
+    @param n a static 24-byte buffer (long enough to contain the largest N)
+    @returns pointer to that buffer
+**/
+U8_EXPORT char *u8_uitoa8(unsigned long long int n,char buf[32]);
+
+/** Generates a base-eight representation of an unsigned long long int
+    This should be safe to use in, for example, signal handlers, where printf
+    is verboten.
+    @param n a long long int (may be automatically cast up, of course)
+    @param n a static 24-byte buffer (long enough to contain the largest N)
+    @returns pointer to that buffer
+**/
+U8_EXPORT char *u8_uitoa16(unsigned long long int n,char buf[32]);
+
 /** Returns a decomposed version of a UTF-8 string.
     @param string a UTF-8 string
     @returns a UTF-8 string with all composed characters

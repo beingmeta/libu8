@@ -469,6 +469,53 @@ U8_EXPORT u8_string u8_strstrs(u8_string s,u8_string strings[],int order)
   return result;
 }
 
+/* Portable ITOA for use in signal handling */
+
+U8_EXPORT char *itoa_helper(unsigned long long int num,char *buf,
+			    int base,const char *digits,
+			    unsigned long long int mult)
+{
+  char *write=buf;
+  unsigned long long int reduce=num;
+  int started=0; while (mult>0) {
+    int weight=reduce/mult;
+    if (started) *write++=digits[weight];
+    else if (weight) {
+      *write++=digits[weight];
+      started=1;}
+    else {}
+    reduce=reduce%mult;
+    mult=mult/base;}
+  *write++='\0';
+  return buf;
+}
+
+U8_EXPORT char *u8_itoa10(long long int num,char outbuf[32])
+{
+  char *write=outbuf;
+  if (num<0) {*write++='-'; num=-num;}
+  return itoa_helper(num,write,10,"0123456789",
+		     1000000000000000000LL);
+}
+
+U8_EXPORT char *u8_uitoa10(unsigned long long int num,char outbuf[32])
+{
+  return itoa_helper(num,outbuf,10,"0123456789",
+		     1000000000000000000LL);
+}
+
+U8_EXPORT char *u8_uitoa8(unsigned long long int num,char outbuf[32])
+{
+  return itoa_helper(num,outbuf,8,"01234567",
+		     01000000000000000000000LL);
+}
+
+U8_EXPORT char *u8_uitoa16(unsigned long long int num,char outbuf[32])
+{
+  return itoa_helper(num,outbuf,16,"0123456789ABCDEF",
+		     0x1000000000000000LL);
+}
+
 /* Initialization function (just records source file info) */
 
 U8_EXPORT void u8_init_stringfns_c()
