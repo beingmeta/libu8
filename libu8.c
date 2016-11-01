@@ -409,6 +409,16 @@ U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details)
 {
   u8_contour c=u8_dynamic_contour;
   if (!(c)) {
+    /* This is signal safe */
+    {int rv=0;
+#define errout(s) if (rv>=0) rv=write(STDOUT_FILENO,s,strlen(s))
+      errout("Unhandled exception ");
+      errout(ex);
+      if (cxt) {errout(" ("); errout(cxt); errout(")");}
+      if (details) {errout(": "); errout(details); errout("\n");}
+#undef errout
+    }
+    /* This isn't signal safe, but we're calling exit() anyway. */
     if ((cxt)&&(details))
       u8_log(LOG_CRIT,ex,"In context %s: %s",cxt,details);
     else if (cxt)
