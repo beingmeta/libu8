@@ -139,21 +139,19 @@ static ssize_t u8_stack_depth()
     if (diff<0) return -diff; else return diff;}
 }
 #else
-U8_EXPORT u8_tld_key *u8_stack_base_key;
+U8_EXPORT u8_tld_key u8_stack_base_key;
 #define u8_stack_base() (u8_tld_get(u8_stack_base_key))
 #define U8_SET_STACK_BASE()	  \
   volatile int _stack_base=17*42; \
   u8_tld_set(u8_stack_base_key,(void *)&_stack_base)
 static ssize_t u8_stack_depth()
 {
-  if (u8_stack_base_key==NULL) return -1;
+  int _stackval=42; 
+  void *stack_base=u8_tld_get(u8_stack_base_key);
+  if (stack_base==NULL) return -1;
   else {
-    int _stackval=42; 
-    void *stack_base=u8_tld_get(u8_stack_base_key);
-    if (stack_base==NULL) return -1;
-    else {
-      ssize_t diff=((void *)&(_stackval))-stack_base;
-      if (diff<0) return -diff; else return diff;}}
+    ssize_t diff=((void *)&(_stackval))-stack_base;
+    if (diff<0) return -diff; else return diff;}
 }
 #endif
 #else /* not U8_THREADS_ENABLED */
