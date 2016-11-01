@@ -91,6 +91,14 @@ static int u8_initialized=0;
 #define LOG_INFO        6       /* informational */
 #define LOG_DEBUG       7       /* debug-level messages */
 
+#if U8_THREADS_ENABLED
+#if HAVE_THREAD_STORAGE_CLASS
+__thread void *u8_stack_base=NULL;
+#else
+u8_tld_key *u8_stack_base_key;
+#endif
+#endif
+
 /* U8 settings */
 
 u8_condition u8_UnexpectedEOD=_("Unexpected EOD"),
@@ -753,8 +761,11 @@ U8_EXPORT int u8_initialize()
 #endif
 #if (U8_USE_TLS)
   u8_new_threadkey(&u8_initlevel_key,NULL);
+  u8_new_threadkey(&u8_stack_base_key,NULL);
 #endif
 #endif
+
+
 
   u8_register_source_file(_FILEINFO);
 
