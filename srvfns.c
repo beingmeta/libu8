@@ -672,6 +672,7 @@ static void *event_loop(void *thread_arg)
   char statebuf[16];
   struct U8_SERVER_THREAD *sthread=(struct U8_SERVER_THREAD *)thread_arg;
   struct U8_SERVER *server=sthread->u8st_server;
+  U8_SET_STACK_BASE();
   if (sthread->u8st_threadid<0)
     sthread->u8st_threadid=u8_threadid();
   /* Check for additional thread init functions */
