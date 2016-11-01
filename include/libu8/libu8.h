@@ -24,6 +24,10 @@
 #include "libu8/revision.h"
 #include "libu8/config.h"
 
+#if HAVE_LIBINTL_H
+#include <libintl.h>
+#endif
+
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
 #endif
@@ -269,7 +273,7 @@ U8_EXPORT int u8_initlevel;
 /** Returns a long identifying the current thread
     @returns long a numeric thread identifier (OS dependent)
 **/
-U8_EXPORT long u8_threadid(void);
+U8_EXPORT long long u8_threadid(void);
 
 /** Returns a string identifying the current process and thread
     @param buf a buffer to use (mallocd otherwise)
@@ -413,13 +417,19 @@ int u8_getmajorversion(void);
 #endif
 
 #if (!((defined(HAVE_TEXTDOMAIN))&&(HAVE_TEXTDOMAIN)))
+#ifndef textdomain
 #define textdomain(domain)
 #endif
+#endif
 #if (!((defined(HAVE_BINDTEXTDOMAIN))&&(HAVE_BINDTEXTDOMAIN)))
+#ifndef bindtextdomain
 #define bindtextdomain(domain,dir)
 #endif
+#endif
 #if (!((defined(HAVE_BINDTEXTDOMAIN_CODESET))&&(HAVE_BINDTEXTDOMAIN_CODESET)))
+#ifndef bindtextdomain_codeset
 #define bindtextdomain_codeset(domain,dir)
+#endif
 #endif
 
 #define _(x) (x)

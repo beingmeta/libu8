@@ -95,7 +95,7 @@ static int u8_initialized=0;
 #if HAVE_THREAD_STORAGE_CLASS
 __thread void *u8_stack_base=NULL;
 #else
-u8_tld_key *u8_stack_base_key;
+u8_tld_key u8_stack_base_key;
 #endif
 #endif
 
@@ -631,7 +631,17 @@ U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
 /* Getting a thread ID */
 
 #if (HAVE_GETPID)
-#if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL)&& \
+#if ((HAVE_PTHREAD_THREADID_NP)&&(HAVE_PTHREAD_SELF))
+U8_EXPORT char *u8_procinfo(char *buf)
+{
+  pid_t pid=getpid(); long long tid;
+  pthread_t self=pthread_self();
+  pthread_threadid_np(self,&tid);
+  if (!(buf)) buf=u8_mallocz(128);
+  sprintf(buf,"%ld:%lld",(unsigned long int)pid,(unsigned long long)tid);
+  return buf;
+}
+#elif ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL)&& \
      (defined(__linux__)))
 U8_EXPORT char *u8_procinfo(char *buf)
 {
@@ -670,27 +680,35 @@ U8_EXPORT char *u8_procinfo(char *buf)
 #endif
 
 #if (HAVE_GETPID)
-#if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
-U8_EXPORT long u8_threadid()
+#if ((HAVE_PTHREAD_THREADID_NP)&&(HAVE_PTHREAD_SELF))
+U8_EXPORT long long u8_threadid()
+{
+  long long tid;
+  pthread_t self=pthread_self();
+  pthread_threadid_np(self,&tid);
+  return tid;
+}
+#elif ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
+U8_EXPORT long long u8_threadid()
 {
   pid_t tid=syscall(SYS_gettid);
   return (long) tid;
 }
 #elif (HAVE_PTHREAD_SELF)
-U8_EXPORT long u8_threadid()
+U8_EXPORT long long threadid()
 {
   pthread_t self=pthread_self();
-  return (unsigned long int)self;
+  return (unsigned long long int)self;
 }
 #else
-U8_EXPORT long u8_threadid()
+U8_EXPORT long long u8_threadid()
 {
-  return (long) getpid();
+  return (long long) getpid();
 }
 #endif
 #else
 /* TODO: Should really roll our own */
-U8_EXPORT long u8_threadid()
+U8_EXPORT long long u8_threadid()
 {
   return -1;
 }
