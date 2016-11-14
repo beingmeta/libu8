@@ -132,6 +132,7 @@ U8_EXPORT ssize_t u8_cryptic
       if (retval<0) {}
       else retval=writer(out,outlen,writestate);
       if (out) u8_free(out);}
+    u8_free(bb.u8_buf);
     if (retval<0) {
       unsigned long err=ERR_get_error(); char buf[512];
       buf[0]='\0'; ERR_error_string_n(err,buf,512);
