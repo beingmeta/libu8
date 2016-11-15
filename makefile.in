@@ -319,11 +319,11 @@ $(LOCALEDIR)/%/LC_MESSAGES/libu8msg.mo: etc/intl/%.gmo
 	install $^ $@
 
 etc/intl/libu8msg.pot: *.c tests/*.c
-	xgettext -dlibu8 -oetc/intl/libu8msg.pot -k_ *.c tests/*.c
+	@XGETTTEXT@ -dlibu8 -oetc/intl/libu8msg.pot -k_ *.c tests/*.c
 etc/intl/%.po: etc/intl/libu8msg.pot
-	msgmerge -U $@ $<
+	@MSGMERGE@ -U $@ $<
 etc/intl/%.gmo: etc/intl/%.po
-	msgfmt $^ -o $@ 
+	@MSGFMT@ $^ -o $@ 
 
 install-i18n: $(LOCALEDIR)/fr/LC_MESSAGES/libu8msg.mo \
 		$(LOCALEDIR)/es/LC_MESSAGES/libu8msg.mo \

@@ -240,6 +240,10 @@ AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","rpm","na")
 AC_CHECK_PROGS(rpm,"lsb-rpm","rpm","na")
 AC_CHECK_PROG(CREATEREPO,createrepo,,echo No createrepo for )
 
+AC_PATH_PROG(XGETTEXT,xgettext)
+AC_PATH_PROG(MSGMERGE,msgmerge)
+AC_PATH_PROG(MSGFMT,msgfmt)
+
 if test $etags = "na"; then
    TAGS=""
 fi
