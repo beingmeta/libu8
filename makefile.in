@@ -286,7 +286,7 @@ lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
 
 docs: docs/doxygen.done
 
-docs/doxygen.done: $(LIBU8_HEADERS)
+docs/doxygen.done: $(LIBU8_HEADERS) docs/doxygen.cfg
 	@$(DOXYGEN) docs/doxygen.cfg && touch docs/doxygen.done
 	@echo DOXYGEN headers
 

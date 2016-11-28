@@ -13,6 +13,60 @@
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
+/*! \mainpage Welcome to libu8
+ *
+ * **libu8** is a portability and utility library written in modern C
+ * for Unix-based platforms. *libu8* is licensed under the
+ * [LGPL](https://www.gnu.org/licenses/lgpl.html) and the GPL [version
+ * 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html) or
+ * [later](https://www.gnu.org/licenses/gpl.html).  You can find the
+ * source to libu8 on [github](https://github.com/beingmeta/libu8).
+ *
+ * **libu8** is especially intended for software which uses UTF-8
+ *  internally but may interact with applications and services employing
+ * different character encodings. Over time, it has grown to provide a
+ * variety of other portable functions and wrappers.
+ *
+ * \section intro_sec Features:
+ *
+ * string utilities for portably working with UTF-8 encodings
+ *
+ * stream-based text I/O using UTF-8 internally but allowing
+ * output to multiple encodings
+ *
+ * a client networking library for socket io, connection pools, and
+ * simple hostname lookup;
+ *
+ * extensible and customizable logging functions (using `u8_printf`);
+ *
+ * wrappers for time-related functions allowing fine-grained times 
+ *  and specification of arbitrary time zones;
+ *
+ * an exception handling library using `setjmp`/`longjmp` with
+ *  unwinds and dynamic error catching;
+ *
+ * signal handlers for turning synchronous signals into exceptions;
+ *
+ * a server networking library for lightweight multi-threaded server
+ *  implementation.
+ *
+ * an extensible printf (`u8_printf`)  function including output to strings;
+ *
+ * various hash and digest functions, including MD5, Google's cityhash,
+ *  and various SHAx functions;
+ *
+ * cryptographic function wrappers using local libraries;
+ *
+ * a variety of file or URI path manipulation functions;
+ *
+ * a wrapper for rusage() resource system calls;
+ *
+ * wrappers for accessing file and directory contents and metadata;
+ *
+ * support for lookup up and interpreting named character entities;
+ *
+ */
+
 #ifndef LIBU8_LIBU8_H
 #define LIBU8_LIBU8_H 1
 #define LIBU8_LIBU8_H_VERSION __FILE__

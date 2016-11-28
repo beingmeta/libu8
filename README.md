@@ -1,3 +1,13 @@
+# Welcome to **libu8**
+
+**libu8** is a portability and utility library written in modern C for
+Unix-based platforms. *libu8* is licensed under the
+[LGPL](https://www.gnu.org/licenses/lgpl.html) and the GPL
+[version 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
+or [later](https://www.gnu.org/licenses/gpl.html).  You can find the
+source to libu8 on [github](https://github.com/beingmeta/libu8).
+
+
 **libu8** is a portability and utility library written in modern C for
 Unix-based platforms. libu8 is licensed under the LGPL (V2.1) and GPL
 (V2) you can find the source on github. Detailed
@@ -42,7 +52,8 @@ simple hostname lookup;
 
 * support for lookup up and interpreting named character entities;
 
-**libu8** is especially designed for software which uses UTF-8
+**libu8** is especially intended for software which uses UTF-8
 internally but may interact with applications and services employing
-different character encodings.
+different character encodings. However, it has grown to provide a
+variety of other portable functions.
 
