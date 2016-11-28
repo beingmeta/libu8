@@ -290,6 +290,9 @@ docs/doxygen.done: $(LIBU8_HEADERS)
 	@$(DOXYGEN) docs/doxygen.cfg && touch docs/doxygen.done
 	@echo DOXYGEN headers
 
+libu8.org: docs/doxygen.done
+	aws s3 cp --recursive docs/html/ s3://www.libu8.org/docs/
+
 clean: 
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* etc/fileinfo
 	@$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
