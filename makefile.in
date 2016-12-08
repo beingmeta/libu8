@@ -298,7 +298,9 @@ clean:
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* etc/fileinfo
 	@$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
 	@echo "Cleaned up libraries"
-	@$(CLEAN) docs/man/man3/* docs/html/* docs/rtf/* docs/latex/* docs/doxygen.done
+	@$(CLEAN) docs/man/man3/* docs/rtf/* docs/latex/* docs/doxygen.done
+	@for dir in docs/html docs/html/search; do				\
+	  $(CLEAN) $${dir}/*.html $${dir}/*.png $${dir}/*.js $${dir}/*.css; done
 	@echo "Cleaned up docs"
 	@$(CLEAN) tests/getentity tests/latin1u8 tests/u8recode tests/u8xrecode
 	@$(CLEAN) tests/echosrv
