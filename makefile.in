@@ -49,7 +49,8 @@ LIBU8_SOURCES=\
   libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c cityhash.c \
   digestfns.c cryptofns.c pathfns.c filefns.c fileio.c \
   libu8io.c xfiles.c convert.c filestring.c bytebuf.c \
-  tests/latin1u8.c tests/xtimetest.c tests/u8recode.c tests/u8xrecode.c tests/echosrv.c
+  tests/latin1u8.c tests/xtimetest.c tests/u8recode.c tests/u8xrecode.c \
+  tests/echosrv.c tests/printftest.c
 COMMON_HEADERS= $(LIBU8_HEADERS)
 
 LIBU8CORE_OBJECTS=libu8.o streamio.o printf.o  contour.o logging.o signals.o \
@@ -64,7 +65,7 @@ LIBU8STDIO_OBJECTS=u8stdio.o
 LIBU8SYSLOG_OBJECTS=u8syslog.o
 LIBU8_OBJECTS=$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8SYSLOG_OBJECTS)
 TESTBIN=tests/u8recode tests/latin1u8 tests/u8xrecode tests/getentity \
-	tests/echosrv tests/xtimetest
+	tests/echosrv tests/xtimetest tests/printftest
 DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
 	tests/dynamic/u8xrecode tests/dynamic/getentity \
 	tests/dynamic/echosrv tests/xtimetest

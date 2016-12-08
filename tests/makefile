@@ -16,9 +16,11 @@ tests:
 	${DOTEST}u8xrecode latin1 latin3 < data/latin1.text > tmp/latin3.text
 	${DOTEST}u8xrecode latin3 latin1 < tmp/latin3.text > tmp/latin1.text
 	diff data/latin1.text tmp/latin1.text
-
+	# Test conversion of latin3 to utf8
 	u8xrecode latin3 utf8 < tmp/latin3.text > tmp/utf8.text
 	diff data/utf8.text tmp/utf8.text
+	${DOTEST}printftest
+
 dytests:
 	make DOTEST=${DYTEST} tests
 
