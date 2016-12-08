@@ -23,18 +23,41 @@
 
 #if HAVE_SYSLOG
 #include <syslog.h>
-#else
+#endif
+
+#ifndef LOG_EMERG
 #define LOG_EMERG       0       /* system is unusable */
+#endif
+
+#ifndef LOG_ALERT
 #define LOG_ALERT       1       /* action must be taken immediately */
+#endif
+
+#ifndef LOG_CRIT
 #define LOG_CRIT        2       /* critical conditions */
+#endif
+
+#ifndef LOG_ERR
 #define LOG_ERR         3       /* error conditions */
+#endif
+
+#ifndef LOG_WARNING
 #define LOG_WARNING     4       /* warning conditions */
+#endif
+
+#ifndef LOG_NOTICE
 #define LOG_NOTICE      5       /* normal but significant condition */
+#endif
+
+#ifndef LOG_INFO
 #define LOG_INFO        6       /* informational */
+#endif
+
+#ifndef LOG_DEBUG
 #define LOG_DEBUG       7       /* debug-level messages */
 #endif
 
-/* Our own little addition */
+/* Our own little additions */
 #ifndef LOG_DETAIL
 #define LOG_DETAIL 8
 #endif
@@ -63,6 +86,37 @@
 #define LOGDETAIL LOG_DETAIL
 #define LOG_DETAILED LOG_DETAIL
 #define LOGDELUGE LOG_DELUGE
+
+/* With U8 prefixes, just in case */
+#define U8_LOG_WARNING LOG_WARNING
+#define U8_LOG_WARN LOG_WARNING
+#define U8_LOGWARN LOG_WARNING
+#define U8_LOG_NOTICE LOG_NOTICE
+#define U8_LOG_NOTIFY LOG_NOTICE
+#define U8_LOG_NOTIFY LOG_NOTICE
+#define U8_LOGNOTIFY LOG_NOTICE
+#define U8_LOGNOTICE LOG_NOTICE
+#define U8_LOG_ERR LOG_ERR
+#define U8_LOG_ERROR LOG_ERR
+#define U8_LOGERR LOG_ERR
+#define U8_LOG_CRIT LOG_CRIT
+#define U8_LOG_CRITICAL LOG_CRIT
+#define U8_LOGCRIT LOG_CRIT
+#define U8_LOG_EMERG LOG_EMERG
+#define U8_LOG_EMERGENCY LOG_EMERG
+#define U8_LOG_PANIC LOG_EMERG
+#define U8_LOGPANIC LOG_EMERG
+#define U8_LOG_DEBUG LOG_DEBUG
+#define U8_LOG_DBG LOG_DEBUG
+#define U8_LOGDBG LOG_DEBUG
+#define U8_LOGDEBUG LOG_DEBUG
+#define U8_LOG_DETAIL LOG_DETAIL
+#define U8_LOG_DETAILS LOG_DETAIL
+#define U8_LOGDETAILS LOG_DETAIL
+#define U8_LOGDETAIL LOG_DETAIL
+#define U8_LOG_DETAILED LOG_DETAIL
+#define U8_LOG_DELUGE LOG_DELUGE
+#define U8_LOGDELUGE LOG_DELUGE
 
 #define U8_MAX_LOGLEVEL 9
 
