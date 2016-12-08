@@ -547,7 +547,7 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 #define U8ALT(s,d) ((s)?((u8_string)(s)):((u8_string)(d)))
 #define U8IF(s,d) ((s)?((u8_string)(d)):(U8_S0()))
 
-#define U8WRAP(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8_S0()))),(U8IF(s,a))
+#define U8OPTSTR(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8_S0()))),(U8IF(s,a))
 
 /* strdup */
 
