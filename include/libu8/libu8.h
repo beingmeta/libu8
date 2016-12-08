@@ -540,6 +540,15 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 #define u8_allocz(t) ((t *)(u8_mallocz(sizeof(t))))
 #define u8_allocz_n(n,t) ((t *)(u8_mallocz(sizeof(t)*(n))))
 
+/* Type coercion, conditional, and constant string macros */
+
+#define U8STR(x) ((u8_string)(x))
+#define U8S0() ((u8_string)(""))
+#define U8ALT(s,d) ((s)?((u8_string)(s)):((u8_string)(d)))
+#define U8IF(s,d) ((s)?((u8_string)(d)):(U8_S0()))
+
+#define U8WRAP(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8_S0()))),(U8IF(s,a))
+
 /* strdup */
 
 #if HAVE_STRDUP
