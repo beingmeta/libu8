@@ -589,9 +589,9 @@ static void *u8_zalloc_bytes(size_t n_bytes,u8_context caller)
 #define u8_zalloc_n(n,typename) u8_zalloc_bytes((n)*(sizeof(typename)),NULL)
 
 #define u8_zalloc_for(caller,typename) \
-  u8_zalloc_bytes(sizeof(typename,caller)
+  u8_zalloc_bytes(sizeof(typename),caller)
 #define u8_zalloc_n_for(caller,n,typename) \
-  u8_zalloc_bytes((n)*(sizeof(typename)),caller)
+  u8_zalloc_bytes(((n)*(sizeof(typename))),caller)
 
 #define u8_zalloc_struct(sname) \
   ((struct sname *)(u8_zalloc_bytes(sizeof(struct sname),NULL)))
