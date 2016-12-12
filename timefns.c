@@ -40,8 +40,8 @@ typedef unsigned int u8uint;
 #include <uuid/uuid.h>
 #endif
 
-#if HAVE_STRINGS_H
-#include <strings.h>
+#if HAVE_STRING_H
+#include <string.h>
 #endif
 
 #if U8_THREADS_ENABLED

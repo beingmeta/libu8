@@ -31,8 +31,8 @@
 #include <ctype.h>
 #include <errno.h>
 
-#if HAVE_STRINGS_H
-#include <strings.h>
+#if HAVE_STRING_H
+#include <string.h>
 #endif
 
 /* Core functions */

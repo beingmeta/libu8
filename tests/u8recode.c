@@ -1,13 +1,13 @@
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+
 #include "libu8/libu8.h"
 #include "libu8/u8streamio.h"
 #include "libu8/u8convert.h"
 
 U8_EXPORT void u8_init_convert_c(void);
-
-#include <strings.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
 
 int main(int argc,char **argv)
 {

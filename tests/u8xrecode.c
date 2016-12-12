@@ -1,6 +1,6 @@
-#include "strings.h"
-#include "stdlib.h"
-#include "stdio.h"
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "libu8/libu8io.h"
 #include "libu8/xfiles.h"
 #include "libu8/u8filefns.h"

@@ -65,13 +65,16 @@ LIBU8STDIO_OBJECTS=u8stdio.o
 LIBU8SYSLOG_OBJECTS=u8syslog.o
 LIBU8_OBJECTS=$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8SYSLOG_OBJECTS)
 TESTBIN=tests/u8recode tests/latin1u8 tests/u8xrecode tests/getentity \
-	tests/echosrv tests/xtimetest tests/printftest
+	tests/echosrv tests/xtimetest # tests/printftest
 DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
 	tests/dynamic/u8xrecode tests/dynamic/getentity \
 	tests/dynamic/echosrv tests/xtimetest
 
 STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
+STATIC_TEST_LIBS=lib/libu8.a lib/libu8io.a
+SHARED_TEST_LIBS=lib/libu8.@shared_suffix@ lib/libu8io.@shared_suffix@ \
+		lib/libu8stdio.@shared_suffix@
 
 ALL=@TAGS@ libs @I18N@ tests @DOCS@
 
@@ -149,12 +152,11 @@ dbginstall:
 %.o: %.c ./fileinfo include/libu8/revision.h
 	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo CC $@ $<
-tests/%: tests/%.c lib/libu8io.a lib/libu8data.a lib/libu8fns.a \
-         lib/libu8stdio.a lib/libu8core.a
-	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ $(LIBS)
+tests/%: tests/%.c 
+	$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< ${STATIC_TEST_LIBS} ${LIBS}
 	@echo CC_STATIC_EXE $@ $<
 tests/dynamic/%: tests/%.c
-	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^ -Llib -lu8 -lu8io $(LIBS)
+	$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8io -lu8  
 	@echo CC_DYNAMIC_EXE $@ $<
 
 lib/%@suffix@.a:
@@ -244,11 +246,12 @@ lib/libu8@suffix@.so: $(LIBU8_OBJECTS)
 lib/libu8.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
 # Avoid recursive reference for the libu8 library itself
-lib/libu8@suffix@.so:
-	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -Llib -o $@ $^ $(LIBS)
+lib/libu8@suffix@.so: $(LIBU8_OBJECTS)
+	@$(MKSO) -Wl,-soname=$(@F) -Llib -o $@.@U8VERSION@ $^ $(LIBS)
+	ln -sf $(@F).@U8VERSION@ $@.@U8MAJOR@.@U8MINOR@
+	ln -sf $(@F).@U8VERSION@ $@.@U8MAJOR@
+	ln -sf $(@F).@U8VERSION@ $@
 	@echo MKSO $@
-lib/libu8@suffix@.so.@FDMAJOR@: lib/libu8@suffix@.so
-	@ln -sf libu8@suffix@.so $@
 
 lib/libu8core.a: $(LIBU8CORE_OBJECTS)
 lib/libu8core@suffix@.so: $(LIBU8CORE_OBJECTS)
@@ -737,8 +740,10 @@ $(DESTDIR)@prefix@/share/libu8/encodings:
 
 # buildmode dependencies
 
-$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8DATA_OBJECTS): buildmode
-$(LIBU8IO_OBJECTS) $(LIBU8STDIO_OBJECTS) $(LIBU8SYSLOG_OBJECTS): buildmode
+$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8DATA_OBJECTS): \
+	buildmode makefile
+$(LIBU8IO_OBJECTS) $(LIBU8STDIO_OBJECTS) $(LIBU8SYSLOG_OBJECTS): \
+	buildmode makefile
 
 # dependencies
 
@@ -755,3 +760,4 @@ srvfns.o: $(COMMON_HEADERS) \
 	include/libu8/libu8io.h include/libu8/u8netfns.h \
 	include/libu8/u8srvfns.h
 
+#tests/printftest: tests/printftest.c ${STATIC_TEST_LIBS}

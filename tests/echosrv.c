@@ -1,7 +1,8 @@
-#include <strings.h>
+#include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+
 #include "libu8/libu8.h"
 #include "libu8/libu8io.h"
 #include "libu8/xfiles.h"

@@ -82,6 +82,9 @@
 #include <libintl.h>
 #endif
 
+#include <stdlib.h>
+#include <string.h>
+
 #ifndef _POSIX_C_SOURCE
 #define _POSIX_C_SOURCE 200112L
 #endif
@@ -139,6 +142,20 @@
 
 #ifndef EXIT_FAILURE
 #define EXIT_FAILURE -1
+#endif
+
+#if (!(U8_THREADS_ENABLED))
+#define U8_USE_TLS 0
+#define U8_USE__THREAD 0
+#elif ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
+#define U8_USE_TLS 1
+#define U8_USE__THREAD 0
+#elif (HAVE_THREAD_STORAGE_CLASS)
+#define U8_USE_TLS 0
+#define U8_USE__THREAD 1
+#else
+#define U8_USE_TLS 1
+#define U8_USE_TLS 0
 #endif
 
 /* Checking constructor attributes */
@@ -249,10 +266,52 @@ typedef unsigned int u8_wideint;
 #define WORDS_BIGENDIAN 0
 #endif
 
-U8_EXPORT u8_int16 u8_cityhash128(const unsigned char *s,size_t len);
-U8_EXPORT u8_int8 u8_cityhash64(const unsigned char *s,size_t len);
+/* String/character typedefs */
 
-/* Load threading compatability libraries */
+typedef unsigned char u8_byte;
+typedef const u8_byte *u8_string;
+typedef int u8_unicode_char;
+typedef int u8_unichar;
+
+typedef char *u8_charstring;
+typedef char *u8_chars;
+
+/* This is for offsets into UTF-8 encoded strings, to distinguish
+   byte and character offsets. */
+typedef int u8_byteoff;
+typedef int u8_charoff;
+
+/* Type coercion, conditional, and constant string macros */
+
+#define U8STR(x) ((u8_string)(x))
+#define U8S0() ((u8_string)(""))
+#define U8ALT(s,d) ((s)?((u8_string)(s)):((u8_string)(d)))
+#define U8IF(s,d) ((s)?((u8_string)(d)):(U8_S0()))
+
+#define U8OPTSTR(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8_S0()))),(U8IF(s,a))
+
+/* Errors */
+
+typedef const unsigned char *u8_condition;
+typedef const unsigned char *u8_context;
+
+#include "u8exceptions.h"
+
+/* Handy definition */
+
+/* Write a long long to a string.  This writes the string without
+   using printf or other 'heavyweight' functions. It can be used in
+   resource-tight environments and can also be called in signal
+   handlers as needed.
+   @param val the signed integer value to write to the buffer
+   @param buf a character buffer to place the representation
+   @param buflen the size of the character buffer
+
+ */
+U8_EXPORT char *u8_write_long_long(long long l,char *buf,size_t buflen);
+
+/* Threading compatability */
+
 #include "threading.h"
 
 /* Thread proxy functions */
@@ -293,20 +352,6 @@ U8_EXPORT int u8_threadexit(void);
 U8_EXPORT int u8_n_threadinits;
 U8_EXPORT int u8_n_threadexitfns;
 
-#if (!(U8_THREADS_ENABLED))
-#define U8_USE_TLS 0
-#define U8_USE__THREAD 0
-#elif ((U8_FORCE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS)))
-#define U8_USE_TLS 1
-#define U8_USE__THREAD 0
-#elif (HAVE_THREAD_STORAGE_CLASS)
-#define U8_USE_TLS 0
-#define U8_USE__THREAD 1
-#else
-#define U8_USE_TLS 1
-#define U8_USE_TLS 0
-#endif
-
 #if (U8_USE__THREAD)
 U8_EXPORT __thread int u8_initlevel;
 #define u8_getinitlevel() (u8_initlevel)
@@ -324,32 +369,7 @@ U8_EXPORT int u8_initlevel;
 #define u8_threadcheck() \
   if (u8_getinitlevel()<u8_n_threadinits) u8_run_threadinits()
 
-/** Returns a long identifying the current thread
-    @returns long a numeric thread identifier (OS dependent)
-**/
-U8_EXPORT long long u8_threadid(void);
-
-/** Returns a string identifying the current process and thread
-    @param buf a buffer to use (mallocd otherwise)
-    @returns a character string
-**/
-U8_EXPORT char *u8_procinfo(char *buf);
-
-
 /* UTF-8 String maniuplation */
-
-typedef unsigned char u8_byte;
-typedef const u8_byte *u8_string;
-typedef int u8_unicode_char;
-typedef int u8_unichar;
-
-typedef char *u8_charstring;
-typedef char *u8_chars;
-
-/* This is for offsets into UTF-8 encoded strings, to distinguish
-   byte and character offsets. */
-typedef int u8_byteoff;
-typedef int u8_charoff;
 
 /** Converts a UTF-8 string to the encoding expected by system (libc) functions.
     If the system encoding is UTF-8, this returns its argument, rather than
@@ -377,7 +397,18 @@ U8_EXPORT u8_string u8_fromlibc(char *local_string);
 U8_EXPORT void u8_set_libcfns
    (u8_string (*fromfn)(char *),char *(*tofn)(u8_string));
 
-/* General initialization, etc. */
+/* Application/process identifying information */
+
+/** Returns a long identifying the current thread
+    @returns long a numeric thread identifier (OS dependent)
+**/
+U8_EXPORT long long u8_threadid(void);
+
+/** Returns a string identifying the current process and thread
+    @param buf a buffer to use (mallocd otherwise)
+    @returns a character string
+**/
+U8_EXPORT char *u8_procinfo(char *buf);
 
 /** Returns a UTF-8 string describing the current application for inclusion
      in messages or other output or logging.
@@ -400,6 +431,8 @@ U8_EXPORT void u8_identify_application(u8_string id);
 **/
 U8_EXPORT int u8_default_appid(u8_string id);
 
+/* UTF-8 handling config functions */
+
 /** Gets/sets whether warnings are produced for invalid UTF-8 sequences, which
      can be annoyingly common with some content.
     @param flag an int
@@ -414,6 +447,8 @@ U8_EXPORT int u8_config_utf8warn(int flag);
   If the flag is negative, the current value is returned
 **/
 U8_EXPORT int u8_config_utf8err(int flag);
+
+/* Initialization functions for submodules */
 
 /** Initializes the core UTF-8 functions (from libu8.h)
     @returns void
@@ -440,7 +475,8 @@ U8_EXPORT void u8_initialize_u8stdio(void) U8_LIBINIT_FN;
 /** Initializes the messaging functions which use POSIX syslog. */
 U8_EXPORT void u8_initialize_u8syslog(void) U8_LIBINIT_FN;
 
-/* The current subversion revision */
+/* Version/revision information */
+
 U8_EXPORT u8_string u8_revision, u8_version;
 U8_EXPORT int u8_major, u8_minor, u8_release;
 
@@ -506,13 +542,66 @@ U8_EXPORT void *u8_dmalloc(size_t);
 #define u8_realloc(ptr,tosz) \
   ((ptr==NULL) ? (U8_MALLOC(tosz)) : (realloc(ptr,tosz)))
 #define u8_free(ptr) free((char *)ptr)
+#define u8_xfree(ptr) if (ptr) free((char *)ptr); else ptr=ptr;
 
 #define u8_alloc(t) ((t *)(u8_malloc(sizeof(t))))
 #define u8_alloc_n(n,t) ((t *)(u8_malloc(sizeof(t)*(n))))
 #define u8_realloc_n(ptr,n,t) ((t *)(u8_realloc(ptr,sizeof(t)*(n))))
 
-#define u8_malloc_struct(sname) ((struct sname *)(U8_MALLOC(sizeof(struct sname))))
+#define u8_malloc_struct(sname) \
+  ((struct sname *)(U8_MALLOC(sizeof(struct sname))))
 #define u8_malloc_array(n,t) ((t *)(U8_MALLOC(n*sizeof(t))))
+
+/* Zalloc (allocate and fill with zeros) */
+
+/* Declare here. Also declared below with docs. */
+U8_EXPORT char *u8_write_long_long(long long,char *,size_t);
+U8_EXPORT void u8_raise(u8_condition,u8_context,u8_string);
+
+/** Allocates and zero-clears a block of memory.
+    This raises the condition u8_MallocFailed (using u8_raise) if
+     it fails. The caller argument 
+   @param n_bytes the number of bytes to allocate
+   @param caller a u8_context (static) string identifying 
+      the caller for use if the allocation fails
+   @returns void *
+**/
+static void *u8_zalloc_bytes(size_t n_bytes,u8_context caller)
+{
+  void *block = U8_MALLOC(n_bytes);
+  if (block) {
+    memset(block,0,n_bytes);
+    return block;}
+  else {
+    char *buf=u8_malloc(32); 
+    if (buf) {
+      char *details = u8_write_long_long(n_bytes,buf,32);
+      if (details)
+	u8_raise(u8_MallocFailed,U8ALT(caller,"u8_zalloc_bytes"),buf);
+      else u8_raise(u8_MallocFailed,U8ALT(caller,"u8_zalloc_bytes"),buf);}
+    else u8_raise(u8_MallocFailed,U8ALT(caller,"u8_zalloc_bytes"),NULL);
+    // Never reached
+    return NULL;}
+}
+#define u8_zalloc(typename) u8_zalloc_bytes(sizeof(typename),NULL)
+
+#define u8_zalloc(typename) u8_zalloc_bytes(sizeof(typename),NULL)
+#define u8_zalloc_n(n,typename) u8_zalloc_bytes((n)*(sizeof(typename)),NULL)
+
+#define u8_zalloc_for(caller,typename) \
+  u8_zalloc_bytes(sizeof(typename,caller)
+#define u8_zalloc_n_for(caller,n,typename) \
+  u8_zalloc_bytes((n)*(sizeof(typename)),caller)
+
+#define u8_zalloc_struct(sname) \
+  ((struct sname *)(u8_zalloc_bytes(sizeof(struct sname),NULL)))
+#define u8_zalloc_struct_for(sname,caller) \
+  ((struct sname *)(u8_zalloc_bytes(sizeof(struct sname),(caller))))
+
+#define u8_zalloc_array(n,t)			\
+  ((t *)(u8_zalloc_bytes((n*sizeof(t)),NULL)))
+#define u8_zalloc_array_for(n,t,caller)		\
+  ((t *)(u8_zalloc_bytes((n*sizeof(t)),caller)))
 
 /** Allocates and zero-clears a block of memory
    @param sz the number of bytes to allocate
@@ -540,21 +629,14 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 #define u8_allocz(t) ((t *)(u8_mallocz(sizeof(t))))
 #define u8_allocz_n(n,t) ((t *)(u8_mallocz(sizeof(t)*(n))))
 
-/* Type coercion, conditional, and constant string macros */
-
-#define U8STR(x) ((u8_string)(x))
-#define U8S0() ((u8_string)(""))
-#define U8ALT(s,d) ((s)?((u8_string)(s)):((u8_string)(d)))
-#define U8IF(s,d) ((s)?((u8_string)(d)):(U8_S0()))
-
-#define U8OPTSTR(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8_S0()))),(U8IF(s,a))
-
 /* strdup */
 
 #if HAVE_STRDUP
 #define u8_strdup(x) (strdup(x))
+#define u8_xstrdup(x) ((x==NULL)?(x):(strdup(x)))
 #else
 #define u8_strdup(x) _u8_strdup(x)
+#define u8_xstrdup(x) ((x==NULL)?(x):(_u8_strdup(x)))
 #endif
 
 #define u8s(x) ((U8_EXPECT_FALSE(x==NULL))?(NULL):(u8_strdup(x)))
@@ -584,13 +666,6 @@ U8_EXPORT int _u8_grow_pile(u8_pile p,int delta);
   if ((p)->u8_len>=(p)->u8_max) \
     {_u8_grow_pile((p),1); (p)->u8_elts[((p)->u8_len)++]=((void *)e);}  \
   else (p)->u8_elts[((p)->u8_len)++]=((void *)e)
-
-/* Errors */
-
-typedef const unsigned char *u8_condition;
-typedef const unsigned char *u8_context;
-
-#include "u8exceptions.h"
 
 /* Messages */
 
@@ -700,6 +775,10 @@ U8_INLINE_FCN unsigned int u8_flip_ushort(unsigned short _w)
 #define u8_ushort_net_order(x) fd_flip_ushort(x)
 #endif
 
+/* Declare cityhash prototypes */
+
+U8_EXPORT u8_int16 u8_cityhash128(const unsigned char *s,size_t len);
+U8_EXPORT u8_int8 u8_cityhash64(const unsigned char *s,size_t len);
 
 /* File and module recording */
 

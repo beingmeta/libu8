@@ -13,16 +13,16 @@
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "libu8/libu8.h"
 #include "libu8/libu8io.h"
 #include "libu8/xfiles.h"
 #include "libu8/u8ctype.h"
 #include "libu8/u8netfns.h"
 #include "libu8/u8srvfns.h"
-
-#include <strings.h>
-#include <stdlib.h>
-#include <stdio.h>
 
 #define NTASKS 500
 #define NSOCKS 500

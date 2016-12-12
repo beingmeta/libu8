@@ -11,6 +11,9 @@ U8MAJOR=2
 U8MINOR=5
 U8RELEASE=`cat etc/release`
 U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
+mshared_suffix=so.${U8MAJOR}
+mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
+vshared_suffix=so.${U8VERSION}
 RPMVERSION=${U8RELEASE}
 DEBVERSION=${U8RELEASE}
 LD="ld"
@@ -87,6 +90,9 @@ AC_SUBST(MKSTATIC)
 AC_SUBST(SUDO)
 AC_SUBST(debugcflags)
 AC_SUBST(shared_suffix)
+AC_SUBST(vshared_suffix)
+AC_SUBST(mshared_suffix)
+AC_SUBST(mmshared_suffix)
 AC_SUBST(suffix)
 AC_SUBST(test_shared)
 AC_SUBST(test_static)

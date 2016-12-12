@@ -281,6 +281,29 @@ U8_EXPORT double u8_elapsed_time()
   }
 }
 
+static char decimal_weights[10]={'0','1','2','3','4','5','6','7','8','9'};
+
+/* This writes a long long out to a string and doesn't require 
+   printf or other functions. It can also be called in signal 
+   handlers */
+U8_EXPORT char *u8_write_long_long(long long l,char *buf, size_t buflen)
+{
+  char _buf[64]; 
+  char *write=_buf, *read; size_t outlen=0;
+  long long scan=l, weight=scan/10;
+  while (scan>0) {
+    int weight=scan%10;
+    if (outlen>=buflen) {
+      return NULL;}
+    *write++=decimal_weights[weight];
+    scan=scan/10;
+    outlen++;}
+  read=write-1; write=buf;
+  while (read>=_buf) {*write++=*read--;}
+  *write++='\0';
+  return buf;
+}
+
 /* Microsecond time */
 
 U8_EXPORT
@@ -394,9 +417,29 @@ void *u8_dynamic_load(u8_string name)
   u8_free(modname);
   return module;
 }
+
+U8_EXPORT
+void *u8_dynamic_symbol(u8_string symname,void *module)
+{
+  void *val;
+  char *name=u8_tolibc(symname);
+  if (module == NULL) {
+    val=dlsym(RTLD_DEFAULT,name);
+    u8_free(name);
+    return val;}
+  else {
+    val=dlsym(RTLD_DEFAULT,name);
+    u8_free(name);
+    return val;}
+}
 #else
 U8_EXPORT
 void *u8_dynamic_load(u8_string name)
+{
+  u8_seterr(NoDynamicLoading,"u8_dynamic_load",u8_strdup(name));
+  return NULL;
+}
+void *u8_dynamic_symbol(u8_string name,void *module)
 {
   u8_seterr(NoDynamicLoading,"u8_dynamic_load",u8_strdup(name));
   return NULL;

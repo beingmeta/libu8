@@ -1,8 +1,9 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
 #include "libu8/libu8.h"
 #include "libu8/u8streamio.h"
-#include "strings.h"
-#include "stdlib.h"
-#include "stdio.h"
 
 int main(int argc,char **argv)
 {
