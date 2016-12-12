@@ -162,10 +162,13 @@ tests/dynamic/%: tests/%.c
 lib/%@suffix@.a:
 	@echo MKSTATIC $@
 	@$(MKSTATIC) $@ $^
-lib/%@suffix@.so:
+lib/%@suffix@.so.@U8VERSION@:
 	@echo MKSO $@
 	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -Llib -o $@ $^ -lu8 $(LIBS)
-	@ln -sf $(@F) $(@D)/$(@F).@U8MAJOR@
+lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
+	ln -sf $(<F) $@
+	ln -sf $(<F) $@.@U8MAJOR@
+
 lib/%@suffix@.dylib:
 	@echo MACLIBTOOL $@
 	@$(MACLIBTOOL) -install_name @rpath/lib/$(*F).@U8MAJOR@.dylib \
@@ -242,49 +245,46 @@ include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile
 	  mv etc/use_revision.h $@; 					\
 	fi
 lib/libu8.a: $(LIBU8_OBJECTS)
-lib/libu8@suffix@.so: $(LIBU8_OBJECTS)
+lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
 lib/libu8.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
 # Avoid recursive reference for the libu8 library itself
-lib/libu8@suffix@.so: $(LIBU8_OBJECTS)
-	@$(MKSO) -Wl,-soname=$(@F) -Llib -o $@.@U8VERSION@ $^ $(LIBS)
-	ln -sf $(@F).@U8VERSION@ $@.@U8MAJOR@.@U8MINOR@
-	ln -sf $(@F).@U8VERSION@ $@.@U8MAJOR@
-	ln -sf $(@F).@U8VERSION@ $@
+lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
+	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -Llib -o $@ $^ $(LIBS)
 	@echo MKSO $@
 
 lib/libu8core.a: $(LIBU8CORE_OBJECTS)
-lib/libu8core@suffix@.so: $(LIBU8CORE_OBJECTS)
+lib/libu8core@suffix@.so.@U8VERSION@: $(LIBU8CORE_OBJECTS)
 lib/libu8core.dylib: $(LIBU8CORE_OBJECTS)
 lib/libu8core.dll: $(LIBU8CORE_OBJECTS)
 # Avoid recursive reference
 lib/libu8core@suffix@.so.@U8VERSION@:
-	@$(MKSO) -Wl,-soname=$(@F) -o $@ $^
+	@$(MKSO) -Wl,-soname=$(@F)@U8MAJOR@ -o $@ $^
 	@echo MKSO $@
 
 lib/libu8fns.a: $(LIBU8FNS_OBJECTS)
-lib/libu8fns@suffix@.so: $(LIBU8FNS_OBJECTS)
+lib/libu8fns@suffix@.so.@U8VERSION@: $(LIBU8FNS_OBJECTS)
 lib/libu8fns.dylib: $(LIBU8FNS_OBJECTS) lib/libu8.dylib
 lib/libu8fns.dll: $(LIBU8FNS_OBJECTS) libu8.dll
 
 lib/libu8data.a: $(LIBU8DATA_OBJECTS)
-lib/libu8data@suffix@.so: $(LIBU8DATA_OBJECTS)
+lib/libu8data@suffix@.so.@U8VERSION@: $(LIBU8DATA_OBJECTS)
 lib/libu8data.dylib: $(LIBU8DATA_OBJECTS) lib/libu8.dylib lib/libu8fns.dylib
 lib/libu8data.dll: $(LIBU8DATA_OBJECTS) lib/libu8.dll lib/libu8fns.dll
 
 lib/libu8io.a: $(LIBU8IO_OBJECTS)
-lib/libu8io@suffix@.so: $(LIBU8IO_OBJECTS)
+lib/libu8io@suffix@.so.@U8VERSION@: $(LIBU8IO_OBJECTS)
 lib/libu8io.dylib: $(LIBU8IO_OBJECTS) \
 	lib/libu8.dylib lib/libu8fns.dylib
 lib/libu8io.dll: $(LIBU8IO_OBJECTS) lib/libu8.dll lib/libu8fns.dll
 
 lib/libu8stdio.a: $(LIBU8STDIO_OBJECTS)
-lib/libu8stdio@suffix@.so: $(LIBU8STDIO_OBJECTS)
+lib/libu8stdio@suffix@.so.@U8VERSION@: $(LIBU8STDIO_OBJECTS)
 lib/libu8stdio.dylib: $(LIBU8STDIO_OBJECTS) lib/libu8.dylib
 lib/libu8stdio.dll: $(LIBU8STDIO_OBJECTS) lib/libu8.dll
 
 lib/libu8syslog.a: $(LIBU8SYSLOG_OBJECTS)
-lib/libu8syslog@suffix@.so: $(LIBU8SYSLOG_OBJECTS)
+lib/libu8syslog@suffix@.so.@U8VERSION@: $(LIBU8SYSLOG_OBJECTS)
 lib/libu8syslog.dylib: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dylib
 lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
 
