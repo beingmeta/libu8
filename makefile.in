@@ -164,7 +164,8 @@ lib/%@suffix@.a:
 	@$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
 	@echo MKSO $@
-	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -Llib -o $@ $^ -lu8 $(LIBS)
+	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
+		 -Llib -o $@ $^ -lu8 $(LIBS)
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	ln -sf $(<F) $@
 	ln -sf $(<F) $@.@U8MAJOR@
