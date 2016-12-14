@@ -91,7 +91,7 @@ static int fill_xinput(struct U8_XINPUT *xf)
   u8_byte *start=(u8_byte *)xf->u8_inbuf, *cur=(u8_byte *)xf->u8_read;
   u8_byte *end=(u8_byte *)xf->u8_inlim;
   if (cur>start) {
-    /* First, if we've read anything at all, overwrite it, compressing the
+    /* First, if we've read anything at all, remove it, compressing the
        input buffer to make more space. */
     memmove(start,cur,unread_bytes);
     /* Now we're reading form the front of the buffer. */
@@ -114,11 +114,10 @@ static int fill_xinput(struct U8_XINPUT *xf)
      buffer, arranging the output to write to the end of the valid
      input. Conversion will write to this output stream, filling up
      the input buffer. */
-  if ((xf->u8_streaminfo)&(U8_STREAM_MALLOCD)) {
-    U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,xf->u8_inbuf,
-		     U8_STREAM_MALLOCD);}
-  else {U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,xf->u8_inbuf,
-			 U8_FIXED_STREAM);}
+  {U8_INIT_OUTPUT_X( &tmpout, xf->u8_bufsz, xf->u8_inbuf,
+		     (((xf->u8_streaminfo)&(U8_STREAM_MALLOCD))?
+		      (U8_STREAM_MALLOCD):
+		      (U8_FIXED_STREAM)) );}
   /* Position the temporary output stream at the end of the valid input. */
   tmpout.u8_write=end;
   /* Now we do the actual conversion, where u8_convert writes into the
