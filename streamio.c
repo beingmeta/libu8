@@ -76,8 +76,8 @@ ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
 {
   int owns_buf = ((in->u8_streaminfo)&(U8_STREAM_OWNS_BUF));
   size_t max = in->u8_bufsz, 
-    bytes_buffered = in->u8_inlim - in->u8_inptr,
-    bytes_read = in->u8_inptr - in->u8_inbuf;
+    bytes_buffered = in->u8_inlim - in->u8_read,
+    bytes_read = in->u8_read - in->u8_inbuf;
   size_t new_max = ((max>=U8_BUF_THROTTLE_POINT)?
                     (max+(U8_BUF_THROTTLE_POINT/2)):
                     (max*2));
@@ -94,8 +94,8 @@ ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
   u8_byte *buf = in->u8_inbuf, *new_buf=NULL;
   /* Reset buffer */
   if (bytes_read>0) {
-    memcpy(buf, in->u8_inptr, bytes_buffered);
-    in->u8_inptr = buf;
+    memcpy(buf, in->u8_read, bytes_buffered);
+    in->u8_read = buf;
     in->u8_inlim -= bytes_read;
     *(in->u8_inlim) = '\0';}
   /* Try to allocate a new buffer */
@@ -115,7 +115,7 @@ ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
     memcpy(new_buf,buf,bytes_buffered);
     in->u8_streaminfo|=U8_STREAM_OWNS_BUF;}
   in->u8_inbuf=new_buf;
-  in->u8_inptr=new_buf;
+  in->u8_read=new_buf;
   in->u8_inlim=new_buf+bytes_buffered;
   in->u8_bufsz=new_max;
   return new_max;
@@ -135,7 +135,7 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
   size_t new_max = ((max>=U8_BUF_THROTTLE_POINT)?
                     (max+(U8_BUF_THROTTLE_POINT/2)):
                     (max*2)),
-    bytes_buffered = out->u8_outptr - out->u8_outbuf;
+    bytes_buffered = out->u8_write - out->u8_outbuf;
   if (to_size<0) 
     to_size=new_max;
   else if (to_size<(max+U8_BUF_MIN_GROW))
@@ -163,7 +163,7 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
     memcpy(new_buf,buf,bytes_buffered);
     out->u8_streaminfo|=U8_STREAM_OWNS_BUF;}
   out->u8_outbuf=new_buf;
-  out->u8_outptr=new_buf+bytes_buffered;
+  out->u8_write=new_buf+bytes_buffered;
   out->u8_outlim=new_buf+new_max;
   out->u8_bufsz=new_max;
   return new_max;
@@ -185,72 +185,72 @@ U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int ch)
   else if (ch < 0x4000000) size=5;
   else if (ch < 0x80000000) size=6;
   else return u8_reterr(u8_BadUnicodeChar,"u8_putc",NULL);
-  if ((f->u8_outptr+size+1>=f->u8_outlim) && (f->u8_flushfn))
+  if ((f->u8_write+size+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
-  if (f->u8_outptr+size+1>=f->u8_outlim) {
+  if (f->u8_write+size+1>=f->u8_outlim) {
     ssize_t rv= u8_grow_stream((u8_stream)f,size+1);
     if (rv==0) return 0;
     else if (rv<0) {
       u8_graberr(-1,"u8_putc",NULL);
       return -1;}
-    if (f->u8_outptr+size+1>=f->u8_outlim) {
+    if (f->u8_write+size+1>=f->u8_outlim) {
       u8_graberr(-1,"u8_putc",NULL);
       return -1;}}
-  shift=(size-1)*6; write=f->u8_outptr;
+  shift=(size-1)*6; write=f->u8_write;
   *write++=off[size-1]|(masks[size-1]&(ch>>shift));
   shift=shift-6; size--;
   while (size) {
     *write++=0x80|((ch>>shift)&0x3F); shift=shift-6; size--;}
-  *write='\0'; f->u8_outptr=write;
+  *write='\0'; f->u8_write=write;
   return 1;
 }
 U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 {
   if (U8_EXPECT_FALSE(len==0)) return 0;
-  else if ((f->u8_outptr+len+1>=f->u8_outlim) && (f->u8_flushfn))
+  else if ((f->u8_write+len+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
-  if (f->u8_outptr+len+1>=f->u8_outlim) {
+  if (f->u8_write+len+1>=f->u8_outlim) {
     ssize_t rv=u8_grow_output_stream(f,len);
     if (rv==0) return 0;
     else if (rv<0) {
       u8_graberr(-1,"u8_putc",NULL);
       return -1;}
-    if (f->u8_outptr+len+1>=f->u8_outlim) {
+    if (f->u8_write+len+1>=f->u8_outlim) {
       u8_graberr(-1,"u8_putc",NULL);
       return -1;}}
-  memcpy(f->u8_outptr,data,len);
-  f->u8_outptr=f->u8_outptr+len; *(f->u8_outptr)='\0';
+  memcpy(f->u8_write,data,len);
+  f->u8_write=f->u8_write+len; *(f->u8_write)='\0';
   return len;
 }
 U8_EXPORT int _u8_getc(struct U8_INPUT *f)
 {
   int i, ch, byte, size;
   const u8_byte *scan;
-  if (f->u8_inptr>=f->u8_inlim) {
+  if (f->u8_read>=f->u8_inlim) {
     /* Try to get more data */
     if (f->u8_fillfn) f->u8_fillfn(f);
     /* If you can't, just return */
-    if (f->u8_inptr>=f->u8_inlim) return -1;}
-  byte=*(f->u8_inptr);
+    if (f->u8_read>=f->u8_inlim) return -1;}
+  byte=*(f->u8_read);
   if (byte < 0x80) {
-    f->u8_inptr++; return byte;}
+    f->u8_read++; return byte;}
   else if (byte < 0xc0) {
     /* Unexpected continuation byte */
     if ((u8_utf8err)||
         ((f->u8_streaminfo&U8_STREAM_UTF8ERR)==U8_STREAM_UTF8ERR)) {
-      char *details=u8_grab_bytes(f->u8_inptr,UTF8_BUGWINDOW,NULL);
+      char *details=u8_grab_bytes(f->u8_read,UTF8_BUGWINDOW,NULL);
       u8_log(LOG_WARN,u8_BadUTF8,
              _("Unexpected UTF-8 continuation byte: '%s'"),details);
       u8_seterr(u8_BadUTF8byte,"u8_getc",details);
-      (f->u8_inptr)++;
+      (f->u8_read)++;
       return -2;}
     else if ((u8_utf8warn)||
              ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN)) {
       char window[UTF8_BUGWINDOW];
-      u8_grab_bytes(f->u8_inptr,UTF8_BUGWINDOW,window);
+      u8_grab_bytes(f->u8_read,UTF8_BUGWINDOW,window);
       u8_log(LOG_WARN,u8_BadUTF8,
              _("Unexpected UTF-8 continuation byte: '%s'"),window);}
-    (f->u8_inptr)++;
+    (f->u8_read)++;
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */
   else if (byte < 0xE0) {size=2; ch=byte&0x1F;}
@@ -260,32 +260,32 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
   else if (byte < 0xFE) {size=6; ch=byte&0x1;}
   else if ((u8_utf8err)||
            ((f->u8_streaminfo&U8_STREAM_UTF8ERR)==U8_STREAM_UTF8ERR)) {
-    char *details=u8_grab_bytes(f->u8_inptr,UTF8_BUGWINDOW,NULL);
+    char *details=u8_grab_bytes(f->u8_read,UTF8_BUGWINDOW,NULL);
     u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: '%s'"),details);
     u8_seterr(u8_BadUTF8byte,"u8_getc",details);
-    f->u8_inptr++;  /* Consume the byte */
+    f->u8_read++;  /* Consume the byte */
     return -2;}
   else { /* Bad data, return the character */
     if ((u8_utf8warn)||
         ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN)) {
       char window[UTF8_BUGWINDOW];
-      u8_grab_bytes(f->u8_inptr,UTF8_BUGWINDOW,window);
+      u8_grab_bytes(f->u8_read,UTF8_BUGWINDOW,window);
       u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: '%s'"),window);}
-    f->u8_inptr++;  /* Consume the byte */
+    f->u8_read++;  /* Consume the byte */
     return 0xFFFD;}
   /* Now, we now how many u8_inbuf we need, so we check if we have
      that much data. */
-  if (f->u8_inptr+size>f->u8_inlim) /* Not enough data */
+  if (f->u8_read+size>f->u8_inlim) /* Not enough data */
     if (f->u8_fillfn) {
       /* Try to fill the buffer */
-      int n_u8_inbuf=f->u8_inlim-f->u8_inptr;
+      int n_u8_inbuf=f->u8_inlim-f->u8_read;
       while (n_u8_inbuf<size) {
         if (f->u8_fillfn(f)==0) return -1;
-        else n_u8_inbuf=f->u8_inlim-f->u8_inptr;}}
+        else n_u8_inbuf=f->u8_inlim-f->u8_read;}}
     else return -1;
   else {}
   /* We have enough data, so now we just do a UTF-8 read. */
-  i=size-1; f->u8_inptr++; scan=f->u8_inptr;
+  i=size-1; f->u8_read++; scan=f->u8_read;
   while (i) {
     if ((*scan<0x80) || (*scan>=0xC0)) {
       if ((u8_utf8err)||
@@ -294,38 +294,38 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
         u8_log(LOG_WARN,u8_BadUTF8,
                _("Truncated UTF-8 sequence: '%s'"),details);
         u8_seterr(u8_TruncatedUTF8,"u8_getc",details);
-        f->u8_inptr=(u8_byte *)scan; /* Consume the bad sequence */
+        f->u8_read=(u8_byte *)scan; /* Consume the bad sequence */
         return -2;}
       else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN)) {
         char window[UTF8_BUGWINDOW];
         u8_grab_bytes(scan,UTF8_BUGWINDOW,window);
         u8_log(LOG_WARN,u8_BadUTF8,
                _("Truncated UTF-8 sequence: '%s'"),window);}
-      f->u8_inptr=(u8_byte *)scan; /* Consume the truncated byte sequence */
+      f->u8_read=(u8_byte *)scan; /* Consume the truncated byte sequence */
       return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}
   /* And now we update the data structure */
-  f->u8_inptr=(u8_byte *)scan;
+  f->u8_read=(u8_byte *)scan;
   return ch;
 }
 
 static int peekc(struct U8_INPUT *f,int fill)
 {
   int i, ch, byte, size;
-  const u8_byte *start=f->u8_inptr, *scan=start;
-  if (f->u8_inptr>=f->u8_inlim) {
+  const u8_byte *start=f->u8_read, *scan=start;
+  if (f->u8_read>=f->u8_inlim) {
     if (fill) {
       /* Try to get more data */
       if (f->u8_fillfn) f->u8_fillfn(f);
       /* If you can't, just return */
-      if (f->u8_inptr>=f->u8_inlim) return -1;}
+      if (f->u8_read>=f->u8_inlim) return -1;}
     else return -1;}
-  byte=*(f->u8_inptr);
+  byte=*(f->u8_read);
   if (byte < 0x80) return byte;
   else if (byte < 0xc0) {   /* Catch this error */
     if ((u8_utf8err)||
         ((f->u8_streaminfo&U8_STREAM_UTF8ERR)==U8_STREAM_UTF8ERR)) {
-      char *details=u8_grab_bytes(f->u8_inptr,U8_UTF8BUG_WINDOW,NULL);
+      char *details=u8_grab_bytes(f->u8_read,U8_UTF8BUG_WINDOW,NULL);
       u8_seterr(u8_BadUTF8,"u8_getc",details);
       return -2;}
     else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN)) {
@@ -343,21 +343,21 @@ static int peekc(struct U8_INPUT *f,int fill)
     return 0xFFFD;}
   /* Now, we now how many u8_inbuf we need, so we check if we have
      that much data. */
-  if (f->u8_inptr+size>f->u8_inlim) /* Not enough data */
+  if (f->u8_read+size>f->u8_inlim) /* Not enough data */
     if (!(fill)) return -1;
     else if (f->u8_fillfn) {
       /* Try to fill the buffer */
-      int n_u8_inbuf=f->u8_inlim-f->u8_inptr;
+      int n_u8_inbuf=f->u8_inlim-f->u8_read;
       while (n_u8_inbuf<size) {
         if (f->u8_fillfn(f)==0) return -1;
-        else n_u8_inbuf=f->u8_inlim-f->u8_inptr;}}
+        else n_u8_inbuf=f->u8_inlim-f->u8_read;}}
     else return -1;
   else {}
   /* We have enough data, so now we just do a UTF-8 read. */
-  i=size=1; scan=f->u8_inptr;
+  i=size=1; scan=f->u8_read;
   while (i) {
     if ((*scan<0x80) || (*scan>=0xC0)) {
-      f->u8_inptr=(u8_byte *)scan;
+      f->u8_read=(u8_byte *)scan;
       if ((u8_utf8err)||
 	  ((f->u8_streaminfo&U8_STREAM_UTF8ERR)==U8_STREAM_UTF8ERR)) {
 	return u8_reterr(u8_BadUTF8,"u8_getc",u8_strdup(start));}
@@ -379,22 +379,22 @@ U8_EXPORT
 int _u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f)
 {
   /* First, check if we need to get more data into the buffer. */
-  if (f->u8_inptr+n>f->u8_inlim) /* Not enough data */
+  if (f->u8_read+n>f->u8_inlim) /* Not enough data */
     if (f->u8_fillfn) {
       /* Try to fill the buffer */
-      int n_u8_inbuf=f->u8_inlim-f->u8_inptr;
+      int n_u8_inbuf=f->u8_inlim-f->u8_read;
       while (n_u8_inbuf<n) {
         if (f->u8_fillfn(f)==0) return -1;
-        else n_u8_inbuf=f->u8_inlim-f->u8_inptr;}}
+        else n_u8_inbuf=f->u8_inlim-f->u8_read;}}
     else return -1;
   else {}
   /* Check if it worked */
-  if (f->u8_inptr+n>f->u8_inlim) return -1;
+  if (f->u8_read+n>f->u8_inlim) return -1;
   /* We have enough data, so now we need to get the size of
      the largest valid UTF-8 string less than *n* u8_inbuf */
-  n=u8_validate(f->u8_inptr,n);
+  n=u8_validate(f->u8_read,n);
   /* Now we just copy the u8_inbuf over */
-  strncpy(ptr,f->u8_inptr,n); ptr[n]='\0'; f->u8_inptr=f->u8_inptr+n;
+  strncpy(ptr,f->u8_read,n); ptr[n]='\0'; f->u8_read=f->u8_read+n;
   return n;
 }
 
@@ -416,13 +416,13 @@ u8_string u8_gets_x(u8_byte *buf,int len,
                     struct U8_INPUT *f,u8_string eos,
                     int *sizep)
 {
-  const u8_byte *found=NULL, *start=f->u8_inptr, *end=NULL;
+  const u8_byte *found=NULL, *start=f->u8_read, *end=NULL;
   int size, ec=-1;
-  if (f->u8_inptr>=f->u8_inlim) {
+  if (f->u8_read>=f->u8_inlim) {
     if (sizep) *sizep=0;
     return NULL;}
   while (((found=strstr(start,eos))==NULL)||(found>f->u8_inlim)) {
-    int start_pos=f->u8_inlim-f->u8_inptr, retval=0;
+    int start_pos=f->u8_inlim-f->u8_read, retval=0;
     /* Quit if we have length constraints which
        we are already past. */
     if (f->u8_fillfn) retval=f->u8_fillfn(f);
@@ -430,9 +430,9 @@ u8_string u8_gets_x(u8_byte *buf,int len,
     else if (retval<0) {
       if (sizep) *sizep=retval;
       return NULL;}
-    start=f->u8_inptr+start_pos;}
+    start=f->u8_read+start_pos;}
   if (found) {
-    size=(found-f->u8_inptr);
+    size=(found-f->u8_read);
     if (sizep) *sizep=size;
     /* No data, return NULL */
     if ((buf) && (size>=len)) return NULL;
@@ -441,7 +441,7 @@ u8_string u8_gets_x(u8_byte *buf,int len,
       u8_getn(buf,size,f);
     else buf[0]='\0';
     /* Advance past the separator */
-    f->u8_inptr=f->u8_inptr+strlen(eos);
+    f->u8_read=f->u8_read+strlen(eos);
     return buf;}
   else return NULL;
 }
@@ -462,8 +462,8 @@ int u8_ungetc(struct U8_INPUT *f,int ch)
      the assumption that the last thing we did to it was a read
      operation buffer which returned after any buffer compaction. */
   if (ch<0x80)
-    if ((f->u8_inptr>f->u8_inbuf) && (f->u8_inptr[-1]==ch)) {
-      f->u8_inptr--;
+    if ((f->u8_read>f->u8_inbuf) && (f->u8_read[-1]==ch)) {
+      f->u8_read--;
       return ch;}
     else {
       char buf[32];
@@ -473,10 +473,10 @@ int u8_ungetc(struct U8_INPUT *f,int ch)
   else {
     struct U8_OUTPUT tmpout; u8_byte buf[16]; int size;
     U8_INIT_FIXED_OUTPUT(&tmpout,16,buf);
-    u8_putc(&tmpout,ch); size=tmpout.u8_outptr-tmpout.u8_outbuf;
-    if ((f->u8_inptr>f->u8_inbuf+size) &&
-        (strncmp(f->u8_inptr-size,tmpout.u8_outbuf,size)==0)) {
-      f->u8_inptr=f->u8_inptr-size; return ch;}
+    u8_putc(&tmpout,ch); size=tmpout.u8_write-tmpout.u8_outbuf;
+    if ((f->u8_read>f->u8_inbuf+size) &&
+        (strncmp(f->u8_read-size,tmpout.u8_outbuf,size)==0)) {
+      f->u8_read=f->u8_read-size; return ch;}
     else {
       char buf[32];
       sprintf(buf,"\\U%08x",ch);
@@ -491,13 +491,13 @@ U8_EXPORT
 */
 int u8_get_entity(struct U8_INPUT *f)
 {
-  const u8_byte *semi=strchr(f->u8_inptr,';');
+  const u8_byte *semi=strchr(f->u8_read,';');
   if (((semi==NULL)||(semi>=f->u8_inlim))&&(f->u8_fillfn)) {
     f->u8_fillfn(f);
-    semi=strchr(f->u8_inptr,';');}
-  if (f->u8_inptr==f->u8_inlim) return -1;
+    semi=strchr(f->u8_read,';');}
+  if (f->u8_read==f->u8_inlim) return -1;
   else {
-    const u8_byte *start=f->u8_inptr; u8_string end=NULL;
+    const u8_byte *start=f->u8_read; u8_string end=NULL;
     int code=u8_parse_entity(start,&end);
     if ((code<0) && (end) && (f->u8_fillfn)) {
       /* If code<0 and end was set, that meant it got started but
@@ -506,7 +506,7 @@ int u8_get_entity(struct U8_INPUT *f)
       code=u8_parse_entity(start,&end);}
     else {}
     if (code>=0) {
-      f->u8_inptr=(u8_byte *)end;
+      f->u8_read=(u8_byte *)end;
       return code;}
     else return -1;}
 }
@@ -530,7 +530,7 @@ U8_INPUT *u8_open_input_string(u8_string input)
 
 U8_EXPORT void u8_flush_input(struct U8_INPUT *f)
 {
-  f->u8_inlim=f->u8_inptr=f->u8_inbuf;
+  f->u8_inlim=f->u8_read=f->u8_inbuf;
 }
 
 U8_EXPORT

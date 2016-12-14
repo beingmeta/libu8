@@ -101,7 +101,7 @@ u8_string standardize_encoding_name(u8_string string)
     if ((c<0x80) && (isalnum(c))) {
       int upper=toupper(c);
       u8_putc(&out,upper);}
-  if (out.u8_outptr-out.u8_outbuf<64) {
+  if (out.u8_write-out.u8_outbuf<64) {
     char skey[200], *alias;
     sprintf(skey,"+%s:",out.u8_outbuf);
     alias=strstr(encname_aliases,skey);
@@ -949,7 +949,7 @@ static void convert_mime_header_text
   const unsigned char *rawdata, *rawend, *scan;
   unsigned char enc_code=chend[1];
   u8_encoding encoding;
-  int startlen=out->u8_outptr-out->u8_outbuf, raw_bytes;
+  int startlen=out->u8_write-out->u8_outbuf, raw_bytes;
   if ((chend-chstart)>=64) encoding=NULL;
   else if (strchr("QqBb",enc_code)==NULL) encoding=NULL;
   else {
@@ -966,7 +966,7 @@ static void convert_mime_header_text
   u8_convert(encoding,1,out,&scan,rawend);
   if (scan<end) {
     /* This was malformed, so we don't do the conversion. */
-    out->u8_outptr=out->u8_outbuf+startlen; out->u8_outbuf[startlen]='\0';
+    out->u8_write=out->u8_outbuf+startlen; out->u8_outbuf[startlen]='\0';
     u8_putn(out,start,end-start);
     return;}
   /* Free the encoded data we converted. */

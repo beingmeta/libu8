@@ -85,17 +85,17 @@ static int fill_xinput(struct U8_XINPUT *xf)
        * Updating all the various pointers in the structure.
   */
   struct U8_OUTPUT tmpout; int convert_val;
-  int unread_bytes=xf->u8_inlim-xf->u8_inptr;
+  int unread_bytes=xf->u8_inlim-xf->u8_read;
   int bytes_read, bytes_converted;
   const unsigned char *reader, *limit;
-  u8_byte *start=(u8_byte *)xf->u8_inbuf, *cur=(u8_byte *)xf->u8_inptr;
+  u8_byte *start=(u8_byte *)xf->u8_inbuf, *cur=(u8_byte *)xf->u8_read;
   u8_byte *end=(u8_byte *)xf->u8_inlim;
   if (cur>start) {
     /* First, if we've read anything at all, overwrite it, compressing the
        input buffer to make more space. */
     memmove(start,cur,unread_bytes);
     /* Now we're reading form the front of the buffer. */
-    xf->u8_inptr=xf->u8_inbuf;
+    xf->u8_read=xf->u8_inbuf;
     /* And the limit of valid data is just unread_bytes further on */
     end= xf->u8_inlim= xf->u8_inbuf+unread_bytes;
     /* Null terminate it, if there's space (there has to be) */
@@ -120,7 +120,7 @@ static int fill_xinput(struct U8_XINPUT *xf)
   else {U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,xf->u8_inbuf,
 			 U8_FIXED_STREAM);}
   /* Position the temporary output stream at the end of the valid input. */
-  tmpout.u8_outptr=end;
+  tmpout.u8_write=end;
   /* Now we do the actual conversion, where u8_convert writes into the
      string stream passed it as its first argument. If this has any trouble,
      it will stop and reader will hold the most recent conversion state. */
@@ -137,9 +137,9 @@ static int fill_xinput(struct U8_XINPUT *xf)
     xf->u8_inbuf=tmpout.u8_outbuf;}
   else xf->u8_inbuf=tmpout.u8_outbuf;
   /* Now we copy stuff back into the input stream. */
-  xf->u8_inptr=tmpout.u8_outbuf;
+  xf->u8_read=tmpout.u8_outbuf;
   /* The limit of the valid input is the end of the tmpout stream. */
-  xf->u8_inlim=tmpout.u8_outptr;
+  xf->u8_inlim=tmpout.u8_write;
   xf->u8_bufsz=tmpout.u8_bufsz;
   /* Just in case tmpout grew while being filled but was originally static */
   if ((tmpout.u8_streaminfo)&(U8_STREAM_MALLOCD))
@@ -153,7 +153,7 @@ static int fill_xinput(struct U8_XINPUT *xf)
     /* If you erred, return the errval */
     return convert_val;
   /* Return the number of new unread UTF-8 bytes */
-  else return (xf->u8_inlim-xf->u8_inptr)-unread_bytes;
+  else return (xf->u8_inlim-xf->u8_read)-unread_bytes;
 }
 U8_EXPORT int u8_init_xinput(struct U8_XINPUT *xi,int fd,u8_encoding enc)
 {
@@ -236,9 +236,9 @@ static int flush_xoutput(struct U8_XOUTPUT *xf)
 {
   unsigned char *buf=xf->xbuf;
   int buflen=xf->xbuflim;
-  while (xf->u8_outptr>xf->u8_outbuf) {
+  while (xf->u8_write>xf->u8_outbuf) {
     /* Pick the region to change */
-    const u8_byte *scan=xf->u8_outbuf, *scan_end=xf->u8_outptr;
+    const u8_byte *scan=xf->u8_outbuf, *scan_end=xf->u8_write;
     /* Convert the data to the appropriate encoding */
     u8_localize(xf->encoding,&scan,scan_end,
                 xf->escape,(xf->u8_streaminfo&U8_STREAM_CRLFS),
@@ -247,11 +247,11 @@ static int flush_xoutput(struct U8_XOUTPUT *xf)
     u8_writeall(xf->fd,buf,buflen);
     /* Write over what you just wrote out with what you haven't written
        yet and move the point to the end of the unwritten data. */
-    memmove(xf->u8_outbuf,scan,xf->u8_outptr-scan);
-    xf->u8_outptr=xf->u8_outbuf+(xf->u8_outptr-scan);
+    memmove(xf->u8_outbuf,scan,xf->u8_write-scan);
+    xf->u8_write=xf->u8_outbuf+(xf->u8_write-scan);
     /* Reset the buflen to the limit */
     buflen=xf->xbuflim;}
-  return xf->u8_outlim-xf->u8_outptr;
+  return xf->u8_outlim-xf->u8_write;
 }
 
 U8_EXPORT int u8_init_xoutput
@@ -325,12 +325,12 @@ U8_EXPORT off_t u8_getpos(struct U8_STREAM *f)
   if ((f->u8_streaminfo)&(U8_STREAM_CAN_SEEK))
     if ((f->u8_streaminfo)&(U8_OUTPUT_STREAM)) {
       struct U8_XOUTPUT *out=(struct U8_XOUTPUT *)f;
-      int delta=out->u8_outptr-out->u8_outbuf;
+      int delta=out->u8_write-out->u8_outbuf;
       off_t pos=lseek(out->fd,0,SEEK_CUR);
       if (pos<0) return pos; else return pos+delta;}
     else {
       struct U8_XINPUT *in=(struct U8_XINPUT *)f;
-      int delta=in->u8_inlim-in->u8_inptr;
+      int delta=in->u8_inlim-in->u8_read;
       off_t pos=lseek(in->fd,0,SEEK_CUR);
       if (pos<0) return pos; else return pos-delta;}
   else {
@@ -348,7 +348,7 @@ U8_EXPORT off_t u8_setpos(struct U8_STREAM *f,off_t off)
     else {
       struct U8_XINPUT *in=(struct U8_XINPUT *)f;
       u8_byte *buf=(u8_byte *)in->u8_inbuf;
-      in->u8_inptr=in->u8_inlim=in->u8_inbuf; *buf='\0';
+      in->u8_read=in->u8_inlim=in->u8_inbuf; *buf='\0';
       return lseek(in->fd,off,SEEK_SET);}
   else {
     u8_seterr(u8_nopos,"u8_setpos",NULL);
@@ -384,7 +384,7 @@ U8_EXPORT double u8_getprogress(struct U8_STREAM *f)
   if ((f->u8_streaminfo)&(U8_STREAM_CAN_SEEK))
     if ((f->u8_streaminfo)&(U8_OUTPUT_STREAM)) {
       struct U8_XOUTPUT *out=(struct U8_XOUTPUT *)f;
-      int delta=out->u8_outptr-out->u8_outbuf;
+      int delta=out->u8_write-out->u8_outbuf;
       off_t cur=lseek(out->fd,0,SEEK_CUR);
       off_t end=lseek(out->fd,0,SEEK_END);
       if (lseek(out->fd,cur,SEEK_SET)<0) {
@@ -393,7 +393,7 @@ U8_EXPORT double u8_getprogress(struct U8_STREAM *f)
       else return 100.0*(((double)(cur+delta))/((double)end));}
     else {
       struct U8_XINPUT *in=(struct U8_XINPUT *)f;
-      int delta=in->u8_inlim-in->u8_inptr;
+      int delta=in->u8_inlim-in->u8_read;
       off_t cur=lseek(in->fd,0,SEEK_CUR);
       off_t end=lseek(in->fd,0,SEEK_END);
       if (lseek(in->fd,cur,SEEK_SET)<0) {

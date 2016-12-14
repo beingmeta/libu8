@@ -119,7 +119,7 @@ ssize_t u8_grow_stream(struct U8_STREAM *stream,int delta);
   /* Size of the buffer, and bits. */          \
   int u8_bufsz, u8_streaminfo;                 \
   /* The buffer, where we are in it, and where it runs out. */ \
-  u8_byte *u8_outbuf, *u8_outptr, *u8_outlim;  \
+  u8_byte *u8_outbuf, *u8_write, *u8_outlim;  \
   /* How we get more space */                  \
   int (*u8_closefn)(struct U8_OUTPUT *);       \
   int (*u8_flushfn)(struct U8_OUTPUT *);
@@ -130,7 +130,7 @@ ssize_t u8_grow_stream(struct U8_STREAM *stream,int delta);
      operate over.
     At any point, the stream has at least one internal buffer of UTF-8
      characters, pointed to by u8_inbuf and with a current cursor of
-     u8_inptr and a limit (the end of writable data) of u8_inlim.  The size
+     u8_read and a limit (the end of writable data) of u8_inlim.  The size
      of the buffer is in u8_bufsz (note that this is redundant with u8_outlim)
      and various other bits are stored in u8_streaminfo.
     If an output operation overflows the buffer, the u8_flushfn (if non-NULL)
@@ -174,9 +174,9 @@ static void U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags)
 {
   char *usebuf;
   assert(sz>0);
-  if (buf) usebuf=(s)->u8_outptr=(s)->u8_outbuf=buf;
+  if (buf) usebuf=(s)->u8_write=(s)->u8_outbuf=buf;
   else {
-    usebuf=(s)->u8_outptr=(s)->u8_outbuf=u8_malloc(sz);
+    usebuf=(s)->u8_write=(s)->u8_outbuf=u8_malloc(sz);
     memset(usebuf,0,sz);}
   (s)->u8_outlim=(s)->u8_outbuf+sz;
   (s)->u8_bufsz=sz;
@@ -235,7 +235,7 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
 /** Returns the string content of the output stream. **/
 #define u8_outstring(s) ((s)->u8_outbuf)
 /** Returns the length in bytes of the string content of the output stream. **/
-#define u8_outlen(s)    (((s)->u8_outptr)-((s)->u8_outbuf))
+#define u8_outlen(s)    (((s)->u8_write)-((s)->u8_outbuf))
 
 U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int c);
 U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string string,int len);
@@ -250,9 +250,9 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string string,int len);
 **/
 U8_INLINE_FCN int u8_putc(struct U8_OUTPUT *f,int c)
 {
-  if (U8_EXPECT_FALSE(f->u8_outptr+1>=f->u8_outlim)) return _u8_putc(f,c);
+  if (U8_EXPECT_FALSE(f->u8_write+1>=f->u8_outlim)) return _u8_putc(f,c);
   else if (U8_EXPECT_TRUE((c<0x80)&&(c>0))) {
-    *(f->u8_outptr++)=c; *(f->u8_outptr)='\0'; return 1;}
+    *(f->u8_write++)=c; *(f->u8_write)='\0'; return 1;}
   else return _u8_putc(f,c);
 }
 
@@ -267,12 +267,12 @@ U8_INLINE_FCN int u8_putc(struct U8_OUTPUT *f,int c)
 U8_INLINE_FCN int u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 {
   if (U8_EXPECT_FALSE(len==0)) return 0;
-  if ((f->u8_outptr+len+1>=f->u8_outlim) && (f->u8_flushfn))
+  if ((f->u8_write+len+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
-  if (f->u8_outptr+len+1>=f->u8_outlim)
+  if (f->u8_write+len+1>=f->u8_outlim)
     return _u8_putn(f,data,len);
-  memcpy(f->u8_outptr,data,len);
-  f->u8_outptr=f->u8_outptr+len; *(f->u8_outptr)='\0';
+  memcpy(f->u8_write,data,len);
+  f->u8_write=f->u8_write+len; *(f->u8_write)='\0';
   return len;
 }
 #else
@@ -298,7 +298,7 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *outstream,ssize_t to_size);
   /* How big the buffer is, and other info. */                    \
   int u8_bufsz, u8_streaminfo;                                    \
   /* The buffer, the read point, and the end of valid data */     \
-  u8_byte *u8_inbuf, *u8_inptr, *u8_inlim;                        \
+  u8_byte *u8_inbuf, *u8_read, *u8_inlim;                        \
   /* The function we call to close the stream. */                 \
   int (*u8_closefn)(struct U8_INPUT *);                           \
   /* The function to get more data */                             \
@@ -311,7 +311,7 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *outstream,ssize_t to_size);
      operate over.
     At any point, the stream has at least one internal buffer of UTF-8
      characters, pointed to by u8_inbuf and with a current cursor of
-     u8_inptr and a limit (the end of valid data) of u8_inlim.  The size
+     u8_read and a limit (the end of valid data) of u8_inlim.  The size
      of the buffer is in u8_bufsz and various other bits are stored in
      u8_streaminfo.  If an input operation needs more than the buffered
      data, the u8_fillfn is called on the stream, if non-NULL.  Also
@@ -343,7 +343,7 @@ U8_INLINE_FCN void U8_INIT_STRING_INPUT(u8_input s,int n,const u8_byte *buf)
 {
   if (n<0) n=strlen(buf);
   (s)->u8_bufsz=n;
-  (s)->u8_inbuf=(s)->u8_inptr=(u8_byte *)buf;
+  (s)->u8_inbuf=(s)->u8_read=(u8_byte *)buf;
   (s)->u8_inlim=(u8_byte *)(buf+n);
   (s)->u8_closefn=_u8_close_sinput; (s)->u8_fillfn=NULL;
   (s)->u8_streaminfo=0;
@@ -362,7 +362,7 @@ U8_INLINE_FCN void U8_INIT_INPUT_X(u8_input s,int n,u8_byte *buf,int bits)
     bits=bits|U8_STREAM_OWNS_BUF;
     buf=u8_malloc(n); buf[0]='\0';}
   (s)->u8_bufsz=n;
-  (s)->u8_inbuf=(s)->u8_inptr=buf;
+  (s)->u8_inbuf=(s)->u8_read=buf;
   (s)->u8_inlim=buf;
   (s)->u8_closefn=_u8_close_sinput; (s)->u8_fillfn=NULL;
   (s)->u8_streaminfo=bits;
@@ -458,8 +458,8 @@ U8_EXPORT int u8_peekc(struct U8_INPUT *f);
 **/
 U8_INLINE_FCN int u8_getc(struct U8_INPUT *f)
 {
-  if (U8_EXPECT_FALSE(f->u8_inptr>=f->u8_inlim)) return _u8_getc(f);
-  else if (U8_EXPECT_TRUE(*(f->u8_inptr)<0x80)) return *(f->u8_inptr++);
+  if (U8_EXPECT_FALSE(f->u8_read>=f->u8_inlim)) return _u8_getc(f);
+  else if (U8_EXPECT_TRUE(*(f->u8_read)<0x80)) return *(f->u8_read++);
   else return _u8_getc(f);
 }
 /** Reads up to @a n bytes from @a f into @a ptr.
@@ -470,11 +470,11 @@ U8_INLINE_FCN int u8_getc(struct U8_INPUT *f)
 **/
 U8_INLINE_FCN int u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f)
 {
-  if (U8_EXPECT_FALSE(f->u8_inptr+n+1>=f->u8_inlim)) return _u8_getn(ptr,n,f);
+  if (U8_EXPECT_FALSE(f->u8_read+n+1>=f->u8_inlim)) return _u8_getn(ptr,n,f);
   else {
-    int valid_len=u8_validate(f->u8_inptr,n);
-    strncpy(ptr,f->u8_inptr,valid_len); ptr[valid_len]='\0';
-    f->u8_inptr=f->u8_inptr+valid_len;
+    int valid_len=u8_validate(f->u8_read,n);
+    strncpy(ptr,f->u8_read,valid_len); ptr[valid_len]='\0';
+    f->u8_read=f->u8_read+valid_len;
     return n;}
 }
 #else
