@@ -76,6 +76,30 @@ U8_EXPORT int u8_unlock_fd(int fd)
 }
 #endif
 
+U8_EXPORT int u8_get_blocking(int fd)
+{
+  int flags=fcntl(fd,F_GETFL);
+  if (flags<0) {
+    u8_graberr(errno,"u8_set_blocking",NULL);
+    return -1;}
+  else return (!(flags&O_NONBLOCK));
+}
+
+U8_EXPORT int u8_set_blocking(int fd,int block)
+{
+  int oflags=fcntl(fd,F_GETFL), rv;
+  if (oflags<0) {
+    u8_graberr(errno,"u8_set_blocking",NULL);
+    return -1;}
+  if (block)
+    rv=fcntl(fd,F_SETFL,(oflags&(~O_NONBLOCK)));
+  else rv=fcntl(fd,F_SETFL,(oflags|O_NONBLOCK));
+  if (rv<0) {
+    u8_graberr(errno,"u8_set_blocking",NULL);
+    return -1;}
+  else return (!(oflags&O_NONBLOCK));
+}
+
 /* Opening files */
 
 U8_EXPORT FILE *u8_fopen_locked(u8_string path,char *mode)

@@ -5,7 +5,7 @@
 
 #include "libu8/libu8.h"
 #include "libu8/libu8io.h"
-#include "libu8/xfiles.h"
+#include "libu8/u8xfiles.h"
 #include "libu8/u8ctype.h"
 #include "libu8/u8netfns.h"
 #include "libu8/u8srvfns.h"

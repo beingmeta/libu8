@@ -41,10 +41,10 @@ U8_EXPORT u8_condition u8_nopos, u8_nowrite, u8_no_read;
     of writable bytes in the buffer (it's allocated size).  **/
 typedef struct U8_XINPUT {
   U8_INPUT_FIELDS;
-  int fd; struct U8_TEXT_ENCODING *encoding; int escape;
-  unsigned char *xbuf; int xbuflen, xbuflim;
+  int u8_xfd; struct U8_TEXT_ENCODING *u8_xencoding; int u8_xescape;
+  unsigned char *u8_xbuf; int u8_xbuflive, u8_xbuflim;
 #if U8_THREADS_ENABLED
-  u8_mutex lock;
+  u8_mutex u8_lock;
 #endif
 } U8_XINPUT;
 typedef struct U8_XINPUT *u8_xinput;
@@ -67,10 +67,10 @@ typedef struct U8_XINPUT *u8_xinput;
     of writable bytes in the buffer (it's allocated size).  **/
 typedef struct U8_XOUTPUT {
   U8_OUTPUT_FIELDS;
-  int fd; struct U8_TEXT_ENCODING *encoding; int escape;
-  unsigned char *xbuf; int xbuflen, xbuflim;
+  int u8_xfd; struct U8_TEXT_ENCODING *u8_xencoding; int u8_xescape;
+  unsigned char *u8_xbuf; int u8_xbuflive, u8_xbuflim;
 #if U8_THREADS_ENABLED
-  u8_mutex lock;
+  u8_mutex u8_lock;
 #endif
   } U8_XOUTPUT;
 typedef struct U8_XOUTPUT *u8_xoutput;

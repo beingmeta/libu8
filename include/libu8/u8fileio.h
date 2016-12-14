@@ -80,6 +80,18 @@ U8_EXPORT int u8_open_fd(u8_string path,int flags,mode_t mode);
  **/
 U8_EXPORT int u8_close_fd(int fd);
 
+/** Checks if a file descriptor is blocking or not
+    @param fd a valid file descriptor
+    @returns -1 on error
+ **/
+U8_EXPORT int u8_get_blocking(int fd);
+
+/** Sets a file description to blocking or non blocking
+    @param fd a valid file descriptor
+    @returns -1 on error
+ **/
+U8_EXPORT int u8_set_blocking(int fd,int flag);
+
 /* Subscribing to files */
 
 /** The subscription structure maps filenames to ifchanged functions. **/

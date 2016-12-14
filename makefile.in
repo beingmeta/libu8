@@ -121,16 +121,15 @@ showbuildmode showmode showbuild: buildmode
 
 # configure/autoconf stuff
 
+# If the generated makefile is the same as the current makefile,
+# revert it (especially it's date) to avoid needless rebuilds.
 makefile: makefile.in config.status
 	@mv makefile makefile.tmp
-	./config.status
-	# If the generated makefile is the same as the current
-	# makefile, revert it (especially it's date) to avoid needless
-	# rebuilds.
+	@./config.status
 	@if diff makefile makefile.tmp 2>&1 > /dev/null; then 	\
 	  mv makefile.tmp makefile; 				\
 	else							\
-	 echo Updated makefile 					\
+	 echo Updated makefile; 				\
 	fi
 ./config.status: configure
 	./config.status --recheck
@@ -779,7 +778,7 @@ cityhash.o: $(COMMON_HEADERS) include/libu8/cityhash.h
 timefns.o: $(COMMON_HEADERS) include/libu8/u8timefns.h
 rusage.o: $(COMMON_HEADERS) include/libu8/u8rusage.h
 printf.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8printf.h
-xfiles.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/xfiles.h
+xfiles.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8xfiles.h
 netfns.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8netfns.h
 srvfns.o: $(COMMON_HEADERS) \
 	include/libu8/libu8io.h include/libu8/u8netfns.h \

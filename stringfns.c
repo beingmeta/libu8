@@ -426,7 +426,7 @@ U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent)
     return (u8_string)output;}
 }
 
-/* Seimp */
+/* Searching strings */
 
 U8_EXPORT u8_string u8_strchrs(u8_string s,u8_string chars,int order)
 {
@@ -450,6 +450,69 @@ U8_EXPORT u8_string u8_strchrs(u8_string s,u8_string chars,int order)
       result=match;
     else {}}
   return result;
+}
+
+static u8_string _u8_strchr(u8_string s,int needle,u8_string *end)
+{
+  if (needle<0x80) {
+    u8_string found=strchr(s,needle), last=NULL;
+    while (found) {
+      last=found; found=strchr(found+1,needle);}
+    return last;}
+  else {
+    const u8_byte *scan=s, *last=scan;
+    int c=u8_sgetc(&scan);
+    while ((c>=0)&&(c!=needle)) {
+      last=scan; c=u8_sgetc(&scan);}
+    if (c==needle) {
+      if (end) *end=scan;
+      return last;}
+    else return NULL;}
+}
+
+U8_EXPORT u8_string u8_strchr(u8_string haystack,int needle,int n)
+{
+  u8_string result=NULL;
+  if (n>=0) {
+    const u8_byte *end=NULL, *last=NULL;
+    const u8_byte *match=_u8_strchr(haystack,needle,&end);
+    while (match) {
+      if (n==0) return match;
+      else {
+	last=match;
+	match=_u8_strchr(end,needle,&end);
+	n--;}}
+    return last;}
+  else if (n==-1) {
+    const u8_byte *last=NULL, *end=NULL;
+    const u8_byte *match=_u8_strchr(haystack,needle,&end);
+    while (match) {
+      last=match; match=_u8_strchr(end,needle,&end);}
+    return last;}
+  else return NULL;
+}
+
+U8_EXPORT u8_string u8_strstr(u8_string haystack,u8_string needle,int n)
+{
+  u8_string result=NULL; size_t needle_len=strlen(needle);
+  if (n>=0) {
+    const u8_byte *end=NULL, *last=NULL;
+    const u8_byte *match=strstr(haystack,needle);
+    while (match) {
+      if (n==0) return match;
+      else {
+	last=match;
+	match=strstr(match+needle_len,needle);
+	n--;}}
+    if (n==0) return last; else return NULL;}
+  else if (n==-1) {
+    const u8_byte *last=NULL, *end=NULL;
+    const u8_byte *match=strstr(haystack,needle);
+    while (match) {
+      last=match;
+      match=strstr(match+needle_len,needle);}
+    return last;}
+  else return NULL;
 }
 
 U8_EXPORT u8_string u8_strstrs(u8_string s,u8_string strings[],int order)

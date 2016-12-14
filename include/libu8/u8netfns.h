@@ -183,13 +183,6 @@ U8_EXPORT int u8_get_portno(u8_string portspec);
 **/
 U8_EXPORT int u8_set_nodelay(u8_socket conn,int flag);
 
-/** Sets whether I/O on the connection blocks
-    @param conn (a u8_socket, an int socket id)
-    @param flag (whether the connection should block on I/O)
-    @returns 1 if successful
-**/
-U8_EXPORT int u8_set_blocking(u8_socket conn,int flag);
-
 /** Returns a human readable string representation of a sockaddr structure.
     @param sockaddr a pointer to a sockaddr struct.
     @returns a mallocd UTF-8 string

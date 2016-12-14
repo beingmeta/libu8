@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "libu8/libu8io.h"
-#include "libu8/xfiles.h"
+#include "libu8/u8xfiles.h"
 #include "libu8/u8filefns.h"
 
 U8_EXPORT void u8_init_convert_c(void);

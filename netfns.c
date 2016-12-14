@@ -1172,14 +1172,6 @@ int u8_smtp(const char *mailhost,const char *maildomain,
   return 1;
 }
 
-/* Setting flags */
-
-U8_EXPORT int u8_set_blocking(u8_socket fd,int flag)
-{
-  if (flag) return (!((set_doblock(fd))&(O_NONBLOCK)));
-  else return ((set_noblock(fd))&(O_NONBLOCK));
-}
-
 /* Initialization code */
 
 U8_EXPORT void u8_init_netfns_c()

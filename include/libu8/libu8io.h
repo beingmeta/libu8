@@ -22,7 +22,7 @@
 #include "libu8/u8printf.h"
 #include "libu8/u8convert.h"
 #include "libu8/u8fileio.h"
-#include "libu8/xfiles.h"
+#include "libu8/u8xfiles.h"
 
 U8_EXPORT u8_condition u8_CantOpenFile;
 

@@ -116,6 +116,18 @@
 /* Define if you have the strdup function.  */
 #undef HAVE_STRDUP
 
+/* Define if you have the strdup function.  */
+#undef HAVE_STRCHR
+
+/* Define if you have the strdup function.  */
+#undef HAVE_STRRCHR
+
+/* Define if you have the strdup function.  */
+#undef HAVE_STRSSTR
+
+/* Define if you have the strdup function.  */
+#undef HAVE_STRRSTR
+
 /* Define if you have the flock function.  */
 #undef HAVE_FLOCK
 

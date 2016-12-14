@@ -75,10 +75,21 @@ U8_EXPORT int u8_has_suffix(u8_string string,u8_string suffix,int casefold);
     'chars') to match, otherwise priority is based on where the match
     occurs in the searched 'string'.
 
-    If order is > 0, this returns the earliest first occurence,
-    if order is < 0, this return the furthest first result.
+    If order is > 0, this returns the earliest match
+    if order is < 0, this return the furthest match
+    if order is = 0, this return the first match in strings
 **/
 U8_EXPORT u8_string u8_strchrs(u8_string haystack,u8_string needles,int order);
+
+/** Searches for a character in a string
+    @param haystack a UTF-8 string
+    @param c a char
+    @param n which match to return, use n<0 to match from the end, 
+           n=0 is the same as n=1
+    @returns a substring of 'string' or NULL
+    
+**/
+U8_EXPORT u8_string u8_strchr(u8_string haystack,int needle,int n);
 
 /** Searches for a set of strings in a string
     @param haystack a UTF-8 string
@@ -92,11 +103,22 @@ U8_EXPORT u8_string u8_strchrs(u8_string haystack,u8_string needles,int order);
     of the strings in 'strings', otherwise, priority is based on the
     earliest match occurs in the searched 'string'.
 
-    If order is > 0, this returns the earliest first occurence,
-    if order is < 0, this return the furthest first result.
+    If order is > 0, this returns the earliest match
+    if order is < 0, this return the furthest match
+    if order is = 0, this return the first match in strings
 
 **/
 U8_EXPORT u8_string u8_strstrs(u8_string haystack,u8_string needles[],int order);
+
+/** Searches for a substring in a string
+    @param haystack a UTF-8 string
+    @param needle a string
+    @param n which match to return, use n<0 to match from the end, 
+           n=0 is the same as n=1
+    @returns a substring of 'string' or NULL
+    
+**/
+U8_EXPORT u8_string u8_strstr(u8_string haystack,u8_string needle,int direction);
 
 /** Generates a base-ten representation of a long long int
     This should be safe to use in, for example, signal handlers, where printf
