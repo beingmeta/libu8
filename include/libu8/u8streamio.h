@@ -37,6 +37,18 @@ U8_EXPORT u8_condition u8_TruncatedUTF8, u8_BadUTF8, u8_BadUTF8byte;
 
 U8_EXPORT int u8_utf8warn, u8_utf8err;
 
+#ifndef U8_BUF_THROTTLE_POINT
+#define U8_BUF_THROTTLE_POINT (256*1024)
+#endif
+
+#ifndef U8_BUF_MIN_GROW
+#define U8_BUF_MIN_GROW 32
+#endif
+
+#ifndef U8_UTF8BUG_WINDOW
+#define U8_UTF8BUG_WINDOW 64
+#endif
+
 /* Generic streams */
 
 /** This bit describes whether the stream is mallocd or static.
@@ -94,6 +106,15 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 typedef struct U8_STREAM {U8_STREAM_FIELDS;} U8_STREAM;
 typedef struct U8_STREAM *u8_stream;
 
+U8_EXPORT
+/* Increases the size of an output stream's buffer
+   @param outstream a pointer to an input stream
+   @param delta the minimum number of bytes to grow the stream
+   @returns the size of the stream's new buffer or -1 if the operation
+   failed
+*/
+ssize_t u8_grow_stream(struct U8_STREAM *stream,int delta);
+
 #define U8_OUTPUT_FIELDS                       \
   /* Size of the buffer, and bits. */          \
   int u8_bufsz, u8_streaminfo;                 \
@@ -133,8 +154,6 @@ U8_EXPORT int u8_close_output(u8_output o);
     @returns a u8_output stream
 **/
 U8_EXPORT U8_OUTPUT *u8_open_output_string(int initial_size);
-
-U8_EXPORT ssize_t u8_grow_stream(struct U8_OUTPUT *f,int delta);
 
 #if U8_INLINE_IO
 U8_INLINE_FCN void U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
@@ -262,6 +281,16 @@ U8_INLINE_FCN int u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 #endif
 
 #define u8_puts(f,s) _u8_putn(f,s,strlen(s))
+
+U8_EXPORT 
+/* Doubles the size of an output stream's buffer, bounded by a maximum
+   limit.
+   @param outstream a pointer to an output stream
+   @param max_size the maximum size for the buffer
+   @returns the size of the stream's new buffer or -1 if the operation
+   failed
+*/
+ssize_t u8_grow_output_stream(struct U8_OUTPUT *outstream,ssize_t to_size);
 
 /* Input streams */
 
@@ -452,6 +481,16 @@ U8_INLINE_FCN int u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f)
 #define u8_getc _u8_getc
 #define u8_getn _u8_getn
 #endif
+
+U8_EXPORT
+/* Doubles the size of an input stream's buffer bounded by a maximum
+   limit
+   @param instream a pointer to an input stream
+   @param max_size the maximum size for the buffer
+   @returns the size of the stream's new buffer or -1 if the operation
+   failed
+*/
+ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size);
 
 /* Default output ports */
 

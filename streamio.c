@@ -30,14 +30,6 @@
 /* Just for sprintf */
 #include <stdio.h>
 
-#ifndef U8_BUF_THROTTLE_POINT
-#define U8_BUF_THROTTLE_POINT (1024*1024)
-#endif
-
-#ifndef U8_UTF8BUG_WINDOW
-#define U8_UTF8BUG_WINDOW 64
-#endif
-
 /* Utility functions */
 
 U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags)
@@ -63,39 +55,118 @@ U8_EXPORT
   Grows the data structures for the string stream to include delta
 more u8_inbuf
 */
-ssize_t u8_grow_stream(struct U8_OUTPUT *f,int need)
+ssize_t u8_grow_stream(struct U8_STREAM *stream,int delta_arg)
 {
-  int n_current=f->u8_outptr-f->u8_outbuf, n_needed=n_current+need+1;
-  int current_max=f->u8_bufsz, new_max=current_max;
-  int flags=f->u8_streaminfo;
-  if (current_max>n_needed) return f->u8_outlim-f->u8_outptr;
-  if (flags&U8_STREAM_OVERFLOW) {
-    if (flags&U8_FIXED_STREAM) return 0; else return -1;}
-  else if (flags&U8_FIXED_STREAM) {
-    f->u8_streaminfo|=U8_STREAM_OVERFLOW;
-    return 0;}
-  while (new_max<=n_needed)
-    if (new_max>=U8_BUF_THROTTLE_POINT)
-      new_max=new_max+U8_BUF_THROTTLE_POINT;
-    else new_max=new_max*2;
-  if (f->u8_streaminfo&U8_STREAM_OWNS_BUF) {
-    u8_byte *newptr=u8_realloc(f->u8_outbuf,new_max);
-    if (newptr==NULL)
-      return f->u8_outlim-f->u8_outptr;
-    f->u8_outbuf=newptr;}
-  else {
-    u8_byte *newu8_buf=u8_malloc(new_max);
-    size_t off=f->u8_outptr-f->u8_outbuf;
-    if (newu8_buf==NULL) {
-      f->u8_streaminfo|=U8_STREAM_OVERFLOW;
-      return -1;}
-    strncpy(newu8_buf,f->u8_outbuf,off+1);
-    f->u8_streaminfo=f->u8_streaminfo|U8_STREAM_OWNS_BUF;
-    f->u8_outbuf=newu8_buf;}
-  f->u8_outptr=f->u8_outbuf+n_current;
-  f->u8_outlim=f->u8_outbuf+new_max;
-  f->u8_bufsz=new_max;
-  return f->u8_outlim-f->u8_outptr;
+  size_t delta=(delta_arg<U8_BUF_MIN_GROW)?(U8_BUF_MIN_GROW):(delta_arg);
+  ssize_t cur_size=stream->u8_bufsz;
+  ssize_t new_size=(stream->u8_streaminfo&U8_OUTPUT_STREAM)?
+    u8_grow_output_stream((u8_output)stream,(delta<0)?(-1):(cur_size+delta)):
+    u8_grow_input_stream((u8_input)stream,(delta<0)?(-1):(cur_size+delta));
+  return new_size;
+}
+
+U8_EXPORT
+/* u8_grow_input_stream:
+     Arguments: a pointer to an input stream and max buffer size
+     Returns: the size of the new buffer
+
+     Doubles the size of the input buffer
+*/
+ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
+{
+  int owns_buf = ((in->u8_streaminfo)&(U8_STREAM_OWNS_BUF));
+  size_t max = in->u8_bufsz, 
+    bytes_buffered = in->u8_inlim - in->u8_inptr,
+    bytes_read = in->u8_inptr - in->u8_inbuf;
+  size_t new_max = ((max>=U8_BUF_THROTTLE_POINT)?
+                    (max+(U8_BUF_THROTTLE_POINT/2)):
+                    (max*2));
+
+  if (to_size<0) 
+    to_size=new_max;
+  else if (to_size<(max+U8_BUF_MIN_GROW))
+    to_size=max+U8_BUF_MIN_GROW;
+  else {}
+  while (new_max<to_size) 
+    new_max = ((new_max>=U8_BUF_THROTTLE_POINT)?
+               (new_max+(U8_BUF_THROTTLE_POINT/2)):
+               (new_max*2));
+  u8_byte *buf = in->u8_inbuf, *new_buf=NULL;
+  /* Reset buffer */
+  if (bytes_read>0) {
+    memcpy(buf, in->u8_inptr, bytes_buffered);
+    in->u8_inptr = buf;
+    in->u8_inlim -= bytes_read;
+    *(in->u8_inlim) = '\0';}
+  /* Try to allocate a new buffer */
+  new_buf=(owns_buf)?(u8_realloc(buf,new_max)):(u8_malloc(new_max));
+  if (new_buf==NULL) {
+    size_t shrink_by = (new_max-max)/16;
+    while (new_buf==NULL) {
+      /* Shrink until it works or you're smaller than you currently are */
+      new_max=new_max-shrink_by;
+      if (new_max<=max) {
+        u8_log(LOGCRIT,"MallocFailed/grow_input",
+               "Couldn't grow buffer for input stream");
+        return max;}
+      else new_buf=(owns_buf)?(u8_realloc(in->u8_inbuf,new_max)):
+             (u8_malloc(new_max));}}
+  if (!(owns_buf)) {
+    memcpy(new_buf,buf,bytes_buffered);
+    in->u8_streaminfo|=U8_STREAM_OWNS_BUF;}
+  in->u8_inbuf=new_buf;
+  in->u8_inptr=new_buf;
+  in->u8_inlim=new_buf+bytes_buffered;
+  in->u8_bufsz=new_max;
+  return new_max;
+}
+
+U8_EXPORT
+/* u8_grow_output_stream:
+     Arguments: a pointer to an input stream and max buffer size
+     Returns: the size of the new buffer
+
+     Doubles the size of the input buffer
+*/
+ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
+{
+  int owns_buf = ((out->u8_streaminfo)&(U8_STREAM_OWNS_BUF));
+  size_t max = out->u8_bufsz;
+  size_t new_max = ((max>=U8_BUF_THROTTLE_POINT)?
+                    (max+(U8_BUF_THROTTLE_POINT/2)):
+                    (max*2)),
+    bytes_buffered = out->u8_outptr - out->u8_outbuf;
+  if (to_size<0) 
+    to_size=new_max;
+  else if (to_size<(max+U8_BUF_MIN_GROW))
+    to_size=max+U8_BUF_MIN_GROW;
+  else {}
+  while (new_max<to_size) 
+    new_max = ((new_max>=U8_BUF_THROTTLE_POINT)?
+               (new_max+(U8_BUF_THROTTLE_POINT/2)):
+               (new_max*2));
+  u8_byte *buf = out->u8_outbuf, *new_buf=NULL;
+  /* Try to allocate a new buffer */
+  new_buf=(owns_buf)?(u8_realloc(buf,new_max)):(u8_malloc(new_max));
+  if (new_buf==NULL) {
+    size_t shrink_by = (new_max-max)/16;
+    while (new_buf==NULL) {
+      /* Shrink until it works or you're smaller than you currently are */
+      new_max=new_max-shrink_by;
+      if (new_max<=max) {
+        u8_log(LOGCRIT,"MallocFailed/grow_output",
+               "Couldn't grow buffer for input stream");
+        return max;}
+      else new_buf=(owns_buf)?(u8_realloc(out->u8_outbuf,new_max)):
+             (u8_malloc(new_max));}}
+  if (!(owns_buf)) {
+    memcpy(new_buf,buf,bytes_buffered);
+    out->u8_streaminfo|=U8_STREAM_OWNS_BUF;}
+  out->u8_outbuf=new_buf;
+  out->u8_outptr=new_buf+bytes_buffered;
+  out->u8_outlim=new_buf+new_max;
+  out->u8_bufsz=new_max;
+  return new_max;
 }
 
 /* Operations which may flush or fill */
@@ -117,7 +188,7 @@ U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int ch)
   if ((f->u8_outptr+size+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
   if (f->u8_outptr+size+1>=f->u8_outlim) {
-    ssize_t rv=u8_grow_stream(f,size);
+    ssize_t rv= u8_grow_stream((u8_stream)f,size+1);
     if (rv==0) return 0;
     else if (rv<0) {
       u8_graberr(-1,"u8_putc",NULL);
@@ -139,7 +210,7 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
   else if ((f->u8_outptr+len+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
   if (f->u8_outptr+len+1>=f->u8_outlim) {
-    ssize_t rv=u8_grow_stream(f,len);
+    ssize_t rv=u8_grow_output_stream(f,len);
     if (rv==0) return 0;
     else if (rv<0) {
       u8_graberr(-1,"u8_putc",NULL);
