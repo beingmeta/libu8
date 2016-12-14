@@ -40,7 +40,7 @@ int main(int argc,char **argv)
     reader=inbuf;
     u8_convert(in_enc,1,&stream,&reader,inbuf+bytes_read);
     reader=stream.u8_outbuf;
-    outbuf=u8_localize(out_enc,&reader,stream.u8_outptr,
+    outbuf=u8_localize(out_enc,&reader,stream.u8_write,
 		       escape_char,0,
 		       NULL,&out_size);
     retval=fwrite(outbuf,1,out_size,out);
