@@ -420,7 +420,7 @@ U8_EXPORT int u8_ungetc(struct U8_INPUT *f,int c);
     This does not advance the buffer point but will
     try to fetch data if needed.  If there is a UTF-8
     parsing error, this either returns -2 or issues
-    a warning and returns \uFFFD, depending on whether
+    a warning and returns \\uFFFD, depending on whether
     the stream has its U8_STREAM_UTFERR bit set.
     @param f a pointer to a U8_INPUT stream
     @returns -1 on error

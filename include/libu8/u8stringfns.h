@@ -64,8 +64,8 @@ U8_EXPORT int u8_has_prefix(u8_string string,u8_string prefix,int casefold);
 U8_EXPORT int u8_has_suffix(u8_string string,u8_string suffix,int casefold);
 
 /** Searches for a character in a string
-    @param string a UTF-8 string
-    @param chars a sequence of characters in a UTF-8 string
+    @param haystack a UTF-8 string
+    @param needles a sequence of characters in a UTF-8 string
     @param order an integer indicating which match is returned
     @returns a substring of 'string' or NULL
 
@@ -78,31 +78,31 @@ U8_EXPORT int u8_has_suffix(u8_string string,u8_string suffix,int casefold);
     If order is > 0, this returns the earliest first occurence,
     if order is < 0, this return the furthest first result.
 **/
-U8_EXPORT u8_string u8_strchrs(u8_string s,u8_string chars,int order);
+U8_EXPORT u8_string u8_strchrs(u8_string haystack,u8_string needles,int order);
 
 /** Searches for a set of strings in a string
-    @param string a UTF-8 string
-    @param chars a NUL-terminated 
+    @param haystack a UTF-8 string
+    @param needles a NUL-terminated array of string pointers
     @param order an int
     @returns a substring of 'string' or NULL
 
     This returns a place in 'string' where any of the strings in
     'strings' occurs; order determines which match is returned (when
     there are several).  If order is 0, priority is based on the order
-    of the strings in 'strings', otherwise, priority is based on where
-    the match occurs in the searched 'string'.
+    of the strings in 'strings', otherwise, priority is based on the
+    earliest match occurs in the searched 'string'.
 
     If order is > 0, this returns the earliest first occurence,
     if order is < 0, this return the furthest first result.
 
 **/
-U8_EXPORT u8_string u8_strstrs(u8_string s,u8_string strings[],int order);
+U8_EXPORT u8_string u8_strstrs(u8_string haystack,u8_string needles[],int order);
 
 /** Generates a base-ten representation of a long long int
     This should be safe to use in, for example, signal handlers, where printf
     is verboten.
     @param n a long long int (may be automatically cast up, of course)
-    @param n a static 24-byte buffer (long enough to contain the largest N)
+    @param buf a static 24-byte buffer (long enough to contain the largest N)
     @returns pointer to that buffer
 **/
 U8_EXPORT char *u8_itoa10(long long int n,char buf[32]);
@@ -111,7 +111,7 @@ U8_EXPORT char *u8_itoa10(long long int n,char buf[32]);
     This should be safe to use in, for example, signal handlers, where printf
     is verboten.
     @param n a long long int (may be automatically cast up, of course)
-    @param n a static 24-byte buffer (long enough to contain the largest N)
+    @param buf a static 24-byte buffer (long enough to contain the largest N)
     @returns pointer to that buffer
 **/
 U8_EXPORT char *u8_uitoa10(unsigned long long int n,char buf[32]);
@@ -120,7 +120,7 @@ U8_EXPORT char *u8_uitoa10(unsigned long long int n,char buf[32]);
     This should be safe to use in, for example, signal handlers, where printf
     is verboten.
     @param n a long long int (may be automatically cast up, of course)
-    @param n a static 24-byte buffer (long enough to contain the largest N)
+    @param buf a static 24-byte buffer (long enough to contain the largest N)
     @returns pointer to that buffer
 **/
 U8_EXPORT char *u8_uitoa8(unsigned long long int n,char buf[32]);
@@ -129,7 +129,7 @@ U8_EXPORT char *u8_uitoa8(unsigned long long int n,char buf[32]);
     This should be safe to use in, for example, signal handlers, where printf
     is verboten.
     @param n a long long int (may be automatically cast up, of course)
-    @param n a static 24-byte buffer (long enough to contain the largest N)
+    @param buf a static 24-byte buffer (long enough to contain the largest N)
     @returns pointer to that buffer
 **/
 U8_EXPORT char *u8_uitoa16(unsigned long long int n,char buf[32]);

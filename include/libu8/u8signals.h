@@ -22,6 +22,8 @@
       u8_raise calls.
  **/
 
+#include <signal.h>
+
 U8_EXPORT u8_condition u8_UnknownSignal,
   u8_SIGHUP,
   u8_SIGINT,
@@ -84,10 +86,10 @@ U8_EXPORT void u8_signal_raise(int signum);
     This is designed to be used as a signal handler with the
     sigaction() call.
    @param siginfo a siginfo_t structure with information about the signal
-   @param ptr a void* pointer which is also passed to the sigaction handler
+   @param ptr the void* pointer which passed to the sigaction handler
    @returns void
    Raises an informative condition.
 **/
-U8_EXPORT void u8_siginfo_raise(int signum);
+U8_EXPORT void u8_sigaction_raise(siginfo_t *info,void *ptr);
 
 #endif /* ndef LIBU8_U8EXCEPTIONS_H */
