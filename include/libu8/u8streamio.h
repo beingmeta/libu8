@@ -458,8 +458,10 @@ U8_EXPORT int u8_peekc(struct U8_INPUT *f);
 **/
 U8_INLINE_FCN int u8_getc(struct U8_INPUT *f)
 {
-  if (U8_EXPECT_FALSE(f->u8_read>=f->u8_inlim)) return _u8_getc(f);
-  else if (U8_EXPECT_TRUE(*(f->u8_read)<0x80)) return *(f->u8_read++);
+  if (U8_EXPECT_FALSE(f->u8_read>=f->u8_inlim))
+    return _u8_getc(f);
+  else if (U8_EXPECT_TRUE(*(f->u8_read)<0x80))
+    return *(f->u8_read++);
   else return _u8_getc(f);
 }
 /** Reads up to @a n bytes from @a f into @a ptr.
@@ -470,7 +472,8 @@ U8_INLINE_FCN int u8_getc(struct U8_INPUT *f)
 **/
 U8_INLINE_FCN int u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f)
 {
-  if (U8_EXPECT_FALSE(f->u8_read+n+1>=f->u8_inlim)) return _u8_getn(ptr,n,f);
+  if (U8_EXPECT_FALSE(f->u8_read+n+1>=f->u8_inlim))
+    return _u8_getn(ptr,n,f);
   else {
     int valid_len=u8_validate(f->u8_read,n);
     strncpy(ptr,f->u8_read,valid_len); ptr[valid_len]='\0';
