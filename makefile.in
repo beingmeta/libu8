@@ -117,10 +117,21 @@ buildmode:
 showbuildmode showmode showbuild: buildmode
 	@cat buildmode
 
+.PHONY: showbuildmode showmode showbuild tests fast nitpick standard debug all
+
 # configure/autoconf stuff
 
 makefile: makefile.in config.status
+	@mv makefile makefile.tmp
 	./config.status
+	# If the generated makefile is the same as the current
+	# makefile, revert it (especially it's date) to avoid needless
+	# rebuilds.
+	@if diff makefile makefile.tmp 2>&1 > /dev/null; then 	\
+	  mv makefile.tmp makefile; 				\
+	else							\
+	 echo Updated makefile 					\
+	fi
 ./config.status: configure
 	./config.status --recheck
 configure: configure.ac etc/release
@@ -146,6 +157,8 @@ suinstall:
 dbginstall:
 	make XCFLAGS="-O0" all
 	sudo make install
+
+.PHONY: suinstall dbginstall
 
 # Make rules
 
@@ -290,6 +303,8 @@ lib/libu8syslog@suffix@.so.@U8VERSION@: $(LIBU8SYSLOG_OBJECTS)
 lib/libu8syslog.dylib: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dylib
 lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
 
+# Documentation targets
+
 docs: docs/doxygen.done
 
 docs/doxygen.done: $(LIBU8_HEADERS) docs/doxygen.cfg
@@ -298,6 +313,8 @@ docs/doxygen.done: $(LIBU8_HEADERS) docs/doxygen.cfg
 
 libu8.org: docs/doxygen.done
 	aws s3 cp --recursive docs/html/ s3://www.libu8.org/docs/
+
+# Clean/rebuild/reconfig targets
 
 clean: 
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* etc/fileinfo
@@ -323,6 +340,12 @@ tidy:
 distclean: clean
 	$(CLEAN) makefile include/libu8/config.h include/libu8/revision.h
 	$(CLEAN) config.log config.status config.cache
+fresh rebuild: clean
+	make
+reconfig reconfigure: distclean
+	configure; make;
+
+.PHONY: clean tidy distclean fresh rebuild reconfig reconfigure 
 
 # Internationalization stuff
 
