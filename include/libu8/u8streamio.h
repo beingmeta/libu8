@@ -113,7 +113,7 @@ U8_EXPORT
    @returns the size of the stream's new buffer or -1 if the operation
    failed
 */
-ssize_t u8_grow_stream(struct U8_STREAM *stream,int delta);
+ssize_t u8_grow_stream(struct U8_STREAM *stream,ssize_t delta);
 
 #define U8_OUTPUT_FIELDS                       \
   /* Size of the buffer, and bits. */          \

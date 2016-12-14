@@ -55,7 +55,7 @@ U8_EXPORT
   Grows the data structures for the string stream to include delta
 more u8_inbuf
 */
-ssize_t u8_grow_stream(struct U8_STREAM *stream,int delta_arg)
+ssize_t u8_grow_stream(struct U8_STREAM *stream,ssize_t delta_arg)
 {
   size_t delta=(delta_arg<U8_BUF_MIN_GROW)?(U8_BUF_MIN_GROW):(delta_arg);
   ssize_t cur_size=stream->u8_bufsz;
@@ -188,7 +188,7 @@ U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int ch)
   if ((f->u8_write+size+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
   if (f->u8_write+size+1>=f->u8_outlim) {
-    ssize_t rv= u8_grow_stream((u8_stream)f,size+1);
+    ssize_t rv= u8_grow_stream((u8_stream)f, size+16);
     if (rv==0) return 0;
     else if (rv<0) {
       u8_graberr(-1,"u8_putc",NULL);
