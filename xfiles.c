@@ -89,6 +89,7 @@ static int fill_xinput(struct U8_XINPUT *xf)
   int bytes_read, bytes_converted;
   const unsigned char *reader, *limit;
   u8_byte *start=(u8_byte *)xf->u8_inbuf, *cur=(u8_byte *)xf->u8_inptr;
+  u8_byte *end=(u8_byte *)xf->u8_inlim;
   if (cur>start) {
     /* First, if we've read anything at all, overwrite it, compressing the
        input buffer to make more space. */
@@ -96,7 +97,7 @@ static int fill_xinput(struct U8_XINPUT *xf)
     /* Now we're reading form the front of the buffer. */
     xf->u8_inptr=xf->u8_inbuf;
     /* And the limit of valid data is just unread_bytes further on */
-    xf->u8_inlim=xf->u8_inbuf+unread_bytes;
+    end= xf->u8_inlim= xf->u8_inbuf+unread_bytes;
     /* Null terminate it, if there's space (there has to be) */
     start[unread_bytes]='\0';
     cur=start+unread_bytes;}
@@ -119,7 +120,7 @@ static int fill_xinput(struct U8_XINPUT *xf)
   else {U8_INIT_OUTPUT_X(&tmpout,xf->u8_bufsz-unread_bytes,xf->u8_inbuf,
 			 U8_FIXED_STREAM);}
   /* Position the temporary output stream at the end of the valid input. */
-  tmpout.u8_outptr=cur;
+  tmpout.u8_outptr=end;
   /* Now we do the actual conversion, where u8_convert writes into the
      string stream passed it as its first argument. If this has any trouble,
      it will stop and reader will hold the most recent conversion state. */
