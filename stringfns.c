@@ -351,7 +351,7 @@ u8_string u8_string_subst(u8_string input,u8_string key,u8_string replace)
       U8_INIT_STATIC_OUTPUT(out,u8_bytelen(input)+(replace_len*4));
       u8_putn(&out,scan,next-scan);
       u8_putn(&out,replace,replace_len);
-      scan=scan+key_len;
+      scan=next+key_len;
       next=strstr(scan,key);}
     u8_puts(&out,scan);
     return (u8_string) out.u8_outbuf;}
@@ -473,7 +473,9 @@ static u8_string _u8_strchr(u8_string s,int needle,u8_string *end)
 U8_EXPORT u8_string u8_strchr(u8_string haystack,int needle,int n)
 {
   u8_string result=NULL;
-  if (n>=0) {
+  if (n==1) {
+    return _u8_strchr(haystack,needle,NULL);}
+  else if (n>=0) {
     const u8_byte *end=NULL, *last=NULL;
     const u8_byte *match=_u8_strchr(haystack,needle,&end);
     while (match) {
@@ -483,6 +485,8 @@ U8_EXPORT u8_string u8_strchr(u8_string haystack,int needle,int n)
 	match=_u8_strchr(end,needle,&end);
 	n--;}}
     return last;}
+  /* There should be a good way to handle the n<0 case, but I can't
+     come up with it now. */
   else if (n==-1) {
     const u8_byte *last=NULL, *end=NULL;
     const u8_byte *match=_u8_strchr(haystack,needle,&end);
@@ -505,6 +509,8 @@ U8_EXPORT u8_string u8_strstr(u8_string haystack,u8_string needle,int n)
 	match=strstr(match+needle_len,needle);
 	n--;}}
     if (n==0) return last; else return NULL;}
+  /* There should be a good way to handle the n<0 case, but I can't
+     come up with it now. */
   else if (n==-1) {
     const u8_byte *last=NULL, *end=NULL;
     const u8_byte *match=strstr(haystack,needle);
