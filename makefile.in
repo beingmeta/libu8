@@ -526,7 +526,7 @@ build-setup-ubuntu: build-setup.debian
 
 # Installation targets
 
-install: install-libs install-headers install-encodings \
+install-dev install: install-libs install-headers install-encodings \
 	@INSTALLI18N@ @INSTALLDOCS@
 
 install-libs: @install_static@ @install_shared@

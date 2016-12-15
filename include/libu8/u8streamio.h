@@ -42,7 +42,7 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 #endif
 
 #ifndef U8_BUF_MIN_GROW
-#define U8_BUF_MIN_GROW 32
+#define U8_BUF_MIN_GROW 16
 #endif
 
 #ifndef U8_UTF8BUG_WINDOW
