@@ -122,7 +122,7 @@ U8_EXPORT u8_contour u8_dynamic_contour;
    This is bound by U8_WITHIN_CONTOUR as well as
    statically bound to NULL. */
 
-static MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
+static U8_MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
 
 #define U8_WITHIN_CONTOUR \
   u8_contour u8_static_contour=u8_dynamic_contour;

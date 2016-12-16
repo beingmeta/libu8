@@ -75,20 +75,20 @@ int u8_getrusage(int who,struct rusage *r)
   return 1;
 }
 
-static MAYBE_UNUSED size_t procfs_memusage()
+static U8_MAYBE_UNUSED size_t procfs_memusage()
 {
 #if U8_RUSAGE_PROC_PATCH
   FILE *f=fopen("/proc/self/stat","r");
   int pid, ppid, pgrp, session, tty, tpgid; char commbuf[256], *comm=commbuf, state, retval;
-  unsigned long long MAYBE_UNUSED
+  unsigned long long U8_MAYBE_UNUSED
     flags, minflt, cminflt, majflt, cmajflt, utime, stime, ctime, cutime, cstime, priority;
-  unsigned long long MAYBE_UNUSED
+  unsigned long long U8_MAYBE_UNUSED
     nice, zero, itrealvalue, starttime, vsize, rss, rlim, startcode, endcode;
-  unsigned long long MAYBE_UNUSED
+  unsigned long long U8_MAYBE_UNUSED
     startstack, kstkesp, kstkeip, signal, blocked, sigignore, sigcatch, huh;
-  unsigned long long MAYBE_UNUSED
+  unsigned long long U8_MAYBE_UNUSED
     wchan, nswap, cnswap, exit_signal, processor, rt_priority, policy;
-  long long MAYBE_UNUSED total, res, shared, textsize;
+  long long U8_MAYBE_UNUSED total, res, shared, textsize;
   if (f==NULL) return 0;
   else
     retval=fscanf(f,"%d %s %c %d %d %d %d %d %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Ld %Ld %Ld %Ld %Ld %Ld %Lu %Lu %Lu %Ld %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu",

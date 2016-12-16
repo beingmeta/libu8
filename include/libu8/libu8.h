@@ -125,15 +125,19 @@
 #endif
 
 #if __GNUC__
-#define U8_INLINE __attribute__ ((inline))
+#define U8_INLINE static inline
+#define U8_INLINE_FCN static inline
 #define U8_NOINLINE __attribute__ ((noinline))
-#define MAYBE_UNUSED __attribute__ ((unused))
-#define U8_INLINE_FCN static __attribute__ ((unused))
+#define U8_MAYBE_UNUSED __attribute__ ((unused))
+#define U8_DEPRECATED __attribute__ ((deprecated))
+#define U8_MAYBE_UNUSED __attribute__ ((unused))
 #else
-#define U8_INLINE
+#define U8_INLINE static
+#define U8_INLINE_FCN static
 #define U8_NOINLINE
 #define MAYBE_UNUSED
-#define U8_INLINE_FCN static
+#define U8_MAYBE_UNUSED
+#define U8_DEPRECATE
 #endif
 
 #ifndef EXIT_SUCCESS
@@ -746,11 +750,11 @@ U8_EXPORT void u8_initialize_logging(void);
 
 /* Handling endian-ness */
 
-U8_INLINE_FCN unsigned int u8_flip_word(unsigned int _w)
+U8_INLINE unsigned int u8_flip_word(unsigned int _w)
 { return ((((_w) << 24) & 0xff000000) | (((_w) << 8) & 0x00ff0000) |
           (((_w) >> 8) & 0x0000ff00) | ((_w) >>24) );}
 
-U8_INLINE_FCN unsigned long long u8_flip_word8(unsigned long long _w)
+U8_INLINE unsigned long long u8_flip_word8(unsigned long long _w)
 { return (((_w&(0xFF)) << 56) |
           ((_w&(0xFF00)) << 48) |
           ((_w&(0xFF0000)) << 24) |

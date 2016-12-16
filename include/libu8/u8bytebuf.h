@@ -12,7 +12,7 @@ U8_EXPORT int _u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int len);
 U8_EXPORT int u8_bbreader(unsigned char *buf,int len,struct U8_BYTEBUF *bb);
 U8_EXPORT int u8_bbwriter(unsigned char *buf,int len,struct U8_BYTEBUF *bb);
 
-static MAYBE_UNUSED int u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
+static U8_MAYBE_UNUSED int u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
 {
   if (len==0) return 0;
   else if ((bb->u8_buf)&&(((bb->u8_ptr)+len)<(bb->u8_lim))) {
@@ -21,7 +21,7 @@ static MAYBE_UNUSED int u8_bufwrite(struct U8_BYTEBUF *bb,unsigned char *buf,int
   else return _u8_bufwrite(bb,buf,len);
 }
 
-static MAYBE_UNUSED int u8_bufread(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
+static U8_MAYBE_UNUSED int u8_bufread(struct U8_BYTEBUF *bb,unsigned char *buf,int len)
 {
   if (len==0) return 0;
   else if ((bb->u8_ptr)<(bb->u8_lim)) {

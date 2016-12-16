@@ -280,7 +280,7 @@ U8_EXPORT char *u8_grab_bytes(u8_string s,int n,char *buf);
 U8_EXPORT int _u8_sgetc(const u8_byte **sptr);
 U8_EXPORT int _u8_sgetc_lim(const u8_byte **sptr,const u8_byte *lim);
 
-static MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
+static U8_MAYBE_UNUSED char hexchars[]="0123456789ABCDEF";
 
 #if U8_INLINE_IO
 /** Returns a Unicode code point from a pointer to a pointer to UTF-8 string.
@@ -371,7 +371,7 @@ U8_EXPORT u8_charoff _u8_charoffset(u8_string s,u8_byteoff i);
 U8_EXPORT u8_byteoff _u8_byteoffset(u8_string s,u8_charoff i,u8_byteoff l);
 
 #if U8_INLINE_IO
-static MAYBE_UNUSED int u8_charoffset(u8_string s,u8_byteoff i)
+static U8_MAYBE_UNUSED int u8_charoffset(u8_string s,u8_byteoff i)
 {
   u8_string pt=s+i; int j=0;
   while (s < pt) {
@@ -379,7 +379,7 @@ static MAYBE_UNUSED int u8_charoffset(u8_string s,u8_byteoff i)
   return j;
 }
 
-static MAYBE_UNUSED int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
+static U8_MAYBE_UNUSED int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 {
   u8_string string=s, lim=s+max; int c=0;
   if (offset<0) return -1;

@@ -50,7 +50,7 @@ static u8_mutex timefns_lock;
 
 /* Utility functions */
 
-static MAYBE_UNUSED double getprecfactor(enum u8_timestamp_precision precision)
+static U8_MAYBE_UNUSED double getprecfactor(enum u8_timestamp_precision precision)
 {
   switch (precision) {
   case u8_year: return 1000000000.0*3600*24*365;

@@ -401,7 +401,7 @@ u8_string u8_getenv(u8_string envvar)
 
 /* Dynamic loading */
 
-static MAYBE_UNUSED u8_condition NoDynamicLoading=
+static U8_MAYBE_UNUSED u8_condition NoDynamicLoading=
   _("No dynamic loading of libraries");
 static u8_condition FailedDLopen=_("Call to DLOPEN failed");
 

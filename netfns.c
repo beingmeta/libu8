@@ -49,12 +49,12 @@
 static u8_mutex netfns_lock;
 #endif
 
-static u8_condition InternalError=_("Internal error");
-static u8_condition SocketTimeout=_("Socket timeout");
-static u8_condition NoConnection=_("Cannot connect to server");
-static u8_condition NoFileSockets MAYBE_UNUSED
+static u8_condition InternalError  = _("Internal error");
+static u8_condition SocketTimeout  = _("Socket timeout");
+static u8_condition NoConnection   = _("Cannot connect to server");
+static u8_condition NoFileSockets U8_MAYBE_UNUSED
                       =_("No UNIX domain (file) sockets");
-static u8_condition UnknownHost MAYBE_UNUSED=_("Unknown host");
+static u8_condition UnknownHost U8_MAYBE_UNUSED = _("Unknown host");
 
 int u8_reconnect_wait1=1;
 int u8_reconnect_wait=5;
@@ -222,8 +222,8 @@ U8_EXPORT struct hostent *u8_gethostbyname(u8_string hname,int type)
 {
   char *name=u8_tolibc(hname);
   struct hostent *fetched, *copied;
-  char MAYBE_UNUSED _buf[1024], *buf=_buf;
-  int MAYBE_UNUSED bufsiz=0, herrno=0, retval;
+  char U8_MAYBE_UNUSED _buf[1024], *buf=_buf;
+  int U8_MAYBE_UNUSED bufsiz=0, herrno=0, retval;
 #if HAVE_GETHOSTBYNAME2_R
   struct hostent _fetched, *result; fetched=&_fetched;
   if (type>0)
@@ -320,8 +320,8 @@ U8_EXPORT char **u8_lookup_host
 {
   char *name=u8_tolibc(hname);
   struct hostent *fetched;
-  char MAYBE_UNUSED _buf[1024], *buf=_buf, **addrs;
-  int MAYBE_UNUSED bufsiz=0, herrno=0, retval, type=((typep)?(*typep):(-1));
+  char U8_MAYBE_UNUSED _buf[1024], *buf=_buf, **addrs;
+  int U8_MAYBE_UNUSED bufsiz=0, herrno=0, retval, type=((typep)?(*typep):(-1));
   int retries=0;
 #if HAVE_GETHOSTBYNAME2_R
   struct hostent _fetched, *result; fetched=&_fetched;
@@ -939,7 +939,7 @@ static int set_doblock(int socket)
   ioctlsocket(socket,FIONBIO,&flags);
   return flags;
 }
-static MAYBE_UNUSED int reset_flags(int fd,int flags)
+static U8_MAYBE_UNUSED int reset_flags(int fd,int flags)
 {
   unsigned long flag_value=flags;
   return ioctlsocket(fd,FIONBIO,&flag_value);
@@ -957,7 +957,7 @@ static int set_doblock(int fd)
   fcntl(fd,F_SETFL,flags);
   return oflags;
 }
-static MAYBE_UNUSED int reset_flags(int fd,int flags)
+static U8_MAYBE_UNUSED int reset_flags(int fd,int flags)
 {
   return fcntl(fd,F_SETFL,flags);
 }
