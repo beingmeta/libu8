@@ -103,7 +103,7 @@ standard:
 nitpick:
 	@if test $(BUILDMODE) != "nitpicking"; then echo nitpicking > buildmode; fi
 	@make `cat buildmode`
-fast:
+fast production:
 	@if test $(BUILDMODE) != "optimizing"; then echo optimizing > buildmode; fi
 	@make `cat buildmode`
 

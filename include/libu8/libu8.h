@@ -131,6 +131,7 @@
 #define U8_MAYBE_UNUSED __attribute__ ((unused))
 #define U8_DEPRECATED __attribute__ ((deprecated))
 #define U8_MAYBE_UNUSED __attribute__ ((unused))
+#define U8_MALLOCFN __attribute__ ((malloc))
 #else
 #define U8_INLINE static
 #define U8_INLINE_FCN static
@@ -138,6 +139,7 @@
 #define MAYBE_UNUSED
 #define U8_MAYBE_UNUSED
 #define U8_DEPRECATE
+#define U8_MALLOCFN
 #endif
 
 #ifndef EXIT_SUCCESS
@@ -570,7 +572,7 @@ U8_EXPORT void u8_raise(u8_condition,u8_context,u8_string);
       the caller for use if the allocation fails
    @returns void *
 **/
-static void *u8_zalloc_bytes(size_t n_bytes,u8_context caller)
+static U8_MALLOCFN void *u8_zalloc_bytes(size_t n_bytes,u8_context caller)
 {
   void *block = U8_MALLOC(n_bytes);
   if (block) {

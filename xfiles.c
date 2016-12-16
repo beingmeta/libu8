@@ -103,7 +103,10 @@ static int fill_xinput(struct U8_XINPUT *xf)
     start[unread_bytes]='\0';
     cur=start+unread_bytes;}
   /* Now, fill the read buffer from the input socket */
-  bytes_read=read(xf->u8_xfd,xf->u8_xbuf+xf->u8_xbuflive,xf->u8_xbuflim-xf->u8_xbuflive);
+  bytes_read=read(xf->u8_xfd,
+		  /* These are the bytes still to be converted in xbuf */
+		  xf->u8_xbuf+xf->u8_xbuflive,
+		  xf->u8_xbuflim-xf->u8_xbuflive);
   /* If you had trouble or didn't get any data, return zero or the error code. */
   if (bytes_read<=0) {
     return bytes_read;}
@@ -194,8 +197,20 @@ U8_EXPORT int u8_xinput_setbuf(struct U8_XINPUT *xi,int bufsiz)
     return -1;}
   else if (xi->u8_xbuflive>=bufsiz) return 0;
   else {
-    xi->u8_xbuf=u8_realloc(xi->u8_xbuf,bufsiz);
-    xi->u8_xbuflim=bufsiz;
+    off_t read_off=xi->u8_read-xi->u8_inbuf;
+    off_t read_lim=xi->u8_inlim-xi->u8_inbuf;
+    u8_byte *newbuf=(bufsiz>xi->u8_bufsz) ? 
+      (u8_realloc(xi->u8_inbuf,bufsiz)) : (NULL);
+    u8_byte *newxbuf= ((xi->u8_xbuflim)<bufsiz) ?
+      (u8_realloc(xi->u8_xbuf,bufsiz)) : (NULL);
+    if ((newbuf) && (newbuf != xi->u8_inbuf)) {
+      xi->u8_inbuf=newbuf;
+      xi->u8_read=newbuf+read_off;
+      xi->u8_inlim=newbuf+read_lim;
+      xi->u8_bufsz=bufsiz;}
+    if ((newxbuf) && (newxbuf != xi->u8_xbuf)) {
+      xi->u8_xbuf=newxbuf;
+      xi->u8_xbuflim=bufsiz;}
     return 1;}
 }
 
@@ -294,8 +309,20 @@ U8_EXPORT int u8_xoutput_setbuf(struct U8_XOUTPUT *xo,int bufsiz)
     return -1;}
   else if (xo->u8_xbuflive>=bufsiz) return 0;
   else {
-    xo->u8_xbuf=u8_realloc(xo->u8_xbuf,bufsiz);
-    xo->u8_xbuflim=bufsiz;
+    off_t write_off=xo->u8_write-xo->u8_outbuf;
+    off_t write_lim=xo->u8_outlim-xo->u8_outbuf;
+    u8_byte *newbuf=(bufsiz>xo->u8_bufsz) ? 
+      (u8_realloc(xo->u8_outbuf,bufsiz)) : (NULL);
+    u8_byte *newxbuf= ((xo->u8_xbuflim)<bufsiz) ?
+      (u8_realloc(xo->u8_xbuf,bufsiz)) : (NULL);
+    if ((newbuf) && (newbuf != xo->u8_outbuf)) {
+      xo->u8_outbuf=newbuf;
+      xo->u8_write=newbuf+write_off;
+      xo->u8_outlim=newbuf+write_lim;
+      xo->u8_bufsz=bufsiz;}
+    if ((newxbuf) && (newxbuf != xo->u8_xbuf)) {
+      xo->u8_xbuf=newxbuf;
+      xo->u8_xbuflim=bufsiz;}
     return 1;}
 }
 
