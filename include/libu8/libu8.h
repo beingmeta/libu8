@@ -296,6 +296,10 @@ typedef int u8_charoff;
 
 #define U8OPTSTR(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8_S0()))),(U8IF(s,a))
 
+/* Threading compatability */
+
+#include "threading.h"
+
 /* Errors */
 
 typedef const unsigned char *u8_condition;
@@ -315,10 +319,6 @@ typedef const unsigned char *u8_context;
 
  */
 U8_EXPORT char *u8_write_long_long(long long l,char *buf,size_t buflen);
-
-/* Threading compatability */
-
-#include "threading.h"
 
 /* Thread proxy functions */
 
