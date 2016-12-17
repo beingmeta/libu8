@@ -57,7 +57,7 @@ more u8_inbuf
 */
 ssize_t u8_grow_stream(struct U8_STREAM *stream,ssize_t delta_arg)
 {
-  size_t delta=(delta_arg<U8_BUF_MIN_GROW)?(U8_BUF_MIN_GROW):(delta_arg);
+  ssize_t delta=(delta_arg<U8_BUF_MIN_GROW)?(U8_BUF_MIN_GROW):(delta_arg);
   ssize_t cur_size=stream->u8_bufsz;
   ssize_t new_size=(stream->u8_streaminfo&U8_OUTPUT_STREAM)?
     u8_grow_output_stream((u8_output)stream,(delta<0)?(-1):(cur_size+delta)):
