@@ -1153,6 +1153,46 @@ U8_EXPORT u8_uuid u8_getuuid(u8_uuid buf)
 #endif
 }
 
+/* Interface to usleep */
+
+#if HAVE_NANOSLEEP
+U8_EXPORT time_t u8_sleep(double seconds)
+{
+  long long ns=(long long) floor(seconds*1000000000);
+  int secs=ns/1000000000, count=0;
+  if (second<0) {
+    u8_seterr("Negative time interval","u8_sleep",NULL);
+    return -1;}
+  else {
+    struct timespec req, rem;
+    req.tv_sec=floor(seconds);
+    req.tv_nsec=1000000000*(seconds-req.tv_sec);
+    rem.tv_sec=req.tv_sec;
+    rem.tv_nsec=req.tv_nsec;
+    /* We loop because nanosleep might return early if a signal
+       interrupts it. This starts again if so. */
+    while ((nanosleep(&req,&rem))<0) {
+      /* Could look at errno here, but not sure what to do with it */
+      req.tv_sec=rem.tv_sec;
+      req.tv_nsec=rem.tv_nsec;}
+    return time(NULL);}
+}
+#else
+U8_EXPORT time_t u8_sleep(double seconds)
+{
+  long secs = (long) ceil(seconds);
+  if (secs<0) {
+    u8_seterr("Negative time interval","u8_sleep",NULL);
+    return -1;}
+  else {
+    if (secs!=seconds)
+      u8_log(LOG_WARN,"UnsupportedSleepPrecision",
+             "This system doesn't have fine-grained sleep precision");
+    sleep(secs);
+    return time(NULL);}
+}
+#endif
+
 /* Initialization functions */
 
 U8_EXPORT void u8_init_timefns_c()
