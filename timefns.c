@@ -1158,15 +1158,16 @@ U8_EXPORT u8_uuid u8_getuuid(u8_uuid buf)
 #if HAVE_NANOSLEEP
 U8_EXPORT time_t u8_sleep(double seconds)
 {
-  long long ns=(long long) floor(seconds*1000000000);
-  int secs=ns/1000000000, count=0;
-  if (second<0) {
+  long long total_nsecs=(long long) floor(seconds*1000000000);
+  int secs = total_nsecs/1000000000;
+  int remaining_nsecs = total_nsecs%1000000000;
+  if (seconds<0) {
     u8_seterr("Negative time interval","u8_sleep",NULL);
     return -1;}
   else {
     struct timespec req, rem;
-    req.tv_sec=floor(seconds);
-    req.tv_nsec=1000000000*(seconds-req.tv_sec);
+    req.tv_sec=secs;
+    req.tv_nsec=remaining_nsecs;
     rem.tv_sec=req.tv_sec;
     rem.tv_nsec=req.tv_nsec;
     /* We loop because nanosleep might return early if a signal

@@ -296,6 +296,19 @@ U8_EXPORT
 **/
 long long u8_millitime(void);
 
+U8_EXPORT
+/** Makes the current thread sleeps for seconds and fractions of
+    seconds. u8_sleep(3.7) will return after (roughly) 3.7 seconds.
+
+    @param seconds how long to sleep
+    @returns a time_t value (the current time in seconds)
+**/
+time_t u8_sleep(double seconds);
+
+
+
+/* UUIDs */
+
 typedef unsigned char U8_UUID[16];
 typedef unsigned char *u8_uuid;
 
