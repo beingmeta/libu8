@@ -26,7 +26,9 @@
 #include "libu8/u8stringfns.h"
 #include "libu8/u8ctype.h"
 
+#include <stdlib.h>
 #include <limits.h>
+#include <errno.h>
 /* Just for sprintf */
 #include <stdio.h>
 
@@ -82,10 +84,9 @@ ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
                     (max+(U8_BUF_THROTTLE_POINT/2)):
                     (max*2));
 
-  if (to_size<0) 
-    to_size=new_max;
-  else if (to_size<(max+U8_BUF_MIN_GROW))
-    to_size=max+U8_BUF_MIN_GROW;
+  if (to_size<0) to_size=new_max;
+  else if ((to_size+U8_BUF_MIN_GROW)<max)
+    return max;
   else {}
   while (new_max<to_size) 
     new_max = ((new_max>=U8_BUF_THROTTLE_POINT)?
@@ -103,14 +104,20 @@ ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
   if (new_buf==NULL) {
     size_t shrink_by = (new_max-max)/16;
     while (new_buf==NULL) {
-      /* Shrink until it works or you're smaller than you currently are */
+      /* The alloc/realloc call failed, so try smaller sizes */
+      errno=0; /* Reset errno */
+      /* Shrink until it works or the buffer size is smaller than the
+         current value */
       new_max=new_max-shrink_by;
       if (new_max<=max) {
-        u8_log(LOGCRIT,"MallocFailed/grow_input",
+        u8_log(LOGCRIT,"MallocFailed/grow_output",
                "Couldn't grow buffer for input stream");
         return max;}
-      else new_buf=(owns_buf)?(u8_realloc(in->u8_inbuf,new_max)):
-             (u8_malloc(new_max));}}
+      u8_log(LOGCRIT,"MemoryRestricted",
+             "Couldn't grow u8_input_stream buffer (x%llx) to %lld bytes, trying %lld",
+             (long long) in,new_max+shrink_by,new_max);
+      new_buf=(owns_buf)?(u8_realloc(in->u8_inbuf,new_max)):
+        (u8_malloc(new_max));}}
   if (!(owns_buf)) {
     memcpy(new_buf,buf,bytes_buffered);
     in->u8_streaminfo|=U8_STREAM_OWNS_BUF;}
@@ -136,10 +143,9 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
                     (max+(U8_BUF_THROTTLE_POINT/2)):
                     (max*2)),
     bytes_buffered = out->u8_write - out->u8_outbuf;
-  if (to_size<0) 
-    to_size=new_max;
-  else if (to_size<(max+U8_BUF_MIN_GROW))
-    to_size=max+U8_BUF_MIN_GROW;
+  if (to_size<0) to_size=new_max;
+  else if ((to_size+U8_BUF_MIN_GROW)<max)
+    return max;
   else {}
   while (new_max<to_size) 
     new_max = ((new_max>=U8_BUF_THROTTLE_POINT)?
@@ -151,14 +157,20 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
   if (new_buf==NULL) {
     size_t shrink_by = (new_max-max)/16;
     while (new_buf==NULL) {
-      /* Shrink until it works or you're smaller than you currently are */
+      /* The alloc/realloc call failed, so try smaller sizes */
+      errno=0; /* Reset errno */
+      /* Shrink until it works or the buffer size is smaller than the
+         current value */
       new_max=new_max-shrink_by;
       if (new_max<=max) {
         u8_log(LOGCRIT,"MallocFailed/grow_output",
-               "Couldn't grow buffer for input stream");
+               "Couldn't grow buffer for output stream");
         return max;}
-      else new_buf=(owns_buf)?(u8_realloc(out->u8_outbuf,new_max)):
-             (u8_malloc(new_max));}}
+      u8_log(LOGCRIT,"MemoryRestricted",
+             "Couldn't grow u8_output_stream buffer (x%llx) to %lld bytes, trying %lld",
+             (long long) out,new_max+shrink_by,new_max);
+      new_buf=(owns_buf)?(u8_realloc(out->u8_outbuf,new_max)):
+        (u8_malloc(new_max));}}
   if (!(owns_buf)) {
     memcpy(new_buf,buf,bytes_buffered);
     out->u8_streaminfo|=U8_STREAM_OWNS_BUF;}

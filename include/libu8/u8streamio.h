@@ -254,7 +254,8 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string string,int len);
 **/
 U8_INLINE_FCN int u8_putc(struct U8_OUTPUT *f,int c)
 {
-  if (U8_EXPECT_FALSE(f->u8_write+1>=f->u8_outlim)) return _u8_putc(f,c);
+  if (U8_EXPECT_FALSE(f->u8_write+1>=f->u8_outlim)) 
+    return _u8_putc(f,c);
   else if (U8_EXPECT_TRUE((c<0x80)&&(c>0))) {
     *(f->u8_write++)=c; *(f->u8_write)='\0'; return 1;}
   else return _u8_putc(f,c);
