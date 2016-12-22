@@ -222,13 +222,14 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
   else if ((f->u8_write+len+1>=f->u8_outlim) && (f->u8_flushfn))
     f->u8_flushfn(f);
   if (f->u8_write+len+1>=f->u8_outlim) {
-    ssize_t rv=u8_grow_output_stream(f,len+U8_BUF_MIN_GROW);
+    ssize_t cur=f->u8_bufsz;
+    ssize_t rv=u8_grow_output_stream(f,cur+len+U8_BUF_MIN_GROW);
     if (rv==0) return 0;
     else if (rv<0) {
-      u8_graberr(-1,"u8_putc",NULL);
+      u8_graberr(-1,"u8_putn",NULL);
       return -1;}
     if (f->u8_write+len+1>=f->u8_outlim) {
-      u8_graberr(-1,"u8_putc",NULL);
+      u8_graberr(-1,"u8_putn",NULL);
       return -1;}}
   memcpy(f->u8_write,data,len);
   f->u8_write=f->u8_write+len; *(f->u8_write)='\0';
