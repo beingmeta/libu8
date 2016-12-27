@@ -62,7 +62,7 @@ AC_CANONICAL_TARGET
 
 case $target_os in
   linux*)
-   AC_DEFINE(U8_RUSAGE_PROC_PATCH,1)
+   AC_DEFINE(U8_RUSAGE_PROCFS_PATCH,1)
    ;;
   darwin*)
    MKSTATIC="libtool -static -o ";

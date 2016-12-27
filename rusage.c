@@ -38,6 +38,9 @@
 #endif
 #endif
 
+#define U8_PROCFS_BUFSIZE 1024
+#define U8_PROCFS_VMSIZE_OFF 22
+
 /* Getting rusage */
 
 U8_EXPORT
@@ -50,7 +53,7 @@ int u8_getrusage(int who,struct rusage *r)
 {
 #if HAVE_GETRUSAGE
   if (getrusage(who,r)<0) return -1;
-#if U8_RUSAGE_PROC_PATCH
+#if U8_RUSAGE_PROCFS_PATCH
   {
     FILE *f=fopen("/proc/self/statm","r");
     int retval;
@@ -77,35 +80,26 @@ int u8_getrusage(int who,struct rusage *r)
 
 static U8_MAYBE_UNUSED size_t procfs_memusage()
 {
-#if U8_RUSAGE_PROC_PATCH
+#if U8_RUSAGE_PROCFS_PATCH
   FILE *f=fopen("/proc/self/stat","r");
-  int pid, ppid, pgrp, session, tty, tpgid; char commbuf[256], *comm=commbuf, state, retval;
-  unsigned long long U8_MAYBE_UNUSED
-    flags, minflt, cminflt, majflt, cmajflt, utime, stime, ctime, cutime, cstime, priority;
-  unsigned long long U8_MAYBE_UNUSED
-    nice, zero, itrealvalue, starttime, vsize, rss, rlim, startcode, endcode;
-  unsigned long long U8_MAYBE_UNUSED
-    startstack, kstkesp, kstkeip, signal, blocked, sigignore, sigcatch, huh;
-  unsigned long long U8_MAYBE_UNUSED
-    wchan, nswap, cnswap, exit_signal, processor, rt_priority, policy;
-  long long U8_MAYBE_UNUSED total, res, shared, textsize;
   if (f==NULL) return 0;
-  else
-    retval=fscanf(f,"%d %s %c %d %d %d %d %d %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Ld %Ld %Ld %Ld %Ld %Ld %Lu %Lu %Lu %Ld %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu %Lu",
-                  &pid,comm,&state,&ppid,&pgrp,&session,&tty,&tpgid,&flags,&minflt,&cminflt,&majflt,
-                  &cmajflt,&utime,&stime,&cutime,&cstime,&priority,&nice,&zero,&itrealvalue,&starttime,
-                  &vsize,&rss,&rlim,&startcode,&endcode,&startstack,&kstkesp,&kstkeip,&signal,&blocked,
-                  &sigignore,&sigcatch,&wchan,&nswap,&cnswap,&exit_signal,&processor,&rt_priority,
-                  &policy,&huh);
-  fclose(f);
-  if (retval<0)
-    return retval;
-  else return vsize;
+  else {
+    char buf[U8_PROCFS_BUFSIZE], *tokstate=NULL;
+    char *s=fgets(buf,U8_PROCFS_BUFSIZE,f);
+    char *tok=strtok_r(buf," \t",&tokstate);
+    int i=0;
+    if (s==NULL) {fclose(f); return 0;}
+    else while (tok!=NULL) {
+	if (i==U8_PROCFS_VMSIZE_OFF) {
+	  long long vsize=atoll(tok);
+	  return vsize;}
+	else i++;
+	tok=strtok_r(NULL," \t",&tokstate);}
+    return 0;}
 #else
   return 0;
 #endif
 }
-
 U8_EXPORT ssize_t u8_memusage()
 {
 #if __linux

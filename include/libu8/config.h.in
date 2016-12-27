@@ -216,7 +216,7 @@
 #undef HAVE_GETPAGESIZE
 
 /* Define if you need the rusage patch which gets meminfo from /proc/self */
-#undef U8_RUSAGE_PROC_PATCH
+#undef U8_RUSAGE_PROCFS_PATCH
 
 /* Define if you have sys/resource.h */
 #undef HAVE_SYS_RESOURCE_H
