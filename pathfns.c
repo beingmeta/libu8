@@ -212,6 +212,7 @@ u8_string u8_realpath(u8_string path,u8_string wd)
   u8_string abspath=u8_abspath(path,wd);
   if (abspath) {
     char *result=realpath(abspath,NULL);
+    if (errno) errno=0;
     if (result) {
       u8_string u8ified=u8_fromlibc(result);
       u8_free(abspath);

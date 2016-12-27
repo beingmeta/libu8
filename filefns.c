@@ -88,7 +88,8 @@ U8_EXPORT int u8_directoryp(u8_string filename)
 {
   struct stat status;
   if (stat(filename,&status) < 0) {
-    errno=0; return 0;}
+    if (errno) errno=0;
+    return 0;}
   else {
     return ((status.st_mode&S_IFMT)==S_IFDIR);}
 }
@@ -97,7 +98,8 @@ U8_EXPORT int u8_symlinkp(u8_string filename)
 {
   struct stat status;
   if (lstat(filename,&status) < 0) {
-    errno=0; return 0;}
+    if (errno) errno=0;
+    return 0;}
   else {
     return ((status.st_mode&S_IFMT)==S_IFLNK);}
 }
@@ -107,7 +109,7 @@ U8_EXPORT int u8_socketp(u8_string filename)
 {
   struct stat status;
   if (stat(filename,&status) < 0) {
-    errno=0; return 0;}
+    if (errno) errno=0; return 0;}
   else {
     return ((status.st_mode&S_IFMT)==S_IFSOCK);}
 }
@@ -119,19 +121,25 @@ static int file_existsp(u8_string filename)
 {
   int retval=access(filename,F_OK);
   if (retval==0) return 1;
-  else {errno=0; return 0;}
+  else {
+    if (errno) errno=0; 
+    return 0;}
 }
 static int file_readablep(u8_string filename)
 {
   int retval=access(filename,R_OK);
   if (retval==0) return 1;
-  else {errno=0; return 0;}
+  else {
+    if (errno) errno=0;
+    return 0;}
 }
 static int file_writablep(u8_string filename)
 {
   int retval=access(filename,W_OK);
   if (retval==0) return 1;
-  else {errno=0; return 0;}
+  else {
+    if (errno) errno=0;
+    return 0;}
 }
 #else
 #if HAVE_SYS_STAT_H
@@ -139,7 +147,7 @@ static int file_existsp(u8_string filename)
 {
   struct stat status;
   if (stat(filename,&status) < 0) {
-    errno=0;
+    if (errno) errno=0;
     return 0;}
   else return 1;
 }
@@ -147,8 +155,10 @@ static int file_existsp(u8_string filename)
 static int file_existsp(u8_string filename)
 {
   FILE *f=fopen(filename,"r");
+  if (errno) errno=0;
   if (f) {
     fclose(f);
+    if (errno) errno=0;
     return 1;}
   else return 0;
 }
@@ -157,16 +167,20 @@ static int file_existsp(u8_string filename)
 static int file_readablep(u8_string filename)
 {
   FILE *f=fopen(filename,"r");
+  if (errno) errno=0;
   if (f) {
     fclose(f);
+    if (errno) errno=0;
     return 1;}
   else return 0;
 }
 static int file_writablep(u8_string filename)
 {
   FILE *f=fopen(filename,"a");
+  if (errno) errno=0;
   if (f) {
     fclose(f);
+    if (errno) errno=0;
     return 1;}
   else return 0;
 }
