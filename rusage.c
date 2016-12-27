@@ -38,6 +38,8 @@
 #endif
 #endif
 
+#include <errno.h>
+
 #define U8_PROCFS_BUFSIZE 1024
 #define U8_PROCFS_VMSIZE_OFF 22
 
@@ -61,13 +63,16 @@ int u8_getrusage(int who,struct rusage *r)
     retval=fscanf(f,"%Ld %Ld %Ld %Ld %Ld %Ld %Ld",
                   &total,&res,&shared,
                   &textsize,&library,&data,&dirty_size);
-    if (retval<0) return -1;
+    if (retval<0) {
+      errno=0; 
+      return -1;}
     /* These numbers are not entirely correct, but they're more
        correct than 0! */
     r->ru_idrss=total-(shared);
     r->ru_maxrss=res;
     r->ru_ixrss=shared;
     fclose(f);
+    errno=0;
     return 1;
   }
 #endif
@@ -78,23 +83,28 @@ int u8_getrusage(int who,struct rusage *r)
   return 1;
 }
 
-static U8_MAYBE_UNUSED size_t procfs_memusage()
+static U8_MAYBE_UNUSED ssize_t procfs_memusage()
 {
 #if U8_RUSAGE_PROCFS_PATCH
   FILE *f=fopen("/proc/self/stat","r");
-  if (f==NULL) return 0;
+  if (f==NULL) {
+    errno=0;
+    return 0;}
   else {
     char buf[U8_PROCFS_BUFSIZE], *tokstate=NULL;
     char *s=fgets(buf,U8_PROCFS_BUFSIZE,f);
     char *tok=strtok_r(buf," \t",&tokstate);
     int i=0;
-    if (s==NULL) {fclose(f); return 0;}
+    fclose(f); errno=0;
+    if (s==NULL) return 0;
     else while (tok!=NULL) {
 	if (i==U8_PROCFS_VMSIZE_OFF) {
 	  long long vsize=atoll(tok);
+	  errno=0;
 	  return vsize;}
 	else i++;
 	tok=strtok_r(NULL," \t",&tokstate);}
+    errno=0;
     return 0;}
 #else
   return 0;
