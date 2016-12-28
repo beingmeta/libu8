@@ -71,6 +71,7 @@ U8_EXPORT void u8_init_stringfns_c(void);
 U8_EXPORT void u8_init_bytebuf_c(void);
 U8_EXPORT void u8_init_cityhash_c(void);
 
+u8_condition u8_UnexpectedErrno=_("Unexpected errno");
 u8_condition u8_MallocFailed=_("Malloc failed");
 u8_condition u8_NotImplemented=_("Function not available");
 

@@ -407,6 +407,9 @@
 /* Whether poll may be destructive (some BSDs?) */
 #undef DESTRUCTIVE_POLL
 
+/* Whether to check for dangling malloc/free errnos */
+#undef CHECK_DANGLING_ERRNOS
+
 /* Various types */
 #undef HAVE_MODE_T
 #undef HAVE_PID_T

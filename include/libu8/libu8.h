@@ -83,6 +83,7 @@
 #endif
 
 #include <stdlib.h>
+#include <errno.h>
 #include <string.h>
 
 #ifndef _POSIX_C_SOURCE
@@ -537,17 +538,45 @@ U8_EXPORT int _u8_dbg(u8_string s);
 
 U8_EXPORT void *u8_dmalloc(size_t);
 
+static void *u8_tidy_malloc(size_t n_bytes)
+{
+  void *ptr=malloc(n_bytes);
+  if ( (ptr) && (errno) ) errno=0;
+  return ptr;
+}
+
+static void *u8_tidy_realloc(void *ptr,size_t newsz)
+{
+  if (ptr == NULL)
+    return u8_tidy_malloc(newsz);
+  else {
+    void *newptr=realloc(ptr,newsz);
+    if ( (newptr) && (errno) ) errno=0;
+    return ptr;}
+}
+
 #ifndef U8_MALLOC
+#if CHECK_DANGLING_ERRNOS
+#define U8_MALLOC u8_tidy_malloc
+#else
 #define U8_MALLOC malloc
+#endif
+#endif
+
+#if CHECK_DANGLING_ERRNOS
+#define u8_realloc(ptr,newsz) (u8_tidy_realloc((void *)ptr,newsz))
+#define u8_free(ptr) (free((char *)ptr),errno=0)
+#else
+#define u8_free(ptr) free((char *)ptr)
+#define u8_realloc(ptr,new) \
+  ((ptr==NULL) ? (U8_MALLOC(newsz)) : (realloc(ptr,newsz)))
 #endif
 
 #define u8_zero_array(r) memset(r,0,sizeof(r))
 #define u8_zero_struct(r) memset(&r,0,sizeof(r))
 
 #define u8_malloc(sz) U8_MALLOC(sz)
-#define u8_realloc(ptr,tosz) \
-  ((ptr==NULL) ? (U8_MALLOC(tosz)) : (realloc(ptr,tosz)))
-#define u8_free(ptr) free((char *)ptr)
+
 #define u8_xfree(ptr) if (ptr) free((char *)ptr); else ptr=ptr;
 
 #define u8_alloc(t) ((t *)(u8_malloc(sizeof(t))))
@@ -653,6 +682,24 @@ U8_EXPORT u8_string u8_strndup(u8_string,int);
 
 #ifndef UTF8_BUGWINDOW
 #define UTF8_BUGWINDOW 64
+#endif
+
+/* Errno checking */
+
+#define U8_DEBUG_ERRNO 1
+
+#define U8_CLEAR_ERRNO() if (errno) errno=0
+
+#if U8_DEBUG_ERRNO
+#define U8_CHECK_ERRNO()			\
+  if (errno) {					\
+    u8_log(LOG_WARN,u8_UnexpectedErrno,		\
+	   "At %s:%d (%s) errno=%d (%s)",	\
+	   __FILE__,__LINE__,__FUNCTION__,	\
+	   errno,u8_strerror(errno));}		\
+  else {}
+#else
+#define U8_CHECK_ERRNO() if (errno) errno=0
 #endif
 
 /* Piles */
