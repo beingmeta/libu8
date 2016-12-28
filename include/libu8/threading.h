@@ -130,7 +130,7 @@ U8_EXPORT __thread void *u8_stack_base;
 #define U8_SET_STACK_BASE()	  \
   volatile int _stack_base=17; \
   u8_stack_base=(void *)&_stack_base
-static ssize_t u8_stack_depth()
+static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 {
   int _stackval=42;
   if (u8_stack_base==NULL) return -1;
@@ -144,7 +144,7 @@ U8_EXPORT u8_tld_key u8_stack_base_key;
 #define U8_SET_STACK_BASE()	  \
   volatile int _stack_base=17*42; \
   u8_tld_set(u8_stack_base_key,(void *)&_stack_base)
-static ssize_t u8_stack_depth()
+static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 {
   int _stackval=42; 
   void *stack_base=u8_tld_get(u8_stack_base_key);
@@ -157,7 +157,7 @@ static ssize_t u8_stack_depth()
 #else /* not U8_THREADS_ENABLED */
 #define u8_stack_base() ((void *)(NULL))
 #define U8_SET_STACK_BASE()
-static ssize_t u8_stack_depth()
+static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 {
   return -1;
 }
