@@ -568,7 +568,7 @@ static void *u8_tidy_realloc(void *ptr,size_t newsz)
 #define u8_free(ptr) (free((char *)ptr),errno=0)
 #else
 #define u8_free(ptr) free((char *)ptr)
-#define u8_realloc(ptr,new) \
+#define u8_realloc(ptr,newsz) \
   ((ptr==NULL) ? (U8_MALLOC(newsz)) : (realloc(ptr,newsz)))
 #endif
 
