@@ -572,7 +572,8 @@ U8_EXPORT void u8_raise(u8_condition,u8_context,u8_string);
       the caller for use if the allocation fails
    @returns void *
 **/
-static U8_MALLOCFN void *u8_zalloc_bytes(size_t n_bytes,u8_context caller)
+static U8_MALLOCFN U8_MAYBE_UNUSED
+void *u8_zalloc_bytes(size_t n_bytes,u8_context caller)
 {
   void *block = U8_MALLOC(n_bytes);
   if (block) {
