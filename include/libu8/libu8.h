@@ -552,7 +552,7 @@ static void *u8_tidy_realloc(void *ptr,size_t newsz)
   else {
     void *newptr=realloc(ptr,newsz);
     if ( (newptr) && (errno) ) errno=0;
-    return ptr;}
+    return newptr;}
 }
 
 #ifndef U8_MALLOC

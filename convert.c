@@ -200,8 +200,8 @@ u8_encoding u8_define_encoding
   if (scan) {
     u8_log(LOG_WARNING,NULL,_("Text encoding `%s' already exists"),name);
     return scan;}
-  scan=u8_alloc(struct U8_TEXT_ENCODING);
-  scan->names=u8_alloc_n(2,char *);
+  scan=u8_zalloc(struct U8_TEXT_ENCODING);
+  scan->names=u8_zalloc_n(2,char *);
   scan->names[0]=u8_strdup(name); scan->names[1]=NULL;
   if (size) {
     scan->charset=charset; scan->charset_size=size;
