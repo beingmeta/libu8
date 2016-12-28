@@ -538,14 +538,16 @@ U8_EXPORT int _u8_dbg(u8_string s);
 
 U8_EXPORT void *u8_dmalloc(size_t);
 
-static void *u8_tidy_malloc(size_t n_bytes)
+static U8_MALLOCFN U8_MAYBE_UNUSED
+void *u8_tidy_malloc(size_t n_bytes)
 {
   void *ptr=malloc(n_bytes);
   if ( (ptr) && (errno) ) errno=0;
   return ptr;
 }
 
-static void *u8_tidy_realloc(void *ptr,size_t newsz)
+static U8_MAYBE_UNUSED
+void *u8_tidy_realloc(void *ptr,size_t newsz)
 {
   if (ptr == NULL)
     return u8_tidy_malloc(newsz);
