@@ -15,6 +15,7 @@
 
 #include "libu8/u8source.h"
 #include "libu8/libu8.h"
+#include "libu8/u8elapsed.h"
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__

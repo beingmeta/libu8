@@ -9,6 +9,7 @@ LIBS      = @LIBS@ $(EFENCE) -lm
 DYLIB_FLAGS = -compatibility_version @U8MAJOR@.0.0 -current_version @U8MAJOR@.@U8MINOR@.@U8RELEASE@
 U8VERSION = @U8VERSION@
 BUILDMODE:= `cat buildmode`
+INC	  = include/libu8/
 
 DESTDIR		=
 prefix		= @prefix@
@@ -37,13 +38,21 @@ APTREPO         = @APTREPO@
 
 COMPONENT=main
 
-LIBU8_HEADERS=\
-	include/libu8/config.h include/libu8/u8source.h include/libu8/threading.h \
-	include/libu8/libu8.h include/libu8/u8contour.h \
-	include/libu8/u8streamio.h include/libu8/u8stringfns.h \
-	include/libu8/u8ctype.h include/libu8/u8convert.h \
-	include/libu8/u8crypto.h include/libu8/u8logging.h \
-	include/libu8/cityhash.h
+LIBU8_HEADERS=											\
+	${INC}/cityhash.h ${INC}/config.h ${INC}/libu8.h ${INC}/libu8io.h 			\
+	${INC}/revision.h ${INC}/u8appid.h ${INC}/u8appinfo.h ${INC}/u8bytebuf.h		\
+	${INC}/u8contour.h ${INC}/u8convert.h ${INC}/u8crypto.h ${INC}/u8ctype.h		\
+	${INC}/u8defines.h ${INC}/u8digest.h ${INC}/u8dirfns.h ${INC}/u8elapsed.h		\
+	${INC}/u8endian.h ${INC}/u8error.h ${INC}/u8errors.h ${INC}/u8exceptions.h		\
+	${INC}/u8filefns.h ${INC}/u8fileio.h ${INC}/u8findfiles.h ${INC}/u8gettext.h		\
+	${INC}/u8libc.h ${INC}/u8logging.h ${INC}/u8malloc.h ${INC}/u8millitime.h		\
+	${INC}/u8mktime.h ${INC}/u8netfns.h ${INC}/u8pathfns.h ${INC}/u8piles.h			\
+	${INC}/u8printf.h ${INC}/u8random.h ${INC}/u8rusage.h ${INC}/u8signals.h		\
+	${INC}/u8sleep.h ${INC}/u8source.h ${INC}/u8sourcefiles.h ${INC}/u8srvfns.h		\
+	${INC}/u8stdio.h ${INC}/u8streamio.h ${INC}/u8stringfns.h ${INC}/u8strings.h		\
+	${INC}/u8subscribe.h ${INC}/u8threading.h ${INC}/u8timefns.h ${INC}/u8timestrings.h	\
+	${INC}/u8uuid.h ${INC}/u8xfiles.h ${INC}/u8xtime.h ${INC}/u8xtimefns.h
+
 LIBU8_SOURCES=\
   libu8.c streamio.c printf.c logging.c exceptions.c  ctype.c stringfns.c \
   libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c cityhash.c \

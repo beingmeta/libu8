@@ -90,6 +90,6 @@ U8_EXPORT void u8_signal_raise(int signum);
    @returns void
    Raises an informative condition.
 **/
-U8_EXPORT void u8_sigaction_raise(siginfo_t *info,void *ptr);
+U8_EXPORT void u8_sigaction_raise(siginfo_t *siginfo,void *ptr);
 
 #endif /* ndef LIBU8_U8EXCEPTIONS_H */

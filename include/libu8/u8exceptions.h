@@ -22,6 +22,9 @@
      libu8 and programs built on it.
  **/
 
+typedef const unsigned char *u8_condition;
+typedef const unsigned char *u8_context;
+
 typedef void (*u8_exception_xdata_freefn)(void *);
 
 U8_EXPORT u8_condition u8_strerror(int num);

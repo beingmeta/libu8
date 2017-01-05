@@ -82,14 +82,14 @@ U8_EXPORT int u8_has_suffix(u8_string string,u8_string suffix,int casefold);
 U8_EXPORT u8_string u8_strchrs(u8_string haystack,u8_string needles,int order);
 
 /** Searches for a character in a string
-    @param haystack a UTF-8 string
-    @param c a char
+    @param string a UTF-8 string
+    @param ch a char
     @param n which match to return, use n<0 to match from the end, 
            n=0 is the same as n=1
     @returns a substring of 'string' or NULL
     
 **/
-U8_EXPORT u8_string u8_strchr(u8_string haystack,int needle,int n);
+U8_EXPORT u8_string u8_strchr(u8_string string,int ch,int n);
 
 /** Searches for a set of strings in a string
     @param haystack a UTF-8 string
@@ -113,8 +113,8 @@ U8_EXPORT u8_string u8_strstrs(u8_string haystack,u8_string needles[],int order)
 /** Searches for a substring in a string
     @param haystack a UTF-8 string
     @param needle a string
-    @param n which match to return, use n<0 to match from the end, 
-           n=0 is the same as n=1
+    @param direction indicates which match to return, use n<0 to match
+           from the end, n=0 is the same as n=1
     @returns a substring of 'string' or NULL
     
 **/
@@ -128,6 +128,18 @@ U8_EXPORT u8_string u8_strstr(u8_string haystack,u8_string needle,int direction)
     @returns pointer to that buffer
 **/
 U8_EXPORT char *u8_itoa10(long long int n,char buf[32]);
+
+/* Handy definition */
+
+/* Write a long long to a string.  This writes the string without
+   using printf or other 'heavyweight' functions. It can be used in
+   resource-tight environments and can also be called in signal
+   handlers as needed.
+   @param val the signed integer value to write to the buffer
+   @param buf a character buffer to place the representation
+   @param buflen the size of the character buffer
+ */
+U8_EXPORT char *u8_write_long_long(long long l,char *buf,size_t buflen);
 
 /** Generates a base-ten representation of a long long int
     This should be safe to use in, for example, signal handlers, where printf

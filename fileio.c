@@ -15,6 +15,7 @@
 #include "libu8/u8pathfns.h"
 #include "libu8/u8filefns.h"
 #include "libu8/u8fileio.h"
+#include "libu8/u8subscribe.h"
 
 #include <string.h>
 #include <fcntl.h>

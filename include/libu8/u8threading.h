@@ -163,5 +163,65 @@ static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 }
 #endif
 
+/* Thread proxy functions */
+
+/** Locks a POSIX thread mutex
+    @param m a pointer to a mutex
+    @returns void
+**/
+U8_EXPORT void u8_mutex_lock(u8_mutex *m);
+
+/** Unlocks a POSIX thread mutex
+    @param m a pointer to a mutex
+    @returns void
+**/
+U8_EXPORT void u8_mutex_unlock(u8_mutex *m);
+
+/** Initialize a POSIX thread mutex
+    @param m a pointer to a mutex
+    @returns void
+**/
+U8_EXPORT void u8_mutex_init(u8_mutex *m);
+
+/** Destroys a POSIX thread mutex
+    @param m a pointer to a mutex
+    @returns void
+**/
+U8_EXPORT void u8_mutex_destroy(u8_mutex *m);
+
+/* Thread init functions */
+
+typedef int (*u8_threadinitfn)(void);
+typedef void (*u8_threadexitfn)(void);
+U8_EXPORT int u8_register_threadinit(u8_threadinitfn fn);
+U8_EXPORT int u8_register_threadexit(u8_threadexitfn fn);
+U8_EXPORT int u8_run_threadinits(void);
+U8_EXPORT int u8_threadexit(void);
+
+U8_EXPORT int u8_n_threadinits;
+U8_EXPORT int u8_n_threadexitfns;
+
+#define u8_threadcheck() \
+  if (u8_getinitlevel()<u8_n_threadinits) u8_run_threadinits()
+
+#if (U8_USE__THREAD)
+U8_EXPORT __thread int u8_initlevel;
+#define u8_getinitlevel() (u8_initlevel)
+#define u8_setinitlevel(n) u8_initlevel=(n);
+#elif (U8_USE_TLS)
+U8_EXPORT u8_tld_key u8_initlevel_key;
+#define u8_getinitlevel() ((int) ((u8_wideint)(u8_tld_get(u8_initlevel_key))))
+#define u8_setinitlevel(n) u8_tld_set(u8_initlevel_key,((void *)n))
+#else
+U8_EXPORT int u8_initlevel;
+#define u8_getinitlevel() (u8_initlevel)
+#define u8_setinitlevel(n) u8_initlevel=(n);
+#endif
+
+/** Returns a long identifying the current thread
+    @returns long a numeric thread identifier (OS dependent)
+**/
+U8_EXPORT long long u8_threadid(void);
+
 #endif /* LIBU8_THREADING_H */
 

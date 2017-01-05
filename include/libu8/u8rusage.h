@@ -54,4 +54,9 @@ U8_EXPORT u8_string u8_rusage_string(struct rusage *r);
 **/
 U8_EXPORT ssize_t u8_memusage(void);
 
+/** Returns the system page size
+    @returns long
+**/
+U8_EXPORT long u8_getpagesize(void);
+
 #endif
