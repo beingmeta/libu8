@@ -106,9 +106,11 @@
 
 #include "u8appinfo.h"
 
+#include "u8malloc.h"
+
 #include "u8random.h"
 
-#include "u8malloc.h"
+#include "u8digest.h"
 
 #include "u8piles.h"
 
