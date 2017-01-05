@@ -9,7 +9,7 @@ LIBS      = @LIBS@ $(EFENCE) -lm
 DYLIB_FLAGS = -compatibility_version @U8MAJOR@.0.0 -current_version @U8MAJOR@.@U8MINOR@.@U8RELEASE@
 U8VERSION = @U8VERSION@
 BUILDMODE:= `cat buildmode`
-INC	  = include/libu8/
+INC	  = include/libu8
 
 DESTDIR		=
 prefix		= @prefix@
@@ -40,7 +40,7 @@ COMPONENT=main
 
 LIBU8_HEADERS=											\
 	${INC}/cityhash.h ${INC}/config.h ${INC}/libu8.h ${INC}/libu8io.h 			\
-	${INC}/revision.h ${INC}/u8appid.h ${INC}/u8appinfo.h ${INC}/u8bytebuf.h		\
+	${INC}/u8appid.h ${INC}/u8appinfo.h ${INC}/u8bytebuf.h		\
 	${INC}/u8contour.h ${INC}/u8convert.h ${INC}/u8crypto.h ${INC}/u8ctype.h		\
 	${INC}/u8defines.h ${INC}/u8digest.h ${INC}/u8dirfns.h ${INC}/u8elapsed.h		\
 	${INC}/u8endian.h ${INC}/u8error.h ${INC}/u8errors.h ${INC}/u8exceptions.h		\
