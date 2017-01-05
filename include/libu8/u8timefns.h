@@ -34,6 +34,8 @@
 
 #include "u8xtime.h"
 
+#include "u8mktime.h"
+
 #include "u8xtimefns.h"
 
 #include "u8timestrings.h"
