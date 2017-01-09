@@ -1176,6 +1176,7 @@ U8_EXPORT time_t u8_sleep(double seconds)
       /* Could look at errno here, but not sure what to do with it */
       req.tv_sec=rem.tv_sec;
       req.tv_nsec=rem.tv_nsec;}
+    U8_CLEAR_ERRNO();
     return time(NULL);}
 }
 #else
@@ -1190,6 +1191,7 @@ U8_EXPORT time_t u8_sleep(double seconds)
       u8_log(LOG_WARN,"UnsupportedSleepPrecision",
              "This system doesn't have fine-grained sleep precision");
     sleep(secs);
+    U8_CLEAR_ERRNO();
     return time(NULL);}
 }
 #endif
