@@ -497,13 +497,13 @@ install-debian install-debs: dist/debs.done
 	@SUDO@dpkg -i dist/libu8*_@U8VERSION@*.deb
 
 update-local-apt-repo: dist/debs.done
-	if test `id -u` -neq 0; then \
-	  for change in dist/*.changes; do \
-	    reprepro -Vb ${APTREPO} include ${CODENAME} $${change} && \
-	    rm -f $${change}; \
-	   done; \
-	else \
-	 echo "Don't update the repo as root";
+	if test `id -u` -neq 0; then 					\
+	  for change in dist/*.changes; do 				\
+	    reprepro -Vb ${APTREPO} include ${CODENAME} $${change} && 	\
+	    rm -f $${change}; 						\
+	   done; 							\
+	else 								\
+	 echo "Don't update the repo as root"; 				\
 	fi;
 
 update-remote-apt-repo: dist/debs.done
