@@ -164,6 +164,23 @@ void u8_initialize_u8syslog(void) U8_LIBINIT_FN;
 **/
 U8_EXPORT void *u8_dynamic_load(u8_string filename);
 
+#if (SIZEOF_VOID_P == 8)
+#define FD_PTRHASH_CONSTANT 11400714819323198549ul
+#else
+#define FD_PTRHASH_CONSTANT 2654435761
+#endif
+
+U8_INLINE U8_MAYBE_UNUSED 
+/* Computes a hash value from a pointer
+   @param ptr    a memory pointer
+   @param n_bits a bit width for the result (<32)
+ */
+u8_int4 u8_hashptrval(void *ptr,int n_bits) 
+{
+  u8_wideint intrep = (u8_wideint) ptr;
+  return (intrep * FD_PTRHASH_CONSTANT) >> (64 - n_bits);
+}
+
 /** Initializes logging
     @returns void
 **/
