@@ -90,30 +90,33 @@ ALL=@TAGS@ libs @I18N@ tests @DOCS@
 update: buildmode
 	@make `cat buildmode`
 normal:
-	@echo Building NORMAL configuration
+	@echo "# (libu8)" Building NORMAL configuration
 	@make ${ALL}
 debugging:
-	@echo Building DEBUGGING configuration
+	@echo "# (libu8)" Building DEBUGGING configuration
 	make XCFLAGS="@debugcflags@ $(XCFLAGS)" ${ALL}
 optimizing:
-	@echo Building OPTIMIZING configuration
+	@echo "# (libu8)" Building OPTIMIZING configuration
 	make XCFLAGS="-O3" ${ALL}
 nitpicking:
-	@echo Building NITPICKING configuration
+	@echo "# (libu8)" Building NITPICKING configuration
 	make XCFLAGS="-Wall" ${ALL}
 all: ${ALL}
 
 debug:
-	@if test $(BUILDMODE) != "debugging"; then echo debugging > buildmode; fi
+	@if test $(BUILDMODE) != "debugging"; then \
+		echo debugging > buildmode; fi
 	@make `cat buildmode`
 standard:
 	@if test $(BUILDMODE) != "normal"; then echo normal > buildmode; fi
 	@make `cat buildmode`
 nitpick:
-	@if test $(BUILDMODE) != "nitpicking"; then echo nitpicking > buildmode; fi
+	@if test $(BUILDMODE) != "nitpicking"; then \
+		echo nitpicking > buildmode; fi
 	@make `cat buildmode`
 fast production:
-	@if test $(BUILDMODE) != "optimizing"; then echo optimizing > buildmode; fi
+	@if test $(BUILDMODE) != "optimizing"; then \
+		echo optimizing > buildmode; fi
 	@make `cat buildmode`
 
 tests: $(TESTBIN) $(DYTESTBIN)
@@ -138,14 +141,15 @@ makefile: makefile.in config.status
 	@if diff makefile makefile.tmp 2>&1 > /dev/null; then 	\
 	  mv makefile.tmp makefile; 				\
 	else							\
-	 echo Updated makefile; 				\
+	 echo "# (libu8)" Updated makefile; 			\
 	fi
 ./config.status: configure
 	./config.status --recheck
 configure: configure.ac etc/release
-	@if test -f .autoautoconf; then \
-	     echo "REBUILDING configure"; autoconf; \
-	else echo "WARNING: configure may be out of date"; fi
+	@if test -f .autoautoconf; then 				\
+	     echo "# (libu8)" "REBUILDING configure"; autoconf; 	\
+	else echo "# (libu8) WARNING: configure may be out of date"; 	\
+	fi
 include/libu8/config.h: include/libu8/config.h.in
 	./config.status
 include/libu8/u8source.h: include/libu8/u8source.h.in
@@ -172,19 +176,19 @@ dbginstall:
 
 %.o: %.c ./fileinfo include/libu8/revision.h
 	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
-	@echo CC $@ $<
+	@echo "# (libu8)" CC $@ $<
 tests/%: tests/%.c 
 	$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< ${STATIC_TEST_LIBS} ${LIBS}
-	@echo CC_STATIC_EXE $@ $<
+	@echo "# (libu8)" CC_STATIC_EXE $@ $<
 tests/dynamic/%: tests/%.c
 	$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8io -lu8  
-	@echo CC_DYNAMIC_EXE $@ $<
+	@echo "# (libu8)" CC_DYNAMIC_EXE $@ $<
 
 lib/%@suffix@.a:
-	@echo MKSTATIC $@
+	@echo "# (libu8)" MKSTATIC $@
 	@$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
-	@echo MKSO $@
+	@echo "# (libu8)" MKSO $@
 	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
 		 -L./lib -o $@ $^ -lu8 $(LIBS)
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
@@ -192,43 +196,43 @@ lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	ln -sf $(<F) $@.@U8MAJOR@
 
 lib/%@suffix@.dylib:
-	@echo MACLIBTOOL $@
+	@echo "# (libu8)" MACLIBTOOL $@
 	@$(MACLIBTOOL) -install_name @rpath/lib/$(*F).@U8MAJOR@.dylib \
 		$(DYLIB_FLAGS) -o $@ $^
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 
 $(LIBINSTALLDIR)/%.a: lib/%.a
-	@echo Installing $@
+	@echo "# (libu8)" Installing $@
 	@$(INSTALL) -d $(LIBINSTALLDIR)
 	@$(INSTALL) $< $(LIBINSTALLDIR)
 
 $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: lib/%@suffix@.so
-	@echo Installing $@
+	@echo "# (libu8)" Installing $@
 	@$(INSTALL) -d $(@D)
 	@$(INSTALL) $< $@
 $(LIBINSTALLDIR)/%@suffix@.so.@U8MAJOR@: \
 	$(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
-	@echo Linking $< to $@
+	@echo "# (libu8)" Linking $< to $@
 	@@SUDO@ln -sf $(shell basename $<) $@
 $(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
-	@echo Linking to $@
+	@echo "# (libu8)" Linking to $@
 	@@SUDO@ln -sf $(shell basename $<) $@
 
 $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: lib/%@suffix@.dylib
-	@echo Installing $@
+	@echo "# (libu8)" Installing $@
 	@$(INSTALL) -d $(LIBINSTALLDIR)
 	@$(INSTALL) $< $@
 $(LIBINSTALLDIR)/%@suffix@.@U8MAJOR@.dylib: \
 	$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
-	@echo Linking $< to $@
+	@echo "# (libu8)" Linking $< to $@
 	@@SUDO@ln -sf $(shell basename $<) $@
 $(LIBINSTALLDIR)/%@suffix@.dylib: $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
-	@echo Linking $< to $@
+	@echo "# (libu8)" Linking $< to $@
 	@@SUDO@ln -sf $(shell basename $<) $@
 
 $(LIBINSTALLDIR)/%@suffix@.dylib: \
 		$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
-	@echo Linking to $@
+	@echo "# (libu8)" Linking to $@
 	@@SUDO@ln -sf $(shell basename $<) $@
 
 test: @test_shared@ @test_static@
@@ -262,7 +266,7 @@ include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile
 	elif diff etc/use_revision.h $@>/dev/null; then			\
 	  rm etc/use_revision.h; 					\
 	else 								\
-	  echo "Revision changed to "`@GITDESCRIBE@`; 			\
+	  echo "# (libu8)" "Revision changed to "`@GITDESCRIBE@`;	\
 	  mv $@ etc/old_revision.h; 					\
 	  mv etc/use_revision.h $@; 					\
 	fi
@@ -274,7 +278,7 @@ lib/libu8.dll: $(LIBU8_OBJECTS)
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
 	@$(MKSO) -Wl,-soname=libu8@suffix@.so.@U8MAJOR@ \
 		 -L./lib -o $@ $^ $(LIBS)
-	@echo MKSO $@
+	@echo "# (libu8)" MKSO $@
 
 lib/libu8core.a: $(LIBU8CORE_OBJECTS)
 lib/libu8core@suffix@.so.@U8VERSION@: $(LIBU8CORE_OBJECTS)
@@ -283,7 +287,7 @@ lib/libu8core.dll: $(LIBU8CORE_OBJECTS)
 # Avoid recursive reference
 lib/libu8core@suffix@.so.@U8VERSION@:
 	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -L./lib -o $@ $^ $(LIBS)
-	@echo MKSO $@
+	@echo "# (libu8)" MKSO $@
 
 lib/libu8fns.a: $(LIBU8FNS_OBJECTS)
 lib/libu8fns@suffix@.so.@U8VERSION@: $(LIBU8FNS_OBJECTS)
@@ -317,7 +321,7 @@ docs: docs/doxygen.done
 
 docs/doxygen.done: $(LIBU8_HEADERS) docs/doxygen.cfg
 	@$(DOXYGEN) docs/doxygen.cfg && touch docs/doxygen.done
-	@echo DOXYGEN headers
+	@echo "# (libu8)" DOXYGEN headers
 
 libu8.org: docs/doxygen.done
 	aws s3 cp --recursive docs/html/ s3://www.libu8.org/docs/
@@ -327,20 +331,21 @@ libu8.org: docs/doxygen.done
 clean: 
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* etc/fileinfo
 	@$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
-	@echo "Cleaned up libraries"
+	@echo "# (libu8)" "Cleaned up libraries"
 	@$(CLEAN) docs/man/man3/* docs/rtf/* docs/latex/* docs/doxygen.done
 	@for dir in docs/html docs/html/search; do				\
 	  $(CLEAN) $${dir}/*.html $${dir}/*.png $${dir}/*.js $${dir}/*.css; done
-	@echo "Cleaned up docs"
+	@echo "# (libu8)" "Cleaned up docs"
 	@$(CLEAN) tests/getentity tests/latin1u8 tests/u8recode tests/u8xrecode
 	@$(CLEAN) tests/echosrv
-	@echo "Cleaned up static test executables"
+	@echo "# (libu8)" "Cleaned up static test executables"
 	@$(CLEAN) tests/dynamic/getentity tests/dynamic/latin1u8
 	@$(CLEAN) tests/dynamic/u8recode tests/dynamic/u8xrecode
 	@$(CLEAN) tests/dynamic/echosrv
-	@echo "Cleaned up dynamic test executables"
-	@if test -d debian/libu8; then \
-		rm -rf debian/libu8; echo "Cleaning up debian build"; \
+	@echo "# (libu8)" "Cleaned up dynamic test executables"
+	@if test -d debian/libu8; then			\
+	  rm -rf debian/libu8; 				\
+	  echo "# (libu8)" "Cleaning up debian build"; 	\
 	 fi
 
 tidy: 
@@ -451,13 +456,13 @@ dist/rpms.done: dist/rpms.ready
 	@if (test "x$(GPGID)" = "xnone"); then 				\
 	    touch dist/rpms.done;					\
 	elif (test "x$(GPGID)" = "x"); then 				\
-	   echo "Enter passphrase for the RPM signing key:"; 		\
+	   echo "# (libu8) Enter passphrase for the RPM signing key:";	\
 	   @rpm@ --addsign 						\
 		--define="__gpg_sign_cmd $(RPMGPG)" 			\
 		$(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; 			\
 	   else 							\
-	     echo "Enter passphrase for '$(GPGID)':"; 			\
+	     echo "# (libu8) Enter passphrase for '$(GPGID)':";		\
 	     @rpm@ --addsign --define="_gpg_name $(GPGID)" 		\
 		--define="__gpg_sign_cmd $(RPMGPG)" 			\
 		$(RPMDIR)/libu8-@U8VERSION@*.src.rpm 			\
@@ -497,13 +502,13 @@ install-debian install-debs: dist/debs.done
 	@SUDO@dpkg -i dist/libu8*_@U8VERSION@*.deb
 
 update-local-apt-repo: dist/debs.done
-	if test `id -u` -neq 0; then 					\
+	@if test ! `id -u` -eq 0; then 					\
 	  for change in dist/*.changes; do 				\
 	    reprepro -Vb ${APTREPO} include ${CODENAME} $${change} && 	\
 	    rm -f $${change}; 						\
 	   done; 							\
 	else 								\
-	 echo "Don't update the repo as root"; 				\
+	 echo "# (libu8/makefile) Don't update the repo as root";	\
 	fi;
 
 update-remote-apt-repo: dist/debs.done
@@ -513,7 +518,7 @@ update-remote-apt-repo: dist/debs.done
 	done
 
 apt-update update-apt update-apt-repo: dist/debs.done
-	if test -d ${APTREPO}; then	\
+	@if test -d ${APTREPO}; then	\
 	  make update-local-apt-repo;	\
 	else				\
 	  make update-remote-apt-repo;	\
@@ -551,13 +556,13 @@ install-dev install: install-libs install-headers install-encodings \
 install-libs: @install_static@ @install_shared@
 
 install-headers: $(DESTDIR)@prefix@/include/libu8
-	@echo Installing headers in $(DESTDIR)@prefix@/include/libu8
+	@echo "# (libu8) Installing headers in $(DESTDIR)@prefix@/include/libu8"
 	@$(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
 $(DESTDIR)@prefix@/include/libu8:
 	$(INSTALL) -d $(DESTDIR)@prefix@/include/libu8
 
 install-docs: docs/doxygen.done
-	@echo "Writing man pages"
+	@echo "# (libu8)" "Writing man pages"
 	@$(INSTALL) -d $(MANDIR)/man3
 	@$(INSTALL) docs/man/man3/* $(MANDIR)/man3
 
@@ -685,7 +690,7 @@ BIG5_ALIASES=BIGFIVE CN-BIG5 CSBIG5
 MACINTOSH_ALIASES=MACROMAN CSMACINTOSH MAC
 
 install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
-	@echo Installing encodings in $(ENCDIR)
+	@echo "# (libu8)" Installing encodings in $(ENCDIR)
 	@$(INSTALL) $(ENCODINGS) $(ENCDIR)
 	@for x in $(CP1125_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
