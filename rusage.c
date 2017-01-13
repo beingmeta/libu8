@@ -41,7 +41,8 @@
 #include <errno.h>
 
 #define U8_PROCFS_BUFSIZE 1024
-#define U8_PROCFS_VMSIZE_OFF 22
+#define U8_PROCFS_STATM_VMSIZE_OFF 0
+#define U8_PROCFS_STATM_RSS_OFF 1
 
 /* Getting rusage */
 
@@ -83,10 +84,11 @@ int u8_getrusage(int who,struct rusage *r)
   return 1;
 }
 
-static U8_MAYBE_UNUSED ssize_t procfs_memusage()
+static U8_MAYBE_UNUSED ssize_t procfs_meminfo(int off)
 {
 #if U8_RUSAGE_PROCFS_PATCH
-  FILE *f=fopen("/proc/self/stat","r");
+  FILE *f=fopen("/proc/self/statm","r");
+  size_t pagesize=u8_getpagesize();
   if (f==NULL) {
     errno=0;
     return 0;}
@@ -98,10 +100,10 @@ static U8_MAYBE_UNUSED ssize_t procfs_memusage()
     fclose(f); errno=0;
     if (s==NULL) return 0;
     else while (tok!=NULL) {
-	if (i==U8_PROCFS_VMSIZE_OFF) {
+	if (i==off) {
 	  long long vsize=atoll(tok);
 	  errno=0;
-	  return vsize;}
+	  return vsize*pagesize;}
 	else i++;
 	tok=strtok_r(NULL," \t",&tokstate);}
     errno=0;
@@ -110,10 +112,11 @@ static U8_MAYBE_UNUSED ssize_t procfs_memusage()
   return 0;
 #endif
 }
+
 U8_EXPORT ssize_t u8_memusage()
 {
 #if __linux
-  return procfs_memusage();
+  return procfs_meminfo(U8_PROCFS_STATM_RSS_OFF);
 #elif (HAVE_MALLINFO)
   struct mallinfo minfo=mallinfo();
   return minfo.uordblks;
