@@ -309,6 +309,7 @@ AC_CHECK_HEADERS(sys/timeb.h utime.h dlfcn.h malloc.h sys/malloc.h malloc/malloc
 AC_CHECK_HEADERS(sys/resource.h resource.h sys/syscall.h)
 AC_CHECK_FUNCS(getrusage mallinfo syscall mstats sysconf getpagesize)
 AC_CHECK_FUNCS(strchr strrchr strstr strrrstr)
+AC_CHECK_FUNCS(posix_fadvise posix_madvise posix_fallocate)
 
 AC_HEADER_STDC
 AC_HEADER_STAT

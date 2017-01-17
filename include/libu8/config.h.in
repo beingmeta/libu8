@@ -362,6 +362,12 @@
 /* Define if you want to use TLS instead of __thread declarations */
 #undef U8_FORCE_TLS
 
+#undef HAVE_POSIX_FADVISE
+
+#undef HAVE_POSIX_MADVISE
+
+#undef HAVE_POSIX_FALLOCATE
+
 /* For OS X crypto libraries */
 #undef HAVE_COMMONCRYPTO_COMMONCRYPTOR_H
 
