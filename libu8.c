@@ -100,6 +100,8 @@ u8_tld_key u8_stack_base_key;
 #endif
 #endif
 
+int u8_break_on_errno;
+
 /* U8 settings */
 
 u8_condition u8_UnexpectedEOD=_("Unexpected EOD"),

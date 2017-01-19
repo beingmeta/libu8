@@ -19,6 +19,8 @@
 
 #define U8_DEBUG_ERRNO 1
 
+U8_EXPORT int u8_break_on_errno;
+
 #define U8_CLEAR_ERRNO() if (errno) errno=0
 
 #if U8_DEBUG_ERRNO
@@ -27,7 +29,9 @@
     u8_log(LOG_WARN,u8_UnexpectedErrno,		\
 	   "At %s:%d (%s) errno=%d (%s)",	\
 	   __FILE__,__LINE__,__FUNCTION__,	\
-	   errno,u8_strerror(errno));}		\
+	   errno,u8_strerror(errno));		\
+    if (break_on_errno)				\
+      _u8_dbg(u8_strerror(errno));}		\
   else {}
 #else
 #define U8_CHECK_ERRNO() if (errno) errno=0
