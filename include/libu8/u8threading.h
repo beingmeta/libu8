@@ -17,6 +17,31 @@
 #define LIBU8_THREADING_H 1
 #define LIBU8_THREADING_H_VERSION __FILE__
 
+#ifndef U8_LOCK_DEBUG
+#define U8_LOCK_DEBUG 0
+#endif
+
+/* Debug functions */
+
+U8_EXPORT int u8_mutex_lock_dbg(pthread_mutex_t *mutex);
+U8_EXPORT int u8_mutex_unlock_dbg(pthread_mutex_t *mutex);
+U8_EXPORT int u8_rwlock_wrlock_dbg(pthread_rwlock_t *rwlock);
+U8_EXPORT int u8_rwlock_rdlock_dbg(pthread_rwlock_t *rwlock);
+U8_EXPORT int u8_rwlock_unlock_dbg(pthread_rwlock_t *rwlock);
+
+typedef enum {
+  u8_dbg_lock_req, u8_dbg_lock, u8_dbg_unlock,
+  u8_dbg_read_req, u8_dbg_write_req,
+  u8_dbg_rdlock, u8_dbg_wrlock,
+  u8_dbg_rwunlock }
+  u8_lockop;
+typedef int (*u8_mutex_fn)(pthread_mutex_t *,u8_lockop,double);
+typedef int (*u8_rwlock_fn)(pthread_rwlock_t *,u8_lockop,double);
+
+U8_EXPORT int u8_debug_thread_loglevel;
+U8_EXPORT u8_mutex_fn u8_mutex_tracefn;
+U8_EXPORT u8_rwlock_fn u8_rwlock_tracefn;
+
 /* Portable threading */
 
 #if (HAVE_PTHREAD_H)
@@ -39,8 +64,17 @@ U8_EXPORT int _u8_init_mutex(u8_mutex *);
 #define u8_condvar_signal(cv) pthread_cond_signal(cv)
 #define u8_condvar_broadcast(cv) pthread_cond_broadcast(cv)
 
+#define _u8_lock_mutex(x) pthread_mutex_lock((x))
+#define _u8_unlock_mutex(x) pthread_mutex_unlock((x))
+
+#if U8_LOCK_DEBUG
+#define u8_lock_mutex(x) u8_mutex_lock_dbg((x))
+#define u8_unlock_mutex(x) u8_mutex_unlock_dbg((x))
+#else
 #define u8_lock_mutex(x) pthread_mutex_lock((x))
 #define u8_unlock_mutex(x) pthread_mutex_unlock((x))
+#endif
+
 #define u8_tld_get(key) pthread_getspecific(key)
 #define u8_tld_set(key,v) pthread_setspecific(key,v)
 
@@ -50,17 +84,42 @@ U8_EXPORT int _u8_init_mutex(u8_mutex *);
 typedef pthread_rwlock_t u8_rwlock;
 #define u8_init_rwlock(x) pthread_rwlock_init(x,0)
 #define u8_destroy_rwlock(x) pthread_rwlock_destroy(x)
+
+#define _u8_read_lock(x) pthread_rwlock_rdlock((x))
+#define _u8_write_lock(x) pthread_rwlock_wrlock((x))
+#define _u8_rw_unlock(x) pthread_rwlock_unlock((x))
+
+#if U8_LOCK_DEBUG
+#define u8_read_lock(x) u8_rwlock_rdlock_dbg((x))
+#define u8_write_lock(x) u8_rwlock_wrlock_dbg((x))
+#define u8_rw_unlock(x) u8_rwlock_unlock_dbg((x))
+#else
 #define u8_read_lock(x) pthread_rwlock_rdlock((x))
 #define u8_write_lock(x) pthread_rwlock_wrlock((x))
 #define u8_rw_unlock(x) pthread_rwlock_unlock((x))
-#else
+#endif
+
+#else /* HAVE_PTHREAD_RWLOCK_INIT */
+
 typedef pthread_mutex_t u8_rwlock;
 #define u8_init_rwlock(x) pthread_mutex_init(x,0)
 #define u8_destroy_rwlock(x) pthread_mutex_destroy(x)
+
+#define _u8_read_lock(x) pthread_mutex_lock((x))
+#define _u8_write_lock(x) pthread_mutex_lock((x))
+#define _u8_rw_unlock(x) pthread_mutex_unlock((x))
+
+#if U8_LOCK_DEBUG
+#define u8_read_lock(x) u8_rwlock_rdlock_dbg((x))
+#define u8_write_lock(x) u8_rwlock_wrlock_dbg((x))
+#define u8_rw_unlock(x) u8_rwlock_unlock_dbg((x))
+#else
 #define u8_read_lock(x) pthread_mutex_lock((x))
 #define u8_write_lock(x) pthread_mutex_lock((x))
 #define u8_rw_unlock(x) pthread_mutex_unlock((x))
 #endif
+
+#endif /* else HAVE_PTHREAD_RWLOCK_INIT */
 
 #elif WIN32
 #define U8_THREADS_ENABLED 1
@@ -222,6 +281,13 @@ U8_EXPORT int u8_initlevel;
     @returns long a numeric thread identifier (OS dependent)
 **/
 U8_EXPORT long long u8_threadid(void);
+
+/* Trace functions */
+
+U8_EXPORT int u8_mutex_wait(u8_mutex *mutex);
+U8_EXPORT int u8_mutex_release(u8_mutex *mutex);
+U8_EXPORT int u8_rwlock_wait(u8_rwlock *mutex,int write);
+U8_EXPORT int u8_rwlock_release(u8_rwlock *mutex);
 
 #endif /* LIBU8_THREADING_H */
 

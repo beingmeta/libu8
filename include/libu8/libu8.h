@@ -102,8 +102,6 @@
 
 #include "u8exceptions.h"
 
-#include "u8threading.h"
-
 #include "u8appinfo.h"
 
 #include "u8malloc.h"

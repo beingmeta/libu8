@@ -62,8 +62,9 @@ LIBU8_SOURCES=\
   tests/echosrv.c tests/printftest.c
 COMMON_HEADERS= $(LIBU8_HEADERS)
 
-LIBU8CORE_OBJECTS=libu8.o streamio.o printf.o  contour.o logging.o signals.o \
-                  ctype.o exceptions.o stringfns.o bytebuf.o cityhash.o
+LIBU8CORE_OBJECTS=libu8.o streamio.o threading.o stringfns.o \
+		  contour.o logging.o signals.o exceptions.o \
+                  ctype.o printf.o bytebuf.o cityhash.o
 LIBU8FNS_OBJECTS=libu8fns.o netfns.o srvfns.o \
 		 pathfns.o filefns.o fileio.o \
 		 rusage.o timefns.o digestfns.o \
