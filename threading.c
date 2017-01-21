@@ -32,9 +32,15 @@ int u8_debug_thread_showid=1;
 u8_mutex_fn u8_mutex_tracefn=NULL;
 u8_rwlock_fn u8_rwlock_tracefn=NULL;
 
-#define ll2str(n,buf) (u8_write_long_long(n,buf,sizeof(buf)))
+static u8_string ll2str(long long n,u8_byte *buf,size_t len)
+{
+  strcpy(buf,"Tx");
+  u8_write_long_long(n,buf+2,len);
+  return buf;
+}
 #define thid() \
   ((u8_debug_thread_showid) ? (u8_threadid()) : (-1))
+#define thidstr(n,buf) (ll2str(n,buf,sizeof(buf)))
 
 U8_EXPORT int u8_mutex_wait(pthread_mutex_t *mutex)
 {
@@ -47,11 +53,11 @@ U8_EXPORT int u8_mutex_wait(pthread_mutex_t *mutex)
   if (tracefn) tracefn(mutex,u8_dbg_lock,finished-started);
   if (rv)
     u8_log(u8_debug_thread_loglevel,"MutexWait",
-	   "Waited %fs for error %d on mutex 0x%llx\t(%f) %s",
-	   finished-started,rv,ULL(mutex),started,ll2str(tid,buf));
+	   "Waited %fs for error %d on mutex 0x%llx\t(t=%f) %s",
+	   finished-started,rv,ULL(mutex),started,thidstr(tid,buf));
   else u8_log(u8_debug_thread_loglevel,"MutexWait",
-	      "Waited %fs for mutex 0x%llx\t(%f) %s",
-	      finished-started,ULL(mutex),started,ll2str(tid,buf));
+	      "Waited %fs for mutex 0x%llx\t(t=%f) %s",
+	      finished-started,ULL(mutex),started,thidstr(tid,buf));
   return rv;
 }
 
@@ -64,11 +70,11 @@ U8_EXPORT int u8_mutex_release(u8_mutex *mutex)
   long long tid=thid(); u8_byte buf[128];
   if (rv)
     u8_log(u8_debug_thread_loglevel,"MutexRelease",
-	   "Got error %d releasing mutex 0x%llx\t(%f) %s",
-	   rv,ULL(mutex),now,ll2str(tid,buf));
+	   "Got error %d releasing mutex 0x%llx\t(t=%f) %s",
+	   rv,ULL(mutex),now,thidstr(tid,buf));
   else u8_log(u8_debug_thread_loglevel,"MutexRelease",
-	      "Releasing mutex 0x%llx\t(%f) %s",
-	      ULL(mutex),now,ll2str(tid,buf));
+	      "Releasing mutex 0x%llx\t(t=%f) %s",
+	      ULL(mutex),now,thidstr(tid,buf));
   return rv;
 }
 
@@ -91,13 +97,13 @@ U8_EXPORT int u8_rwlock_wait(u8_rwlock *rwlock,int write)
 	    (finished-started));
   if (rv)
     u8_log(u8_debug_thread_loglevel,"RWLockWait",
-	   "Waited %fs for error %d on %s lock 0x%llx\t(%f) %s",
+	   "Waited %fs for error %d on %s lock 0x%llx\t(t=%f) %s",
 	   finished-started,rv,((write)?("write"):("read")),
-	   ULL(rwlock),started,ll2str(tid,buf));
+	   ULL(rwlock),started,thidstr(tid,buf));
   else u8_log(u8_debug_thread_loglevel,"RWLockWait",
 	      "Waited %fs for %s 0x%llx",finished-started,
 	      ((write)?("write"):("read")),ULL(rwlock),
-	      started,ll2str(tid,buf));
+	      started,thidstr(tid,buf));
   return rv;
 }
 
@@ -110,11 +116,11 @@ U8_EXPORT int u8_rwlock_release(u8_rwlock *rwlock)
   long long tid=thid(); u8_byte buf[128];
   if (rv)
     u8_log(u8_debug_thread_loglevel,"RWUnlock/ERR",
-	   "Got error %d unlocking read/write lock 0x%llx\t(%f) %s",
-	   rv,ULL(rwlock),now,ll2str(tid,buf));
+	   "Got error %d unlocking read/write lock 0x%llx\t(t=%f) %s",
+	   rv,ULL(rwlock),now,thidstr(tid,buf));
   else u8_log(u8_debug_thread_loglevel,"RWUnlock",
-	      "Unlocked read/write lock  0x%llx\t(%f) %s",
-	      ULL(rwlock),ll2str(tid,buf));
+	      "Unlocked read/write lock  0x%llx\t(t=%f) %s",
+	      ULL(rwlock),thidstr(tid,buf));
   return rv;
 }
 
