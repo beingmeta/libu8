@@ -38,6 +38,7 @@ typedef enum {
 typedef int (*u8_mutex_fn)(pthread_mutex_t *,u8_lockop,double);
 typedef int (*u8_rwlock_fn)(pthread_rwlock_t *,u8_lockop,double);
 
+U8_EXPORT int u8_thread_log_enabled;
 U8_EXPORT int u8_thread_debug_loglevel;
 U8_EXPORT u8_mutex_fn u8_mutex_tracefn;
 U8_EXPORT u8_rwlock_fn u8_rwlock_tracefn;
