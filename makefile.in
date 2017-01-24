@@ -85,7 +85,7 @@ DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
 
 STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
-STATIC_TEST_LIBS=lib/libu8.a lib/libu8io.a
+STATIC_TEST_LIBS=lib/libu8io.a lib/libu8.a
 SHARED_TEST_LIBS=lib/libu8.@shared_suffix@ lib/libu8io.@shared_suffix@ \
 		lib/libu8stdio.@shared_suffix@
 
@@ -179,22 +179,24 @@ dbginstall:
 # Make rules
 
 %.o: %.c ./fileinfo ${REVISION_H}
-	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo "# (libu8)" CC $@ $<
+	$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 tests/%: tests/%.c 
-	@$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< ${STATIC_TEST_LIBS} ${LIBS}
-	@echo "# (libu8)" CC_STATIC_EXE $@ $<
+	@echo "# (libu8)" CC_STATIC_TEST $@ $<
+	$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< ${STATIC_TEST_LIBS} ${LIBS}
+	@echo "# (libu8)" Finished CC_STATIC_TEST $@ $<
 tests/dynamic/%: tests/%.c
-	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8io -lu8  
-	@echo "# (libu8)" CC_DYNAMIC_EXE $@ $<
+	@echo "# (libu8)" CC_DYNAMIC_TEST $@ $<
+	$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8 -lu8io
+	@echo "# (libu8)" Finished CC_DYNAMIC_TEST $@ $<
 
 lib/%@suffix@.a:
-	@echo "# (libu8)" MKSTATIC $@
-	@$(MKSTATIC) $@ $^
+	@echo "# (libu8)" MKSTATIC $@ $^
+	$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
 	@echo "# (libu8)" MKSO $@
-	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
-		 -L./lib -o $@ $^ $(LIBS)
+	$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
+		 -L./lib -o $@ $^ $(LIBS) -lu8
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	@ln -sf $(<F) $@
 	@ln -sf $(<F) $@.@U8MAJOR@
@@ -283,9 +285,9 @@ lib/libu8.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
 # Avoid recursive reference for the libu8 library itself
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
-	@$(MKSO) -Wl,-soname=libu8@suffix@.so.@U8MAJOR@ \
+	@echo "# (libu8)" MKSO $@ $^
+	$(MKSO) -Wl,-soname=libu8@suffix@.so.@U8MAJOR@ \
 		 -L./lib -o $@ $^ $(LIBS)
-	@echo "# (libu8)" MKSO $@
 
 lib/libu8core.a: $(LIBU8CORE_OBJECTS)
 lib/libu8core@suffix@.so.@U8VERSION@: $(LIBU8CORE_OBJECTS)
