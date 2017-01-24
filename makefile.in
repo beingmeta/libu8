@@ -178,7 +178,7 @@ dbginstall:
 # Make rules
 
 %.o: %.c ./fileinfo ${REVISION_H}
-	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
+	$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo "# (libu8)" CC $@ $<
 tests/%: tests/%.c 
 	$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< ${STATIC_TEST_LIBS} ${LIBS}
@@ -189,11 +189,12 @@ tests/dynamic/%: tests/%.c
 
 lib/%@suffix@.a:
 	@echo "# (libu8)" MKSTATIC $@
-	@$(MKSTATIC) $@ $^
+	rm -f $@
+	$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
 	@echo "# (libu8)" MKSO $@
-	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
-		 -L./lib -o $@ $^ -lu8 $(LIBS)
+	$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
+		 -L./lib -o $@ $^ $(LIBS)
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	@ln -sf $(<F) $@
 	@ln -sf $(<F) $@.@U8MAJOR@
