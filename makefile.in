@@ -179,21 +179,21 @@ dbginstall:
 # Make rules
 
 %.o: %.c ./fileinfo ${REVISION_H}
-	$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
+	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo "# (libu8)" CC $@ $<
 tests/%: tests/%.c 
-	$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< ${STATIC_TEST_LIBS} ${LIBS}
+	@$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< ${STATIC_TEST_LIBS} ${LIBS}
 	@echo "# (libu8)" CC_STATIC_EXE $@ $<
 tests/dynamic/%: tests/%.c
-	$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8io -lu8  
+	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8io -lu8  
 	@echo "# (libu8)" CC_DYNAMIC_EXE $@ $<
 
 lib/%@suffix@.a:
 	@echo "# (libu8)" MKSTATIC $@
-	$(MKSTATIC) $@ $^
+	@$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
 	@echo "# (libu8)" MKSO $@
-	$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
+	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
 		 -L./lib -o $@ $^ $(LIBS)
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	@ln -sf $(<F) $@
@@ -283,7 +283,7 @@ lib/libu8.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
 # Avoid recursive reference for the libu8 library itself
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
-	$(MKSO) -Wl,-soname=libu8@suffix@.so.@U8MAJOR@ \
+	@$(MKSO) -Wl,-soname=libu8@suffix@.so.@U8MAJOR@ \
 		 -L./lib -o $@ $^ $(LIBS)
 	@echo "# (libu8)" MKSO $@
 
@@ -293,7 +293,7 @@ lib/libu8core.dylib: $(LIBU8CORE_OBJECTS)
 lib/libu8core.dll: $(LIBU8CORE_OBJECTS)
 # Avoid recursive reference
 lib/libu8core@suffix@.so.@U8VERSION@:
-	$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -L./lib -o $@ $^ $(LIBS)
+	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -L./lib -o $@ $^ $(LIBS)
 	@echo "# (libu8)" MKSO $@
 
 lib/libu8fns.a: $(LIBU8FNS_OBJECTS)
@@ -327,7 +327,8 @@ lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
 docs: docs/doxygen.done
 
 docs/doxygen.done: $(LIBU8_HEADERS) docs/doxygen.cfg
-	@$(DOXYGEN) docs/doxygen.cfg && touch docs/doxygen.done
+	@$(DOXYGEN) docs/doxygen.cfg > docs/doxygen.log \
+	 && touch docs/doxygen.done
 	@echo "# (libu8)" DOXYGEN headers
 
 libu8.org: docs/doxygen.done
@@ -356,10 +357,10 @@ clean:
 	 fi
 
 tidy: 
-	$(CLEAN) *~ tests/*~ include/libu8/*~
+	@$(CLEAN) *~ tests/*~ include/libu8/*~
 distclean: clean
-	$(CLEAN) makefile include/libu8/config.h include/libu8/revision.h
-	$(CLEAN) config.log config.status config.cache
+	@$(CLEAN) makefile include/libu8/config.h include/libu8/revision.h
+	@$(CLEAN) config.log config.status config.cache
 fresh rebuild: clean
 	make
 reconfig reconfigure: distclean
@@ -373,11 +374,11 @@ $(LOCALEDIR)/%/LC_MESSAGES/libu8msg.mo: etc/intl/%.gmo
 	install $^ $@
 
 etc/intl/libu8msg.pot: *.c tests/*.c
-	@XGETTTEXT@ -dlibu8 -oetc/intl/libu8msg.pot -k_ *.c tests/*.c
+	@@XGETTTEXT@ -dlibu8 -oetc/intl/libu8msg.pot -k_ *.c tests/*.c
 etc/intl/%.po: etc/intl/libu8msg.pot
-	@MSGMERGE@ -U $@ $<
+	@@MSGMERGE@ -U $@ $<
 etc/intl/%.gmo: etc/intl/%.po
-	@MSGFMT@ $^ -o $@ 
+	@@MSGFMT@ $^ -o $@ 
 
 install-i18n: $(LOCALEDIR)/fr/LC_MESSAGES/libu8msg.mo \
 		$(LOCALEDIR)/es/LC_MESSAGES/libu8msg.mo \
@@ -400,21 +401,21 @@ dist/rpms.installed: dist/rpms.done
 	@SUDO@ rpm -Uvh dist/*.rpm && touch $@
 
 cleandist cleanrpms cleandeb rpmclean debclean:
-	rm -rf dist/rpms.done dist/rpms.ready
-	rm -rf dist/debs.built dist/debs.signed dist/debs.done
-	rm -f dist/*.deb dist/*.tar dist/*.gz dist/*.changes dist/*.dsc
-	find dist -name "*.rpm" | xargs -r rm
-	rm -rf staging/libu8*
+	@rm -rf dist/rpms.done dist/rpms.ready
+	@rm -rf dist/debs.built dist/debs.signed dist/debs.done
+	@rm -f dist/*.deb dist/*.tar dist/*.gz dist/*.changes dist/*.dsc
+	@find dist -name "*.rpm" | xargs -r rm
+	@rm -rf staging/libu8*
 .PHONY: cleandist cleanrpms cleandeb rpmclean debclean
 
 # Creating staging areas from GIT
 
 staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
-	rm -rf staging/libu8-@U8VERSION@
-	git archive --prefix=libu8-@U8VERSION@/ \
+	@rm -rf staging/libu8-@U8VERSION@
+	@git archive --prefix=libu8-@U8VERSION@/ \
 	            -o staging/libu8-@U8VERSION@.tar HEAD
-	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
-	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	@cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
 	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
 		> staging/libu8-@U8VERSION@/etc/revision.h;             \
 	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
@@ -423,30 +424,30 @@ staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 
 
 staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
-	rm -rf staging/libu8_@U8VERSION@
-	git archive --prefix=libu8_@U8VERSION@/ \
+	@rm -rf staging/libu8_@U8VERSION@
+	@git archive --prefix=libu8_@U8VERSION@/ \
 	            -o staging/libu8_@U8VERSION@.tar HEAD
-	cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
-	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	@cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
+	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
 	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
 		> staging/libu8_@U8VERSION@/etc/revision.h;             \
 	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
 		> staging/libu8_@U8VERSION@/etc/revision.h;             \
 	fi
-	cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz \
+	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz \
 		libu8_@U8VERSION@;
-	mv staging/libu8_@U8VERSION@/dist/debian \
+	@mv staging/libu8_@U8VERSION@/dist/debian \
 	   staging/libu8_@U8VERSION@/debian;
-	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
 	  etc/gitchangelog libu8 ${CODENAME} < dist/debian/changelog \
 	     > staging/libu8_@U8VERSION@/debian/changelog; \
 	fi
 
 staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
-	make staging/libu8-@U8VERSION@
-	tar -czvf $@ -C staging libu8-@U8VERSION@
+	@make staging/libu8-@U8VERSION@
+	@tar -czvf $@ -C staging libu8-@U8VERSION@
 staging/libu8_@U8VERSION@.orig.tar.gz: staging/libu8-@U8VERSION@
-	cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz libu8-@U8VERSION@
+	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz libu8-@U8VERSION@
 
 # RPM rules
 
@@ -458,7 +459,7 @@ dist/rpms.ready: staging/libu8-@U8VERSION@ \
 	   --define="_srcrpmdir $(RPMDIR)" 		\
 	   --nodeps -ta 				\
 	    staging/libu8-@U8VERSION@.tar.gz && 	\
-	touch dist/rpms.ready
+	@touch dist/rpms.ready
 dist/rpms.done: dist/rpms.ready
 	@if (test "x$(GPGID)" = "xnone"); then 				\
 	    touch dist/rpms.done;					\
@@ -474,14 +475,14 @@ dist/rpms.done: dist/rpms.ready
 		--define="__gpg_sign_cmd $(RPMGPG)" 			\
 		$(RPMDIR)/libu8-@U8VERSION@*.src.rpm 			\
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; fi && 		\
-	@CREATEREPO@ -p -d $(RPMDIR) && 				\
-	touch dist/rpms.done;
+	@@CREATEREPO@ -p -d $(RPMDIR) && 				\
+	@touch dist/rpms.done;
 	@ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
 
 rpmupdate update-rpms freshrpms: cleanrpms
-	rm -f dist/rpms.done dist/rpms.ready
-	make dist/rpms.done RPMDIR=$(RPMDIR) GPGID=$(GPGID:-default)
+	@rm -f dist/rpms.done dist/rpms.ready
+	@make dist/rpms.done RPMDIR=$(RPMDIR) GPGID=$(GPGID:-default)
 
 dist/rpms.zip: dist/rpms.done
 	@rm -f dist/rpms.zip
@@ -494,16 +495,16 @@ dist/rpms.zip: dist/rpms.done
 # Rules for debian building
 
 dist/debs.built: staging/libu8_@U8VERSION@
-	(cd staging/libu8_@U8VERSION@; \
+	@(cd staging/libu8_@U8VERSION@; \
 	 dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
-	touch dist/debs.built
+	@touch dist/debs.built
 dist/debs.signed: dist/debs.built
-	(cd staging; debsign --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
-	(cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
-	(cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && \
-	touch dist/debs.signed
+	@(cd staging; debsign --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
+	@(cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
+	@(cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && \
+	@touch dist/debs.signed
 dist/debs.done: dist/debs.signed
-	touch dist/debs.done
+	@touch dist/debs.done
 
 install-debian install-debs: dist/debs.done
 	@SUDO@dpkg -i dist/libu8*_@U8VERSION@*.deb
@@ -519,7 +520,7 @@ update-local-apt-repo: dist/debs.done
 	fi;
 
 update-remote-apt-repo: dist/debs.done
-	cd dist; for change in *.changes; do \
+	@cd dist; for change in *.changes; do \
 	  dupload -c --nomail --to ${CODENAME} $${change} && \
 	  rm -f $${change}; \
 	done
@@ -537,8 +538,8 @@ apt-upload upload-apt upload-deb: update-remote-apt-repo
 .PHONY: update-apt-repo update-remote-apt-repo update-local-apt-repo
 
 debfresh freshdeb:
-	make debclean
-	make debian
+	@make debclean
+	@make debian
 
 .PHONY: debfresh freshdeb
 

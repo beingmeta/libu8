@@ -4383,7 +4383,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-if test "x$prefix" != "x/user"; then
+if test "x$prefix" != "x/usr"; then
   CFLAGS="$CFLAGS -I$prefix/include"
   CPPFLAGS="$CPPFLAGS -I$prefix/include"
   LDFLAGS="$LDFLAGS -L$prefix/lib"
