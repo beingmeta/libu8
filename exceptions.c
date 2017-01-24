@@ -75,7 +75,9 @@ U8_EXPORT u8_exception u8_push_exception
   struct U8_EXCEPTION *newex;
   if ((current) && (c==NULL))
     c=current->u8x_cond;
-  if ( (current) && (details==NULL) && (c==current->u8x_cond) )
+  if ( (current) && (details==NULL) && 
+       (c==current->u8x_cond) &&
+       (current->u8x_details) )
     details=u8_strdup(current->u8x_details);
   if (current) {
     newex=u8_make_exception(c,cxt,details,xdata,freefn);
