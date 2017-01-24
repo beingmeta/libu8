@@ -2,7 +2,8 @@ CC	  = @CC@
 LD	  = @LD@
 XCFLAGS   =
 ARCHFLAGS = @archflags@
-CFLAGS    =-DLIBU8_SOURCE=1 -g -O2  -I./include @CFLAGS@ -I./include $(XCFLAGS) $(ARCHFLAGS)
+CONFIG_CFLAGS =  @CFLAGS@
+CFLAGS    = -I./include -DLIBU8_SOURCE=1 -g -O2 ${CONFIG_CFLAGS} -I./include $(XCFLAGS) $(ARCHFLAGS)
 XLDFLAGS  =
 LDFLAGS   = @LDFLAGS@ $(EFENCE)
 LIBS      = @LIBS@ $(EFENCE) -lm
@@ -178,7 +179,7 @@ dbginstall:
 # Make rules
 
 %.o: %.c ./fileinfo ${REVISION_H}
-	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
+	$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo "# (libu8)" CC $@ $<
 tests/%: tests/%.c 
 	$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< ${STATIC_TEST_LIBS} ${LIBS}
@@ -189,11 +190,11 @@ tests/dynamic/%: tests/%.c
 
 lib/%@suffix@.a:
 	@echo "# (libu8)" MKSTATIC $@
-	@$(MKSTATIC) $@ $^
+	$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
 	@echo "# (libu8)" MKSO $@
-	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
-		 -L./lib -o $@ $^ -lu8 $(LIBS)
+	$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
+		 -L./lib -o $@ $^ $(LIBS)
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	@ln -sf $(<F) $@
 	@ln -sf $(<F) $@.@U8MAJOR@
@@ -282,7 +283,7 @@ lib/libu8.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
 # Avoid recursive reference for the libu8 library itself
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
-	@$(MKSO) -Wl,-soname=libu8@suffix@.so.@U8MAJOR@ \
+	$(MKSO) -Wl,-soname=libu8@suffix@.so.@U8MAJOR@ \
 		 -L./lib -o $@ $^ $(LIBS)
 	@echo "# (libu8)" MKSO $@
 
@@ -292,7 +293,7 @@ lib/libu8core.dylib: $(LIBU8CORE_OBJECTS)
 lib/libu8core.dll: $(LIBU8CORE_OBJECTS)
 # Avoid recursive reference
 lib/libu8core@suffix@.so.@U8VERSION@:
-	@$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -L./lib -o $@ $^ $(LIBS)
+	$(MKSO) -Wl,-soname=$(@F).@U8MAJOR@ -L./lib -o $@ $^ $(LIBS)
 	@echo "# (libu8)" MKSO $@
 
 lib/libu8fns.a: $(LIBU8FNS_OBJECTS)
