@@ -21,7 +21,8 @@
 
 U8_EXPORT int u8_break_on_errno;
 
-#define U8_CLEAR_ERRNO() if (errno) errno=0
+#define U8_CLEAR_ERRNO() if (errno) errno=0; else {}
+#define U8_DISCARD_ERRNO(num) if (errno==num) errno=0; else {}
 
 #if U8_DEBUG_ERRNO
 #define U8_CHECK_ERRNO()			\
