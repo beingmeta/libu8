@@ -1,6 +1,6 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
-/* Copyright (C) 2004-2016 beingmeta, inc.
+/* Copyright (C) 2004-2017 beingmeta, inc.
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
@@ -114,7 +114,7 @@
 
 #include "u8logging.h"
 
-#include "u8errors.h"
+#include "u8error.h"
 
 #include "u8contour.h"
 
