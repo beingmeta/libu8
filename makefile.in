@@ -38,12 +38,14 @@ APTREPO         = @APTREPO@
 
 COMPONENT=main
 
+REVISION_H = include/libu8/revision.h
+
 LIBU8_HEADERS=											\
 	${INC}/cityhash.h ${INC}/config.h ${INC}/libu8.h ${INC}/libu8io.h 			\
-	${INC}/u8appid.h ${INC}/u8appinfo.h ${INC}/u8bytebuf.h		\
+	${INC}/u8appid.h ${INC}/u8appinfo.h ${INC}/u8bytebuf.h					\
 	${INC}/u8contour.h ${INC}/u8convert.h ${INC}/u8crypto.h ${INC}/u8ctype.h		\
 	${INC}/u8defines.h ${INC}/u8digest.h ${INC}/u8dirfns.h ${INC}/u8elapsed.h		\
-	${INC}/u8endian.h ${INC}/u8error.h ${INC}/u8errors.h ${INC}/u8exceptions.h		\
+	${INC}/u8endian.h ${INC}/u8error.h ${INC}/u8exceptions.h				\
 	${INC}/u8filefns.h ${INC}/u8fileio.h ${INC}/u8findfiles.h ${INC}/u8gettext.h		\
 	${INC}/u8libc.h ${INC}/u8logging.h ${INC}/u8malloc.h ${INC}/u8millitime.h		\
 	${INC}/u8mktime.h ${INC}/u8netfns.h ${INC}/u8pathfns.h ${INC}/u8piles.h			\
@@ -175,7 +177,7 @@ dbginstall:
 
 # Make rules
 
-%.o: %.c ./fileinfo include/libu8/revision.h
+%.o: %.c ./fileinfo ${REVISION_H}
 	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 	@echo "# (libu8)" CC $@ $<
 tests/%: tests/%.c 
@@ -239,6 +241,9 @@ $(LIBINSTALLDIR)/%@suffix@.dylib: \
 test: @test_shared@ @test_static@
 test-shared: $(DYTESTBIN)
 test-static: $(TESTBIN)
+
+$(TESTBIN): static-libs ${REVISION_H}
+$(DYTESTBIN): shared-libs ${REVISION_H}
 
 TAGS: tests/*.c include/libu8/*.h *.c
 	etags tests/*.c include/libu8/*.h *.c
