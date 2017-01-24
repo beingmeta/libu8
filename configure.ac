@@ -188,7 +188,7 @@ AC_DEFINE_UNQUOTED(U8_MAJOR_VERSION,$U8MAJOR)
 AC_DEFINE_UNQUOTED(U8_MINOR_VERSION,$U8MINOR)
 AC_DEFINE_UNQUOTED(U8_RELEASE_VERSION,$U8RELEASE)
 
-if test "x$prefix" != "x/user"; then
+if test "x$prefix" != "x/usr"; then
   CFLAGS="$CFLAGS -I$prefix/include"
   CPPFLAGS="$CPPFLAGS -I$prefix/include"
   LDFLAGS="$LDFLAGS -L$prefix/lib"
