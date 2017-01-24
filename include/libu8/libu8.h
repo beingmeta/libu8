@@ -114,7 +114,7 @@
 
 #include "u8logging.h"
 
-#include "u8errors.h"
+#include "u8error.h"
 
 #include "u8contour.h"
 
