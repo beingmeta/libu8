@@ -168,7 +168,7 @@ U8_EXPORT void *u8_dynamic_load(u8_string filename);
 #define FD_PTRHASH_CONSTANT 2654435761
 #endif
 
-U8_INLINE U8_MAYBE_UNUSED 
+U8_INLINE U8_MAYBE_UNUSED
 /* Computes a hash value from a pointer
    @param ptr    a memory pointer
    @param n_bits a bit width for the result (<32)

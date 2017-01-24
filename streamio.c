@@ -280,7 +280,7 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
     u8_seterr(u8_BadUTF8byte,"u8_getc",details);
     f->u8_read++;  /* Consume the byte */
     return -2;}
-  else { /* Bad data, return the character */
+  else { /* Bad data, consume the initial byte */
     if ((u8_utf8warn)||
         ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN)) {
       char window[UTF8_BUGWINDOW];
