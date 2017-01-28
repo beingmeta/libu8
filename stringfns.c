@@ -347,8 +347,8 @@ u8_string u8_string_subst(u8_string input,u8_string key,u8_string replace)
   else {
     struct U8_OUTPUT out;
     int key_len=u8_bytelen(key), replace_len=u8_bytelen(replace);
+    U8_INIT_STATIC_OUTPUT(out,u8_bytelen(input)+(replace_len*4)+2);
     while (next) {
-      U8_INIT_STATIC_OUTPUT(out,u8_bytelen(input)+(replace_len*4));
       u8_putn(&out,scan,next-scan);
       u8_putn(&out,replace,replace_len);
       scan=next+key_len;
