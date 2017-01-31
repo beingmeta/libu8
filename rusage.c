@@ -143,6 +143,28 @@ U8_EXPORT ssize_t u8_vmemusage()
 #endif
 }
 
+U8_EXPORT ssize_t u8_physmem()
+{
+#if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE))&&(defined(_SC_PHYS_PAGES)))
+  size_t pagesize=sysconf(_SC_PAGESIZE);
+  return sysconf(_SC_PHYS_PAGES)*pagesize;
+#else
+  u8_seterr(_("SYSCONF ops not handled"),"u8_physmem",NULL);
+  return -1;
+#endif
+}
+
+U8_EXPORT ssize_t u8_avphysmem()
+{
+#if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE))&&(defined(_SC_PHYS_PAGES)))
+  size_t pagesize=sysconf(_SC_PAGESIZE);
+  return sysconf(_SC_AVPHYS_PAGES)*pagesize;
+#else
+  u8_seterr(_("SYSCONF ops not handled"),"u8_availmem",NULL);
+  return -1;
+#endif
+}
+
 U8_EXPORT u8_string u8_rusage_string(struct rusage *r)
 {
   struct U8_OUTPUT out;
