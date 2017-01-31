@@ -49,10 +49,15 @@ U8_EXPORT int u8_getrusage(int who,struct rusage *r);
 **/
 U8_EXPORT u8_string u8_rusage_string(struct rusage *r);
 
+/** Returns the resident size of the current process
+    @returns resident size in bytes, as an unsigned long
+**/
+U8_EXPORT ssize_t u8_memusage(void);
+
 /** Returns the virtual memory size of the current process
     @returns virtual memory size in bytes, as an unsigned long
 **/
-U8_EXPORT ssize_t u8_memusage(void);
+U8_EXPORT ssize_t u8_vmemusage(void);
 
 /** Returns the system page size
     @returns long

@@ -124,7 +124,22 @@ U8_EXPORT ssize_t u8_memusage()
   struct mstats minfo=mstats();
   return minfo.bytes_used;
 #else
-  return procfs_memusage();
+  return procfs_meminfo(U8_PROCFS_STATM_RSS_OFF);
+#endif
+}
+
+U8_EXPORT ssize_t u8_vmemusage()
+{
+#if __linux
+  return procfs_meminfo(U8_PROCFS_STATM_VMSIZE_OFF);
+#elif (HAVE_MALLINFO)
+  struct mallinfo minfo=mallinfo();
+  return minfo.arena;
+#elif (HAVE_MSTATS)
+  struct mstats minfo=mstats();
+  return minfo.bytes_used;
+#else
+  return procfs_meminfo(U8_PROCFS_STATM_VMSIZE_OFF);
 #endif
 }
 
