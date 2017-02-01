@@ -33,6 +33,11 @@ struct rusage { int noval;};
 #include <resource.h>
 #endif
 
+/** Returns the system page size
+    @returns long
+**/
+U8_EXPORT long u8_getpagesize(void);
+
 /** Returns resource usage information.
     This patches implementation-specific in getting usage
      information, particularly the reticence of Linux to put
@@ -69,9 +74,16 @@ U8_EXPORT ssize_t u8_physmem(void);
 **/
 U8_EXPORT ssize_t u8_avphysmem(void);
 
-/** Returns the system page size
-    @returns long
+/** Returns the fraction of physical memory used by the resident set for
+    the current process.
+    @returns the ratio (a double)
 **/
-U8_EXPORT long u8_getpagesize(void);
+U8_EXPORT double u8_memload(void);
+
+/** Returns the fraction of physical memory used by the resident set for
+    the current process.
+    @returns the ratio (a double)
+**/
+U8_EXPORT double u8_vmemload(void);
 
 #endif

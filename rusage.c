@@ -149,18 +149,52 @@ U8_EXPORT ssize_t u8_physmem()
   size_t pagesize=sysconf(_SC_PAGESIZE);
   return sysconf(_SC_PHYS_PAGES)*pagesize;
 #else
-  u8_seterr(_("SYSCONF ops not handled"),"u8_physmem",NULL);
+  u8_seterr(_("NotSupported"),"u8_physmem",NULL);
   return -1;
 #endif
 }
 
 U8_EXPORT ssize_t u8_avphysmem()
 {
-#if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE))&&(defined(_SC_PHYS_PAGES)))
+#if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE))&&(defined(_SC_AVPHYS_PAGES)))
   size_t pagesize=sysconf(_SC_PAGESIZE);
   return sysconf(_SC_AVPHYS_PAGES)*pagesize;
 #else
-  u8_seterr(_("SYSCONF ops not handled"),"u8_availmem",NULL);
+  u8_log(LOGWARN,_("Unsupported"),"%s; %s",
+	 "No SYSCONF support for available physical memory info",
+	 "returning all physical memory");
+  return u8_physmem();
+#endif
+}
+
+U8_EXPORT double u8_memload()
+{
+#if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE))&&(defined(_SC_PHYS_PAGES)))
+  ssize_t pagesize=sysconf(_SC_PAGESIZE);
+  ssize_t memuse=u8_memusage();
+  ssize_t availmem=u8_avphysmem();
+  if ((memuse<0)||(availmem<0)) {
+    u8_seterr("Unsupported","u8_mempct",NULL);
+    return -1;}
+  else return (memuse/availmem)*100;
+#else
+  u8_seterr(_("NotSupported"),"u8_physmem",NULL);
+  return -1;
+#endif
+}
+
+U8_EXPORT double u8_vmemload()
+{
+#if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE))&&(defined(_SC_PHYS_PAGES)))
+  ssize_t pagesize=sysconf(_SC_PAGESIZE);
+  ssize_t vmemuse=u8_vmemusage();
+  ssize_t availmem=u8_avphysmem();
+  if ((vmemuse<0)||(availmem<0)) {
+    u8_seterr("Unsupported","u8_mempct",NULL);
+    return -1;}
+  else return (vmemuse/availmem)*100;
+#else
+  u8_seterr(_("NotSupported"),"u8_physmem",NULL);
   return -1;
 #endif
 }
