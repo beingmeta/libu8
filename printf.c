@@ -39,6 +39,7 @@ u8_condition u8_BadPrintFormat=_("u8_printf: Bad format code");
 
 #if ((U8_THREADS_ENABLED) && (HAVE_GETTEXT))
 static u8_mutex textdomains_lock;
+static u8_mutex gettext_lock;
 #endif
 
 /* Message lookup */
@@ -46,20 +47,29 @@ static u8_mutex textdomains_lock;
 #if HAVE_GETTEXT
 static struct U8_TEXTDOMAIN {
   const char *domain;
+  u8_mutex gettext_lock;
   u8_xlatefn xlate;
   struct U8_TEXTDOMAIN *next;} *textdomains=NULL;
 
 static u8_string getmessage(u8_string msg)
 {
+  u8_string result=msg;
   struct U8_TEXTDOMAIN *scan=textdomains;
   while (scan) {
-    u8_string newstring=
-      ((scan->xlate) ? (scan->xlate(msg)) :
-       ((u8_string)(dgettext(scan->domain,msg))));
+    u8_string newstring;
+    if (scan->xlate)
+      newstring=scan->xlate(msg);
+    else {
+      u8_lock_mutex(&(scan->gettext_lock));
+      newstring=(u8_string)dgettext(scan->domain,msg);
+      u8_unlock_mutex(&(scan->gettext_lock));}
     if (newstring==msg)
       scan=scan->next;
     else return newstring;}
-  return dgettext("libu8",msg);
+  u8_lock_mutex(&(gettext_lock));
+  result=dgettext("libu8",msg);
+  u8_unlock_mutex(&(gettext_lock));
+  return result;
 }
 
 U8_EXPORT
@@ -70,6 +80,21 @@ U8_EXPORT
 */
 void u8_register_textdomain(char *domain)
 {
+  struct U8_TEXTDOMAIN *scan, *new;
+  u8_lock_mutex(&textdomains_lock);
+  scan=textdomains;
+  while (scan) {
+    if (strcmp(scan->domain,domain)==0) {
+      u8_unlock_mutex(&textdomains_lock);
+      return;}
+    else scan=scan->next;}
+  new=u8_alloc(struct U8_TEXTDOMAIN);
+  new->domain=u8_strdup(domain);
+  new->xlate=NULL;
+  u8_init_mutex(&(scan->gettext_lock));
+  new->next=textdomains;
+  textdomains=new;
+  u8_unlock_mutex(&textdomains_lock);
 }
 
 U8_EXPORT
@@ -128,37 +153,37 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
     else {
       unsigned char buf[PRINTF_CHUNK_SIZE], *string=buf;
       if ((code == 'd') || (code == 'i') ||
-          (code == 'u') || (code == 'o') ||
-          (code == 'x')) {
-        if (strstr(cmd,"ll")) {
-          long long i=va_arg(*args,long long);
-          sprintf(buf,cmd,i);}
-        else if (strstr(cmd,"l")) {
-          long i=va_arg(*args,long);
-          sprintf(buf,cmd,i);}
-        else {
-          int i=va_arg(*args,int);
-          sprintf(buf,cmd,i);}}
+	  (code == 'u') || (code == 'o') ||
+	  (code == 'x')) {
+	if (strstr(cmd,"ll")) {
+	  long long i=va_arg(*args,long long);
+	  sprintf(buf,cmd,i);}
+	else if (strstr(cmd,"l")) {
+	  long i=va_arg(*args,long);
+	  sprintf(buf,cmd,i);}
+	else {
+	  int i=va_arg(*args,int);
+	  sprintf(buf,cmd,i);}}
       else if ((code == 'f') || (code == 'g') || (code == 'e')) {
-        double f=va_arg(*args,double);
-        sprintf(buf,cmd,f);}
+	double f=va_arg(*args,double);
+	sprintf(buf,cmd,f);}
       else if ((code == 's')||(code == 'm')) {
 	char *prefix=NULL;
 	char *arg=va_arg(*args,char *); string=arg;
-        /* A - modifer on s indicates that the string arg should be
-           freed after use.  A modifier # indicates that the argument
+	/* A - modifer on s indicates that the string arg should be
+	   freed after use.  A modifier # indicates that the argument
 	   is a libc string and will need to be converted to UTF-8.
 	   Modifiers l and u indicates upper and lower case conversions.
 	   Further :/,.? modifiers indicate a prefix character which
 	   precedes the string when the string is not empty. */
-        if (strchr(cmd,'/')) prefix="/";
-        else if (strchr(cmd,':')) prefix=":";
-        else if (strchr(cmd,'.')) prefix=".";
-        else if (strchr(cmd,',')) prefix=", ";
-        else {}
-        if (strchr(cmd,'-')) to_free=arg;
-        /* The m conversion is like s but passes its argument through the
-           message catalog. */
+	if (strchr(cmd,'/')) prefix="/";
+	else if (strchr(cmd,':')) prefix=":";
+	else if (strchr(cmd,'.')) prefix=".";
+	else if (strchr(cmd,',')) prefix=", ";
+	else {}
+	if (strchr(cmd,'-')) to_free=arg;
+	/* The m conversion is like s but passes its argument through the
+	   message catalog. */
 	if ((arg)&&(code=='m'))
 	  arg=(u8_byte *)getmessage(arg);
 	if (strchr(cmd,'#')) {
@@ -166,22 +191,22 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	  if (to_free) u8_free(to_free);
 	  to_free=string;}
 	if (arg==NULL) {
-          if ((prefix)||(strchr(cmd,'?')))
-            string="";
-          else string="(null)";}
-        else if (strchr(cmd,'l')) {
+	  if ((prefix)||(strchr(cmd,'?')))
+	    string="";
+	  else string="(null)";}
+	else if (strchr(cmd,'l')) {
 	  string=(u8_byte *)u8_downcase(string);
-          if (to_free) u8_free(to_free);
-          to_free=string;}
-        else if (strchr(cmd,'u')) {
-          string=(u8_byte *)u8_upcase(string);
-          if (to_free) u8_free(to_free);
-          to_free=string;}
+	  if (to_free) u8_free(to_free);
+	  to_free=string;}
+	else if (strchr(cmd,'u')) {
+	  string=(u8_byte *)u8_upcase(string);
+	  if (to_free) u8_free(to_free);
+	  to_free=string;}
 	else {}
-        if ((arg)&&(prefix)) {
-          string=(u8_byte *)u8_string_append(prefix,string,NULL);
-          if (to_free) u8_free(to_free);
-          to_free=string;}}
+	if ((arg)&&(prefix)) {
+	  string=(u8_byte *)u8_string_append(prefix,string,NULL);
+	  if (to_free) u8_free(to_free);
+	  to_free=string;}}
       else if (code == 'v') {
 	unsigned char *start=va_arg(*args,unsigned char *);
 	unsigned char *scan=start, *limit;
@@ -196,10 +221,10 @@ int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
 	  u8_puts(s,buf);}
 	string=NULL;}
       else if ((code<128) && (u8_printf_handlers[(int)code]))
-        /* We pass the pointer args because some stdarg implementations
-           work better that way. */
+	/* We pass the pointer args because some stdarg implementations
+	   work better that way. */
 	string=(u8_byte *)u8_printf_handlers[(int)code]
-          (s,cmd,buf,PRINTF_CHUNK_SIZE,args);
+	  (s,cmd,buf,PRINTF_CHUNK_SIZE,args);
       else return u8_reterr(u8_BadPrintFormat,"u8_do_printf",u8_strdup(cmd));
       if (string == NULL) {} else u8_puts(s,string);
       if (to_free) u8_free(to_free);}
@@ -264,6 +289,7 @@ U8_EXPORT void u8_init_printf_c()
   u8_printf_handlers['%']=default_printf_handler;
 #if ((U8_THREADS_ENABLED) && (HAVE_GETTEXT))
   u8_init_mutex(&textdomains_lock);
+  u8_init_mutex(&gettext_lock);
 #endif
   u8_register_source_file(_FILEINFO);
 }
