@@ -829,8 +829,6 @@ U8_EXPORT int u8_initialize()
 #endif
 #endif
 
-
-
   u8_register_source_file(_FILEINFO);
 
   u8_init_printf_c(); /* Does something */

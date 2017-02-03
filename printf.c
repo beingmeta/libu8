@@ -63,7 +63,7 @@ static u8_string getmessage(u8_string msg)
       u8_lock_mutex(&(scan->gettext_lock));
       newstring=(u8_string)dgettext(scan->domain,msg);
       u8_unlock_mutex(&(scan->gettext_lock));}
-    if (newstring==msg)
+    if ( (newstring==NULL) || (newstring==msg) )
       scan=scan->next;
     else return newstring;}
   u8_lock_mutex(&(gettext_lock));
@@ -91,7 +91,7 @@ void u8_register_textdomain(char *domain)
   new=u8_alloc(struct U8_TEXTDOMAIN);
   new->domain=u8_strdup(domain);
   new->xlate=NULL;
-  u8_init_mutex(&(scan->gettext_lock));
+  u8_init_mutex(&(new->gettext_lock));
   new->next=textdomains;
   textdomains=new;
   u8_unlock_mutex(&textdomains_lock);
