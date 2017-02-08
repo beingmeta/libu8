@@ -1,3 +1,9 @@
+libu8 (2.5.5-1) stable; urgency=medium
+
+  * Added stackbase functions to libu8, better rusage, errno handling, etc
+
+ -- Ken Haase <kh@beingmeta.com>  Wed, 08 Feb 2017 10:09:03 -0500
+
 libu8 (2.5.4-1) stable; urgency=medium
 
   * Added improved contours and exception processing

@@ -48,13 +48,6 @@
 #include <libintl.h>
 #endif
 
-#ifndef MAX_THREADINITFNS
-#define MAX_THREADINITFNS 128
-#endif
-#ifndef MAX_THREAEXITFNS
-#define MAX_THREADEXITFNS 128
-#endif
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
@@ -91,14 +84,6 @@ static int u8_initialized=0;
 #define LOG_NOTICE      5       /* normal but significant condition */
 #define LOG_INFO        6       /* informational */
 #define LOG_DEBUG       7       /* debug-level messages */
-
-#if U8_THREADS_ENABLED
-#if HAVE_THREAD_STORAGE_CLASS
-__thread void *u8_stack_base=NULL;
-#else
-u8_tld_key u8_stack_base_key;
-#endif
-#endif
 
 int u8_break_on_errno;
 
@@ -449,14 +434,6 @@ void *u8_dynamic_symbol(u8_string name,void *module)
 }
 #endif
 
-/* Thread functions */
-
-#if HAVE_PTHREAD_H
-static pthread_mutexattr_t mutex_default_attr;
-U8_EXPORT int _u8_init_mutex(u8_mutex *mutex) {
-  return pthread_mutex_init(mutex,&mutex_default_attr);}
-#endif
-
 /* Raising errors */
 
 U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details)
@@ -563,203 +540,6 @@ U8_EXPORT int _u8_grow_pile(u8_pile p,int delta)
   return new_max;
 }
 
-/* Thread initialization */
-
-#if (U8_THREADS_ENABLED)
-int u8_n_threadinits=0;
-static int n_threadexitfns=0;
-static u8_threadexitfn threadexitfns[MAX_THREADEXITFNS];
-static u8_threadinitfn threadinitfns[MAX_THREADINITFNS];
-static u8_mutex threadinitfns_lock;
-#if (U8_USE__THREAD)
-__thread int u8_initlevel=0;
-#elif (U8_USE_TLS)
-u8_tld_key u8_initlevel_key;
-#else
-int u8_initlevel=0;
-#endif
-#endif
-
-#if U8_THREADS_ENABLED
-U8_EXPORT int u8_register_threadinit(u8_threadinitfn fn)
-{
-  int i=0;
-  u8_lock_mutex(&threadinitfns_lock);
-  while (i<u8_n_threadinits)
-    if (threadinitfns[i]==fn) {
-      u8_unlock_mutex(&threadinitfns_lock);
-      return 0;}
-    else i++;
-  if (i<MAX_THREADINITFNS) {
-    threadinitfns[i]=fn; u8_n_threadinits++;
-    u8_unlock_mutex(&threadinitfns_lock);
-    return 1;}
-  else {
-    u8_seterr(_("Too many thread init fns"),"u8_register_threadinit",NULL);
-    u8_unlock_mutex(&threadinitfns_lock);
-    return -1;}
-}
-U8_EXPORT int u8_run_threadinits()
-{
-  u8_wideint start=u8_getinitlevel(), n=u8_n_threadinits, errs=0, i=start;
-  while (i<n) {
-    int retval=threadinitfns[i]();
-    if (retval<0) {
-      u8_log(LOG_CRIT,"THREADINIT","Thread init function (%d) failed",i);
-      errs++;}
-    i++;}
-  u8_setinitlevel(n);
-  if (errs) return -errs;
-  else return n-start;
-}
-U8_EXPORT int u8_threadexit()
-{
-  int i=0, n=n_threadexitfns;
-  while (i<n) {
-    threadexitfns[i]();
-    i++;}
-  return i;
-}
-#else
-U8_EXPORT int u8_register_threadinit(u8_threadinitfn fn)
-{
-  return fn();
-}
-U8_EXPORT int u8_run_threadinits()
-{
-  return 0;
-}
-#endif
-
-U8_EXPORT int u8_register_threadexit(u8_threadexitfn fn)
-{
-  int i=0;
-  u8_lock_mutex(&threadinitfns_lock);
-  while (i<n_threadexitfns)
-    if ((threadexitfns[i])==fn) {
-      u8_unlock_mutex(&threadinitfns_lock);
-      return 0;}
-    else i++;
-  if (i<MAX_THREADEXITFNS) {
-    threadexitfns[i]=fn; n_threadexitfns++;
-    u8_unlock_mutex(&threadinitfns_lock);
-    return 1;}
-  else {
-    u8_seterr(_("Too many thread exit fns"),"u8_register_threadexit",NULL);
-    u8_unlock_mutex(&threadinitfns_lock);
-    return -1;}
-}
-
-static void threadexit_atexit()
-{
-  u8_threadexit();
-}
-
-/* Functions for mutex operations for cases where the pthread
-   functions are overriden */
-U8_EXPORT void u8_mutex_lock(u8_mutex *m)
-{
-  u8_lock_mutex(m);
-}
-U8_EXPORT void u8_mutex_unlock(u8_mutex *m)
-{
-  u8_unlock_mutex(m);
-}
-U8_EXPORT void u8_mutex_init(u8_mutex *m)
-{
-  u8_unlock_mutex(m);
-}
-U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
-{
-  u8_unlock_mutex(m);
-}
-
-/* Getting a thread ID */
-
-#if (HAVE_GETPID)
-#if ((HAVE_PTHREAD_THREADID_NP)&&(HAVE_PTHREAD_SELF))
-U8_EXPORT char *u8_procinfo(char *buf)
-{
-  pid_t pid=getpid(); long long tid;
-  pthread_t self=pthread_self();
-  pthread_threadid_np(self,&tid);
-  if (!(buf)) buf=u8_mallocz(128);
-  sprintf(buf,"%ld:%lld",(unsigned long int)pid,(unsigned long long)tid);
-  return buf;
-}
-#elif ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL)&& \
-     (defined(__linux__)))
-U8_EXPORT char *u8_procinfo(char *buf)
-{
-  pid_t pid=getpid();
-  pid_t tid=syscall(SYS_gettid);
-  if (!(buf)) buf=u8_mallocz(128);
-  sprintf(buf,"%ld:%ld",(unsigned long int)pid,(unsigned long int)tid);
-  return buf;
-}
-#elif (HAVE_PTHREAD_SELF)
-U8_EXPORT char *u8_procinfo(char *buf)
-{
-  pid_t pid=getpid();
-  pthread_t self=pthread_self();
-  if (!(buf)) buf=u8_mallocz(128);
-  sprintf(buf,"%ld:0x%lx",(unsigned long int)pid,(unsigned long int)self);
-  return buf;
-}
-#else
-U8_EXPORT char *u8_procinfo(char *buf)
-{
-  pid_t pid=getpid();
-  if (!(buf)) u8_mallocz(128);
-  sprintf(buf,"%ld",(unsigned long int)pid);
-  return buf;
-}
-#endif
-#else
-U8_EXPORT char *u8_procinfo(char *buf)
-{
-  if (buf) {
-    strcpy(buf,"no procinfo");
-    return buf;}
-  else return u8_strdup("no procinfo");
-}
-#endif
-
-#if (HAVE_GETPID)
-#if ((HAVE_PTHREAD_THREADID_NP)&&(HAVE_PTHREAD_SELF))
-U8_EXPORT long long u8_threadid()
-{
-  long long tid;
-  pthread_t self=pthread_self();
-  pthread_threadid_np(self,&tid);
-  return tid;
-}
-#elif ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
-U8_EXPORT long long u8_threadid()
-{
-  pid_t tid=syscall(SYS_gettid);
-  return (long) tid;
-}
-#elif (HAVE_PTHREAD_SELF)
-U8_EXPORT long long threadid()
-{
-  pthread_t self=pthread_self();
-  return (unsigned long long int)self;
-}
-#else
-U8_EXPORT long long u8_threadid()
-{
-  return (long long) getpid();
-}
-#endif
-#else
-/* TODO: Should really roll our own */
-U8_EXPORT long long u8_threadid()
-{
-  return -1;
-}
-#endif
-
 /* Debugging malloc */
 
 static ssize_t max_malloc=-1;
@@ -813,23 +593,9 @@ U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
 
-#if U8_THREADS_ENABLED
-  u8_init_mutex(&threadinitfns_lock);
-  u8_init_mutex(&source_registry_lock);
-  memset(&mutex_default_attr,0,sizeof(mutex_default_attr));
-#if HAVE_PTHREAD_MUTEXATTR_INIT
-  pthread_mutexattr_init(&mutex_default_attr);
-#endif
-#if HAVE_PTHREAD_MUTEXATTR_SETTYPE
-  pthread_mutexattr_settype(&mutex_default_attr,PTHREAD_MUTEX_ERRORCHECK);
-#endif
-#if (U8_USE_TLS)
-  u8_new_threadkey(&u8_initlevel_key,NULL);
-  u8_new_threadkey(&u8_stack_base_key,NULL);
-#endif
-#endif
-
   u8_register_source_file(_FILEINFO);
+
+  u8_init_mutex(&source_registry_lock);
 
   u8_init_printf_c(); /* Does something */
   u8_init_exceptions_c();  /* Does something */
@@ -844,8 +610,6 @@ U8_EXPORT int u8_initialize()
 
   bindtextdomain("libu8msg",NULL);
   bindtextdomain_codeset("libu8msg","utf-8");
-
-  atexit(threadexit_atexit);
 
   u8_initialized=8069;
   return 8069;
