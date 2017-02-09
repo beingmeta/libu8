@@ -54,8 +54,10 @@ typedef pthread_mutex_t u8_mutex;
 typedef pthread_cond_t u8_condvar;
 typedef pthread_key_t u8_tld_key;
 U8_EXPORT int _u8_init_mutex(u8_mutex *);
+U8_EXPORT int _u8_init_recursive_mutex(u8_mutex *);
 #define pthread_attr_default NULL
 #define u8_init_mutex(x) _u8_init_mutex(x)
+#define u8_init_recursive_mutex(x) _u8_init_recursive_mutex(x)
 #define u8_destroy_mutex(x) pthread_mutex_destroy(x)
 #define u8_new_threadkey(key_loc,del_fcn) pthread_key_create(key_loc,del_fcn)
 #define u8_init_condvar(x) pthread_cond_init(x,NULL)
@@ -158,6 +160,8 @@ typedef DWORD u8_tld_key;
 
 #define u8_init_mutex(_mloc) \
    (*(_mloc))=CreateMutex(NULL,FALSE,NULL)
+#define u8_init_recursive_mutex(_mloc) \
+   (*(_mloc))=CreateMutex(NULL,FALSE,NULL)
 #define u8_init_rwlock(_mloc) \
    (*(_mloc))=CreateMutex(NULL,FALSE,NULL)
 #define u8_destroy_mutex(x) pthread_mutex_destroy(x)
@@ -171,6 +175,7 @@ typedef DWORD u8_tld_key;
 #define U8_THREADS_ENABLED 0
 #define U8_MUTEX_DECL(var)
 #define u8_init_mutex(x)
+#define u8_init_recursive_mutex(x)
 #define u8_init_rwlock(x)
 #define u8_destroy_mutex(x)
 #define u8_destroy_rwlock(x)
@@ -299,15 +304,15 @@ U8_EXPORT __thread ssize_t u8_stack_size;
 #if (U8_USE_TLS)
 #define u8_stackbase() \
   ((u8_tld_get(_u8_stack_base_key)) || \
-   (u8_stack_init(),u8_tld_get(_u8_stack_base_key)))
+   (u8_stackinit(),u8_tld_get(_u8_stack_base_key)))
 #define u8_stacksize() \
   ((u8_tld_get(_u8_stack_size_key)) || \
-   (u8_stack_init(),u8_tld_get(_u8_stack_size_key)))
+   (u8_stackinit(),u8_tld_get(_u8_stack_size_key)))
 #else
 #define u8_stackbase() \
-  ((u8_stack_base) || (u8_stack_init(),u8_stack_base))
+  ((u8_stack_base) || (u8_stackinit(),u8_stack_base))
 #define u8_stacksize() \
-  ((u8_stack_size) || (u8_stack_init(),u8_stack_size))
+  ((u8_stack_size) || (u8_stackinit(),u8_stack_size))
 #endif
 
 /* Trace functions */

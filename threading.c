@@ -408,12 +408,12 @@ static void threadexit_atexit()
   u8_threadexit();
 }
 
-static time_t threading_c_init=0;
+static time_t threading_initialized=0;
 
-U8_EXPORT void u8_init_threading_c(void)
+U8_EXPORT void u8_initialize_threading(void)
 {
-  if (threading_c_init) return;
-  threading_c_init=time(NULL);
+  if (threading_initialized) return;
+  threading_initialized=time(NULL);
 
   memset(&u8_default_mutex_attr,0,sizeof(u8_default_mutex_attr));
   memset(&u8_recursive_mutex_attr,0,sizeof(u8_recursive_mutex_attr));
@@ -462,11 +462,11 @@ U8_EXPORT void u8_mutex_unlock(u8_mutex *m)
 }
 U8_EXPORT void u8_mutex_init(u8_mutex *m)
 {
-  u8_unlock_mutex(m);
+  u8_init_mutex(m);
 }
 U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
 {
-  u8_unlock_mutex(m);
+  u8_destroy_mutex(m);
 }
 
 U8_EXPORT void u8_init_threading_c(void)
