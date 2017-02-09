@@ -77,6 +77,15 @@ U8_EXPORT int u8_unlock_fd(int fd)
 }
 #endif
 
+U8_EXPORT off_t u8_rawpos(int fd)
+{
+  off_t pos=lseek(fd,0,SEEK_CUR);
+  if (pos<0) {
+    u8_log(LOGWARN,u8_strerror(errno),"Got errno %d",errno);
+    U8_CLEAR_ERRNO();}
+  return pos;
+}
+
 U8_EXPORT int u8_get_blocking(int fd)
 {
   int flags=fcntl(fd,F_GETFL);
