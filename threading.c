@@ -304,7 +304,7 @@ U8_EXPORT int u8_threadexit(void);
 
 /* Stack info */
 
-U8_EXPORT void u8_stackinit()
+U8_EXPORT void u8_init_stack()
 {
 #if (U8_USE_TLS)
   if (u8_tld_get(u8_stack_base_key)) return;
@@ -335,7 +335,7 @@ U8_EXPORT void u8_stackinit()
 
 U8_EXPORT int u8_threadinit()
 {
-  u8_stackinit();
+  u8_init_stack();
   return u8_run_threadinits();
 }
 
