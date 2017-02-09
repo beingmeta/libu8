@@ -261,6 +261,8 @@ typedef void (*u8_threadexitfn)(void);
 U8_EXPORT int u8_register_threadinit(u8_threadinitfn fn);
 U8_EXPORT int u8_register_threadexit(u8_threadexitfn fn);
 
+U8_EXPORT void u8_stackinit(void);
+
 U8_EXPORT int u8_threadinit(void);
 U8_EXPORT int u8_threadexit(void);
 U8_EXPORT int u8_run_threadinits(void);
@@ -293,21 +295,20 @@ U8_EXPORT long long u8_threadid(void);
 /* Stack info */
 
 #if (U8_USE_TLS)
-U8_EXPORT u8_tld_key _u8_stack_base_key;
-U8_EXPORT u8_tld_key _u8_stack_size_key;
+U8_EXPORT u8_tld_key u8_stack_base_key;
+U8_EXPORT u8_tld_key u8_stack_size_key;
 #else
 U8_EXPORT __thread void *u8_stack_base;
 U8_EXPORT __thread ssize_t u8_stack_size;
 #endif
 
-
 #if (U8_USE_TLS)
 #define u8_stackbase() \
-  ((u8_tld_get(_u8_stack_base_key)) || \
-   (u8_stackinit(),u8_tld_get(_u8_stack_base_key)))
+  ((u8_tld_get(u8_stack_base_key)) || \
+   (u8_stackinit(),u8_tld_get(u8_stack_base_key)))
 #define u8_stacksize() \
-  ((u8_tld_get(_u8_stack_size_key)) || \
-   (u8_stackinit(),u8_tld_get(_u8_stack_size_key)))
+  ((u8_tld_get(u8_stack_size_key)) || \
+   (u8_stackinit(),u8_tld_get(u8_stack_size_key)))
 #else
 #define u8_stackbase() \
   ((u8_stack_base) || (u8_stackinit(),u8_stack_base))

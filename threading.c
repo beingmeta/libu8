@@ -307,7 +307,7 @@ U8_EXPORT int u8_threadexit(void);
 U8_EXPORT void u8_stackinit()
 {
 #if (U8_USE_TLS)
-  if (u8_tld_get(_u8_stack_base_key)) return;
+  if (u8_tld_get(u8_stack_base_key)) return;
 #else
   if (u8_stack_base) return;
 #endif
@@ -325,8 +325,8 @@ U8_EXPORT void u8_stackinit()
 #endif
 
 #if (U8_USE_TLS)
-  u8_tld_set(_u8_stack_base_key,stackbase);
-  u8_tld_set(_u8_stack_size_key,stacksize);
+  u8_tld_set(u8_stack_base_key,stackbase);
+  u8_tld_set(u8_stack_size_key,(void *)stacksize);
 #else
   u8_stack_base=stackbase;
   u8_stack_size=stacksize;
