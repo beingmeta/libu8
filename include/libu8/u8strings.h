@@ -37,9 +37,9 @@ typedef int u8_charoff;
 #define U8STR(x) ((u8_string)(x))
 #define U8S0() ((u8_string)(""))
 #define U8ALT(s,d) ((s)?((u8_string)(s)):((u8_string)(d)))
-#define U8IF(s,d) ((s)?((u8_string)(d)):(U8_S0()))
+#define U8IF(s,d) ((s)?((u8_string)(d)):(U8S0()))
 
-#define U8OPTSTR(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8_S0()))),(U8IF(s,a))
+#define U8OPTSTR(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8S0()))),(U8IF(s,a))
 
 /* strdup */
 
