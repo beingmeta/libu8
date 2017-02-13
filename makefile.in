@@ -285,7 +285,7 @@ lib/libu8.dll: $(LIBU8_OBJECTS)
 # Avoid recursive reference for the libu8 library itself
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
 	@echo "# (libu8)" MKSO $@ $^
-	$(MKSO) -Wl,-soname=libu8@suffix@.so.@U8MAJOR@ \
+	@$(MKSO) -Wl,-soname=libu8@suffix@.so.@U8MAJOR@ \
 		 -L./lib -o $@ $^ $(LIBS)
 
 lib/libu8core.a: $(LIBU8CORE_OBJECTS)
