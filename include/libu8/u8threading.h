@@ -227,6 +227,9 @@ static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 }
 #endif
 
+U8_EXPORT ssize_t u8_stacksize(void);
+U8_EXPORT void *u8_stackbase(void);
+
 /* Thread proxy functions */
 
 /** Locks a POSIX thread mutex

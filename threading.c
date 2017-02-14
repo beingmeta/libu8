@@ -55,17 +55,6 @@ int u8_thread_debug_showid=1;
 u8_mutex_fn u8_mutex_tracefn=NULL;
 u8_rwlock_fn u8_rwlock_tracefn=NULL;
 
-#if (U8_USE_TLS)
-u8_tld_key u8_stack_base_key;
-u8_tld_key u8_stack_size_key;
-#elif (U8_USE__THREAD)
-__thread void *u8_stack_base=NULL;
-__thread ssize_t u8_stack_size=0;
-#else
-void *u8_stack_base=NULL;
-ssize_t u8_stack_size=0;
-#endif
-
 #define ULL(i) ((unsigned long long)(i))
 
 static u8_string ll2str(long long n,u8_byte *buf,size_t len)
@@ -80,7 +69,7 @@ static u8_string ll2str(long long n,u8_byte *buf,size_t len)
 
 /* Getting a thread ID */
 
-#if ((HAVE_PTHREAD_THREADID_NP)&&(HAVE_PTHREAD_SELF))
+#if ( (HAVE_PTHREAD_THREADID_NP) && (HAVE_PTHREAD_SELF) )
 U8_EXPORT long long u8_threadid()
 {
   long long tid;
@@ -88,7 +77,7 @@ U8_EXPORT long long u8_threadid()
   pthread_threadid_np(self,&tid);
   return tid;
 }
-#elif ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
+#elif ( (HAVE_SYS_SYSCALL_H) && (HAVE_SYSCALL) )
 U8_EXPORT long long u8_threadid()
 {
   pid_t tid=syscall(SYS_gettid);
@@ -100,7 +89,8 @@ U8_EXPORT long long u8_threadid()
   pthread_t self=pthread_self();
   return (unsigned long long int)self;
 }
-#elif (HAVE_GETPID) /* No threads, not really */
+#elif (HAVE_GETPID)
+/* No threads, not really, but we'll call the process a thread */
 U8_EXPORT long long u8_threadid()
 {
   return (long long) getpid();
@@ -263,6 +253,7 @@ U8_EXPORT int u8_rwlock_unlock_dbg(u8_rwlock *rwlock)
 }
 
 #else /* HAVE_PTHREAD_RWLOCK_INIT */
+/* Use regular mutexes as read/write locks */
 
 U8_EXPORT int u8_rwlock_wrlock_dbg(u8_rwlock *rwlock)
 {
@@ -285,6 +276,9 @@ U8_EXPORT int u8_rwlock_unlock_dbg(u8_rwlock *rwlock)
 
 #endif /* not HAVE_PTHREAD_RWLOCK_INIT */
 
+#else /* not HAVE_PTHREAD_H */
+/* These functions are current all defined by do-nothing macros if you
+   don't have pthreads. */
 #endif /* HAVE_PTHREAD_H */
 
 /* Thread initialization */
@@ -305,46 +299,11 @@ int u8_initlevel=0;
 
 U8_EXPORT int u8_threadexit(void);
 
-/* Stack info */
-
-#if ( HAVE_PTHREAD_GETATTR_NP && HAVE_PTHREAD_ATTR_GETSTACK )
-U8_EXPORT void u8_init_stack()
-{
-  if (u8_stack_base) return;
-  pthread_t self=pthread_self();
-  ssize_t stacksize;
-  pthread_attr_t attr;
-  U8_SET_STACK_BASE();
-  pthread_getattr_np(self,&attr);
-  pthread_attr_getstacksize(&attr,&stacksize);
-  u8_set_stack_size(stacksize);
-}
-#elif HAVE_PTHREAD_GET_STACKADDR_NP
-U8_EXPORT void u8_init_stack()
-{
-  if (u8_stack_base) return;
-  pthread_t self=pthread_self();
-  ssize_t stacksize=pthread_get_stacksize_np(self);
-  U8_SET_STACK_BASE();
-  u8_set_stack_size(stacksize);
-}
-#else
-U8_EXPORT void u8_init_stack()
-{
-  if (u8_stack_base) return;
-  else {
-    U8_SET_STACK_BASE();
-    u8_set_stack_size(u8_assumed_stacksize);}
-}
-#endif
-
 U8_EXPORT int u8_threadinit()
 {
   u8_init_stack();
   return u8_run_threadinits();
 }
-
-/* Thread inits */
 
 U8_EXPORT int u8_register_threadinit(u8_threadinitfn fn)
 {
@@ -406,14 +365,65 @@ U8_EXPORT int u8_register_threadexit(u8_threadexitfn fn)
     return -1;}
 }
 
-#if HAVE_PTHREAD_H
+/* Stack info */
 
-static void threadexit_atexit()
+#if (U8_USE_TLS)
+u8_tld_key u8_stack_base_key;
+u8_tld_key u8_stack_size_key;
+#elif (U8_USE__THREAD)
+__thread void *u8_stack_base=NULL;
+__thread ssize_t u8_stack_size=0;
+#else /* Just shared variables, no threads */
+void *u8_stack_base=NULL;
+ssize_t u8_stack_size=0;
+#endif
+
+#if ( HAVE_PTHREAD_GETATTR_NP && HAVE_PTHREAD_ATTR_GETSTACK )
+U8_EXPORT void u8_init_stack()
 {
-  u8_threadexit();
+  if (u8_stack_base) return;
+  pthread_t self=pthread_self();
+  ssize_t stacksize;
+  pthread_attr_t attr;
+  U8_SET_STACK_BASE();
+  pthread_getattr_np(self,&attr);
+  pthread_attr_getstacksize(&attr,&stacksize);
+  u8_set_stack_size(stacksize);
+}
+#elif HAVE_PTHREAD_GET_STACKADDR_NP
+U8_EXPORT void u8_init_stack()
+{
+  if (u8_stack_base) return;
+  pthread_t self=pthread_self();
+  ssize_t stacksize=pthread_get_stacksize_np(self);
+  U8_SET_STACK_BASE();
+  u8_set_stack_size(stacksize);
+}
+#else
+U8_EXPORT void u8_init_stack()
+{
+  if (u8_stack_base) return;
+  else {
+    U8_SET_STACK_BASE();
+    u8_set_stack_size(u8_assumed_stacksize);}
+}
+#endif
+
+U8_EXPORT ssize_t u8_stacksize()
+{
+  return u8_stack_size;
+}
+U8_EXPORT void *u8_stackbase()
+{
+  return u8_stack_base;
 }
 
+/* Initialization code */
+
+#if HAVE_PTHREAD_H
+
 static time_t threading_initialized=0;
+static void threadexit_atexit(void);
 
 U8_EXPORT void u8_initialize_threading(void)
 {
@@ -444,7 +454,41 @@ U8_EXPORT void u8_initialize_threading(void)
   atexit(threadexit_atexit);
 }
 
+static void threadexit_atexit()
+{
+  u8_threadexit();
+}
+
 #else /* not HAVE_PTHREAD_H */
+
+U8_EXPORT void u8_initialize_threading(void)
+{
+  if (threading_initialized) return;
+  threading_initialized=time(NULL);
+
+  memset(&u8_default_mutex_attr,0,sizeof(u8_default_mutex_attr));
+  memset(&u8_recursive_mutex_attr,0,sizeof(u8_recursive_mutex_attr));
+
+#if HAVE_PTHREAD_MUTEXATTR_INIT
+  pthread_mutexattr_init(&u8_default_mutex_attr);
+  pthread_mutexattr_init(&u8_recursive_mutex_attr);
+#endif
+
+#if HAVE_PTHREAD_MUTEXATTR_SETTYPE
+  pthread_mutexattr_settype(&u8_default_mutex_attr,PTHREAD_MUTEX_ERRORCHECK);
+  pthread_mutexattr_settype(&u8_recursive_mutex_attr,PTHREAD_MUTEX_RECURSIVE);
+#endif
+
+  u8_init_mutex(&threadinitfns_lock);
+
+#if (U8_USE_TLS)
+  u8_new_threadkey(&u8_initlevel_key,NULL);
+  u8_new_threadkey(&u8_stack_base_key,NULL);
+  u8_new_threadkey(&u8_stack_size_key,NULL);
+#endif
+
+  atexit(threadexit_atexit);
+}
 
 U8_EXPORT int u8_register_threadinit(u8_threadinitfn fn)
 {
@@ -454,6 +498,8 @@ U8_EXPORT int u8_run_threadinits()
 {
   return 0;
 }
+
+#endif
 
 /* Functions for mutex operations for cases where the pthread
    functions are overriden */
@@ -474,8 +520,3 @@ U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
   u8_destroy_mutex(m);
 }
 
-U8_EXPORT void u8_init_threading_c(void)
-{
-}
-
-#endif /* else HAVE_PTHREAD */
