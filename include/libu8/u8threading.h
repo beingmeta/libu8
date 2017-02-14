@@ -191,7 +191,6 @@ typedef DWORD u8_tld_key;
 #if U8_THREADS_ENABLED
 #if HAVE_THREAD_STORAGE_CLASS
 U8_EXPORT __thread void *u8_stack_base;
-#define u8_stack_base() (u8_stack_base)
 #define U8_SET_STACK_BASE()	  \
   volatile int _stack_base=17; \
   u8_stack_base=(void *)&_stack_base
@@ -303,17 +302,13 @@ U8_EXPORT __thread ssize_t u8_stack_size;
 #endif
 
 #if (U8_USE_TLS)
-#define u8_stackbase() \
-  ((u8_tld_get(u8_stack_base_key)) || \
-   (u8_init_stack(),u8_tld_get(u8_stack_base_key)))
-#define u8_stacksize() \
-  ((u8_tld_get(u8_stack_size_key)) || \
-   (u8_init_stack(),u8_tld_get(u8_stack_size_key)))
+#define u8_stack_base (u8_tld_get(u8_stack_base_key))
+#define u8_set_stack_base(base) (u8_tld_set(u8_stack_base_key,(void *)(base)))
+#define u8_stack_size (u8_tld_get(u8_stack_size_key))
+#define u8_set_stack_size(sz) (u8_tld_set(u8_stack_size_key,(void *)(sz)))
 #else
-#define u8_stackbase() \
-  ((u8_stack_base) || (u8_init_stack(),u8_stack_base))
-#define u8_stacksize() \
-  ((u8_stack_size) || (u8_init_stack(),u8_stack_size))
+#define u8_set_stack_base(base) u8_stack_base=(base)
+#define u8_set_stack_size(sz) u8_stack_size=(sz)
 #endif
 
 /* Trace functions */

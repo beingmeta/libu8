@@ -449,8 +449,9 @@ AC_CHECK_FUNCS(pthread_rwlock_init pthread_self pthread_create)
 AC_CHECK_FUNCS(pthread_mutexattr_init pthread_mutexattr_settype)
 AC_CHECK_FUNCS(pthread_threadid_np)
 AC_CHECK_FUNCS(pthread_get_stacksize_np pthread_get_stackaddr_np)
-AC_CHECK_FUNCS(pthread_getattr_np pthread_attr_getstacksize pthread_attr_setstacksize)
-
+AC_CHECK_FUNCS(pthread_getattr_np)
+AC_CHECK_FUNCS(pthread_attr_getstack pthread_attr_getstackaddr)
+AC_CHECK_FUNCS(pthread_attr_getstacksize pthread_attr_setstacksize)
 
 AC_ARG_ENABLE(largefiles,--en/disable-largefiles Enable use of large (> 2GB) file support,,largefiles_enabled=yes)
 if test $largefiles_enabled = "yes"; then

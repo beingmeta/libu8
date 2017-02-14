@@ -3,7 +3,7 @@ LD	  = @LD@
 XCFLAGS   =
 ARCHFLAGS = @archflags@
 CONFIG_CFLAGS =  @CFLAGS@
-CFLAGS    = -I./include -DLIBU8_SOURCE=1 -g -O2 ${CONFIG_CFLAGS} -I./include $(XCFLAGS) $(ARCHFLAGS)
+CFLAGS    = -I./include -DLIBU8_SOURCE=1 -g3 -O2 ${CONFIG_CFLAGS} -I./include $(XCFLAGS) $(ARCHFLAGS)
 XLDFLAGS  =
 LDFLAGS   = @LDFLAGS@ $(EFENCE)
 LIBS      = @LIBS@ $(EFENCE) -lm

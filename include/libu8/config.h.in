@@ -116,15 +116,26 @@
 /* Define if you have the pthread_mutexattr_settype function.  */
 #undef HAVE_PTHREAD_MUTEXATTR_SETTYPE
 
-/* #undef HAVE_PTHREAD_GET_STACKSIZE_NP */
+/* */
+#undef HAVE_PTHREAD_GET_STACKSIZE_NP
 
-/* #undef HAVE_PTHREAD_GET_STACKADDR_NP */
+/*  */
+#undef HAVE_PTHREAD_GET_STACKADDR_NP
 
-/* #undef HAVE_PTHREAD_GETATTR_NP */
+/*  */
+#undef HAVE_PTHREAD_GETATTR_NP
 
-/* #undef HAVE_PTHREAD_ATTR_GETSTACKSIZE */
+/*  */
+#undef HAVE_PTHREAD_ATTR_GETSTACK
 
-/* #undef HAVE_PTHREAD_ATTR_SETSTACKSIZE */
+/*  */
+#undef HAVE_PTHREAD_ATTR_GETSTACKSIZE
+
+/*  */
+#undef HAVE_PTHREAD_ATTR_GETSTACKADDR
+
+/* */
+#undef HAVE_PTHREAD_ATTR_SETSTACKSIZE
 
 /* Define if you have the strdup function.  */
 #undef HAVE_STRDUP

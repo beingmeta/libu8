@@ -14,6 +14,7 @@
 
 */
 
+#include "libu8/config.h"
 #include "libu8/u8source.h"
 #include "libu8/libu8.h"
 #include "libu8/u8elapsed.h"
@@ -45,6 +46,8 @@ static pthread_mutexattr_t u8_recursive_mutex_attr;
 #ifndef MAX_THREAEXITFNS
 #define MAX_THREADEXITFNS 128
 #endif
+
+ssize_t u8_assumed_stacksize=U8_ASSUMED_STACKSIZE;
 
 int u8_thread_log_enabled=1;
 int u8_thread_debug_loglevel=LOGDEBUG;
@@ -304,34 +307,38 @@ U8_EXPORT int u8_threadexit(void);
 
 /* Stack info */
 
+#if ( HAVE_PTHREAD_GETATTR_NP && HAVE_PTHREAD_ATTR_GETSTACK )
 U8_EXPORT void u8_init_stack()
 {
-#if (U8_USE_TLS)
-  if (u8_tld_get(u8_stack_base_key)) return;
-#else
   if (u8_stack_base) return;
-#endif
   pthread_t self=pthread_self();
-#if ( (HAVE_PTHREAD_GET_STACKADDR_NP) && (HAVE_PTHREAD_GET_STACKSIZE_NP) )
-  void *stackbase=pthread_get_stackaddr_np(self);
-  ssize_t stacksize=pthread_get_stacksize_np(self);
-#elif ( (HAVE_PTHREAD_GET_ATTR_NP) && (HAVE_PTHREAD_ATTR_GET_STACK_NP) )
   void *stackbase; ssize_t stacksize;
   pthread_attr_t attr;
-  pthread_get_attr_np(self,&attr);
+  pthread_getattr_np(self,&attr);
   pthread_attr_getstack(&attr,&stackbase,&stacksize);
-#else
-  void *stackbase=&self; ssize_t stacksize=0;
-#endif
-
-#if (U8_USE_TLS)
-  u8_tld_set(u8_stack_base_key,stackbase);
-  u8_tld_set(u8_stack_size_key,(void *)stacksize);
-#else
-  u8_stack_base=stackbase;
-  u8_stack_size=stacksize;
-#endif
+  u8_set_stack_base(stackbase);
+  u8_set_stack_size(stacksize);
 }
+#elif HAVE_PTHREAD_GET_STACKADDR_NP
+U8_EXPORT void u8_init_stack()
+{
+  if (u8_stack_base) return;
+  pthread_t self=pthread_self();
+  void *stackbase=pthread_get_stackaddr_np(self);
+  ssize_t stacksize=pthread_get_stacksize_np(self);
+  u8_set_stack_base(stackbase);
+  u8_set_stack_size(stacksize);
+}
+#else
+U8_EXPORT void u8_init_stack()
+{
+  static int stackval=3;
+  if (u8_stack_base) return;
+  void *stackbase=&stackval;
+  u8_set_stack_base(&stackval);
+  u8_set_stack_size(u8_assumed_stacksize);
+}
+#endif
 
 U8_EXPORT int u8_threadinit()
 {

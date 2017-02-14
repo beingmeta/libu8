@@ -34,6 +34,10 @@
 #define U8_WITH_STDIO 1
 #endif
 
+#ifndef U8_ASSUMED_STACKSIZE
+#define U8_ASSUMED_STACKSIZE 4*1024*1024
+#endif
+
 #if LIBU8_SOURCE
 #pragma GCC diagnostic ignored "-Wpointer-sign"
 #endif
