@@ -210,7 +210,7 @@ U8_EXPORT u8_tld_key u8_stack_base_key;
   u8_tld_set(u8_stack_base_key,(void *)&_stack_base)
 static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 {
-  int _stackval=42; 
+  int _stackval=42;
   void *stack_base=u8_tld_get(u8_stack_base_key);
   if (stack_base==NULL) return -1;
   else {

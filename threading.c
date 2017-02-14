@@ -312,11 +312,11 @@ U8_EXPORT void u8_init_stack()
 {
   if (u8_stack_base) return;
   pthread_t self=pthread_self();
-  void *stackbase; ssize_t stacksize;
+  ssize_t stacksize;
   pthread_attr_t attr;
+  U8_SET_STACK_BASE();
   pthread_getattr_np(self,&attr);
-  pthread_attr_getstack(&attr,&stackbase,&stacksize);
-  u8_set_stack_base(stackbase);
+  pthread_attr_getstacksize(&attr,&stacksize);
   u8_set_stack_size(stacksize);
 }
 #elif HAVE_PTHREAD_GET_STACKADDR_NP
@@ -324,19 +324,17 @@ U8_EXPORT void u8_init_stack()
 {
   if (u8_stack_base) return;
   pthread_t self=pthread_self();
-  void *stackbase=pthread_get_stackaddr_np(self);
   ssize_t stacksize=pthread_get_stacksize_np(self);
-  u8_set_stack_base(stackbase);
+  U8_SET_STACK_BASE();
   u8_set_stack_size(stacksize);
 }
 #else
 U8_EXPORT void u8_init_stack()
 {
-  static int stackval=3;
   if (u8_stack_base) return;
-  void *stackbase=&stackval;
-  u8_set_stack_base(&stackval);
-  u8_set_stack_size(u8_assumed_stacksize);
+  else {
+    U8_SET_STACK_BASE();
+    u8_set_stack_size(u8_assumed_stacksize);}
 }
 #endif
 
