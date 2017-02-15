@@ -204,6 +204,10 @@ typedef unsigned int u8_wideint;
 #define WORDS_BIGENDIAN 0
 #endif
 
+#ifndef U8_DEBUG_MALLOC
+#define U8_DEBUG_MALLOC 0
+#endif
+
 #define U8_SETBITS(loc,bits)   (loc) |= bits
 #define U8_CLEARBITS(loc,bits) (loc) &= (~(bits))
 #define U8_CHECKBITS(loc,bits) ( (loc) & (bits) )

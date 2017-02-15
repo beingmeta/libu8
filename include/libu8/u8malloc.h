@@ -19,38 +19,30 @@
 
 /* Malloc */
 
+U8_EXPORT ssize_t u8_max_malloc;
+U8_EXPORT void *u8_watchptr;
 U8_EXPORT void *u8_dmalloc(size_t);
-
-static U8_MALLOCFN U8_MAYBE_UNUSED
-void *u8_tidy_malloc(size_t n_bytes)
-{
-  void *ptr=malloc(n_bytes);
-  if ( (ptr) && (errno) ) errno=0;
-  return ptr;
-}
-
-static U8_MAYBE_UNUSED
-void *u8_tidy_realloc(void *ptr,size_t newsz)
-{
-  if (ptr == NULL)
-    return u8_tidy_malloc(newsz);
-  else {
-    void *newptr=realloc(ptr,newsz);
-    if ( (newptr) && (errno) ) errno=0;
-    return newptr;}
-}
+U8_EXPORT void *u8_drealloc(void *,size_t);
+U8_EXPORT void u8_dfree(void *);
+U8_EXPORT U8_MALLOCFN void *u8_tidy_malloc(size_t);
+U8_EXPORT U8_MALLOCFN void *u8_tidy_realloc(void *,size_t);
 
 #ifndef U8_MALLOC
-#if CHECK_DANGLING_ERRNOS
-#define U8_MALLOC u8_tidy_malloc
+#if U8_TIDY_MALLOC
+#define U8_MALLOC(x) (u8_tidy_malloc(x))
+#define u8_realloc(ptr,newsz) (u8_tidy_realloc((void *)ptr,newsz))
+#define u8_free(ptr) (free((char *)ptr),errno=0)
+#elif U8_DEBUG_MALLOC
+#define U8_MALLOC u8_dmalloc
 #else
 #define U8_MALLOC malloc
+#define u8_free(ptr) free((char *)ptr)
+#define u8_realloc(ptr,newsz) \
+  ((ptr==NULL) ? (U8_MALLOC(newsz)) : (realloc(ptr,newsz)))
 #endif
 #endif
 
-#if CHECK_DANGLING_ERRNOS
-#define u8_realloc(ptr,newsz) (u8_tidy_realloc((void *)ptr,newsz))
-#define u8_free(ptr) (free((char *)ptr),errno=0)
+#if U8_CHECK_DANGLING_ERRNOS
 #else
 #define u8_free(ptr) free((char *)ptr)
 #define u8_realloc(ptr,newsz) \

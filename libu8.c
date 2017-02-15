@@ -540,22 +540,78 @@ U8_EXPORT int _u8_grow_pile(u8_pile p,int delta)
   return new_max;
 }
 
-/* Debugging malloc */
-
-static ssize_t max_malloc=-1;
-
-U8_EXPORT void *u8_dmalloc(size_t n_bytes)
-{
-  if ((max_malloc>0)&&(n_bytes>max_malloc))
-    _u8_dbg("dmalloc");
-  return malloc(n_bytes);
-}
+/* This is a good place to set a breakpoint */
 
 U8_EXPORT int _u8_dbg(u8_string s)
 {
   int retval=0;
   u8_log(LOG_CRIT,"In debugger: %s",s);
   return retval;
+}
+
+/* Debugging malloc */
+
+void *u8_watchptr=NULL;
+ssize_t u8_max_malloc=-1;
+
+U8_EXPORT void *u8_dmalloc(size_t n_bytes)
+{
+  if ((u8_max_malloc>0)&&(n_bytes>u8_max_malloc))
+    _u8_dbg("dmalloc/big");
+  if (u8_watchptr) {
+    void *result=malloc(n_bytes);
+    if (result==NULL)
+      _u8_dbg("dmalloc/failed");
+    else if (result==u8_watchptr)
+      _u8_dbg("dmalloc/watched");
+    return result;}
+  else return malloc(n_bytes);
+}
+
+U8_EXPORT void *u8_drealloc(void *ptr,size_t n_bytes)
+{
+  void *newptr=NULL;
+  if ((u8_max_malloc>0)&&(n_bytes>u8_max_malloc))
+    _u8_dbg("drealloc/big");
+  if (ptr == u8_watchptr)
+    _u8_dbg("drealloc/watched");
+  newptr=realloc(ptr,n_bytes);
+  if (newptr==NULL) {
+    _u8_dbg("drealloc/failed");
+    return ptr;}
+  else {
+    if (newptr==u8_watchptr)
+      _u8_dbg("drealloc/watched");
+    return newptr;}
+}
+
+U8_EXPORT void u8_dfree(void *ptr)
+{
+  if (ptr==NULL) {
+    _u8_dbg("u8_dfree/NULL");}
+  else if (ptr==u8_watchptr) {
+    _u8_dbg("u8_dfree/NULL");
+    free(ptr);}
+  else free(ptr);
+}
+
+/* Tidy alloc/realloc */
+
+U8_EXPORT U8_MALLOCFN void *u8_tidy_malloc(size_t n_bytes)
+{
+  void *ptr=malloc(n_bytes);
+  if ( (ptr) && (errno) ) errno=0;
+  return ptr;
+}
+
+U8_EXPORT U8_MALLOCFN void *u8_tidy_realloc(void *ptr,size_t newsz)
+{
+  if (ptr == NULL)
+    return u8_tidy_malloc(newsz);
+  else {
+    void *newptr=realloc(ptr,newsz);
+    if ( (newptr) && (errno) ) errno=0;
+    return newptr;}
 }
 
 /* Recording source file information */
