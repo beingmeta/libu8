@@ -8,7 +8,7 @@ shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 CLEAN="rm -f"
 U8MAJOR=2
-U8MINOR=5
+U8MINOR=6
 U8RELEASE=`cat etc/release`
 U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
 mshared_suffix=so.${U8MAJOR}
@@ -505,5 +505,5 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT(makefile etc/version dist/libu8-2.5.spec)
+AC_OUTPUT(makefile etc/version dist/libu8-2.6.spec)
 
