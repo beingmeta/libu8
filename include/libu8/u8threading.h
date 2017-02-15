@@ -314,6 +314,8 @@ U8_EXPORT __thread ssize_t u8_stack_size;
 #define u8_set_stack_size(sz) u8_stack_size=(sz)
 #endif
 
+U8_EXPORT int u8_stack_direction;
+
 /* Trace functions */
 
 U8_EXPORT int u8_mutex_wait(u8_mutex *mutex);

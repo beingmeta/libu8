@@ -48,6 +48,7 @@ static pthread_mutexattr_t u8_recursive_mutex_attr;
 #endif
 
 ssize_t u8_assumed_stacksize=U8_ASSUMED_STACKSIZE;
+int u8_stack_direction=0;
 
 int u8_thread_log_enabled=1;
 int u8_thread_debug_loglevel=LOGDEBUG;
@@ -66,6 +67,27 @@ static u8_string ll2str(long long n,u8_byte *buf,size_t len)
 #define thid() \
   ((u8_thread_debug_showid) ? (u8_threadid()) : (-1))
 #define thidstr(n,buf) (ll2str(n,buf,sizeof(buf)))
+
+/* Aliases */
+
+/* Functions for mutex operations for cases where the pthread
+   functions are overriden */
+U8_EXPORT void u8_mutex_lock(u8_mutex *m)
+{
+  u8_lock_mutex(m);
+}
+U8_EXPORT void u8_mutex_unlock(u8_mutex *m)
+{
+  u8_unlock_mutex(m);
+}
+U8_EXPORT void u8_mutex_init(u8_mutex *m)
+{
+  u8_init_mutex(m);
+}
+U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
+{
+  u8_destroy_mutex(m);
+}
 
 /* Getting a thread ID */
 
@@ -418,6 +440,20 @@ U8_EXPORT void *u8_stackbase()
   return u8_stack_base;
 }
 
+static int get_stack_direction_inner(int *outerp)
+{
+  int inner, *innerp=&inner;
+  if (innerp>outerp) return 1;
+  else if (outerp>innerp) return -1;
+  else return 0;
+}
+
+static int get_stack_direction()
+{
+  int outer;
+  return get_stack_direction_inner(&outer);
+}
+
 /* Initialization code */
 
 #if HAVE_PTHREAD_H
@@ -466,26 +502,9 @@ U8_EXPORT void u8_initialize_threading(void)
   if (threading_initialized) return;
   threading_initialized=time(NULL);
 
-  memset(&u8_default_mutex_attr,0,sizeof(u8_default_mutex_attr));
-  memset(&u8_recursive_mutex_attr,0,sizeof(u8_recursive_mutex_attr));
-
-#if HAVE_PTHREAD_MUTEXATTR_INIT
-  pthread_mutexattr_init(&u8_default_mutex_attr);
-  pthread_mutexattr_init(&u8_recursive_mutex_attr);
-#endif
-
-#if HAVE_PTHREAD_MUTEXATTR_SETTYPE
-  pthread_mutexattr_settype(&u8_default_mutex_attr,PTHREAD_MUTEX_ERRORCHECK);
-  pthread_mutexattr_settype(&u8_recursive_mutex_attr,PTHREAD_MUTEX_RECURSIVE);
-#endif
-
-  u8_init_mutex(&threadinitfns_lock);
-
-#if (U8_USE_TLS)
-  u8_new_threadkey(&u8_initlevel_key,NULL);
-  u8_new_threadkey(&u8_stack_base_key,NULL);
-  u8_new_threadkey(&u8_stack_size_key,NULL);
-#endif
+  u8_stack_direction=get_stack_direction();
+  if (u8_stack_direction==0) 
+    u8_log(LOGCRIT,"NoStackDirection","Couldnt' determine stack direction");
 
   atexit(threadexit_atexit);
 }
@@ -500,23 +519,3 @@ U8_EXPORT int u8_run_threadinits()
 }
 
 #endif
-
-/* Functions for mutex operations for cases where the pthread
-   functions are overriden */
-U8_EXPORT void u8_mutex_lock(u8_mutex *m)
-{
-  u8_lock_mutex(m);
-}
-U8_EXPORT void u8_mutex_unlock(u8_mutex *m)
-{
-  u8_unlock_mutex(m);
-}
-U8_EXPORT void u8_mutex_init(u8_mutex *m)
-{
-  u8_init_mutex(m);
-}
-U8_EXPORT void u8_mutex_destroy(u8_mutex *m)
-{
-  u8_destroy_mutex(m);
-}
-
