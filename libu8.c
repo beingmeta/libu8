@@ -52,11 +52,23 @@
 #include <stdio.h>
 #include <errno.h>
 
+/* Just in case */
+
+#define LOG_EMERG	0	/* system is unusable */
+#define LOG_ALERT	1	/* action must be taken immediately */
+#define LOG_CRIT	2	/* critical conditions */
+#define LOG_ERR		3	/* error conditions */
+#define LOG_WARNING	4	/* warning conditions */
+#define LOG_NOTICE	5	/* normal but significant condition */
+#define LOG_INFO	6	/* informational */
+#define LOG_DEBUG	7	/* debug-level messages */
+
 void perror(const char *s);
+
+/* Component init functions */
 
 U8_EXPORT void u8_init_exceptions_c(void);
 U8_EXPORT void u8_init_printf_c(void);
-
 U8_EXPORT void u8_init_streamio_c(void);
 U8_EXPORT void u8_init_contour_c(void);
 U8_EXPORT void u8_init_ctype_c(void);
@@ -64,9 +76,13 @@ U8_EXPORT void u8_init_stringfns_c(void);
 U8_EXPORT void u8_init_bytebuf_c(void);
 U8_EXPORT void u8_init_cityhash_c(void);
 
-u8_condition u8_UnexpectedErrno=_("Unexpected errno");
-u8_condition u8_MallocFailed=_("Malloc failed");
-u8_condition u8_NotImplemented=_("Function not available");
+/* U8 init vars */
+
+static int u8_initialized=0;
+
+int u8_break_on_errno;
+
+int u8_utf8warn=1, u8_utf8err=0;
 
 u8_string u8_revision=LIBU8_REVISION;
 u8_string u8_version=U8_VERSION;
@@ -74,20 +90,11 @@ int u8_major_version=U8_MAJOR_VERSION;
 int u8_minor_version=U8_MINOR_VERSION;
 int u8_release_version=U8_RELEASE_VERSION;
 
-static int u8_initialized=0;
+/* Exceptions */
 
-#define LOG_EMERG       0       /* system is unusable */
-#define LOG_ALERT       1       /* action must be taken immediately */
-#define LOG_CRIT        2       /* critical conditions */
-#define LOG_ERR         3       /* error conditions */
-#define LOG_WARNING     4       /* warning conditions */
-#define LOG_NOTICE      5       /* normal but significant condition */
-#define LOG_INFO        6       /* informational */
-#define LOG_DEBUG       7       /* debug-level messages */
-
-int u8_break_on_errno;
-
-/* U8 settings */
+u8_condition u8_UnexpectedErrno=_("Unexpected errno");
+u8_condition u8_MallocFailed=_("Malloc failed");
+u8_condition u8_NotImplemented=_("Function not available");
 
 u8_condition u8_UnexpectedEOD=_("Unexpected EOD"),
   u8_BadUTF8=_("Invalid UTF-8 encoded text"),
@@ -96,8 +103,6 @@ u8_condition u8_UnexpectedEOD=_("Unexpected EOD"),
   u8_BadUnicodeChar=_("Invalid Unicode Character"),
   u8_BadUNGETC=_("UNGETC error"),
   u8_NoZeroStreams=_("No zero-length string streams");
-
-int u8_utf8warn=1, u8_utf8err=0;
 
 /* libc conversions */
 
@@ -233,7 +238,7 @@ U8_EXPORT double u8_elapsed_time()
     if (gettimeofday(&now,NULL) < 0)
       return -1.0;
     else return (now.tv_sec-estart.tv_sec)+
-           (now.tv_usec-estart.tv_usec)*0.000001;
+	   (now.tv_usec-estart.tv_usec)*0.000001;
 #elif HAVE_FTIME
     struct timeb now;
 #if WIN32
@@ -243,7 +248,7 @@ U8_EXPORT double u8_elapsed_time()
     else
 #endif
       return (now.time-estart.time)+
-        (now.millitm-estart.millitm)*0.001;
+	(now.millitm-estart.millitm)*0.001;
 #else
     return (1.0*(time(NULL)-estart));
 #endif
@@ -527,12 +532,12 @@ U8_EXPORT int _u8_grow_pile(u8_pile p,int delta)
     void *new_elts;
     if (p->u8_elts) {
       if (p->u8_mallocd) {
-        new_elts=u8_realloc(p->u8_elts,sizeof(void *)*new_max);
-        memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}
+	new_elts=u8_realloc(p->u8_elts,sizeof(void *)*new_max);
+	memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}
       else {
-        new_elts=u8_malloc(sizeof(void *)*new_max);
-        memcpy(new_elts,p->u8_elts,sizeof(void *)*(p->u8_len));
-        memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}}
+	new_elts=u8_malloc(sizeof(void *)*new_max);
+	memcpy(new_elts,p->u8_elts,sizeof(void *)*(p->u8_len));
+	memset(new_elts+p->u8_len,0,sizeof(void *)*(new_max-p->u8_max));}}
     else {
       new_elts=u8_malloc(sizeof(void *)*new_max);
       memset(new_elts,0,sizeof(void *)*new_max);}
