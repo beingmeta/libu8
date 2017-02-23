@@ -192,7 +192,7 @@ typedef DWORD u8_tld_key;
 U8_EXPORT u8_tld_key u8_stack_base_key;
 U8_EXPORT u8_tld_key u8_stack_size_key;
 #define u8_stack_base (u8_tld_get(u8_stack_base_key))
-#define u8_stack_size (u8_tld_get(u8_stack_size_key))
+#define u8_stack_size ((ssize_t)(u8_tld_get(u8_stack_size_key)))
 #define U8_SET_STACK_BASE()	  \
   volatile int _stack_base=17*42; \
   u8_tld_set(u8_stack_base_key,(void *)&_stack_base)
