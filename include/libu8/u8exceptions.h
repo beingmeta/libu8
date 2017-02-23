@@ -51,10 +51,14 @@ typedef struct U8_EXCEPTION *u8_exception;
 #if (U8_USE_TLS)
 U8_EXPORT u8_tld_key u8_current_exception_key;
 #define u8_current_exception ((u8_exception)(u8_tld_get(u8_current_exception_key)))
+#define u8_set_current_exception(ex) \
+  ((u8_exception)(u8_tld_set(u8_current_exception_key,((void *)ex))))
 #elif (U8_USE__THREAD)
 U8_EXPORT __thread u8_exception u8_current_exception;
+#define u8_set_current_exception(ex) u8_current_exception=ex
 #else
 U8_EXPORT u8_exception u8_current_exception;
+#define u8_set_current_exception(ex) u8_current_exception=ex
 #endif
 
 /** Creates a new exception

@@ -324,7 +324,7 @@ U8_EXPORT int u8_threadexit(void);
 U8_EXPORT int u8_threadinit()
 {
   u8_init_stack();
-  u8_current_exception=NULL;
+  u8_set_current_exception(NULL);
   return u8_run_threadinits();
 }
 

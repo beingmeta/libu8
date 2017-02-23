@@ -188,23 +188,11 @@ typedef DWORD u8_tld_key;
 #define u8_rw_unlock(x)
 #endif
 
-#if U8_THREADS_ENABLED
-#if HAVE_THREAD_STORAGE_CLASS
-U8_EXPORT __thread void *u8_stack_base;
-#define U8_SET_STACK_BASE()	  \
-  volatile int _stack_base=17; \
-  u8_stack_base=(void *)&_stack_base
-static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
-{
-  int _stackval=42;
-  if (u8_stack_base==NULL) return -1;
-  else {
-    ssize_t diff=((void *)&(_stackval))-u8_stack_base;
-    if (diff<0) return -diff; else return diff;}
-}
-#else
+#if ((U8_THREADS_ENABLED) && ((U8_USE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS))))
 U8_EXPORT u8_tld_key u8_stack_base_key;
-#define u8_stack_base() (u8_tld_get(u8_stack_base_key))
+U8_EXPORT u8_tld_key u8_stack_size_key;
+#define u8_stack_base (u8_tld_get(u8_stack_base_key))
+#define u8_stack_size (u8_tld_get(u8_stack_size_key))
 #define U8_SET_STACK_BASE()	  \
   volatile int _stack_base=17*42; \
   u8_tld_set(u8_stack_base_key,(void *)&_stack_base)
@@ -217,14 +205,41 @@ static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
     ssize_t diff=((void *)&(_stackval))-stack_base;
     if (diff<0) return -diff; else return diff;}
 }
-#endif
+#elif ((U8_THREADS_ENABLED) && (HAVE_THREAD_STORAGE_CLASS))
+U8_EXPORT __thread void *u8_stack_base;
+U8_EXPORT __thread ssize_t u8_stack_size;
+#define U8_SET_STACK_BASE()	  \
+  volatile int _stack_base=17; \
+  u8_stack_base=(void *)&_stack_base
+static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
+{
+  int _stackval=42;
+  if (u8_stack_base==NULL) return -1;
+  else {
+    ssize_t diff=((void *)&(_stackval))-u8_stack_base;
+    if (diff<0) return -diff; else return diff;}
+}
 #else /* not U8_THREADS_ENABLED */
-#define u8_stack_base() ((void *)(NULL))
+#define u8_stack_base ((void *)(NULL))
+#define u8_stack_size (-1)
 #define U8_SET_STACK_BASE()
 static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 {
   return -1;
 }
+#endif
+
+#if (U8_USE_TLS)
+U8_EXPORT u8_tld_key u8_stack_base_key;
+#else
+U8_EXPORT __thread void *u8_stack_base;
+#endif
+
+#if (U8_USE_TLS)
+#define u8_stack_base (u8_tld_get(u8_stack_base_key))
+#define u8_set_stack_size(sz) (u8_tld_set(u8_stack_size_key,(void *)(sz)))
+#else
+#define u8_set_stack_size(sz) u8_stack_size=(sz)
 #endif
 
 U8_EXPORT ssize_t u8_stacksize(void);
@@ -295,24 +310,6 @@ U8_EXPORT int u8_initlevel;
 U8_EXPORT long long u8_threadid(void);
 
 /* Stack info */
-
-#if (U8_USE_TLS)
-U8_EXPORT u8_tld_key u8_stack_base_key;
-U8_EXPORT u8_tld_key u8_stack_size_key;
-#else
-U8_EXPORT __thread void *u8_stack_base;
-U8_EXPORT __thread ssize_t u8_stack_size;
-#endif
-
-#if (U8_USE_TLS)
-#define u8_stack_base (u8_tld_get(u8_stack_base_key))
-#define u8_set_stack_base(base) (u8_tld_set(u8_stack_base_key,(void *)(base)))
-#define u8_stack_size (u8_tld_get(u8_stack_size_key))
-#define u8_set_stack_size(sz) (u8_tld_set(u8_stack_size_key,(void *)(sz)))
-#else
-#define u8_set_stack_base(base) u8_stack_base=(base)
-#define u8_set_stack_size(sz) u8_stack_size=(sz)
-#endif
 
 U8_EXPORT int u8_stack_direction;
 
