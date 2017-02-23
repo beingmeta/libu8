@@ -32,9 +32,9 @@ static u8_condition EmptyExceptionStack=_("Attempt to pop an empty exception sta
 #if (U8_USE_TLS)
 u8_tld_key u8_current_exception_key;
 #elif (U8_USE__THREAD)
-__thread u8_exception u8_current_exception;
+__thread u8_exception u8_current_exception=NULL;
 #else
-u8_exception u8_current_exception;
+u8_exception u8_current_exception=NULL;
 #endif
 
 /* New error model */

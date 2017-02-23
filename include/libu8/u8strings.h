@@ -51,6 +51,7 @@ typedef int u8_charoff;
 #define u8_xstrdup(x) ((x==NULL)?(x):(_u8_strdup(x)))
 #endif
 
+#define u8dup(x) ((U8_EXPECT_FALSE(x==NULL))?(NULL):(u8_strdup(x)))
 #define u8s(x) ((U8_EXPECT_FALSE(x==NULL))?(NULL):(u8_strdup(x)))
 
 U8_EXPORT u8_string _u8_strdup(u8_string);
