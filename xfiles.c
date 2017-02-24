@@ -268,6 +268,7 @@ static int flush_xoutput(struct U8_XOUTPUT *xf)
     xf->u8_write=xf->u8_outbuf+(xf->u8_write-scan);
     /* Reset the buflen to the limit */
     buflen=xf->u8_xbuflim;}
+
   return xf->u8_outlim-xf->u8_write;
 }
 
@@ -442,6 +443,12 @@ U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *f)
   if (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) u8_free(f->u8_xbuf);
   if (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) close(f->u8_xfd);
   if (f->u8_streaminfo&U8_STREAM_MALLOCD) u8_free(f);
+}
+
+U8_EXPORT void u8_flush_xoutput(struct U8_XOUTPUT *f)
+{
+  if (f->u8_flushfn) f->u8_flushfn((U8_OUTPUT *)f);
+  fsync(f->u8_xfd);
 }
 
 /* Tracking open XFILEs */

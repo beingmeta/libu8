@@ -97,6 +97,8 @@ U8_EXPORT double u8_getprogress(struct U8_STREAM *);
 U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *);
 U8_EXPORT void u8_close_xinput(struct U8_XINPUT *);
 
+U8_EXPORT void u8_flush_xoutput(struct U8_XOUTPUT *f);
+
 /** struct U8_OPEN_XFILES
      is a linked list of open xfiles used to ensure that
      buffers are flushed when the process ends normally.
