@@ -404,10 +404,10 @@ void *u8_dynamic_load(u8_string name)
 {
   char *modname=u8_tolibc(name);
   void *module=dlopen(modname,RTLD_NOW|RTLD_GLOBAL);
-  if (module==NULL) {
+  if (module==NULL) 
     u8_seterr(FailedDLopen,"u8_dynamic_load",u8_fromlibc((char *)dlerror()));
-    errno=0;}
   u8_free(modname);
+  U8_CLEAR_ERRNO();
   return module;
 }
 
