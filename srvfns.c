@@ -702,9 +702,11 @@ static void *event_loop(void *thread_arg)
          so we try to read/write another chunk. */
       ssize_t delta;
       if (cl->off<cl->len) { /* We're not done */
+	
         if (cl->writing>0)
           delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
         else delta=read(cl->socket,cl->buf+cl->off,cl->len-cl->off);
+
         if (((server->flags)&(U8_SERVER_LOG_TRANSFER))||
             ((cl->flags)&(U8_CLIENT_LOG_TRANSFER)))
           u8_log(LOG_NOTICE,((cl->writing>0)?("Writing"):("Reading")),
@@ -714,6 +716,7 @@ static void *event_loop(void *thread_arg)
                  cl->n_trans,cl->idstring,cl->status,
                  (unsigned long)cl->buf,cl->off,cl->len);
         if (delta>0) cl->off=cl->off+delta;}
+
       /* If we've still got data to read/write, we update the poll
          structure to keep listening and continue in the event loop.  */
       if (cl->off<cl->len) {
@@ -721,7 +724,7 @@ static void *event_loop(void *thread_arg)
         if (cl->writing>0)
           server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
         else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));
-        /* u8_unlock_mutex(&server->lock);*/
+	
         cl->active=0; sthread->u8st_client=-1; cl->threadnum=-1;
         if (server->xclientfn) server->xclientfn(cl);
         continue;}
@@ -741,9 +744,9 @@ static void *event_loop(void *thread_arg)
           cl->stats.rsum2+=(rtime*rtime);
           if (rtime>cl->stats.rmax) cl->stats.rmax=rtime;
           cl->stats.rcount++;}
-        if ((((server->flags)&(U8_SERVER_LOG_TRANSACT))||
-             ((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))&&
-            (cl->len>0))
+	if ((((server->flags)&(U8_SERVER_LOG_TRANSACT))||
+	     ((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))&&
+	    (cl->len>0))
           u8_log(LOG_NOTICE,((cl->writing>0)?
                              ("event_loop/write"):
                              (cl->reading>0)?
@@ -753,7 +756,9 @@ static void *event_loop(void *thread_arg)
                  cl->len,((unsigned long)cl),cl->clientid,cl->socket,
                  get_client_state(cl,statebuf),
                  cl->n_trans,cl->idstring,cl->status,
-                 (unsigned long)cl->buf,cl->off,cl->len);}}
+                 (unsigned long)cl->buf,cl->off,cl->len);
+	cl->off=cl->len=0;}
+    }
     /* Unless there's an I/O error, call the handler */
     if ((cl->flags)&(U8_CLIENT_CLOSED|U8_CLIENT_CLOSING)) {
       u8_log(LOG_WARN,"event_loop/closed",
