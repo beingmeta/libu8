@@ -447,8 +447,9 @@ U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *f)
 
 U8_EXPORT void u8_flush_xoutput(struct U8_XOUTPUT *f)
 {
-  if (f->u8_flushfn) f->u8_flushfn((U8_OUTPUT *)f);
+  u8_flush((u8_output)f);
   fsync(f->u8_xfd);
+  U8_CLEAR_ERRNO();
 }
 
 /* Tracking open XFILEs */
