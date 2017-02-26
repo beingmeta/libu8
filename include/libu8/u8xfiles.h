@@ -19,7 +19,7 @@
 
 U8_EXPORT u8_condition u8_nopos, u8_nowrite, u8_no_read;
 
-#define U8_DEFAULT_XFILE_BUFSIZE 1024
+#define U8_DEFAULT_XFILE_BUFSIZE 10000
 #define U8_XFILE_SEEKS 2
 #define U8_XFILE_LOCKED 4
 
