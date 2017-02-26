@@ -437,6 +437,9 @@
 /* Whether to check for dangling malloc/free errnos */
 #undef U8_CHECK_DANGLING_ERRNOS
 
+/* Whether to check for dangling malloc/free errnos */
+#undef U8_DEBUG_MALLOC
+
 /* Various types */
 #undef HAVE_MODE_T
 #undef HAVE_PID_T

@@ -453,6 +453,13 @@ AC_CHECK_FUNCS(pthread_getattr_np)
 AC_CHECK_FUNCS(pthread_attr_getstack pthread_attr_getstackaddr)
 AC_CHECK_FUNCS(pthread_attr_getstacksize pthread_attr_setstacksize)
 
+AC_ARG_ENABLE(malloc-debugging,--en[dis]able-malloc-debugging en[dis]ables libu8 malloc debugging support)
+if test "malloc_debugging_enabled" = "yes"; then
+  AC_DEFINE(U8_DEBUG_MALLOC,1)
+fi
+
+
+
 AC_ARG_ENABLE(largefiles,--en/disable-largefiles Enable use of large (> 2GB) file support,,largefiles_enabled=yes)
 if test $largefiles_enabled = "yes"; then
   AC_DEFINE(U8_LARGEFILES_ENABLED,1)

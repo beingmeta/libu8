@@ -760,6 +760,7 @@ with_sudo
 with_tcmalloc
 enable_threads
 with_tls
+enable_malloc_debugging
 enable_largefiles
 '
       ac_precious_vars='build_alias
@@ -1402,6 +1403,7 @@ Optional Features:
 --endisable-dependency-tracking doesn't do anything
 --endisable-shared Build with/without shared libraries
 --en/disable-threads Enable multi-threading
+--endisable-malloc-debugging endisables libu8 malloc debugging support
 --en/disable-largefiles Enable use of large (> 2GB) file support
 
 Optional Packages:
@@ -7197,6 +7199,18 @@ _ACEOF
 
 fi
 done
+
+
+# Check whether --enable-malloc-debugging was given.
+if test "${enable_malloc_debugging+set}" = set; then :
+  enableval=$enable_malloc_debugging;
+fi
+
+if test "malloc_debugging_enabled" = "yes"; then
+  $as_echo "#define U8_DEBUG_MALLOC 1" >>confdefs.h
+
+fi
+
 
 
 # Check whether --enable-largefiles was given.
