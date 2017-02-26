@@ -200,6 +200,8 @@ typedef unsigned long u8_wideint;
 typedef unsigned int u8_wideint;
 #endif
 
+#define U8_PTR2INT(x) ((u8_wideint)(x))
+
 #ifndef WORDS_BIGENDIAN
 #define WORDS_BIGENDIAN 0
 #endif
