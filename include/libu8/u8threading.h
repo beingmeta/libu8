@@ -202,7 +202,7 @@ static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
   void *stack_base=u8_tld_get(u8_stack_base_key);
   if (stack_base==NULL) return -1;
   else {
-    ssize_t diff=((void *)&(_stackval))-stack_base;
+    ssize_t diff=((void *)(&(_stackval)))-stack_base;
     if (diff<0) return -diff; else return diff;}
 }
 #elif ((U8_THREADS_ENABLED) && (HAVE_THREAD_STORAGE_CLASS))
