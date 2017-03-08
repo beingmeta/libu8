@@ -168,28 +168,27 @@ U8_EXPORT ssize_t u8_cryptic
 
       EVP_CIPHER_CTX_init(&ctx);
 
-      retval=EVP_CipherInit(&ctx, cipher, NULL, NULL, do_encrypt);
-      if (retval==0)
-	return u8_reterr(u8_CipherInit_Failed,
-			 ((caller)?(caller):(OPENSSL_CRYPTIC)),
-			 u8_strdup(cname));
-
-      retval=EVP_CIPHER_CTX_set_key_length(&ctx,keylen);
-      if (retval==0)
-	return u8_reterr(u8_BadCryptoKey,
-			 ((caller)?(caller):(OPENSSL_CRYPTIC)),
-			 u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
-
-      if ((needivlen)&&(ivlen!=needivlen))
-	return u8_reterr(u8_BadCryptoIV,
-			 ((caller)?(caller):(OPENSSL_CRYPTIC)),
-			 u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
-
       retval=EVP_CipherInit(&ctx, cipher, key, iv, do_encrypt);
       if (retval==0)
-	return u8_reterr(u8_CipherInit_Failed,
-			 ((caller)?(caller):(OPENSSL_CRYPTIC)),
-			 u8_strdup(cname));
+	u8_seterr(u8_CipherInit_Failed,
+		  ((caller)?(caller):(OPENSSL_CRYPTIC)),
+		  u8_strdup(cname));
+      else {
+	retval=EVP_CIPHER_CTX_set_key_length(&ctx,keylen);
+	if (retval==0)
+	  u8_seterr(u8_BadCryptoKey,
+		    ((caller)?(caller):(OPENSSL_CRYPTIC)),
+		    u8_mkstring("%d!=%d(%s)",keylen,needkeylen,cname));
+	else if ((needivlen)&&(ivlen!=needivlen)) {
+	  u8_seterr(u8_BadCryptoIV,
+		    ((caller)?(caller):(OPENSSL_CRYPTIC)),
+		    u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
+	  retval=0;}
+	else {}}
+
+      if (retval==0) {
+	EVP_CIPHER_CTX_cleanup(&ctx);
+	return -1;}
 
       while (1) {
 	inlen = reader(inbuf,blocksize,readstate);
