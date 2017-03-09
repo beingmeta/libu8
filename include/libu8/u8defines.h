@@ -200,9 +200,6 @@ typedef unsigned long u8_wideint;
 typedef unsigned int u8_wideint;
 #endif
 
-#define U8_PTR2INT(x) ((u8_wideint)(x))
-#define U8_INT2PTR(x) ((void *)((u8_wideint)(x)))
-
 #ifndef WORDS_BIGENDIAN
 #define WORDS_BIGENDIAN 0
 #endif
@@ -210,6 +207,28 @@ typedef unsigned int u8_wideint;
 #ifndef U8_DEBUG_MALLOC
 #define U8_DEBUG_MALLOC 0
 #endif
+
+/* Wrappers for quicksort library */
+
+#define u8_qsort(vec,n,sz,cmp) qsort(vec,n,sz,cmp)
+
+#if defined(__APPLE__)
+#define u8_qsort_r(vec,n,sz,cmp) \
+  qsort_r(vec,n,sz,(int (* _Nonnull)(void *, const void *, const void *))cmp)
+#elif ( defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) )
+#define u8_qsort_r(vec,n_elts,elt_size,compare,vdata) \
+  qsort_r(vec,n_elts,elt_size,vdata,compare)
+#else
+#define u8_qsort_r(vec,n_elts,elt_size,compare,vdata) \
+  qsort_r(vec,n_elts,elt_size,compare,vdata)
+#endif
+
+/* Converting back and forth between ints and pointers */
+
+#define U8_PTR2INT(x) ((u8_wideint)(x))
+#define U8_INT2PTR(x) ((void *)((u8_wideint)(x)))
+
+/* Bit operations */
 
 #define U8_SETBITS(loc,bits)   (loc) |= bits
 #define U8_CLEARBITS(loc,bits) (loc) &= (~(bits))

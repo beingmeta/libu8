@@ -54,14 +54,13 @@ LIBU8_HEADERS=											\
 	${INC}/u8sleep.h ${INC}/u8source.h ${INC}/u8sourcefiles.h ${INC}/u8srvfns.h		\
 	${INC}/u8stdio.h ${INC}/u8streamio.h ${INC}/u8stringfns.h ${INC}/u8strings.h		\
 	${INC}/u8subscribe.h ${INC}/u8threading.h ${INC}/u8timefns.h ${INC}/u8timestrings.h	\
-	${INC}/u8uuid.h ${INC}/u8xfiles.h ${INC}/u8xtime.h ${INC}/u8xtimefns.h 			\
-	${INC}/u8sorting.h
+	${INC}/u8uuid.h ${INC}/u8xfiles.h ${INC}/u8xtime.h ${INC}/u8xtimefns.h
 
 LIBU8_SOURCES=\
   libu8.c streamio.c printf.c logging.c exceptions.c  ctype.c stringfns.c \
   libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c cityhash.c \
   digestfns.c cryptofns.c pathfns.c filefns.c fileio.c \
-  libu8io.c xfiles.c convert.c filestring.c bytebuf.c sorting.c \
+  libu8io.c xfiles.c convert.c filestring.c bytebuf.c \
   tests/latin1u8.c tests/xtimetest.c tests/u8recode.c tests/u8xrecode.c \
   tests/echosrv.c tests/printftest.c
 COMMON_HEADERS= $(LIBU8_HEADERS)
@@ -72,7 +71,7 @@ LIBU8CORE_OBJECTS=libu8.o streamio.o threading.o stringfns.o \
 LIBU8FNS_OBJECTS=libu8fns.o netfns.o srvfns.o \
 		 pathfns.o filefns.o fileio.o \
 		 rusage.o timefns.o digestfns.o \
-		 cryptofns.o sorting.o
+		 cryptofns.o
 LIBU8IO_OBJECTS=libu8io.o xfiles.o convert.o filestring.o
 LIBU8DATA_OBJECTS=chardata.o
 LIBU8STDIO_OBJECTS=u8stdio.o
