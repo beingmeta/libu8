@@ -19,21 +19,22 @@
 
 #define U8_DEBUG_ERRNO 1
 
-U8_EXPORT int u8_break_on_errno;
+U8_EXPORT int u8_debug_errno;
 
 #define U8_CLEAR_ERRNO() if (errno) errno=0; else {}
 #define U8_DISCARD_ERRNO(num) if (errno==num) errno=0; else {}
 
 #if U8_DEBUG_ERRNO
-#define U8_CHECK_ERRNO()			\
-  if (errno) {					\
-    u8_log(LOG_WARN,u8_UnexpectedErrno,		\
-	   "At %s:%d (%s) errno=%d (%s)",	\
-	   __FILE__,__LINE__,__FUNCTION__,	\
-	   errno,u8_strerror(errno));		\
-    if (break_on_errno)				\
-      _u8_dbg(u8_strerror(errno));}		\
-  else {}
+
+#define U8_CHECK_ERRNO()					\
+  if (u8_debug_errno) {						\
+    u8_log(LOG_WARN,u8_UnexpectedErrno,				\
+	   "At %s:%d (%s) errno=%d (%s)",			\
+	   __FILE__,__LINE__,__FUNCTION__,			\
+           errno,u8_strerror(errno));				\
+    if (u8_debug_errno > 1) _u8_dbg(u8_strerror(errno));	\
+    errno=0;}							\
+  else errno=0;}
 #else
 #define U8_CHECK_ERRNO() if (errno) errno=0
 #endif
