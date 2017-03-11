@@ -80,7 +80,7 @@ U8_EXPORT void u8_init_cityhash_c(void);
 
 static int u8_initialized=0;
 
-int u8_break_on_errno;
+int u8_debug_errno=0;
 
 int u8_utf8warn=1, u8_utf8err=0;
 

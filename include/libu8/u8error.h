@@ -34,7 +34,7 @@ U8_EXPORT int u8_debug_errno;
            errno,u8_strerror(errno));				\
     if (u8_debug_errno > 1) _u8_dbg(u8_strerror(errno));	\
     errno=0;}							\
-  else errno=0;}
+  else errno=0;
 #else
 #define U8_CHECK_ERRNO() if (errno) errno=0
 #endif
