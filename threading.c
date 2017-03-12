@@ -349,6 +349,7 @@ U8_EXPORT int u8_register_threadinit(u8_threadinitfn fn)
 U8_EXPORT int u8_run_threadinits()
 {
   u8_wideint start=u8_getinitlevel(), n=u8_n_threadinits, errs=0, i=start;
+  u8_init_stack();
   while (i<n) {
     int retval=threadinitfns[i]();
     if (retval<0) {
@@ -403,28 +404,39 @@ ssize_t u8_stack_size=0;
 #if ( HAVE_PTHREAD_GETATTR_NP && HAVE_PTHREAD_ATTR_GETSTACK )
 U8_EXPORT void u8_init_stack()
 {
-  if (u8_stack_base) return;
+  if (u8_stack_size) return;
   pthread_t self=pthread_self();
-  ssize_t stacksize;
+  ssize_t stacksize=-1;
   pthread_attr_t attr;
   U8_SET_STACK_BASE();
   pthread_getattr_np(self,&attr);
   pthread_attr_getstacksize(&attr,&stacksize);
+  if (stacksize<=0) {
+    u8_log(LOGWARN,"CantGetStackSize",
+	   "Can't get stacksize for libu8 initialization, assuming %lld",
+	   u8_assumed_stacksize);
+    stacksize=u8_assumed_stacksize;}
   u8_set_stack_size(stacksize);
 }
 #elif HAVE_PTHREAD_GET_STACKADDR_NP
 U8_EXPORT void u8_init_stack()
 {
-  if (u8_stack_base) return;
+  if (u8_stack_size) return;
   pthread_t self=pthread_self();
   ssize_t stacksize=pthread_get_stacksize_np(self);
   U8_SET_STACK_BASE();
+  if (stacksize<=0) {
+    u8_log(LOGWARN,"CantGetStackSize",
+	   "Can't get stacksize for libu8 initialization, assuming %lld",
+	   u8_assumed_stacksize);
+    stacksize=u8_assumed_stacksize;}
+  u8_set_stack_size(stacksize);
   u8_set_stack_size(stacksize);
 }
 #else
 U8_EXPORT void u8_init_stack()
 {
-  if (u8_stack_base) return;
+  if (u8_stack_size) return;
   else {
     U8_SET_STACK_BASE();
     u8_set_stack_size(u8_assumed_stacksize);}
