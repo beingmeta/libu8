@@ -411,6 +411,7 @@ U8_EXPORT void u8_init_stack()
   U8_SET_STACK_BASE();
   pthread_getattr_np(self,&attr);
   pthread_attr_getstacksize(&attr,&stacksize);
+  pthread_attr_destroy(&attr);
   if (stacksize<=0) {
     u8_log(LOGWARN,"CantGetStackSize",
 	   "Can't get stacksize for libu8 initialization, assuming %lld",
