@@ -655,11 +655,11 @@ U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
 
-  u8_register_source_file(_FILEINFO);
-
   u8_initialize_threading();
 
   u8_init_mutex(&source_registry_lock);
+
+  u8_register_source_file(_FILEINFO);
 
   u8_init_printf_c(); /* Does something */
   u8_init_exceptions_c();  /* Does something */
