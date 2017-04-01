@@ -132,9 +132,8 @@ u8_printf_handler u8_printf_handlers[128];
    for a translation of the format string, calls message_printf if there
    is one, and otherwise just processes the format string and arguments
    in order. */
-int u8_do_printf(u8_output s,u8_string fstring,va_list *args)
+int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
 {
-  u8_string format_string=getmessage(fstring);
   int n_directives=0;
   const unsigned char *scan=format_string, *fmt=strchr(scan,'%');
   while (fmt) {
