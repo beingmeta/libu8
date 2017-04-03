@@ -162,7 +162,7 @@ U8_EXPORT u8_xtime u8_init_xtime
   }
 
   /* Offset the tick to get a "fake" gmtime */
-  offtick=tick+tzoff; /* +dstoff */
+  offtick=tick+tzoff+dstoff;
 
   /* Adjust for the precision, rounding to the middle of the range */
   prec_secs=u8_precision_secs[prec];
