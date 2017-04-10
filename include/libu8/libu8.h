@@ -162,6 +162,14 @@ void u8_initialize_u8syslog(void) U8_LIBINIT_FN;
 **/
 U8_EXPORT void *u8_dynamic_load(u8_string filename);
 
+/** Looks up a symbol (string) in a dynamic module loaded with 
+    u8_dynamic_load (or search for the symbol)
+    @param name a symbol name as a utf-8 string 
+    @param module a void * pointer returned by u8_dynamic_load (or NULL)
+    @returns void
+**/
+U8_EXPORT void *u8_dynamic_symbol(u8_string symname,void *module);
+
 #if (SIZEOF_VOID_P == 8)
 #define FD_PTRHASH_CONSTANT 11400714819323198549ul
 #else
