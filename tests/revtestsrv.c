@@ -73,7 +73,8 @@ static int echosrv_handle(u8_client ucl)
     u8_log(LOG_INFO,"Reading %ld bytes from @x%lx#%d/%d[%d](%s)",
 	   n_bytes,((unsigned long)ucl),ucl->clientid,ucl->socket,
 	   ucl->stats.n_trans,ucl->idstring);
-    ucl->buf=u8_malloc(n_bytes); ucl->reading=u8_microtime();
+    ucl->buf=u8_malloc(n_bytes);
+    ucl->reading=u8_microtime();
     ucl->off=0; ucl->len=n_bytes;
     return 1;}
   else if (ucl->writing) {

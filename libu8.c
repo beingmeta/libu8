@@ -421,7 +421,7 @@ void *u8_dynamic_symbol(u8_string symname,void *module)
     u8_free(name);
     return val;}
   else {
-    val=dlsym(RTLD_DEFAULT,name);
+    val=dlsym(module,name);
     u8_free(name);
     return val;}
 }
@@ -483,16 +483,6 @@ U8_EXPORT void u8_set_error_handler
 }
 
 /* Allocation + memset */
-
-U8_EXPORT void *u8_mallocz(size_t n)
-{
-  void *ptr=u8_malloc(n);
-  if (!(ptr)) {
-    u8_seterr(u8_MallocFailed,"u8_mallocz",NULL);
-    return NULL;}
-  memset(((unsigned char *)ptr),0,n);
-  return ptr;
-}
 
 U8_EXPORT void *u8_reallocz(void *ptr,size_t n,size_t oldsz)
 {
@@ -564,13 +554,27 @@ U8_EXPORT void *u8_dmalloc(size_t n_bytes)
   if ((u8_max_malloc>0)&&(n_bytes>u8_max_malloc))
     _u8_dbg("dmalloc/big");
   if (u8_watchptr) {
-    void *result=malloc(n_bytes);
+    void *result=calloc(n_bytes,1);
     if (result==NULL)
       _u8_dbg("dmalloc/failed");
     else if (result==u8_watchptr)
       _u8_dbg("dmalloc/watched");
     return result;}
   else return malloc(n_bytes);
+}
+
+U8_EXPORT void *u8_dmalloc_n(size_t n_elts,size_t elt_size)
+{
+  if ((u8_max_malloc>0)&&((n_elts*elt_size)>u8_max_malloc))
+    _u8_dbg("dmalloc/big");
+  if (u8_watchptr) {
+    void *result=calloc(n_elts,elt_size);
+    if (result==NULL)
+      _u8_dbg("dmalloc/failed");
+    else if (result==u8_watchptr)
+      _u8_dbg("dmalloc/watched");
+    return result;}
+  else return calloc(n_elts,elt_size);
 }
 
 U8_EXPORT void *u8_drealloc(void *ptr,size_t n_bytes)
@@ -598,25 +602,6 @@ U8_EXPORT void u8_dfree(void *ptr)
     _u8_dbg("u8_dfree/NULL");
     free(ptr);}
   else free(ptr);
-}
-
-/* Tidy alloc/realloc */
-
-U8_EXPORT U8_MALLOCFN void *u8_tidy_malloc(size_t n_bytes)
-{
-  void *ptr=malloc(n_bytes);
-  if ( (ptr) && (errno) ) errno=0;
-  return ptr;
-}
-
-U8_EXPORT U8_MALLOCFN void *u8_tidy_realloc(void *ptr,size_t newsz)
-{
-  if (ptr == NULL)
-    return u8_tidy_malloc(newsz);
-  else {
-    void *newptr=realloc(ptr,newsz);
-    if ( (newptr) && (errno) ) errno=0;
-    return newptr;}
 }
 
 /* Recording source file information */

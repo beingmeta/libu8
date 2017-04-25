@@ -22,37 +22,27 @@
 U8_EXPORT ssize_t u8_max_malloc;
 U8_EXPORT void *u8_watchptr;
 U8_EXPORT void *u8_dmalloc(size_t);
+U8_EXPORT void *u8_dmalloc_n(size_t,size_t);
 U8_EXPORT void *u8_drealloc(void *,size_t);
 U8_EXPORT void u8_dfree(void *);
-U8_EXPORT U8_MALLOCFN void *u8_tidy_malloc(size_t);
-U8_EXPORT U8_MALLOCFN void *u8_tidy_realloc(void *,size_t);
 
 #ifndef U8_MALLOC
-#if U8_TIDY_MALLOC
-#define U8_MALLOC(x) (u8_tidy_malloc(x))
-#define u8_realloc(ptr,newsz) (u8_tidy_realloc((void *)ptr,newsz))
+#if U8_DEBUG_MALLOC
+#define u8_malloc u8_dmalloc
+#define u8_malloc_n(n,sz) (u8_dmalloc_n(n,sz))
+#define u8_realloc(n,sz) (u8_drealloc(n,sz))
 #define u8_free(ptr) (free((char *)ptr),errno=0)
-#elif U8_DEBUG_MALLOC
-#define U8_MALLOC u8_dmalloc
 #else
-#define U8_MALLOC malloc
-#define u8_free(ptr) free((char *)ptr)
+#define u8_malloc(sz) (calloc(sz,1))
+#define u8_malloc_n(n,sz) (calloc(n,sz))
 #define u8_realloc(ptr,newsz) \
-  ((ptr==NULL) ? (U8_MALLOC(newsz)) : (realloc(ptr,newsz)))
-#endif
-#endif
-
-#if U8_CHECK_DANGLING_ERRNOS
-#else
+  ((ptr==NULL) ? (u8_malloc(newsz)) : (realloc(ptr,newsz)))
 #define u8_free(ptr) free((char *)ptr)
-#define u8_realloc(ptr,newsz) \
-  ((ptr==NULL) ? (U8_MALLOC(newsz)) : (realloc(ptr,newsz)))
+#endif
 #endif
 
 #define u8_zero_array(r) memset(r,0,sizeof(r))
 #define u8_zero_struct(r) memset(&r,0,sizeof(r))
-
-#define u8_malloc(sz) U8_MALLOC(sz)
 
 #define u8_xfree(ptr) if (ptr) free((char *)ptr); else ptr=ptr;
 
@@ -61,8 +51,8 @@ U8_EXPORT U8_MALLOCFN void *u8_tidy_realloc(void *,size_t);
 #define u8_realloc_n(ptr,n,t) ((t *)(u8_realloc(ptr,sizeof(t)*(n))))
 
 #define u8_malloc_struct(sname) \
-  ((struct sname *)(U8_MALLOC(sizeof(struct sname))))
-#define u8_malloc_array(n,t) ((t *)(U8_MALLOC(n*sizeof(t))))
+  ((struct sname *)(u8_malloc(sizeof(struct sname))))
+#define u8_malloc_array(n,t) ((t *)(u8_malloc(n*sizeof(t))))
 
 /* Zalloc (allocate and fill with zeros) */
 
@@ -79,27 +69,20 @@ U8_EXPORT void u8_raise(u8_condition,u8_context,u8_string);
    @returns void *
 **/
 static U8_MALLOCFN U8_MAYBE_UNUSED
-void *u8_zalloc_bytes(size_t n_bytes,u8_context caller)
+void *u8_alloc_throw(size_t n_bytes,u8_context caller)
 {
-  void *block = U8_MALLOC(n_bytes);
-  if (block) {
-    memset(block,0,n_bytes);
-    return block;}
+  void *block = u8_malloc(n_bytes);
+  if (block) return block;
   else {
-    char *buf=u8_malloc(32); 
-    if (buf) {
-      char *details = u8_write_long_long(n_bytes,buf,32);
-      if (details)
-	u8_raise(u8_MallocFailed,U8ALT(caller,"u8_zalloc_bytes"),buf);
-      else u8_raise(u8_MallocFailed,U8ALT(caller,"u8_zalloc_bytes"),buf);}
-    else u8_raise(u8_MallocFailed,U8ALT(caller,"u8_zalloc_bytes"),NULL);
-    // Never reached
+    u8_raise(u8_MallocFailed,U8ALT(caller,"u8_zalloc_bytes"),NULL);
     return NULL;}
 }
-#define u8_zalloc(typename) u8_zalloc_bytes(sizeof(typename),NULL)
 
-#define u8_zalloc(typename) u8_zalloc_bytes(sizeof(typename),NULL)
-#define u8_zalloc_n(n,typename) u8_zalloc_bytes((n)*(sizeof(typename)),NULL)
+#define u8_zalloc_bytes(n,caller) u8_malloc(n)
+#define u8_zalloc(typename) u8_malloc(sizeof(typename))
+
+#define u8_zalloc(typename) u8_malloc(sizeof(typename))
+#define u8_zalloc_n(n,typename) u8_malloc_n(n,sizeof(typename))
 
 #define u8_zalloc_for(caller,typename) \
   u8_zalloc_bytes(sizeof(typename),caller)
@@ -116,11 +99,7 @@ void *u8_zalloc_bytes(size_t n_bytes,u8_context caller)
 #define u8_zalloc_array_for(n,t,caller)		\
   ((t *)(u8_zalloc_bytes((n*sizeof(t)),caller)))
 
-/** Allocates and zero-clears a block of memory
-   @param sz the number of bytes to allocate
-   @returns void *
-**/
-U8_EXPORT void *u8_mallocz(size_t sz);
+#define u8_mallocz u8_malloc
 
 /** Reallocates a block of memory, zero clearing any new parts
    @param ptr a previously allocated (with malloc) block of memory
@@ -139,8 +118,8 @@ U8_EXPORT void *u8_reallocz(void *ptr,size_t sz,size_t osz);
 **/
 U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 
-#define u8_allocz(t) ((t *)(u8_mallocz(sizeof(t))))
-#define u8_allocz_n(n,t) ((t *)(u8_mallocz(sizeof(t)*(n))))
+#define u8_allocz u8_alloc
+#define u8_allocz_n u8_alloc_n
 
 #ifndef UTF8_BUGWINDOW
 #define UTF8_BUGWINDOW 64

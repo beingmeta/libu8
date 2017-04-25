@@ -80,7 +80,7 @@ int main(int argc,char *argv[])
 {
   int i=0;
   struct U8_SERVER eserv;
-  struct ECHO_SERVER_DATA *esd=u8_malloc(sizeof(struct ECHO_SERVER_DATA));
+  struct ECHO_SERVER_DATA *esd=u8_alloc(struct ECHO_SERVER_DATA);
   char *logging=getenv("LOGGING");
   u8_init_server(&eserv,echosrv_accept,echosrv_handle,NULL,echosrv_close,
 		 U8_SERVER_INIT_CLIENTS,NCONNS,
