@@ -515,6 +515,11 @@ U8_EXPORT void *u8_reallocz(void *ptr,size_t n,size_t oldsz)
   return u8_zrealloc(ptr,n,oldsz);
 }
 
+U8_EXPORT void *u8_mallocz(size_t n)
+{
+  return u8_zmalloc(n);
+}
+
 /* Piles */
 
 U8_EXPORT int _u8_grow_pile(u8_pile p,int delta)
