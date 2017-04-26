@@ -118,8 +118,11 @@ U8_EXPORT void *u8_zrealloc(void *ptr,size_t sz,size_t osz);
 **/
 U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 
+/* Legacy definitions */
 #define u8_allocz u8_alloc
 #define u8_allocz_n u8_alloc_n
+#define u8_mallocz u8_zmalloc
+#define u8_reallocz u8_zrealloc
 
 #ifndef UTF8_BUGWINDOW
 #define UTF8_BUGWINDOW 64
