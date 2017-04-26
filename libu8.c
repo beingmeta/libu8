@@ -510,6 +510,11 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz)
   return nptr;
 }
 
+/* Undefine these here, so we can define proxy definitions for
+   existing binaries */
+#undef u8_reallocz
+#undef u8_mallocz
+
 U8_EXPORT void *u8_reallocz(void *ptr,size_t n,size_t oldsz)
 {
   return u8_zrealloc(ptr,n,oldsz);
