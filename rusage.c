@@ -154,15 +154,19 @@ U8_EXPORT ssize_t u8_physmem()
 #endif
 }
 
+static int avphysmem_warning=0;
+
 U8_EXPORT ssize_t u8_avphysmem()
 {
 #if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE))&&(defined(_SC_AVPHYS_PAGES)))
   size_t pagesize=sysconf(_SC_PAGESIZE);
   return sysconf(_SC_AVPHYS_PAGES)*pagesize;
 #else
-  u8_log(LOGWARN,_("Unsupported"),"%s; %s",
-	 "No SYSCONF support for available physical memory info",
-	 "returning all physical memory");
+  if (avphysmem_warning==0) {
+    u8_log(LOG_INFO,_("Unsupported"),"%s; %s",
+	   "No SYSCONF support for available physical memory info",
+	   "returning all physical memory");
+    avphysmem_warning=1;}
   return u8_physmem();
 #endif
 }
