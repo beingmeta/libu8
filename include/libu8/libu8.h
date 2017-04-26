@@ -164,7 +164,7 @@ U8_EXPORT void *u8_dynamic_load(u8_string filename);
 
 /** Looks up a symbol (string) in a dynamic module loaded with 
     u8_dynamic_load (or search for the symbol)
-    @param name a symbol name as a utf-8 string 
+    @param symname a symbol name as a utf-8 string 
     @param module a void * pointer returned by u8_dynamic_load (or NULL)
     @returns void
 **/

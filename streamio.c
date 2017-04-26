@@ -154,8 +154,8 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
   u8_byte *buf = out->u8_outbuf, *new_buf=NULL;
   /* Try to allocate a new buffer */
   new_buf=(owns_buf)?
-    (u8_reallocz(buf,new_max,max)):
-    (u8_mallocz(new_max));
+    (u8_zrealloc(buf,new_max,max)):
+    (u8_zmalloc(new_max));
   if (new_buf==NULL) {
     size_t shrink_by = (new_max-max)/16;
     while (new_buf==NULL) {

@@ -26,32 +26,34 @@ U8_EXPORT void *u8_dmalloc_n(size_t,size_t);
 U8_EXPORT void *u8_drealloc(void *,size_t);
 U8_EXPORT void u8_dfree(void *);
 
-#ifndef U8_MALLOC
-#if U8_DEBUG_MALLOC
+#ifdef u8_malloc
+/* Assume everything is defined */
+#elif U8_DEBUG_MALLOC
 #define u8_malloc u8_dmalloc
 #define u8_malloc_n(n,sz) (u8_dmalloc_n(n,sz))
 #define u8_realloc(n,sz) (u8_drealloc(n,sz))
 #define u8_free(ptr) (free((char *)ptr),errno=0)
-#else
-#define u8_malloc(sz) (calloc(sz,1))
+#define u8_zmalloc(sz) (u8_dmalloc(sz))
+#else /* U8_DEBUG_MALLOC */
+#define u8_malloc(sz) (malloc(sz))
 #define u8_malloc_n(n,sz) (calloc(n,sz))
 #define u8_realloc(ptr,newsz) \
   ((ptr==NULL) ? (u8_malloc(newsz)) : (realloc(ptr,newsz)))
 #define u8_free(ptr) free((char *)ptr)
-#endif
-#endif
+#define u8_zmalloc(sz) (calloc(sz,1))
+#endif /* not U8_DEBUG_MALLOC */
 
 #define u8_zero_array(r) memset(r,0,sizeof(r))
 #define u8_zero_struct(r) memset(&r,0,sizeof(r))
 
 #define u8_xfree(ptr) if (ptr) free((char *)ptr); else ptr=ptr;
 
-#define u8_alloc(t) ((t *)(u8_malloc(sizeof(t))))
-#define u8_alloc_n(n,t) ((t *)(u8_malloc(sizeof(t)*(n))))
+#define u8_alloc(t) ((t *)(u8_zmalloc(sizeof(t))))
+#define u8_alloc_n(n,t) ((t *)(u8_malloc_n(n,sizeof(t))))
 #define u8_realloc_n(ptr,n,t) ((t *)(u8_realloc(ptr,sizeof(t)*(n))))
 
 #define u8_malloc_struct(sname) \
-  ((struct sname *)(u8_malloc(sizeof(struct sname))))
+  ((struct sname *)(u8_zmalloc(sizeof(struct sname))))
 #define u8_malloc_array(n,t) ((t *)(u8_malloc(n*sizeof(t))))
 
 /* Zalloc (allocate and fill with zeros) */
@@ -99,8 +101,6 @@ void *u8_alloc_throw(size_t n_bytes,u8_context caller)
 #define u8_zalloc_array_for(n,t,caller)		\
   ((t *)(u8_zalloc_bytes((n*sizeof(t)),caller)))
 
-#define u8_mallocz u8_malloc
-
 /** Reallocates a block of memory, zero clearing any new parts
    @param ptr a previously allocated (with malloc) block of memory
    @param sz the number of bytes to allocate
@@ -108,7 +108,7 @@ void *u8_alloc_throw(size_t n_bytes,u8_context caller)
      to zero out
    @returns void *
 **/
-U8_EXPORT void *u8_reallocz(void *ptr,size_t sz,size_t osz);
+U8_EXPORT void *u8_zrealloc(void *ptr,size_t sz,size_t osz);
 
 /** Copies a block of memory into a larger block, zero clearing any new parts
    @param ptr an existing block of memory

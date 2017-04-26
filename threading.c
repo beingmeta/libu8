@@ -128,7 +128,7 @@ U8_EXPORT long long u8_threadid()
 U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid(); long long tid=u8_threadid();
-  if (!(buf)) buf=u8_mallocz(128);
+  if (!(buf)) buf=u8_zmalloc(128);
   sprintf(buf,"%ld:%lld",(unsigned long int)pid,(unsigned long long)tid);
   return buf;
 }

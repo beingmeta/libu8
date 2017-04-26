@@ -484,11 +484,11 @@ U8_EXPORT void u8_set_error_handler
 
 /* Allocation + memset */
 
-U8_EXPORT void *u8_reallocz(void *ptr,size_t n,size_t oldsz)
+U8_EXPORT void *u8_zrealloc(void *ptr,size_t n,size_t oldsz)
 {
   void *nptr=((ptr)?(realloc(ptr,n)):(malloc(n)));
   if (!(nptr)) {
-    u8_seterr(u8_MallocFailed,"u8_reallocz",NULL);
+    u8_seterr(u8_MallocFailed,"u8_zrealloc",NULL);
     return ptr;}
   if (ptr==NULL) memset(((unsigned char *)nptr),0,n);
   else if (n>oldsz) memset(((unsigned char *)nptr)+oldsz,0,(n-oldsz));
@@ -501,7 +501,7 @@ U8_EXPORT void *u8_extalloc(void *ptr,size_t n,size_t osz)
   void *nptr=malloc(n);
   unsigned char *cptr=(unsigned char *)nptr;
   if (!(nptr)) {
-    u8_seterr(u8_MallocFailed,"u8_mallocz",NULL);
+    u8_seterr(u8_MallocFailed,"u8_extalloc",NULL);
     return NULL;}
   if (ptr==NULL) memset(cptr,0,n);
   else {
