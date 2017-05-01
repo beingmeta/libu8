@@ -130,6 +130,10 @@
 #define HAVE_THREAD_STORAGE_CLASS 0
 #endif
 
+#ifndef U8_ATOMIC
+#define U8_ATOMIC HAVE_STDATOMIC_H
+#endif
+
 #if HAVE_BUILTIN_EXPECT
 #define U8_EXPECT_TRUE(x) (__builtin_expect(x,1))
 #define U8_EXPECT_FALSE(x) (__builtin_expect(x,0))

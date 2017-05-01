@@ -37,6 +37,9 @@
 /* Define if you have the <malloc/malloc.h> header file.  */
 #undef HAVE_MALLOC_MALLOC_H
 
+/* Define if you have the <stdatomic.h> header file.  */
+#undef HAVE_STDATOMIC_H
+
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
 

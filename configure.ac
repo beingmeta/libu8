@@ -311,6 +311,8 @@ AC_CHECK_FUNCS(getrusage mallinfo syscall mstats sysconf getpagesize)
 AC_CHECK_FUNCS(strchr strrchr strstr strrrstr)
 AC_CHECK_FUNCS(posix_fadvise posix_madvise posix_fallocate)
 
+AC_CHECK_HEADERS(stdatomic.h)
+
 AC_HEADER_STDC
 AC_HEADER_STAT
 
