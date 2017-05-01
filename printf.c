@@ -266,6 +266,25 @@ u8_string u8_mkstring(u8_string format_string,...)
     return out.u8_outbuf;}
 }
 
+U8_EXPORT
+/* u8_bufprintf:
+    Arguments: a string buffer, its length, a format string, and other args
+    Returns: a malloc'd string whose contains are generated from the arguments
+*/
+u8_string u8_bufprintf
+(unsigned char *buf,size_t buflen,u8_string format_string,...)
+{
+  struct U8_OUTPUT out; va_list args; int retval=0;
+  U8_INIT_FIXED_OUTPUT(&out,buflen,buf);
+  va_start(args,format_string);
+  if ((retval=u8_do_printf(&out,format_string,&args))<0) {
+    va_end(args);
+    u8_free(out.u8_outbuf); return NULL;}
+  else {
+    va_end(args);
+    return out.u8_outbuf;}
+}
+
 static u8_string default_printf_handler
   (u8_output s,char *cmd,u8_byte *buf,int bufsiz,va_list *args)
 {

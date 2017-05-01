@@ -75,6 +75,7 @@ U8_EXPORT void u8_init_ctype_c(void);
 U8_EXPORT void u8_init_stringfns_c(void);
 U8_EXPORT void u8_init_bytebuf_c(void);
 U8_EXPORT void u8_init_cityhash_c(void);
+U8_EXPORT void u8_init_atomic_c(void);
 
 /* U8 init vars */
 
@@ -671,6 +672,7 @@ U8_EXPORT int u8_initialize()
   u8_init_stringfns_c();
   u8_init_bytebuf_c();
   u8_init_cityhash_c();
+  u8_init_atomic_c();
 
   bindtextdomain("libu8msg",NULL);
   bindtextdomain_codeset("libu8msg","utf-8");
