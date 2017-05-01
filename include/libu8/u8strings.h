@@ -21,6 +21,7 @@
 
 typedef unsigned char u8_byte;
 typedef const u8_byte *u8_string;
+typedef u8_byte *u8_buf;
 typedef int u8_unicode_char;
 typedef int u8_unichar;
 
@@ -48,18 +49,16 @@ typedef int u8_charoff;
 /* strdup */
 
 #if HAVE_STRDUP
-#define u8_strdup(x) (strdup(x))
-#define u8_xstrdup(x) ((x==NULL)?(x):(strdup(x)))
+#define u8_strdup(x) (((x)==NULL)?((u8_buf)x):((u8_buf)strdup(x)))
 #else
-#define u8_strdup(x) _u8_strdup(x)
-#define u8_xstrdup(x) ((x==NULL)?(x):(_u8_strdup(x)))
+#define u8_strdup(x) (((x)==NULL)?((u8_buf)x):(_u8_strdup(x)))
 #endif
 
 #define u8dup(x) ((U8_EXPECT_FALSE(x==NULL))?(NULL):(u8_strdup(x)))
 #define u8s(x) ((U8_EXPECT_FALSE(x==NULL))?(NULL):(u8_strdup(x)))
 
-U8_EXPORT u8_string _u8_strdup(u8_string);
-U8_EXPORT u8_string u8_strndup(u8_string,int);
+U8_EXPORT u8_buf _u8_strdup(u8_string);
+U8_EXPORT u8_buf u8_strndup(u8_string,int);
 
 /* UTF-8 handling config functions */
 

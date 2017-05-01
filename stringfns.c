@@ -57,21 +57,21 @@ int _u8_charoffset(u8_string s,u8_byteoff i)
   return u8_charoffset(s,i);
 }
 
-u8_string _u8_strdup(u8_string s)
+u8_buf _u8_strdup(u8_string s)
 {
   int len=strlen(s); int newlen=len+1;
   newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
   u8_byte *nstring=u8_malloc(newlen);
   strncpy(nstring,s,len); nstring[len]='\0';
-  return (u8_string)nstring;
+  return (u8_buf)nstring;
 }
-u8_string u8_strndup(u8_string s,int len)
+u8_buf u8_strndup(u8_string s,int len)
 {
   int newlen=len+1;
   newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
   u8_byte *nstring=u8_malloc(newlen);
   strncpy(nstring,s,len); nstring[len]='\0';
-  return (u8_string)nstring;
+  return (u8_buf)nstring;
 }
 
 U8_EXPORT
