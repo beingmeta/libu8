@@ -117,17 +117,20 @@ U8_EXPORT int u8_socketp(u8_string filename)
 #endif
 
 #if HAVE_ACCESS
+static int try_access(u8_string filename,int mode)
+{
+  if (access(filename,mode)==0)
+    return 0;
+  else {
+    u8_string path=u8_localpath(filename);
+    int rv=access(path,mode);
+    u8_free(path);
+    return rv;}
+}
+
 static int file_existsp(u8_string filename)
 {
-  int retval=access(filename,F_OK);
-  if (retval==0) return 1;
-  else {
-    if (errno) errno=0; 
-    return 0;}
-}
-static int file_readablep(u8_string filename)
-{
-  int retval=access(filename,R_OK);
+  int retval=try_access(filename,F_OK);
   if (retval==0) return 1;
   else {
     if (errno) errno=0;
@@ -135,7 +138,23 @@ static int file_readablep(u8_string filename)
 }
 static int file_writablep(u8_string filename)
 {
-  int retval=access(filename,W_OK);
+  int retval=try_access(filename,W_OK);
+  if (retval==0) return 1;
+  else {
+    if (errno) errno=0;
+    return 0;}
+}
+static int file_readablep(u8_string filename)
+{
+  int retval=try_access(filename,R_OK);
+  if (retval==0) return 1;
+  else {
+    if (errno) errno=0;
+    return 0;}
+}
+static int file_executablep(u8_string filename)
+{
+  int retval=try_access(filename,X_OK);
   if (retval==0) return 1;
   else {
     if (errno) errno=0;
@@ -511,12 +530,15 @@ U8_EXPORT int u8_chmod(u8_string name,mode_t mode)
 
 U8_EXPORT int u8_mkdir(u8_string name,mode_t mode)
 {
-  if (u8_directoryp(name)) return 0;
+  if (u8_directoryp(name))
+    return 0;
   else {
     const char *localized=u8_localpath(name);
     int retval=mkdir(localized,mode);
-    u8_free((void *)localized);
-    if (retval<0) return retval; else return 1;}
+    u8_free(localized);
+    if (retval<0)
+      return retval;
+    else return 1;}
 }
 
 static int mkdirs(u8_string dirname,mode_t mode)
@@ -538,23 +560,28 @@ static int mkdirs(u8_string dirname,mode_t mode)
 
 U8_EXPORT int u8_mkdirs(u8_string arg,mode_t mode)
 {
-  int len=strlen(arg);
+  u8_string rpath=u8_realpath(arg,NULL);
+  size_t len=strlen(rpath);
   u8_string dirname=
-    ((arg[len-1]=='/')?((u8_string)(u8_strdup(arg))):(u8_dirname(arg)));
+    ((rpath[len-1]=='/')?((u8_string)(u8_strdup(rpath))):(u8_dirname(rpath)));
   int retval=mkdirs(dirname,mode);
-  u8_free(dirname);
+  u8_free(dirname); u8_free(rpath);
   return retval;
 }
 
 U8_EXPORT int u8_rmdir(u8_string arg)
 {
-  if (u8_directoryp(arg)) {
-    char *localized=u8_localpath(arg);
+  u8_string rpath=u8_realpath(arg,NULL);
+  if (u8_directoryp(rpath)) {
+    char *localized=u8_localpath(rpath);
     int retval=rmdir(localized);
-    if (arg!=((u8_string)localized)) u8_free(localized);
+    if (rpath!=((u8_string)localized)) u8_free(localized);
+    u8_free(rpath);
     if (retval<0) return retval;
     else return 1;}
-  else return 0;
+  else {
+    u8_free(rpath);
+    return 0;}
 }
 
 /* Temporary directories */
