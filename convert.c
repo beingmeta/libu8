@@ -71,7 +71,8 @@ static int compare_encoding_names(u8_string name1,u8_string name2)
   while ((*scan1) && (*scan2))
     if (*scan1 == *scan2) {scan1++; scan2++;}
     else if (tolower(*scan1) == tolower(*scan2)) {scan1++; scan2++;}
-    else if ((*scan1 == '-') || (*scan1 == '_') || (*scan1 == '/') || (*scan1 == ' '))
+    else if ((*scan1 == '-') || (*scan1 == '_') ||
+	     (*scan1 == '/') || (*scan1 == ' '))
       scan1++;
     else if ((*scan2 == '-') || (*scan2 == '_') ||
              (*scan2 == '/') || (*scan2 == ' '))
