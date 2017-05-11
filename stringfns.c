@@ -138,6 +138,22 @@ u8_string u8_slice(const u8_byte *start,const u8_byte *end)
     return (u8_string)slice;}
 }
 
+
+U8_EXPORT
+int _u8_char_len(u8_string s)
+{
+  return u8_char_len(s);
+}
+
+U8_EXPORT
+/* This copies a prefix or string (possibly all of it) into a buffer
+   of a certain size. */
+u8_string _u8_string2buf(u8_string string,u8_byte *buf,size_t len)
+{
+  return u8_string2buf(string,buf,len);
+}
+
+
 U8_EXPORT
 /* u8_string_ref:
     Arguments: a pointer to a UTF-encoded string
