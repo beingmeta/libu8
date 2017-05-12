@@ -38,7 +38,11 @@ u8_condition u8_BadHexChar=_("Bad hexadecimal representation (character)");
 #define U8_ENCODINGS_DIR "/usr/share/libu8/encodings"
 #endif
 
-struct U8_TEXT_ENCODING *encodings, *utf8_encoding=NULL, *ascii_encoding=NULL;
+/* This is the encodings lookup structure, as a linked list */
+struct U8_TEXT_ENCODING *encodings=NULL;
+
+/* A few builtin encodings */
+struct U8_TEXT_ENCODING *utf8_encoding=NULL, *ascii_encoding=NULL;
 struct U8_TEXT_ENCODING *latin0_encoding, *latin1_encoding=NULL;
 
 static char *encname_aliases="+LATIN0:ISO885915;+ISOLATIN0:ISO885915;+LATIN1:ISO88591;+ISOLATIN1:ISO88591;+LATIN2:ISO88592;+ISOLATIN2:ISO88592;+LATIN3:ISO88593;+ISOLATIN3:ISO88593;+ISOLATIN3:ISO88593;+LATIN4:ISO88594;+ISOLATIN4:ISO88594;+ISOLATIN4:ISO88594;+CYRILLIC:ISO88595;+ARABIC:ISO88596;+GREEK:ISO88597;+HEBREW:ISO88598;+ISOHEBREW:ISO88598;LATIN6:ISO885910;ISOLATIN6:ISO885910;ISOLATIN7:ISO885913;LATIN8:ISO885914;ISOLATIN8:ISO885914;LATIN9:ISO885915;ISOLATIN9:ISO885915;";
@@ -67,7 +71,8 @@ static int compare_encoding_names(u8_string name1,u8_string name2)
   while ((*scan1) && (*scan2))
     if (*scan1 == *scan2) {scan1++; scan2++;}
     else if (tolower(*scan1) == tolower(*scan2)) {scan1++; scan2++;}
-    else if ((*scan1 == '-') || (*scan1 == '_') || (*scan1 == '/') || (*scan1 == ' '))
+    else if ((*scan1 == '-') || (*scan1 == '_') ||
+	     (*scan1 == '/') || (*scan1 == ' '))
       scan1++;
     else if ((*scan2 == '-') || (*scan2 == '_') ||
              (*scan2 == '/') || (*scan2 == ' '))

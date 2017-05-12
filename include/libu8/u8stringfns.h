@@ -377,13 +377,64 @@ static int u8_sgetc(const u8_byte **sptr)
 #define u8_sgetc_lim _u8_sgetc_lim
 #endif
 
+/* Copying UTF-8 string prefixes into fixed length buffers */
+
+U8_EXPORT int _u8_char_len(u8_string s);
+U8_EXPORT u8_string _u8_string2buf(u8_string string,u8_byte *buf,size_t len);
+
+#if U8_INLINE_IO
+static U8_MAYBE_UNUSED
+/** Returns the length of the utf-8 character whose representation
+    starts at s. Returns -1 if the byte at the start of the string is
+    not the start of a UTF-8 sequence or an ASCII-128 (which is a
+    sequence of one).
+
+    @param s a UTF-8 string
+    @returns an int between 1 and 7 inclusive or -1
+**/
+int u8_char_len(u8_string s)
+{
+  int s1=*s;
+  if (s1 < 0x80) return 1;
+  else if (s1 < 0xC0) return -1;
+  else if (s1 < 0xE0) return 2;
+  else if (s1 < 0xF0) return 3;
+  else if (s1 < 0xF8) return 4;
+  else if (s1 < 0xFC) return 5;
+  else if (s1 < 0xFE) return 6;
+  else return -1;
+}
+
+#else
+#define u8_char_len   _u8_char_len
+#endif
+
+U8_EXPORT
+/* Returns the UTF-8 representation of a character in an 8-byte array.
+   @param character
+   @returns an array of 8 u8_bytes (unsigned chars)
+*/
+u8_string u8_char2bytes(int character,u8_byte buf[8]);
+
+U8_EXPORT
+/** Copies at most *len* bytes of *string* into *buf*, making sure
+    that the copy doesn't terminate inside of a UTF-8 multi-byte
+    representation.
+    @param string a UTF-8 string
+    @param buf a pointer to a byte array of at least *len* bytes
+    @param len the length of the byte array
+    @returns an int between 1 and 7 inclusive or -1
+**/
+u8_string u8_string2buf(u8_string string,u8_byte *buf,size_t len);
+
 /* Byte/Character offset conversion */
 
 U8_EXPORT u8_charoff _u8_charoffset(u8_string s,u8_byteoff i);
 U8_EXPORT u8_byteoff _u8_byteoffset(u8_string s,u8_charoff i,u8_byteoff l);
 
 #if U8_INLINE_IO
-static U8_MAYBE_UNUSED int u8_charoffset(u8_string s,u8_byteoff i)
+static U8_MAYBE_UNUSED
+int u8_charoffset(u8_string s,u8_byteoff i)
 {
   u8_string pt=s+i; int j=0;
   while (s < pt) {
@@ -391,7 +442,8 @@ static U8_MAYBE_UNUSED int u8_charoffset(u8_string s,u8_byteoff i)
   return j;
 }
 
-static U8_MAYBE_UNUSED int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
+static U8_MAYBE_UNUSED
+int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 {
   u8_string string=s, lim=s+max; int c=0;
   if (offset<0) return -1;

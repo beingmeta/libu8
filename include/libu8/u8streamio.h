@@ -236,6 +236,18 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
 #define U8_INIT_FIXED_OUTPUT(s,sz,buf)                              \
   U8_INIT_OUTPUT_X(s,sz,buf,U8_FIXED_STREAM)
 
+#define U8_FIXED_OUTPUT_FLAGS U8_OUTPUT_STREAM|U8_FIXED_STREAM
+#define U8_FIXED_OUTPUT(name,sz)	     \
+  struct U8_OUTPUT name, *name ## out=&name; \
+  u8_byte _buf_ ## name[sz];		     \
+  U8_INIT_OUTPUT_X(&name,sz,_buf_ ## name,U8_FIXED_OUTPUT_FLAGS)
+
+#define U8_STATIC_OUTPUT_FLAGS U8_OUTPUT_STREAM
+#define U8_STATIC_OUTPUT(name,sz)	     \
+  struct U8_OUTPUT name, *name ## out=&name; \
+  u8_byte _buf_ ## name[sz];		     \
+  U8_INIT_OUTPUT_X(&name,sz,_buf_ ## name,U8_STATIC_OUTPUT_FLAGS)
+
 /** Returns the string content of the output stream. **/
 #define u8_outstring(s) ((s)->u8_outbuf)
 /** Returns the length in bytes of the string content of the output stream. **/
