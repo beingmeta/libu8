@@ -405,7 +405,18 @@ int u8_char_len(u8_string s)
   else return -1;
 }
 
-static U8_MAYBE_UNUSED
+#else
+#define u8_char_len   _u8_char_len
+#endif
+
+U8_EXPORT
+/* Returns the UTF-8 representation of a character in an 8-byte array.
+   @param character
+   @returns an array of 8 u8_bytes (unsigned chars)
+*/
+u8_string u8_char2bytes(int character,u8_byte buf[8]);
+
+U8_EXPORT
 /** Copies at most *len* bytes of *string* into *buf*, making sure
     that the copy doesn't terminate inside of a UTF-8 multi-byte
     representation.
@@ -414,26 +425,7 @@ static U8_MAYBE_UNUSED
     @param len the length of the byte array
     @returns an int between 1 and 7 inclusive or -1
 **/
-
-u8_string u8_string2buf(u8_string string,u8_byte *buf,size_t len)
-{
-  u8_string scan=string;
-  u8_byte *write=buf, *buflim=buf+len-1;
-  int clen=u8_char_len(scan);
-  while ((*scan) && (clen>0) && ((write+clen)<buflim)) {
-    if (clen==1)
-      *write++=*scan++;
-    else {
-      memmove(write,scan,clen);
-      scan+=clen; write+=clen;}
-    clen=u8_char_len(scan);}
-  *write='\0';
-  return buf;
-}
-#else
-#define u8_char_len   _u8_char_len
-#define u8_string2buf _u8_string2buf
-#endif
+u8_string u8_string2buf(u8_string string,u8_byte *buf,size_t len);
 
 /* Byte/Character offset conversion */
 

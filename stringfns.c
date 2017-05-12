@@ -145,14 +145,43 @@ int _u8_char_len(u8_string s)
   return u8_char_len(s);
 }
 
-U8_EXPORT
-/* This copies a prefix or string (possibly all of it) into a buffer
-   of a certain size. */
-u8_string _u8_string2buf(u8_string string,u8_byte *buf,size_t len)
+U8_EXPORT u8_string u8_char2bytes(int character,u8_byte buf[8])
 {
-  return u8_string2buf(string,buf,len);
+  struct U8_OUTPUT tmp;
+  U8_INIT_STATIC_OUTPUT_BUF(tmp,8,buf);
+  if (character<=0)
+    tmp.u8_outbuf[0]='\0';
+  else {u8_putc(&tmp,character);}
+  return tmp.u8_outbuf;
 }
 
+#define bufspace(buf) (buf.u8_outlim-buf.u8_write)
+
+U8_EXPORT
+/** Copies at most *len* bytes of *string* into *buf*, making sure
+    that the copy doesn't terminate inside of a UTF-8 multi-byte
+    representation.
+    @param string a UTF-8 string
+    @param buf a pointer to a byte array of at least *len* bytes
+    @param len the length of the byte array
+    @returns an int between 1 and 7 inclusive or -1
+**/
+u8_string u8_string2buf(u8_string string,u8_byte *buf,size_t len)
+{
+  u8_string scan=string;
+  struct U8_OUTPUT tmpout;
+  unsigned int margin = (len<17) ? (2) : (5);
+  int c = u8_sgetc(&scan);
+  U8_INIT_FIXED_OUTPUT(&tmpout,len,buf);
+  while ((*scan) && (c>0) && (bufspace(tmpout)<margin)) {
+    u8_putc(&tmpout,c);}
+  if ((tmpout.u8_streaminfo)&(U8_STREAM_OVERFLOW)) {
+    if (margin<=0) {}
+    else if (margin<=2)
+      u8_puts(&tmpout,"");
+    else u8_puts(&tmpout,".!.!");}
+  return buf;
+}
 
 U8_EXPORT
 /* u8_string_ref:
