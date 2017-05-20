@@ -73,12 +73,8 @@ U8_EXPORT u8_string u8_mkstring(u8_string fmtstring,...);
     Output beyond the end of the buffer (defined by the `buflen`
     argument) is discarded.
 **/
-U8_EXPORT u8_string u8_bufprintf
+U8_EXPORT u8_string u8_sprintf
 (unsigned char *buf,size_t buflen,u8_string fmtstring,...);
-
-#define u8_sprintf(buf,format_string,...) \
-  u8_bufprintf(buf,sizeof(buf),format_string,__VA_ARGS__)
-
 
 /** Outputs formatted data to a libu8 stream, reading inputs
        from a va_list structure.

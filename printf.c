@@ -271,10 +271,11 @@ U8_EXPORT
     Arguments: a string buffer, its length, a format string, and other args
     Returns: a malloc'd string whose contains are generated from the arguments
 */
-u8_string u8_bufprintf
-(unsigned char *buf,size_t buflen,u8_string format_string,...)
+u8_string u8_sprintf
+(unsigned char *buf_arg,size_t buflen,u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args; int retval=0;
+  u8_byte *buf = (buf_arg) ? (buf_arg) : (u8_malloc(buflen));
   U8_INIT_FIXED_OUTPUT(&out,buflen,buf);
   va_start(args,format_string);
   if ((retval=u8_do_printf(&out,format_string,&args))<0) {
