@@ -534,7 +534,7 @@ U8_EXPORT int u8_mkdir(u8_string name,mode_t mode)
     return 0;
   else {
     const char *localized=u8_localpath(name);
-    int retval=mkdir(localized,mode);
+    int retval=mkdir(localized,mode|S_IFDIR);
     u8_free(localized);
     if (retval<0)
       return retval;
