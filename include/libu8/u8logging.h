@@ -232,6 +232,6 @@ U8_EXPORT void u8_use_syslog(int flag);
    @param condition the condition for the log call
    @returns void
 */
-U8_EXPORT void u8_logger_break(int loglevel,u8_condition c);
+U8_EXPORT void u8_log_break(int loglevel,u8_condition c);
 
 #endif /* ndef LIBU8_U8LOGGING_H */
