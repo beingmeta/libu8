@@ -154,10 +154,13 @@ static U8_MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
 #define U8_CLEAR_CONTOUR()                             \
   _u8_contour->u8c_flags&=(~(U8_CONTOUR_EXCEPTIONAL));
 
+#define U8_LEAVE_CONTOUR() \
+  u8_pop_contour(&_u8_contour_struct)
 /* Use this when returning from a block which creates a countour. */
 #define u8_return(x) ((u8_pop_contour(&_u8_contour_struct)),(x))
 /* Use this when returning a malloc'd block from within. */
-#define u8_return_block(x) ((u8_contour_release(x)),(u8_pop_contour(&_u8_contour_struct)),(x))
+#define u8_return_block(x) \
+  ((u8_contour_release(x)),(u8_pop_contour(&_u8_contour_struct)),(x))
 
 /* Pushing and popping contours */
 
