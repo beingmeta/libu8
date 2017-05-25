@@ -287,6 +287,18 @@ U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent);
 **/
 U8_EXPORT char *u8_grab_bytes(u8_string s,int n,char *buf);
 
+/** Copies up to *n* bytes of characters from *src* to *dest*, on
+    character representation boundaries and terminated with a NUL
+    char.
+
+    @param dest a pointer to character buffer of at least *size* bytes
+    @param src  a pointer to a valid UTF-8 string
+    @param size a number of bytes to copy
+    @returns the buffer *dest* populated with a valid null-terminated 
+      UTF-8 string copied from *src*
+**/
+U8_EXPORT u8_buf u8_strncpy(u8_buf dest,u8_string src,size_t n);
+
 /* u8_sgetc */
 
 U8_EXPORT int _u8_sgetc(const u8_byte **sptr);

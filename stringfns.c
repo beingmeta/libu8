@@ -57,6 +57,17 @@ int _u8_charoffset(u8_string s,u8_byteoff i)
   return u8_charoffset(s,i);
 }
 
+u8_buf u8_strncpy(u8_buf dest,u8_string src,size_t n)
+{
+  u8_string scan=src, lim=src+n, end;
+  while ((*scan) && (scan < lim)) {
+    int c=u8_sgetc(&scan);
+    // TODO: Handle combining characters
+    if (c<0) break;}
+  memmove(dest,src,end-src); dest[lim-src]='\0';
+  return dest;
+}
+
 u8_buf _u8_strdup(u8_string s)
 {
   int len=strlen(s); int newlen=len+1;
