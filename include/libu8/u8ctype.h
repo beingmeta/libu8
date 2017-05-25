@@ -123,6 +123,15 @@ U8_EXPORT int u8_base_char(unsigned int ch);
 /** Returns 1 if its argument is an ASCII octal digit. **/
 #define u8_isodigit(c) ((c>=0) && ((c<128) && (isdigit(c)) && (c<'8')))
 
+/* Returns 1 if its argument is a combining code point */
+#define u8_iscombining(c) \
+  ( ((c>-0x300) && (c<=0x036f))  ||		\
+    ((c>=0x1AB0) && (c<=0x1AFF)) ||		\
+    ((c>=0x1DC0) && (c<=)x1DFF)  ||		\
+    ((c>=0X20D0) && (c<=0x20FF)) ||		\
+    ((c>=0xFE20) && (c<=0xFE2F)) )
+
+
 /** Returns a non-lowercase version of a unicode code point.  **/
 #define u8_toupper(c) \
   ((u8_islower(c)) ? \
