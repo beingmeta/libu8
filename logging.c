@@ -53,6 +53,9 @@ int u8_stdout_loglevel=U8_DEFAULT_STDOUT_LOGLEVEL;
 int u8_stderr_loglevel=U8_DEFAULT_STDERR_LOGLEVEL;
 int u8_syslog_loglevel=U8_DEFAULT_SYSLOG_LOGLEVEL;
 
+int u8_breakpoint_loglevel=-1;
+u8_logtestfn u8_logbreakp=NULL;
+
 u8_string u8_logprefix="[";
 u8_string u8_logsuffix="]\n";
 u8_string u8_logindent=(u8_string)NULL;
@@ -125,21 +128,29 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
 
 U8_EXPORT int u8_logger(int loglevel,u8_condition c,u8_string msg)
 {
-  if (logfn) return logfn(loglevel,c,msg);
+  if (logfn)
+    return logfn(loglevel,c,msg);
   else return u8_default_logger(loglevel,c,msg);
 }
 
 U8_EXPORT int u8_log(int loglevel,u8_condition c,u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args; int retval;
-  u8_byte msgbuf[512]; U8_INIT_STATIC_OUTPUT_BUF(out,512,msgbuf);
+  u8_byte msgbuf[512];
+  U8_INIT_STATIC_OUTPUT_BUF(out,512,msgbuf);
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
-  if (logfn) retval=logfn(loglevel,c,out.u8_outbuf);
+  if (logfn)
+    retval=logfn(loglevel,c,out.u8_outbuf);
   else retval=u8_default_logger(loglevel,c,out.u8_outbuf);
   if ((out.u8_streaminfo)&(U8_STREAM_OWNS_BUF))
     u8_free(out.u8_outbuf);
+  if ( ( (u8_breakpoint_loglevel>=0) &&
+	 ( ( (loglevel>=0) && (loglevel < u8_breakpoint_loglevel) ) ||
+	   ( (loglevel<0) && (-loglevel < u8_breakpoint_loglevel) ) ) ) ||
+       ( (u8_logbreakp) && (u8_logbreakp(loglevel,c)) ) )
+    u8_logger_break(loglevel,c);
   return retval;
 }
 
@@ -162,6 +173,12 @@ U8_EXPORT int u8_message(u8_string format_string,...)
   else retval=u8_default_logger(-10,NULL,out.u8_outbuf);
   if ((out.u8_streaminfo)&(U8_STREAM_OWNS_BUF)) u8_free(out.u8_outbuf);
   return retval;
+}
+
+U8_EXPORT void u8_logger_break(int loglevel,u8_condition c)
+{
+  int v=2;
+  /* This is a good place to set a breakpoint */
 }
 
 /* Figuring out the prefix for log messages */

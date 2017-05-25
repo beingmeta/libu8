@@ -118,6 +118,10 @@
 #define U8_LOG_DELUGE LOG_DELUGE
 #define U8_LOGDELUGE LOG_DELUGE
 
+typedef int (*u8_logtestfn)(int loglevel,u8_condition c);
+
+U8_EXPORT u8_logtestfn u8_logbreakp;
+
 #define U8_MAX_LOGLEVEL 9
 
 /* This is the overall log level and messages with with priorities
@@ -220,5 +224,14 @@ U8_EXPORT void u8_syslog(int priority,u8_string format_string,...);
     @param flag int
 **/
 U8_EXPORT void u8_use_syslog(int flag);
+
+/* Called when a log message is either over the set loglevel or
+   matches one of the watched conditions. This is a good place to set
+   a debugger breakpoint.
+   @param loglevel the loglevel of the log call
+   @param condition the condition for the log call
+   @returns void
+*/
+U8_EXPORT void u8_logger_break(int loglevel,u8_condition c);
 
 #endif /* ndef LIBU8_U8LOGGING_H */
