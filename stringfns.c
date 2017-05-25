@@ -63,7 +63,8 @@ u8_buf u8_strncpy(u8_buf dest,u8_string src,size_t n)
   while ((*scan) && (scan < lim)) {
     int c=u8_sgetc(&scan);
     // TODO: Handle combining characters
-    if (c<0) break;}
+    if (c<0) break;
+    end=scan;}
   memmove(dest,src,end-src); dest[lim-src]='\0';
   return dest;
 }
