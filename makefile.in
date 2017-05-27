@@ -24,6 +24,7 @@ ENCDIR		= $(DESTDIR)@prefix@/share/libu8/encodings
 XRPMFLAGS	=
 RPMFLAGS	= $(XRPMFLAGS) @RPMFLAGS@
 RPMDIR		= @RPMDIR@
+GPG             = @GPG@
 GPGID           = @GPGID@
 CLEAN		= @CLEAN@
 INSTALL		= @SUDO@@INSTALL@
@@ -500,7 +501,7 @@ dist/debs.built: staging/libu8_@U8VERSION@
 	 dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
 	touch dist/debs.built
 dist/debs.signed: dist/debs.built
-	@(cd staging; debsign --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
+	@(cd staging; debsign -p${GPG} --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
 	 (cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
 	 (cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && \
 	 touch dist/debs.signed
