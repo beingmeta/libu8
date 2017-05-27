@@ -17,6 +17,6 @@
 #define LIBU8_U8ATOMIC_H 1
 #define LIBU8_U8ATOMIC_H_VERSION __FILE__
 
-typedef _Atomic u8_atomic;
+#define  u8_atomic _Atomic;
 
 #endif
