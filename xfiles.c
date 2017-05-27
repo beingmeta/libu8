@@ -171,7 +171,6 @@ U8_EXPORT int u8_init_xinput(struct U8_XINPUT *xi,int fd,u8_encoding enc)
     xi->u8_closefn=(u8_input_closefn)u8_close_xinput;
     xi->u8_streaminfo=xi->u8_streaminfo|U8_STREAM_OWNS_XBUF;
     xi->u8_xencoding=enc;
-    u8_register_open_xfile((U8_XOUTPUT *)xi);
     return fd;}
 }
 
@@ -182,6 +181,7 @@ U8_EXPORT struct U8_XINPUT *u8_open_xinput(int fd,u8_encoding enc)
     struct U8_XINPUT *xi=u8_alloc(struct U8_XINPUT);
     if (u8_init_xinput(xi,fd,enc)>=0) {
       xi->u8_streaminfo=xi->u8_streaminfo|U8_STREAM_MALLOCD;
+      u8_register_open_xfile((u8_xfile)xi);
       return xi;}
     u8_free(xi);
     return NULL;}
@@ -239,7 +239,7 @@ U8_EXPORT struct U8_XINPUT *u8_open_input_file
 
 U8_EXPORT void u8_close_xinput(struct U8_XINPUT *f)
 {
-  u8_deregister_open_xfile((U8_XOUTPUT *)f);
+  u8_deregister_open_xfile((u8_xfile)f);
   if (f->u8_streaminfo&U8_STREAM_OWNS_BUF) u8_free(f->u8_inbuf);
   if (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) u8_free(f->u8_xbuf);
   if (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) close(f->u8_xfd);
@@ -284,7 +284,6 @@ U8_EXPORT int u8_init_xoutput
     xo->u8_flushfn=(u8_flushfn)flush_xoutput;
     xo->u8_closefn=(u8_output_closefn)u8_close_xoutput;
     xo->u8_streaminfo=xo->u8_streaminfo|U8_STREAM_OWNS_XBUF;
-    u8_register_open_xfile(xo);
     return 1;}
 }
 
@@ -295,6 +294,7 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_xoutput(int fd,u8_encoding enc)
     struct U8_XOUTPUT *xo=u8_alloc(struct U8_XOUTPUT);
     if (u8_init_xoutput(xo,fd,enc)>=0) {
       xo->u8_streaminfo=xo->u8_streaminfo|U8_STREAM_MALLOCD;
+      u8_register_open_xfile((u8_xfile)xo);
       return xo;}
     u8_free(xo);
     return NULL;}
@@ -438,7 +438,7 @@ U8_EXPORT double u8_getprogress(struct U8_STREAM *f)
 U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *f)
 {
   if (f->u8_flushfn) f->u8_flushfn((U8_OUTPUT *)f);
-  u8_deregister_open_xfile(f);
+  u8_deregister_open_xfile((u8_xfile)f);
   if (f->u8_streaminfo&U8_STREAM_OWNS_BUF) u8_free(f->u8_outbuf);
   if (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) u8_free(f->u8_xbuf);
   if (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) close(f->u8_xfd);
@@ -460,7 +460,7 @@ static u8_mutex xfile_registry_lock;
 
 static struct U8_OPEN_XFILES *open_xfiles=NULL;
 
-U8_EXPORT void u8_register_open_xfile(struct U8_XOUTPUT *out)
+U8_EXPORT void u8_register_open_xfile(struct U8_XFILE *out)
 {
   struct U8_OPEN_XFILES *new=u8_alloc(struct U8_OPEN_XFILES);
   u8_lock_mutex((&xfile_registry_lock));
@@ -470,7 +470,7 @@ U8_EXPORT void u8_register_open_xfile(struct U8_XOUTPUT *out)
   u8_unlock_mutex((&xfile_registry_lock));
 }
 
-U8_EXPORT void u8_deregister_open_xfile(struct U8_XOUTPUT *out)
+U8_EXPORT void u8_deregister_open_xfile(struct U8_XFILE *out)
 {
   struct U8_OPEN_XFILES *scan=open_xfiles, **head=&open_xfiles;
   u8_lock_mutex((&xfile_registry_lock));
@@ -489,7 +489,7 @@ U8_EXPORT void u8_close_xfiles()
   u8_lock_mutex((&xfile_registry_lock));
   while (scan) {
     if ((scan->xfile->u8_streaminfo)&U8_OUTPUT_STREAM)
-      scan->xfile->u8_flushfn((U8_OUTPUT *)(scan->xfile));
+      ((u8_xoutput)scan->xfile)->u8_flushfn((U8_OUTPUT *)(scan->xfile));
     if ((scan->xfile->u8_streaminfo)&U8_STREAM_OWNS_SOCKET)
       close(scan->xfile->u8_xfd);
     if ((scan->xfile->u8_streaminfo)&U8_STREAM_MALLOCD)

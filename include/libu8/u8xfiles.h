@@ -23,6 +23,17 @@ U8_EXPORT u8_condition u8_nopos, u8_nowrite, u8_no_read;
 #define U8_XFILE_SEEKS 2
 #define U8_XFILE_LOCKED 4
 
+/* This is the generic version of U8_XINPUT/U8_XOUTPUT */
+typedef struct U8_XFILE {
+  U8_INPUT_FIELDS;
+  int u8_xfd; struct U8_TEXT_ENCODING *u8_xencoding; int u8_xescape;
+  unsigned char *u8_xbuf; int u8_xbuflive, u8_xbuflim;
+#if U8_THREADS_ENABLED
+  u8_mutex u8_lock;
+#endif
+} U8_XFILE;
+typedef struct U8_XFILE *u8_xfile;
+
 /** struct U8_XINPUT
     is the extension of U8_INPUT which deals with stream-based conversion
     from other character sets.  It's logic reads chunks of input from a POSIX
@@ -104,12 +115,12 @@ U8_EXPORT void u8_flush_xoutput(struct U8_XOUTPUT *f);
      buffers are flushed when the process ends normally.
 **/
 typedef struct U8_OPEN_XFILES {
-  U8_XOUTPUT *xfile;
+  struct U8_XFILE *xfile;
   struct U8_OPEN_XFILES *next;} U8_OPEN_XFILES;
 typedef struct U8_OPEN_XFILES *u8_open_xfiles;
 
-U8_EXPORT void u8_register_open_xfile(struct U8_XOUTPUT *out);
-U8_EXPORT void u8_deregister_open_xfile(struct U8_XOUTPUT *out);
+U8_EXPORT void u8_register_open_xfile(struct U8_XFILE *out);
+U8_EXPORT void u8_deregister_open_xfile(struct U8_XFILE *out);
 U8_EXPORT void u8_close_xfiles();
 
 U8_EXPORT int u8_writeall(int sock,const unsigned char *data,int len);
