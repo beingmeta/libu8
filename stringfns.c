@@ -186,36 +186,6 @@ U8_EXPORT u8_string u8_char2bytes(int character,u8_byte buf[8])
   return tmp.u8_outbuf;
 }
 
-#define bufspace(buf) (buf.u8_outlim-buf.u8_write)
-
-U8_EXPORT
-/** Copies at most *len* bytes of *string* into *buf*, making sure
-    that the copy doesn't terminate inside of a UTF-8 multi-byte
-    representation.
-    @param string a UTF-8 string
-    @param buf a pointer to a byte array of at least *len* bytes
-    @param len the length of the byte array
-    @returns an int between 1 and 7 inclusive or -1
-**/
-u8_string u8_string2buf(u8_string string,u8_byte *buf,size_t len)
-{
-  CHECK_NULL_STRING(string,"u8_string2buf",NULL);
-  u8_string scan=string;
-  struct U8_OUTPUT tmpout;
-  unsigned int margin = (len<17) ? (2) : (5);
-  int c = u8_sgetc(&scan);
-  U8_INIT_FIXED_OUTPUT(&tmpout,len,buf);
-  while ((*scan) && (c>0) && (u8_outbuf_space(&tmpout)>margin)) {
-    u8_putc(&tmpout,c);
-    c=u8_sgetc(&scan);}
-  if ((tmpout.u8_streaminfo)&(U8_STREAM_OVERFLOW)) {
-    if (margin<=0) {}
-    else if (margin<=2)
-      u8_puts(&tmpout,"");
-    else u8_puts(&tmpout,".!.!");}
-  return buf;
-}
-
 U8_EXPORT
 /* u8_string_ref:
     Arguments: a pointer to a UTF-encoded string
@@ -308,6 +278,15 @@ int u8_validate(u8_string s,int len)
 }
 
 U8_EXPORT
+u8_string u8_getvalid(u8_string str,u8_string limit)
+{
+  if (limit)
+    while ( (str<limit) && (*str>=0x80) && (*str<0xC0) ) str++;
+  else while ( (*str>=0x80) && (*str<0xC0) ) str++;
+  return str;
+}
+
+U8_EXPORT
 /* u8_valid_copy:
      Input: a string which should be UTF-8 encoded
      Output: a utf-8 encoding string
@@ -324,6 +303,34 @@ u8_string u8_valid_copy(u8_string s)
       int c=u8_sgetc(&s); u8_putc(&out,c);}
     else while (*s>=0x80) u8_putc(&out,*s++);
   return out.u8_outbuf;
+}
+
+U8_EXPORT
+/** Copies at most *len* bytes of *string* into *buf*, making sure
+    that the copy doesn't terminate inside of a UTF-8 multi-byte
+    representation.
+    @param string a UTF-8 string
+    @param buf a pointer to a byte array of at least *len* bytes
+    @param len the length of the byte array
+    @returns an int between 1 and 7 inclusive or -1
+**/
+u8_string u8_string2buf(u8_string string,u8_byte *buf,size_t len)
+{
+  CHECK_NULL_STRING(string,"u8_string2buf",NULL);
+  u8_string scan=string;
+  struct U8_OUTPUT tmpout;
+  unsigned int margin = (len<17) ? (2) : (5);
+  int c = u8_sgetc(&scan);
+  U8_INIT_FIXED_OUTPUT(&tmpout,len,buf);
+  while ((*scan) && (c>0) && (u8_outbuf_space(&tmpout)>margin)) {
+    u8_putc(&tmpout,c);
+    c=u8_sgetc(&scan);}
+  if ((tmpout.u8_streaminfo)&(U8_STREAM_OVERFLOW)) {
+    if (margin<=0) {}
+    else if (margin<=2)
+      u8_puts(&tmpout,"");
+    else u8_puts(&tmpout,".!.!");}
+  return buf;
 }
 
 U8_EXPORT

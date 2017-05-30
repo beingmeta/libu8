@@ -236,7 +236,7 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
 #define U8_INIT_FIXED_OUTPUT(s,sz,buf)                              \
   U8_INIT_OUTPUT_X(s,sz,buf,U8_FIXED_STREAM)
 
-#define U8_FIXED_OUTPUT_FLAGS U8_OUTPUT_STREAM|U8_FIXED_STREAM
+#define U8_FIXED_OUTPUT_FLAGS (U8_OUTPUT_STREAM|U8_FIXED_STREAM)
 #define U8_FIXED_OUTPUT(name,sz)	     \
   struct U8_OUTPUT name, *name ## out=&name; \
   u8_byte _buf_ ## name[sz];		     \
@@ -410,6 +410,16 @@ typedef int (*u8_fillfn)(struct U8_INPUT *f);
 #define u8_outbuf_written(s) (((s)->u8_write)-((s)->u8_outbuf))
 #define u8_outbuf_space(s) (((s)->u8_outlim)-((s)->u8_write))
 
+
+/* Helpful for bug reports */
+
+U8_EXPORT
+u8_string u8_get_input_context
+(struct U8_INPUT *in,size_t n_before,size_t n_after,u8_string sep);
+U8_EXPORT
+u8_string u8_get_output_context(struct U8_OUTPUT *out,size_t n_before);
+
+/* Core functions */
 
 U8_EXPORT int _u8_getc(struct U8_INPUT *f);
 U8_EXPORT int _u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f);

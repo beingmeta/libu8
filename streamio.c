@@ -76,6 +76,8 @@ U8_EXPORT
 */
 ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
 {
+  if ((in->u8_streaminfo)&(U8_FIXED_STREAM)) return 0;
+
   int owns_buf = ((in->u8_streaminfo)&(U8_STREAM_OWNS_BUF));
   size_t max = in->u8_bufsz, 
     bytes_buffered = in->u8_inlim - in->u8_read,
@@ -137,6 +139,9 @@ U8_EXPORT
 */
 ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
 {
+  if ((out->u8_streaminfo)&(U8_FIXED_STREAM)) {
+    if (to_size<out->u8_bufsz) return out->u8_bufsz;
+    else return 0;}
   int owns_buf = ((out->u8_streaminfo)&(U8_STREAM_OWNS_BUF));
   size_t max = out->u8_bufsz;
   size_t new_max = ((max>=U8_BUF_THROTTLE_POINT)?
@@ -618,6 +623,44 @@ int u8_close(U8_STREAM *stream)
   if ((stream->u8_streaminfo)&(U8_OUTPUT_STREAM))
     return u8_close_output((U8_OUTPUT *)stream);
   else return u8_close_input((U8_INPUT *)stream);
+}
+
+/* Input ports */
+
+U8_EXPORT
+u8_string u8_get_input_context(struct U8_INPUT *in,
+                               size_t n_before,size_t n_after,
+                               u8_string sep)
+{
+  u8_string read=in->u8_read, buf=in->u8_inbuf;
+
+  u8_string before=
+    u8_getvalid( ( (u8_inbuf_read(in)<n_before) ? (buf) : (read-n_before) ),
+                 ( in->u8_inlim) );
+  u8_string after=
+    u8_getvalid( ( (u8_inbuf_ready(in)<n_after) ? (buf) : (read+n_after) ),
+                 ( in->u8_inlim));
+  size_t sep_len=(sep) ? (strlen(sep)) : (0);
+  u8_byte *context=u8_zalloc((after-before)+sep_len+1);
+
+  strncpy(context,before,read-before);
+  strcat(context,sep);
+  strncat(context,read,after-read);
+
+  return (u8_string) context;
+}
+
+U8_EXPORT
+u8_string u8_get_output_context(struct U8_OUTPUT *out,size_t n_before)
+{
+  u8_string buf=out->u8_outbuf, write=out->u8_write;
+
+  u8_string before=
+    u8_getvalid( ( (u8_outbuf_written(out)<n_before) ?
+                   (buf) : (write-n_before) ),
+                 ( out->u8_outlim) );
+
+  return u8_strdup(before);
 }
 
 /* Default output ports */

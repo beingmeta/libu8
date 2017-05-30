@@ -241,6 +241,13 @@ U8_EXPORT u8_string u8_substring(u8_string string,int i);
 **/
 U8_EXPORT int u8_string_ref(u8_string strptr);
 
+/** Returns the first complete UTF-8 sequence in @a strptr but before @a lim
+    @param strptr a pointer into a UTF-8 string
+    @param limit a pointer after @a strptr or NULL
+    @returns the location of the first complete UTF-8 sequence found
+**/
+U8_EXPORT u8_string u8_getvalid(u8_string strptr,u8_string limit);
+
 /** Checks if the start of a string is a valid UTF-8 representation.
     This checks only for a single character representation.
     @param s a possible UTF-8 string
