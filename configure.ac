@@ -28,6 +28,7 @@ INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
 RPMDIR=${RPMDIR:-dist}
 RPMFLAGS=${RPMFLAGS:-}
+GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-E5AFF294}
 APTREPO=${APTREPO:-/srv/repo/apt}
 doi18n="no"
@@ -115,10 +116,12 @@ AC_SUBST(INSTALLDOCS)
 
 AC_ARG_VAR(RPMDIR,"Location for writing built RPMs")
 AC_ARG_VAR(RPMFLAGS,"Default flags for building RPMs")
-AC_ARG_VAR(GPGID,"Default GnuPG id for signing packages")
 AC_ARG_VAR(APTREPO,"Location of the APT repository")
+AC_ARG_VAR(GPG,"GPG executable")
+AC_ARG_VAR(GPGID,"Default GnuPG id for signing packages")
 AC_SUBST(RPMDIR)
 AC_SUBST(RPMFLAGS)
+AC_SUBST(GPG)
 AC_SUBST(GPGID)
 AC_SUBST(APTREPO)
 AC_SUBST(CODENAME)

@@ -650,8 +650,9 @@ CFLAGS
 CC
 CLANG
 CODENAME
-APTREPO
 GPGID
+GPG
+APTREPO
 RPMFLAGS
 RPMDIR
 INSTALLDOCS
@@ -768,8 +769,9 @@ host_alias
 target_alias
 RPMDIR
 RPMFLAGS
-GPGID
 APTREPO
+GPG
+GPGID
 CC
 CFLAGS
 LDFLAGS
@@ -1424,8 +1426,9 @@ Optional Packages:
 Some influential environment variables:
   RPMDIR      "Location for writing built RPMs"
   RPMFLAGS    "Default flags for building RPMs"
-  GPGID       "Default GnuPG id for signing packages"
   APTREPO     "Location of the APT repository"
+  GPG         "GPG executable"
+  GPGID       "Default GnuPG id for signing packages"
   CC          C compiler command
   CFLAGS      C compiler flags
   LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
@@ -2779,6 +2782,7 @@ INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
 RPMDIR=${RPMDIR:-dist}
 RPMFLAGS=${RPMFLAGS:-}
+GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-E5AFF294}
 APTREPO=${APTREPO:-/srv/repo/apt}
 doi18n="no"
@@ -2966,6 +2970,8 @@ case $target_os in
 
    ;;
 esac
+
+
 
 
 
