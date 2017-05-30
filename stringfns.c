@@ -205,7 +205,7 @@ u8_string u8_string2buf(u8_string string,u8_byte *buf,size_t len)
   unsigned int margin = (len<17) ? (2) : (5);
   int c = u8_sgetc(&scan);
   U8_INIT_FIXED_OUTPUT(&tmpout,len,buf);
-  while ((*scan) && (c>0) && (bufspace(tmpout)<margin)) {
+  while ((*scan) && (c>0) && (u8_outbuf_space(&tmpout)>margin)) {
     u8_putc(&tmpout,c);
     c=u8_sgetc(&scan);}
   if ((tmpout.u8_streaminfo)&(U8_STREAM_OVERFLOW)) {
