@@ -40,6 +40,7 @@ typedef int u8_charoff;
 #define U8SS() ((u8_string)(" "))
 #define U8ALT(s,d) ((s)?((u8_string)(s)):((u8_string)(d)))
 #define U8IF(s,d) ((s)?((u8_string)(d)):(U8S0()))
+#define U8S(s) ((s)?((u8_string)(d)):((u8_string)""))
 
 #define U8OPT(string,after) \
   ((string)?(string):(U8S0)),((string)?(after):(U8S0))
