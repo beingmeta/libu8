@@ -402,6 +402,15 @@ U8_EXPORT void _U8_INIT_STRING_INPUT(u8_input s,int n,const u8_byte *buf);
 typedef int (*u8_input_closefn)(struct U8_INPUT *f);
 typedef int (*u8_fillfn)(struct U8_INPUT *f);
 
+/* Utility functions */
+
+#define u8_inbuf_read(s) (((s)->u8_read)-((s)->u8_inbuf))
+#define u8_inbuf_ready(s) (((s)->u8_inlim)-((s)->u8_read))
+
+#define u8_outbuf_written(s) (((s)->u8_write)-((s)->u8_outbuf))
+#define u8_outbuf_space(s) (((s)->u8_outlim)-((s)->u8_write))
+
+
 U8_EXPORT int _u8_getc(struct U8_INPUT *f);
 U8_EXPORT int _u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f);
 /** Reads a string from @a f into @a buf up to the string @a eos.
