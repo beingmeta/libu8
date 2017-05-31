@@ -302,7 +302,7 @@ U8_EXPORT char *u8_grab_bytes(u8_string s,int n,char *buf);
 
     @param dest a pointer to character buffer of at least *size* bytes
     @param src  a pointer to a valid UTF-8 string
-    @param size a number of bytes to copy
+    @param n a number of bytes to copy
     @returns the buffer *dest* populated with a valid null-terminated 
       UTF-8 string copied from *src*
 **/
