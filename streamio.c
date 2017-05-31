@@ -681,9 +681,9 @@ u8_string u8_get_input_context(struct U8_INPUT *in,
     u8_getvalid( ( (u8_inbuf_ready(in)<n_after) ? (buf) : (read+n_after) ),
                  ( in->u8_inlim));
   size_t sep_len=(sep) ? (strlen(sep)) : (0);
-  u8_byte *context=u8_zalloc((after-before)+sep_len+1);
+  u8_byte *context=u8_zmalloc((after-before)+sep_len+1);
 
-  strncpy(context,before,read-before);
+  strncpy(context,before,read-before); context[read-before]='\0';
   strcat(context,sep);
   strncat(context,read,after-read);
 
