@@ -260,6 +260,28 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
     *(f->u8_write)='\0';
     return len;}
 }
+U8_EXPORT int _u8_output_needs(u8_output out,size_t n_bytes)
+{
+  if (u8_outbuf_space(out)>=n_bytes)
+    return 1;
+  else if ( ( (out->u8_streaminfo) & (U8_FIXED_STREAM) ) &&
+            (out->u8_flushfn == NULL) )
+    return 0;
+  else {
+    /* Need space */
+    int rv = (out->u8_flushfn) ? (out->u8_flushfn(out)) : (0);
+    if (rv<0) u8_graberr(-1,"u8_putn/flush",NULL);
+    if ( (u8_outbuf_space(out)) < n_bytes+1 )
+      return 1;
+    else if ( (out->u8_streaminfo) & (U8_FIXED_STREAM) )
+      return 0;
+    else {
+      /* Still needing space */
+      size_t cur_size = out->u8_bufsz;
+      size_t new_size = cur_size+n_bytes+U8_BUF_MIN_GROW;
+      u8_grow_output_stream(out,new_size);
+      return (u8_outbuf_space(out)>=n_bytes);}}
+}
 U8_EXPORT int _u8_getc(struct U8_INPUT *f)
 {
   int i, ch, byte, size;
