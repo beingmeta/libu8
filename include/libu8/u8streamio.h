@@ -269,7 +269,9 @@ U8_INLINE_FCN int u8_putc(struct U8_OUTPUT *f,int c)
   if (U8_EXPECT_FALSE(f->u8_write+1>=f->u8_outlim)) 
     return _u8_putc(f,c);
   else if (U8_EXPECT_TRUE((c<0x80)&&(c>0))) {
-    *(f->u8_write++)=c; *(f->u8_write)='\0'; return 1;}
+    *(f->u8_write++)=c;
+    *(f->u8_write)='\0';
+    return 1;}
   else return _u8_putc(f,c);
 }
 
@@ -284,13 +286,13 @@ U8_INLINE_FCN int u8_putc(struct U8_OUTPUT *f,int c)
 U8_INLINE_FCN int u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 {
   if (U8_EXPECT_FALSE(len==0)) return 0;
-  if ((f->u8_write+len+1>=f->u8_outlim) && (f->u8_flushfn))
-    f->u8_flushfn(f);
-  if (f->u8_write+len+1>=f->u8_outlim)
+  if (U8_EXPECT_FALSE(f->u8_write+len+1>=f->u8_outlim))
     return _u8_putn(f,data,len);
-  memcpy(f->u8_write,data,len);
-  f->u8_write=f->u8_write+len; *(f->u8_write)='\0';
-  return len;
+  else {
+    memcpy(f->u8_write,data,len);
+    f->u8_write=f->u8_write+len;
+    *(f->u8_write)='\0';
+    return len;}
 }
 #else
 #define u8_putc _u8_putc

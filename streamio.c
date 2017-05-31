@@ -79,7 +79,7 @@ ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
   if ((in->u8_streaminfo)&(U8_FIXED_STREAM)) return 0;
 
   int owns_buf = ((in->u8_streaminfo)&(U8_STREAM_OWNS_BUF));
-  size_t max = in->u8_bufsz, 
+  size_t max = in->u8_bufsz,
     bytes_buffered = in->u8_inlim - in->u8_read,
     bytes_read = in->u8_read - in->u8_inbuf;
   size_t new_max = ((max>=U8_BUF_THROTTLE_POINT)?
@@ -90,7 +90,7 @@ ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
   else if ((to_size+U8_BUF_MIN_GROW)<max)
     return max;
   else {}
-  while (new_max<to_size) 
+  while (new_max<to_size)
     new_max = ((new_max>=U8_BUF_THROTTLE_POINT)?
                (new_max+(U8_BUF_THROTTLE_POINT/2)):
                (new_max*2));
@@ -139,9 +139,6 @@ U8_EXPORT
 */
 ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
 {
-  if ((out->u8_streaminfo)&(U8_FIXED_STREAM)) {
-    if (to_size<out->u8_bufsz) return out->u8_bufsz;
-    else return 0;}
   int owns_buf = ((out->u8_streaminfo)&(U8_STREAM_OWNS_BUF));
   size_t max = out->u8_bufsz;
   size_t new_max = ((max>=U8_BUF_THROTTLE_POINT)?
@@ -152,7 +149,7 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
   else if ((to_size+U8_BUF_MIN_GROW)<max)
     return max;
   else {}
-  while (new_max<to_size) 
+  while (new_max<to_size)
     new_max = ((new_max>=U8_BUF_THROTTLE_POINT)?
                (new_max+(U8_BUF_THROTTLE_POINT/2)):
                (new_max*2));
@@ -165,7 +162,6 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
     size_t shrink_by = (new_max-max)/16;
     while (new_buf==NULL) {
       /* The alloc/realloc call failed, so try smaller sizes */
-      errno=0; /* Reset errno */
       /* Shrink until it works or the buffer size is smaller than the
          current value */
       new_max=new_max-shrink_by;
@@ -173,6 +169,7 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
         u8_log(LOGCRIT,"MallocFailed/grow_output",
                "Couldn't grow buffer for output stream");
         return max;}
+      errno=0; /* Reset errno */
       u8_log(LOGCRIT,"MemoryRestricted",
              "Couldn't grow u8_output_stream buffer (x%llx) to %lld bytes, trying %lld",
              (long long) out,new_max+shrink_by,new_max);
@@ -204,43 +201,64 @@ U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int ch)
   else if (ch < 0x4000000) size=5;
   else if (ch < 0x80000000) size=6;
   else return u8_reterr(u8_BadUnicodeChar,"u8_putc",NULL);
-  if ((f->u8_write+size+1>=f->u8_outlim) && (f->u8_flushfn))
-    f->u8_flushfn(f);
   if (f->u8_write+size+1>=f->u8_outlim) {
-    ssize_t rv= u8_grow_stream((u8_stream)f, size+U8_BUF_MIN_GROW);
-    if (rv==0) return 0;
-    else if (rv<0) {
-      u8_graberr(-1,"u8_putc",NULL);
+    /* Need space */
+    int rv = (f->u8_flushfn) ? (f->u8_flushfn(f)) : (0);
+    if (rv<0) {
+      u8_graberr(-1,"u8_putc/flush",NULL);
       return -1;}
-    if (f->u8_write+size+1>=f->u8_outlim) {
-      u8_graberr(-1,"u8_putc",NULL);
-      return -1;}}
-  shift=(size-1)*6; write=f->u8_write;
-  *write++=off[size-1]|(masks[size-1]&(ch>>shift));
-  shift=shift-6; size--;
-  while (size) {
-    *write++=0x80|((ch>>shift)&0x3F); shift=shift-6; size--;}
-  *write='\0'; f->u8_write=write;
-  return 1;
+    else if (f->u8_write+size+1>=f->u8_outlim) {
+      /* Still need space */
+      if ((f->u8_streaminfo)&(U8_FIXED_STREAM))
+        return 0;
+      else {
+        size_t cur_size = f->u8_bufsz;
+        size_t new_size = cur_size+size+U8_BUF_MIN_GROW;
+        u8_grow_output_stream(f,new_size);}}}
+  if (f->u8_write+size+1>=f->u8_outlim) {
+    if (errno) u8_graberr(-1,"u8_putc",NULL);
+    u8_seterr("NoSpaceInStream","u8_putc",NULL);
+    return -1;}
+  else {
+    shift=(size-1)*6;
+    write=f->u8_write;
+    *write++=off[size-1]|(masks[size-1]&(ch>>shift));
+    shift=shift-6;
+    size--;
+    while (size) {
+      *write++=0x80|((ch>>shift)&0x3F);
+      shift=shift-6; size--;}
+    *write='\0'; f->u8_write=write;
+    return size;}
 }
 U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
 {
-  if (U8_EXPECT_FALSE(len==0)) return 0;
-  else if ((f->u8_write+len+1>=f->u8_outlim) && (f->u8_flushfn))
-    f->u8_flushfn(f);
-  if (f->u8_write+len+1>=f->u8_outlim) {
-    ssize_t cur=f->u8_bufsz;
-    ssize_t rv=u8_grow_output_stream(f,cur+len+U8_BUF_MIN_GROW);
-    if (rv==0) return 0;
-    else if (rv<0) {
-      u8_graberr(-1,"u8_putn",NULL);
+  if (U8_EXPECT_FALSE(len==0))
+    return 0;
+  else if (f->u8_write+len+1>=f->u8_outlim) {
+    /* Need space */
+    int rv = (f->u8_flushfn) ? (f->u8_flushfn(f)) : (0);
+    if (rv<0) {
+      u8_graberr(-1,"u8_putn/flush",NULL);
       return -1;}
-    if (f->u8_write+len+1>=f->u8_outlim) {
-      u8_graberr(-1,"u8_putn",NULL);
-      return -1;}}
-  memcpy(f->u8_write,data,len);
-  f->u8_write=f->u8_write+len; *(f->u8_write)='\0';
-  return len;
+    else if (f->u8_write+len+1>=f->u8_outlim) {
+      /* Still need space */
+      if ((f->u8_streaminfo)&(U8_FIXED_STREAM))
+        return 0;
+      else {
+        size_t cur_size = f->u8_bufsz;
+        size_t new_size = cur_size+len+U8_BUF_MIN_GROW;
+        u8_grow_output_stream(f,new_size);}}}
+  else {}
+  if (f->u8_write+len+1>=f->u8_outlim) {
+    if (errno) u8_graberr(-1,"u8_putn",NULL);
+    u8_seterr("NoSpaceInStream","u8_putn",NULL);
+    return -1;}
+  else {
+    memcpy(f->u8_write,data,len);
+    f->u8_write=f->u8_write+len;
+    *(f->u8_write)='\0';
+    return len;}
 }
 U8_EXPORT int _u8_getc(struct U8_INPUT *f)
 {
