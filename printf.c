@@ -185,7 +185,7 @@ int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
 	   message catalog. */
 	if ((arg)&&(code=='m'))
 	  arg=(u8_byte *)getmessage(arg);
-	if (strchr(cmd,'#')) {
+	if ((string) && (strchr(cmd,'#'))) {
 	  string=(u8_byte *)u8_fromlibc(string);
 	  if (to_free) u8_free(to_free);
 	  to_free=string;}
