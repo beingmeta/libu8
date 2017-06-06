@@ -361,8 +361,7 @@ U8_EXPORT
 /* u8_downcase:
     Arguments: a null-terminated utf-8 C string
     Returns: a copy of the string in lowercase
-
- */
+*/
 u8_string u8_downcase (u8_string string)
 {
   CHECK_NULL_STRING(string,"u8_downcase",NULL);
