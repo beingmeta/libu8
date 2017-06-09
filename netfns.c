@@ -298,7 +298,8 @@ U8_EXPORT u8_string u8_gethostname()
     int i=0; char *scan=local_hostname;
     /* Handle the possibility (rare) of a hostname overflow */
     while (i<MAX_HOSTNAME)
-      if (*scan=='\0') return u8_strdup(local_hostname);
+      if (*scan=='\0')
+	return u8_strdup(local_hostname);
       else scan++;
     return u8_strndup(local_hostname,MAX_HOSTNAME);}
 }

@@ -50,9 +50,9 @@ typedef int u8_charoff;
 /* strdup */
 
 #if HAVE_STRDUP
-#define u8_strdup(x) (((x)==NULL)?((u8_buf)x):((u8_buf)strdup(x)))
+#define u8_strdup(x) (((x)==NULL)?((u8_buf)NULL):((u8_buf)strdup(x)))
 #else
-#define u8_strdup(x) (((x)==NULL)?((u8_buf)x):(_u8_strdup(x)))
+#define u8_strdup(x) (((x)==NULL)?((u8_buf)NULL):(_u8_strdup(x)))
 #endif
 
 #define u8dup(x) ((U8_EXPECT_FALSE(x==NULL))?(NULL):(u8_strdup(x)))
