@@ -1,3 +1,9 @@
+libu8 (2.6.3-3) stable; urgency=medium
+
+  * Updated libu8 release see the changelogs
+
+ -- Ken Haase <kh@beingmeta.com>  Sat, 10 Jun 2017 23:15:57 +0000
+
 libu8 (2.6.1-2) stable; urgency=medium
 
   * New release to go with FramerD 4
