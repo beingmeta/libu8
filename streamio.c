@@ -678,16 +678,22 @@ u8_string u8_get_input_context(struct U8_INPUT *in,
     u8_getvalid( ( (u8_inbuf_read(in)<n_before) ? (buf) : (read-n_before) ),
                  ( in->u8_inlim) );
   u8_string after=
-    u8_getvalid( ( (u8_inbuf_ready(in)<n_after) ? (buf) : (read+n_after) ),
+    u8_getvalid( ( (u8_inbuf_ready(in)<n_after) ?
+                   (in->u8_inlim) : (read+n_after) ),
                  ( in->u8_inlim));
-  size_t sep_len=(sep) ? (strlen(sep)) : (0);
-  u8_byte *context=u8_zmalloc((after-before)+sep_len+1);
-
-  strncpy(context,before,read-before); context[read-before]='\0';
-  strcat(context,sep);
-  strncat(context,read,after-read);
-
-  return (u8_string) context;
+  if (before>=after) {
+    u8_log(LOGWARN,"InternalError",
+           "The impossible happened in u8_get_input_context, sorry!");
+    if (sep) return u8_strdup(sep); else return u8_strdup("<>");}
+  else {
+    size_t sep_len=(sep) ? (strlen(sep)) : (0);
+    u8_byte *context=u8_zmalloc((after-before)+sep_len+1);
+    
+    strncpy(context,before,read-before); context[read-before]='\0';
+    strcat(context,sep);
+    strncat(context,read,after-read);
+    
+    return (u8_string) context;}
 }
 
 U8_EXPORT
