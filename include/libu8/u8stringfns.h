@@ -112,13 +112,37 @@ U8_EXPORT u8_string u8_strchr(u8_string string,int ch,int n);
 **/
 U8_EXPORT u8_string u8_strstrs(u8_string haystack,u8_string needles[],int order);
 
+/** Searches for a substring in a string, ignoring case
+    @param haystack a UTF-8 string
+    @param needle a string
+    @returns a substring of 'string' or NULL
+
+**/
+U8_EXPORT u8_string u8_strcasestr(u8_string haystack,u8_string needle);
+
+/** Searches for a substring in a string, ignoring modifiers
+    @param haystack a UTF-8 string
+    @param needle a string
+    @returns a substring of 'string' or NULL
+
+**/
+U8_EXPORT u8_string u8_strbasestr(u8_string haystack,u8_string needle);
+
+/** Searches for a substring in a string, ignoring case and modifiers
+    @param haystack a UTF-8 string
+    @param needle a string
+    @returns a substring of 'string' or NULL
+
+**/
+U8_EXPORT u8_string u8_strcasebasestr(u8_string haystack,u8_string needle);
+
 /** Searches for a substring in a string
     @param haystack a UTF-8 string
     @param needle a string
     @param direction indicates which match to return, use n<0 to match
            from the end, n=0 is the same as n=1
     @returns a substring of 'string' or NULL
-    
+
 **/
 U8_EXPORT u8_string u8_strstr(u8_string haystack,u8_string needle,int direction);
 

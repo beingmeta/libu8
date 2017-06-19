@@ -633,6 +633,88 @@ U8_EXPORT u8_string u8_strstr(u8_string haystack,u8_string needle,int n)
   else return NULL;
 }
 
+#define lsgetc(string)  (u8_tolower(u8_sgetc(&(string))))
+#define bsgetc(string)  (u8_base_char(u8_sgetc(&(string))))
+#define lbsgetc(string) (u8_tolower(u8_base_char(u8_sgetc(&(string)))))
+
+U8_EXPORT u8_string u8_strcasestr(u8_string haystack,u8_string needle)
+{
+  CHECK_NULL_STRING(haystack,"u8_strcasestr/haystack",NULL);
+  CHECK_NULL_STRING(needle,"u8_strcasestr/needle",NULL);
+  u8_string match_needle=needle, scan=haystack;
+  u8_char start_char=lsgetc(match_needle);
+  while (*scan) {
+    u8_string start=scan;
+    u8_char ch=lsgetc(scan);
+    if (ch == start_char) {
+      u8_string needle_scan=match_needle;
+      while ( (*scan) && (*needle_scan) ) {
+	u8_char match_char=lsgetc(needle_scan);
+	ch=lsgetc(scan);
+	if (ch != match_char) break;
+	else if (*needle_scan=='\0')
+	  /* If you're at the end of the needle, you've found it. */
+	  return start;
+	else continue;}
+      /* If you left the loop, it failed, so go back, swallow the
+	 character and advance. */
+      scan=start; u8_sgetc(&scan);
+      continue;}}
+  return NULL;
+}
+
+U8_EXPORT u8_string u8_strbasestr(u8_string haystack,u8_string needle)
+{
+  CHECK_NULL_STRING(haystack,"u8_strcasestr/haystack",NULL);
+  CHECK_NULL_STRING(needle,"u8_strcasestr/needle",NULL);
+  u8_string match_needle=needle, scan=haystack;
+  u8_char start_char=bsgetc(match_needle);
+  while (*scan) {
+    u8_string start=scan;
+    u8_char ch=bsgetc(scan);
+    if (ch == start_char) {
+      u8_string needle_scan=match_needle;
+      while ( (*scan) && (*needle_scan) ) {
+	u8_char match_char=bsgetc(needle_scan);
+	ch=bsgetc(scan);
+	if (ch != match_char) break;
+	else if (*needle_scan=='\0')
+	  /* If you're at the end of the needle, you've found it. */
+	  return start;
+	else continue;}
+      /* If you left the loop, it failed, so go back, swallow the
+	 character and advance. */
+      scan=start; u8_sgetc(&scan);
+      continue;}}
+  return NULL;
+}
+
+U8_EXPORT u8_string u8_strcasebasestr(u8_string haystack,u8_string needle)
+{
+  CHECK_NULL_STRING(haystack,"u8_strcasestr/haystack",NULL);
+  CHECK_NULL_STRING(needle,"u8_strcasestr/needle",NULL);
+  u8_string match_needle=needle, scan=haystack;
+  u8_char start_char=lbsgetc(match_needle);
+  while (*scan) {
+    u8_string start=scan;
+    u8_char ch=lbsgetc(scan);
+    if (ch == start_char) {
+      u8_string needle_scan=match_needle;
+      while ( (*scan) && (*needle_scan) ) {
+	u8_char match_char=lbsgetc(needle_scan);
+	ch=lbsgetc(scan);
+	if (ch != match_char) break;
+	else if (*needle_scan=='\0')
+	  /* If you're at the end of the needle, you've found it. */
+	  return start;
+	else continue;}
+      /* If you left the loop, it failed, so go back, swallow the
+	 character and advance. */
+      scan=start; u8_sgetc(&scan);
+      continue;}}
+  return NULL;
+}
+
 U8_EXPORT u8_string u8_strstrs(u8_string haystack,u8_string needles[],int order)
 {
   CHECK_NULL_STRING(haystack,"u8_strstrs/haystack",NULL);
