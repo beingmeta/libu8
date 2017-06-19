@@ -25,9 +25,7 @@
 #define LIBU8_RUSAGE_H 1
 #define LIBU8_RUSAGE_H_VERSION __FILE__
 
-#if (!(HAVE_GETRUSAGE))
-struct rusage { int noval;};
-#elif (HAVE_SYS_RESOURCE_H)
+#if (HAVE_SYS_RESOURCE_H)
 #include <sys/resource.h>
 #elif (HAVE_RESOURCE_H)
 #include <resource.h>
@@ -37,6 +35,8 @@ struct rusage { int noval;};
     @returns long
 **/
 U8_EXPORT long u8_getpagesize(void);
+
+#if HAVE_GETRUSAGE
 
 /** Returns resource usage information.
     This patches implementation-specific in getting usage
@@ -53,6 +53,8 @@ U8_EXPORT int u8_getrusage(int who,struct rusage *r);
     @returns a malloc'd string
 **/
 U8_EXPORT u8_string u8_rusage_string(struct rusage *r);
+
+#endif /* HAVE_GETRUSAGE */
 
 /** Returns the resident size of the current process
     @returns resident size in bytes, as an ssize_t

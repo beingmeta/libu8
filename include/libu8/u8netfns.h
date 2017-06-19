@@ -55,13 +55,17 @@
 
 #define U8_CONNPOOL_REGISTERED 1
 
+/** struct U8_CONNPOOL
+   maintains a pool of sockets connected to a particular remote port/host.
+**/
 typedef struct U8_CONNPOOL {
   u8_string u8cp_id; /* The string passed to u8_connect to create connections for this block */
   unsigned int u8cp_bits;
   u8_mutex u8cp_lock; /* The lock used to coordinate access to the connection block */
   u8_condvar u8cp_drained; /* This is signalled whenever the "drained" status of the
                          connection block changes. */
-  struct timespec u8cp_timeout; /* How long to wait for */
+  /* How long to wait for an initial connection. Not currently used */
+  struct timespec u8cp_timeout;
   int u8cp_n_open;  /* how many open sockets in the block */
   int u8cp_n_inuse; /* how many sockets currently being used */
   int u8cp_n_waiting; /* requestors waiting for connections */
@@ -297,8 +301,12 @@ U8_EXPORT char *u8_default_mailhost, *u8_default_maildomain;
 U8_EXPORT char *u8_default_from, *u8_default_replyto;
 U8_EXPORT int u8_smtp_timeout;
 
+/** struct U8_MAILHEADER
+    Represents a mail header for use with u8_smtp
+**/
 typedef struct U8_MAILHEADER {
-  u8_string label; u8_string value;} U8_MAILHEADER;
+  u8_string label;
+  u8_string value;} U8_MAILHEADER;
 typedef struct U8_MAILHEADER *u8_mailheader;
 
 U8_EXPORT int u8_smtp(const char *mailhost,const char *maildomain,

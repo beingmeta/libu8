@@ -64,7 +64,9 @@ U8_EXPORT unsigned char *u8_random_vector(int len)
   else return vec;
 }
 
-static void fill_bytebuf(U8_BYTEBUF *out,u8_block_reader reader,void *readstate)
+static void fill_bytebuf(struct U8_BYTEBUF *out,
+			 u8_block_reader reader,
+			 void *readstate)
 {
   unsigned char buf[256]; ssize_t n_bytes;
   while ((n_bytes=reader(buf,256,readstate))>0) 

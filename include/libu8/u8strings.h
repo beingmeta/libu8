@@ -22,6 +22,7 @@
 typedef unsigned char u8_byte;
 typedef const u8_byte *u8_string;
 typedef u8_byte *u8_buf;
+typedef int u8_char;
 typedef int u8_unicode_char;
 typedef int u8_unichar;
 

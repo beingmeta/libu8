@@ -191,8 +191,11 @@ typedef unsigned long long u8_int8;
 #if (SIZEOF_LONG_LONG == 16)
 typedef unsigned long long u8_int16;
 #else
-typedef struct U8_INT16 {
-  u8_int8 first; u8_int8 second;} u8_int16;
+/** struct U8_INT16
+    This is a struct used to represent 16-byte values if they're not
+    supported for some reason.
+**/
+typedef struct U8_INT16 { u8_int8 first; u8_int8 second;} u8_int16;
 #endif
 
 /* Wide ints are the smallest ints as big as a pointer */

@@ -81,6 +81,10 @@ U8_EXPORT u8_condition u8_BadDynamicContour;
 
 typedef void (*u8_contour_popfn)(void *);
 
+/** struct U8_CONTOUR
+    This representats a dynamic execution contour for use with
+    setjmp/longmp exception handling
+**/
 typedef struct U8_CONTOUR {U8_CONTOUR_FIELDS;} U8_CONTOUR;
 typedef struct U8_CONTOUR *u8_contour;
 

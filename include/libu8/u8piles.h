@@ -19,8 +19,13 @@
 
 /* Piles */
 
+/** struct U8_PILE
+   is a growable vector of void* pointers
+**/
 typedef struct U8_PILE {
-  void **u8_elts; size_t u8_len, u8_max; int u8_mallocd;} U8_PILE;
+  void **u8_elts;
+  size_t u8_len, u8_max;
+  int u8_mallocd;} U8_PILE;
 typedef struct U8_PILE *u8_pile;
 
 U8_EXPORT int _u8_grow_pile(u8_pile p,int delta);
@@ -31,9 +36,10 @@ U8_EXPORT int _u8_grow_pile(u8_pile p,int delta);
 #define U8_INIT_STATIC_PILE(p,vec,len)          \
   p->u8_len=0; p->u8_max=len; p->u8_elts=(void **)vec
 
-#define u8_pile_add(p,e) \
-  if ((p)->u8_len>=(p)->u8_max) \
-    {_u8_grow_pile((p),1); (p)->u8_elts[((p)->u8_len)++]=((void *)e);}  \
+#define u8_pile_add(p,e)				\
+  if ((p)->u8_len>=(p)->u8_max)				\
+    {_u8_grow_pile((p),1);				\
+      (p)->u8_elts[((p)->u8_len)++]=((void *)e);}	\
   else (p)->u8_elts[((p)->u8_len)++]=((void *)e)
 
 #endif

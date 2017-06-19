@@ -128,7 +128,7 @@ ssize_t u8_grow_stream(struct U8_STREAM *stream,ssize_t delta);
   int (*u8_closefn)(struct U8_OUTPUT *);       \
   int (*u8_flushfn)(struct U8_OUTPUT *);
 
-/** struct U8_OUTPUT is an structural type which provides for UTF-8 output.
+/** struct U8_OUTPUT is a structural type which provides for UTF-8 output.
     This structure is subclassed by other structures which share its initial
     fields, allowing casting into the more general class which output functions
      operate over.
@@ -339,7 +339,7 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *outstream,ssize_t to_size);
   int (*u8_fillfn)(struct U8_INPUT *)
 
 /** struct U8_INPUT
-    Structure used for stream-based UTF-8 input. This structure is
+    is a structure used for stream-based UTF-8 input. This structure is
      subclassed by other structures which share its initial fields,
      allowing casting into the more general class which input functions
      operate over.

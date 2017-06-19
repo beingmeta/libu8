@@ -41,6 +41,9 @@ typedef struct U8_SERVER *u8_server;
 typedef struct U8_CLIENT *u8_client;
 typedef int (*u8_client_callback)(u8_client,void *);
 
+/** struct U8_CLIENT_STATS
+    records client activity information for the u8srv library.
+**/
 typedef struct U8_CLIENT_STATS {
   /* Tracking total transaction time (clock time) */
   long long tsum, tsum2, tmax; int tcount;
@@ -146,10 +149,16 @@ U8_EXPORT int u8_client_done(u8_client cl);
 
 /* Server threads */
 
+/** struct U8_SERVER_THREAD represents a server thread in the u8srv
+   library.
+**/
 typedef struct U8_SERVER_THREAD {
-  pthread_t u8st_thread; struct U8_SERVER *u8st_server;
-  unsigned long us8st_flags; long u8st_threadid;
-  int u8st_slotno, u8st_client;
+  pthread_t u8st_thread;
+  struct U8_SERVER *u8st_server;
+  unsigned long us8st_flags;
+  long u8st_threadid;
+  int u8st_slotno;
+  int u8st_client;
   void *u8st_data;}
   U8_SERVER_THREAD;
 typedef struct U8_SERVER_THREAD *u8_server_thread;
@@ -404,6 +413,9 @@ int u8_shutdown_server(struct U8_SERVER *server,int grace);
 
 /* Server Status */
 
+/** struct U8_SERVER_STATS
+    this structure aggregate processing information for a server,
+    especially for generating performance statistics. **/
 typedef struct U8_SERVER_STATS {
   int n_reqs, n_errs, n_complete, n_busy, n_active, n_reading, n_writing;
   /* Tracking total transaction time */
