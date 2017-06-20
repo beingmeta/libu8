@@ -31,13 +31,17 @@ U8_EXPORT void u8_use_syslog(int flag)
 U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
 {
   u8_byte buf[512]; int epriority=priority;
+  u8_string context = u8_log_context;
   if (u8_logging_initialized==0) u8_initialize_logging();
   if (priority>u8_loglevel) return 0;
   else if (priority<0) epriority=-priority;
   else {}
   if (epriority<u8_syslog_loglevel) return 0;
   u8_string prefix=u8_message_prefix(buf,512);
-  if ((prefix) && (c))
+  if (prefix==NULL) prefix="";
+  if ((c)&&(context))
+    syslog(priority,"%s (%s) %s\n%s",prefix,context,c,message);
+  else if (c)
     syslog(priority,"%s (%s) %s",prefix,c,message);
   else if (prefix)
     syslog(priority,"%s -- %s",prefix,message);
@@ -76,38 +80,6 @@ static void raisefn(u8_condition ex,u8_context cxt,u8_string details)
   syslog(LOG_ALERT,"%s",out.u8_outbuf);
   exit(1);
 }
-
-#if 0
-static void message(u8_string msg)
-{
-  u8_byte buf[512];
-  if (u8_logging_initialized==0) u8_initialize_logging();
-  u8_string prefix=u8_message_prefix(buf,512);
-  if (prefix)
-    syslog(LOG_INFO,"%s %s",prefix,msg);
-  else syslog(LOG_INFO,"%s",msg);
-}
-
-static void notice(u8_string msg)
-{
-  u8_byte buf[512];
-  if (u8_logging_initialized==0) u8_initialize_logging();
-  u8_string prefix=u8_message_prefix(buf,512);
-  if (prefix)
-    syslog(LOG_NOTICE,"%s %s",prefix,msg);
-  else syslog(LOG_NOTICE,"%s",msg);
-}
-
-static void warn(u8_string msg)
-{
-  u8_byte buf[512];
-  if (u8_logging_initialized==0) u8_initialize_logging();
-  u8_string prefix=u8_message_prefix(buf,512);
-  if (prefix)
-    syslog(LOG_WARNING,"%s %s",prefix,msg);
-  else syslog(LOG_WARNING,"%s",msg);
-}
-#endif
 
 /* Initialization functions */
 

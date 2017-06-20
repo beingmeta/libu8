@@ -234,4 +234,21 @@ U8_EXPORT void u8_use_syslog(int flag);
 */
 U8_EXPORT void u8_log_break(int loglevel,u8_condition c);
 
+/* Getting the logger context */
+
+#if (U8_USE_TLS)
+U8_EXPORT u8_tld_key u8_log_context_key;
+#define u8_log_context ((u8_string)(u8_tld_get(u8_log_context_key)))
+#define u8_set_log_context(cxt) \
+  ((u8_log_context)(u8_tld_set(u8_log_context_key,((void *)cxt))))
+#elif (U8_USE__THREAD)
+U8_EXPORT __thread u8_string u8_log_context;
+#define u8_set_log_context(cxt) u8_log_context=cxt
+#else
+U8_EXPORT u8_string u8_log_context;
+#define u8_set_log_context(ex) u8_log_context=cxt
+#endif
+
+
+
 #endif /* ndef LIBU8_U8LOGGING_H */

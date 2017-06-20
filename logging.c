@@ -26,6 +26,14 @@
 #include <stdarg.h>
 #include <stdio.h> /* for sprintf */
 
+#if (U8_USE_TLS)
+u8_tld_key u8_log_context_key;
+#elif (U8_USE__THREAD)
+__thread u8_string u8_log_context=NULL;
+#else
+u8_string u8_log_context=NULL;
+#endif
+
 int u8_log_show_date=0; /* If zero, show the date together with the time. */
 int u8_log_show_procinfo=0; /* If zero, this overrides u8_log_show_threadinfo. */
 int u8_log_show_elapsed=0; /* This tells displays to show elapsed time (fine grained). */
@@ -79,6 +87,10 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message);
 U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
 {
   u8_byte buf[128]; u8_string prefix, indented=NULL;
+  /* We provide a way for callers to force the message to be output
+   while specifying a descriptive loglevel. In particular, if the log
+   level is negative, it is always output using an effective loglevel
+   which is the positive complement of the negative loglevel. */
   int eloglevel=loglevel; u8_string level;
   if (loglevel>U8_MAX_LOGLEVEL) {
     fprintf(stderr,"%s!! Logging call with invalid priority %d (%s)%s",
@@ -96,15 +108,15 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
   if (!(indented)) indented=message;
   if ((loglevel<0)||(eloglevel<=u8_stdout_loglevel)) {
     if ((c)&&(*level))
-      fprintf(stdout,"%s%s %s (%s) %s%s",
+      fprintf(stdout,"%s%s%s (%s) %s%s",
               u8_logprefix,prefix,level,c,indented,u8_logsuffix);
     else if (c)
-      fprintf(stdout,"%s%s (%s) %s%s",
+      fprintf(stdout,"%s%s(%s) %s%s",
               u8_logprefix,prefix,c,indented,u8_logsuffix);
     else if (*level)
-      fprintf(stdout,"%s%s %s: %s%s",
+      fprintf(stdout,"%s%s%s: %s%s",
               u8_logprefix,prefix,level,indented,u8_logsuffix);
-    else fprintf(stdout,"%s%s %s%s",
+    else fprintf(stdout,"%s%s%s%s",
                  u8_logprefix,prefix,indented,u8_logsuffix);
     if ((indented)&&(indented!=message)) u8_free(indented);
     fflush(stdout);
@@ -114,12 +126,12 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
       fprintf(stderr,"%s%s%s (%s): %s%s",
               u8_logprefix,prefix,level,c,indented,u8_logsuffix);
     else if (c)
-      fprintf(stdout,"%s%s (%s) %s%s",
+      fprintf(stdout,"%s%s(%s) %s%s",
               u8_logprefix,prefix,c,indented,u8_logsuffix);
     else if (*level)
-      fprintf(stderr,"%s%s %s: %s%s",
+      fprintf(stderr,"%s%s%s: %s%s",
               u8_logprefix,prefix,level,indented,u8_logsuffix);
-    else fprintf(stderr,"%s%s %s%s",
+    else fprintf(stderr,"%s%s%s%s",
                  u8_logprefix,prefix,indented,u8_logsuffix);}
   if ((indented)&&(indented!=message)) u8_free(indented);
   return 0;
@@ -136,8 +148,11 @@ U8_EXPORT int u8_logger(int loglevel,u8_condition c,u8_string msg)
 U8_EXPORT int u8_log(int loglevel,u8_condition c,u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args; int retval;
-  u8_byte msgbuf[512];
-  U8_INIT_STATIC_OUTPUT_BUF(out,512,msgbuf);
+  u8_byte msgbuf[1000];
+  U8_INIT_STATIC_OUTPUT_BUF(out,1000,msgbuf);
+  if (u8_log_context) {
+    u8_puts(&out,u8_log_context); 
+    u8_putc(&out,'\n');}
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
@@ -186,7 +201,7 @@ U8_EXPORT void u8_log_break(int loglevel,u8_condition c)
 U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
 {
   time_t now_t=time(NULL);
-  char clockbuf[64], timebuf[64], procbuf[128];
+  char clockbuf[64], timebuf[128], procbuf[128];
   u8_string appid=NULL, procid=procbuf;
 #if HAVE_LOCALTIME_R
   struct tm _now, *now=&_now;
@@ -205,7 +220,7 @@ U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
   if (!(u8_log_show_procinfo)) {
     sprintf(buf,"%s",timebuf);
     return buf;}
-if (u8_log_show_appid) appid=u8_appid();
+  if (u8_log_show_appid) appid=u8_appid();
 #if (HAVE_GETPID)
   if (u8_log_show_threadinfo)
     procid=u8_procinfo(procbuf);
@@ -235,12 +250,20 @@ int u8_logging_initialized=0;
 U8_EXPORT void u8_initialize_logging()
 {
   u8_string app;
+
   u8_lock_mutex(&logging_init_lock);
+
   if (u8_logging_initialized) {
     u8_unlock_mutex(&logging_init_lock);
     return;}
+
   app=u8_appid();
   openlog(app,LOG_PID|LOG_CONS|LOG_NDELAY|LOG_PERROR,LOG_DAEMON);
+
+#if ((U8_THREADS_ENABLED) && (U8_USE_TLS))
+  u8_new_threadkey(&u8_log_context_key,NULL);
+#endif
+
   u8_logging_initialized=1;
   u8_unlock_mutex(&logging_init_lock);
   u8_register_source_file(_FILEINFO);
