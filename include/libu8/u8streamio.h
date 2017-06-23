@@ -184,8 +184,8 @@ static void U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags)
   if (buf) {
     usebuf=(s)->u8_write=(s)->u8_outbuf=buf;}
   else {
-    usebuf=(s)->u8_write=(s)->u8_outbuf=u8_malloc(sz);}
-  usebuf[0]='\0';
+    usebuf=(s)->u8_write=(s)->u8_outbuf=u8_malloc(sz);
+    usebuf[0]='\0';}
   (s)->u8_outlim=(s)->u8_outbuf+sz;
   (s)->u8_bufsz=sz;
   (s)->u8_flushfn=NULL; (s)->u8_closefn=_u8_close_soutput;
