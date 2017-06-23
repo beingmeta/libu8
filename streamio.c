@@ -305,11 +305,10 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
       (f->u8_read)++;
       return -2;}
     else if ((u8_utf8warn)||
-             ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN)) {
-      char window[UTF8_BUGWINDOW];
-      u8_grab_bytes(f->u8_read,UTF8_BUGWINDOW,window);
-      u8_log(LOG_WARN,u8_BadUTF8,
-             _("Unexpected UTF-8 continuation byte: '%s'"),window);}
+             ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN))
+      u8_utf8_warning(_("Unexpected UTF-8 continuation byte"),
+                      f->u8_read,f->u8_inlim);
+    else {}
     (f->u8_read)++;
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */
@@ -327,10 +326,9 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
     return -2;}
   else { /* Bad data, consume the initial byte */
     if ((u8_utf8warn)||
-        ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN)) {
-      char window[UTF8_BUGWINDOW];
-      u8_grab_bytes(f->u8_read,UTF8_BUGWINDOW,window);
-      u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: '%s'"),window);}
+        ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN))
+      u8_utf8_warning(_("Illegal UTF-8 byte"),f->u8_read,f->u8_inlim);
+    else {}
     f->u8_read++;  /* Consume the byte */
     return 0xFFFD;}
   /* Now, we now how many u8_inbuf we need, so we check if we have
@@ -356,11 +354,10 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
         u8_seterr(u8_TruncatedUTF8,"u8_getc",details);
         f->u8_read=(u8_byte *)scan; /* Consume the bad sequence */
         return -2;}
-      else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN)) {
-        char window[UTF8_BUGWINDOW];
-        u8_grab_bytes(scan,UTF8_BUGWINDOW,window);
-        u8_log(LOG_WARN,u8_BadUTF8,
-               _("Truncated UTF-8 sequence: '%s'"),window);}
+      else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN))
+        u8_utf8_warning(_("Truncated UTF-8 sequence"),
+                        f->u8_read,f->u8_inlim);
+      else {}
       f->u8_read=(u8_byte *)scan; /* Consume the truncated byte sequence */
       return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}
@@ -388,10 +385,9 @@ static int peekc(struct U8_INPUT *f,int fill)
       char *details=u8_grab_bytes(f->u8_read,U8_UTF8BUG_WINDOW,NULL);
       u8_seterr(u8_BadUTF8,"u8_getc",details);
       return -2;}
-    else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN)) {
-      char window[UTF8_BUGWINDOW];
-      u8_grab_bytes(scan,UTF8_BUGWINDOW,window);
-      u8_log(LOG_WARN,u8_BadUTF8,_("Truncated UTF-8 sequence: '%s'"),window);}
+    else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN))
+      u8_utf8_warning(_("Truncated UTF-8 sequence"),start,f->u8_inlim);
+    else {}
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */
   else if (byte < 0xE0) {size=2; ch=byte&0x1F;}
