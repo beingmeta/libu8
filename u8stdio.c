@@ -49,9 +49,17 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
 {
   u8_byte buf[512]; int output=0; u8_string indented=NULL;
   u8_string prefix=u8_message_prefix(buf,512);
+  u8_string level="";
   if ((u8_logindent)&&(u8_logindent[0])&&(strchr(msg,'\n')))
     indented=u8_indent_text(msg,u8_logindent);
   if (!(indented)) indented=msg;
+  if ( (priority>=0) && (priority <= (U8_MAX_LOGLEVEL)) &&
+       (u8_loglevels[priority]) )
+    level=u8_loglevels[priority];
+  else if ( (priority<0) && (priority >= -(U8_MAX_LOGLEVEL)) &&
+	    (u8_loglevels[-priority]) )
+    level=u8_loglevels[-priority];
+  else {}
 #if HAVE_SYSLOG
   if ((priority>=0) && (priority<=u8_syslog_loglevel)) {
     if (u8_logging_initialized==0) u8_initialize_logging();
