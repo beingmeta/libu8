@@ -94,6 +94,7 @@ int u8_release_version=U8_RELEASE_VERSION;
 /* Exceptions */
 
 u8_condition u8_UnexpectedErrno=_("Unexpected errno");
+u8_condition u8_NullArg=_("NULL argument (unexpected)");
 u8_condition u8_MallocFailed=_("Malloc failed");
 u8_condition u8_NotImplemented=_("Function not available");
 
