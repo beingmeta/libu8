@@ -117,7 +117,7 @@ U8_EXPORT u8_exception u8_free_exception(u8_exception ex,int full)
     ex->u8x_details=NULL;
     ex->u8x_xdata=NULL;
     ex->u8x_free_xdata=NULL;
-    if (details) u8_free(ex->u8x_details);
+    if (details) u8_free(details);
     if ((xdata) && (freefn)) freefn(xdata);
     prev=ex->u8x_prev;
     ex->u8x_prev=NULL;
