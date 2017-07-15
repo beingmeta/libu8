@@ -294,20 +294,18 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
   byte=*(f->u8_read);
   if (byte < 0x80) {
     f->u8_read++; return byte;}
-  else if (byte < 0xc0) {
-    /* Unexpected continuation byte */
+  else if (U8_EXPECT_FALSE(((byte < 0xc0)||(byte >= 0xFE)))) {
+    /* Bad start char */
     if ((u8_utf8err)||
         ((f->u8_streaminfo&U8_STREAM_UTF8ERR)==U8_STREAM_UTF8ERR)) {
       char *details=u8_grab_bytes(f->u8_read,UTF8_BUGWINDOW,NULL);
-      u8_log(LOG_WARN,u8_BadUTF8,
-             _("Unexpected UTF-8 continuation byte: '%s'"),details);
-      u8_seterr(u8_BadUTF8byte,"u8_getc",details);
+      u8_log(LOG_WARN,u8_BadUTF8Start,"bytes: '%s'",details);
+      u8_seterr(u8_BadUTF8Start,"u8_getc",details);
       (f->u8_read)++;
       return -2;}
     else if ((u8_utf8warn)||
              ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN))
-      u8_utf8_warning(_("Unexpected UTF-8 continuation byte"),
-                      f->u8_read,f->u8_inlim);
+      u8_utf8_warning(u8_BadUTF8Start,f->u8_read,f->u8_inlim);
     else {}
     (f->u8_read)++;
     return 0xFFFD;}
@@ -316,21 +314,9 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
   else if (byte < 0xF0) {size=3; ch=byte&0x0F;}
   else if (byte < 0xF8) {size=4; ch=byte&0x07;}
   else if (byte < 0xFC) {size=5; ch=byte&0x3;}
-  else if (byte < 0xFE) {size=6; ch=byte&0x1;}
-  else if ((u8_utf8err)||
-           ((f->u8_streaminfo&U8_STREAM_UTF8ERR)==U8_STREAM_UTF8ERR)) {
-    char *details=u8_grab_bytes(f->u8_read,UTF8_BUGWINDOW,NULL);
-    u8_log(LOG_WARN,u8_BadUTF8,_("Illegal UTF-8 byte: '%s'"),details);
-    u8_seterr(u8_BadUTF8byte,"u8_getc",details);
-    f->u8_read++;  /* Consume the byte */
-    return -2;}
-  else { /* Bad data, consume the initial byte */
-    if ((u8_utf8warn)||
-        ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN))
-      u8_utf8_warning(_("Illegal UTF-8 byte"),f->u8_read,f->u8_inlim);
-    else {}
-    f->u8_read++;  /* Consume the byte */
-    return 0xFFFD;}
+  else {
+    assert(byte < 0xFE);
+    size=6; ch=byte&0x1;}
   /* Now, we now how many u8_inbuf we need, so we check if we have
      that much data. */
   if (f->u8_read+size>f->u8_inlim) /* Not enough data */
@@ -355,8 +341,7 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
         f->u8_read=(u8_byte *)scan; /* Consume the bad sequence */
         return -2;}
       else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN))
-        u8_utf8_warning(_("Truncated UTF-8 sequence"),
-                        f->u8_read,f->u8_inlim);
+        u8_utf8_warning(u8_TruncatedUTF8,f->u8_read,f->u8_inlim);
       else {}
       f->u8_read=(u8_byte *)scan; /* Consume the truncated byte sequence */
       return 0xFFFD;}
@@ -386,7 +371,7 @@ static int peekc(struct U8_INPUT *f,int fill)
       u8_seterr(u8_BadUTF8,"u8_getc",details);
       return -2;}
     else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN))
-      u8_utf8_warning(_("Truncated UTF-8 sequence"),start,f->u8_inlim);
+      u8_utf8_warning(u8_TruncatedUTF8,start,f->u8_inlim);
     else {}
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */

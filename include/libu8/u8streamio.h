@@ -33,7 +33,7 @@
 U8_EXPORT int u8_validate(u8_string s,int n);
 
 U8_EXPORT u8_condition u8_UnexpectedEOD, u8_BadUNGETC, u8_NoZeroStreams;
-U8_EXPORT u8_condition u8_TruncatedUTF8, u8_BadUTF8, u8_BadUTF8byte;
+U8_EXPORT u8_condition u8_TruncatedUTF8, u8_BadUTF8;
 
 U8_EXPORT int u8_utf8warn, u8_utf8err;
 

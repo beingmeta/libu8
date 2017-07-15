@@ -44,12 +44,13 @@ u8_condition u8_NullString=_("Null UTF-8 string");
 
 /* For debugging */
 
-U8_EXPORT void u8_utf8_warning(u8_string message,u8_string string,u8_string lim)
+U8_EXPORT void u8_utf8_warning
+(u8_condition message,u8_string string,u8_string lim)
 {
   char buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
   if ((lim)&&((lim-string)<n_bytes)) n_bytes=lim-string;
   u8_grab_bytes(string,n_bytes,buf);
-  u8_log(LOG_WARN,u8_BadUTF8,_("%s: '%s'"),message,buf);
+  u8_log(LOG_WARN,message,_("bytes: %s"),buf);
 }
 
 /* Core functions */
