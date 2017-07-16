@@ -30,6 +30,7 @@ U8_EXPORT u8_condition u8_BadUnicodeChar;
 
 U8_EXPORT int u8_utf8warn, u8_utf8err;
 
+#include <assert.h>
 #include <stdarg.h>
 
 /** Reports a UTF-8 error
