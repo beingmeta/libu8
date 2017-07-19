@@ -47,7 +47,8 @@ u8_condition u8_NullString=_("Null UTF-8 string");
 U8_EXPORT void u8_utf8_warning
 (u8_condition message,u8_string string,u8_string lim)
 {
-  char buf[UTF8_BUGWINDOW]; int n_bytes=UTF8_BUGWINDOW;
+  char buf[UTF8_BUGWINDOW];
+  int n_bytes=UTF8_BUGWINDOW;
   if ((lim)&&((lim-string)<n_bytes)) n_bytes=lim-string;
   u8_grab_bytes(string,n_bytes,buf);
   u8_log(LOG_WARN,message,_("bytes: %s"),buf);
@@ -65,12 +66,12 @@ int _u8_sgetc_lim(const u8_byte **s,const u8_byte *lim)
   return u8_sgetc_lim(s,lim);
 }
 
-int _u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
+u8_byteoff _u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 {
   return u8_byteoffset(s,offset,max);
 }
 
-int _u8_charoffset(u8_string s,u8_byteoff i)
+u8_charoff _u8_charoffset(u8_string s,u8_byteoff i)
 {
   return u8_charoffset(s,i);
 }
@@ -112,7 +113,7 @@ U8_EXPORT
     Returns: an integer indicating the number of unicode characters
 in the string it represents
 */
-int u8_strlen_x(u8_string str,int slen)
+ssize_t u8_strlen_x(u8_string str,size_t slen)
 {
   CHECK_NULL_STRING(str,"u8_strlen_x",-1);
   const u8_byte *scan=str, *limit=str+slen; int len=0, rv=0;
@@ -130,12 +131,16 @@ U8_EXPORT
     Returns: an integer indicating the number of unicode characters
 in the string it represents
 */
-int u8_strlen(u8_string str)
+size_t u8_strlen(u8_string str)
 {
   CHECK_NULL_STRING(str,"u8_strlen",-1);
-  const u8_byte *scan=str; int ch=u8_sgetc(&scan), len=0;
-  while (ch>=0) {len++; ch=u8_sgetc(&scan);}
-  if (ch<-1) return ch;
+  const u8_byte *scan=str;
+  int ch=u8_sgetc(&scan), len=0;
+  while (ch>=0) {
+    len++;
+    ch=u8_sgetc(&scan);}
+  if (ch<-1)
+    return ch;
   else return len;
 }
 
@@ -228,7 +233,10 @@ static int check_utf8_ptr(u8_string s,int size)
 {
   CHECK_NULL_STRING(s,"check_utf8_ptr",-1);
   int i=1;
-  if (size == 1) return size;
+  if (size<0)
+    return 0;
+  else if (size == 1)
+    return size;
   /* Now check that the string is valid */
   while (i < size)
     if (s[i] < 0x80) return -i;
@@ -239,11 +247,13 @@ static int check_utf8_ptr(u8_string s,int size)
 
 static int valid_utf8p(u8_string s)
 {
-  int sz=check_utf8_ptr(s,get_utf8_size(*s));
+  int sz = check_utf8_ptr(s,get_utf8_size(*s));
   while (sz > 0)
-    if (*s == '\0') return 1;
+    if (*s == '\0')
+      return 1;
     else {
-      s=s+sz; sz=check_utf8_ptr(s,get_utf8_size(*s));}
+      s=s+sz;
+      sz=check_utf8_ptr(s,get_utf8_size(*s));}
   return 0;
 }
 
@@ -256,7 +266,8 @@ int u8_validptr(const u8_byte *s)
 {
   CHECK_NULL_STRING(s,"u8_validptr",-1);
   int sz=get_utf8_size(*s);
-  if (sz>0) return (check_utf8_ptr(s,sz)>0);
+  if (sz>0)
+    return (check_utf8_ptr(s,sz)>0);
   else return 0;
 }
 
@@ -276,7 +287,7 @@ U8_EXPORT
     Arguments: a possible utf8 string
     Returns: the number of bytes which are valid
 */
-int u8_validate(u8_string s,int len)
+ssize_t u8_validate(u8_string s,size_t len)
 {
   CHECK_NULL_STRING(s,"u8_validate",-1);
   int sz=get_utf8_size(*s);

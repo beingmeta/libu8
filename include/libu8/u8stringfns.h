@@ -242,7 +242,7 @@ U8_EXPORT u8_string u8_slice(const u8_byte *start,const u8_byte *end);
     @param string a UTF-8 string
     @returns the number of characters (codepoints) in the string
 **/
-U8_EXPORT int u8_strlen(u8_string string);
+U8_EXPORT size_t u8_strlen(u8_string string);
 
 /** Returns the number of bytes in a UTF-8 string.  This is just
      an alias for the C library function strlen();
@@ -258,7 +258,7 @@ U8_EXPORT int u8_strlen(u8_string string);
     @param len the number of bytes in the string to be measured
     @returns the number of characters (codepoints) in the string
 **/
-U8_EXPORT int u8_strlen_x(u8_string string,int len);
+U8_EXPORT ssize_t u8_strlen_x(u8_string string,size_t len);
 
 /** Returns a pointer into @a string starting at the @a ith character.
     This does not copy its result, so the returned string shares memory
@@ -300,7 +300,7 @@ U8_EXPORT int u8_validp(u8_string s);
     @param n the number of bytes in the string
     @returns 1 if the pointer refers to a valid UTF-8 sequence, 0 otherwise
 **/
-U8_EXPORT int u8_validate(u8_string s,int n);
+U8_EXPORT ssize_t u8_validate(u8_string s,size_t n);
 
 /** Checks the validity of a UTF-8 string and copies it
     @param s a possibly (probably) valid UTF-8 string.
@@ -475,7 +475,7 @@ U8_EXPORT u8_byteoff _u8_byteoffset(u8_string s,u8_charoff i,u8_byteoff l);
 
 #if U8_INLINE_IO
 static U8_MAYBE_UNUSED
-int u8_charoffset(u8_string s,u8_byteoff i)
+ssize_t u8_charoffset(u8_string s,u8_byteoff i)
 {
   u8_string pt=s+i; int j=0;
   while (s < pt) {
@@ -484,7 +484,7 @@ int u8_charoffset(u8_string s,u8_byteoff i)
 }
 
 static U8_MAYBE_UNUSED
-int u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
+ssize_t u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 {
   u8_string string=s, lim=s+max; int c=0;
   if (offset<0) return -1;

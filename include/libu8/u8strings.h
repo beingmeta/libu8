@@ -31,8 +31,8 @@ typedef char *u8_chars;
 
 /* This is for offsets into UTF-8 encoded strings, to distinguish
    byte and character offsets. */
-typedef int u8_byteoff;
-typedef int u8_charoff;
+typedef ssize_t u8_byteoff;
+typedef ssize_t u8_charoff;
 
 /* Type coercion, conditional, and constant string macros */
 
