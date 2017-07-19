@@ -119,13 +119,11 @@ static int fill_xinput(struct U8_XINPUT *xf)
      buffer, arranging the output to write to the end of the valid
      input. Conversion will write to this output stream, filling up
      the input buffer. */
-  {U8_INIT_OUTPUT_X( &tmpout,
-		     (xf->u8_bufsz),(xf->u8_inbuf),
-		     (((xf->u8_streaminfo)&(U8_STREAM_MALLOCD))?
-		      (U8_STREAM_MALLOCD):
-		      (U8_FIXED_STREAM)) );}
-  /* Position the temporary output stream at the end of the valid input. */
-  tmpout.u8_write=end;
+  {U8_SETUP_OUTPUT( &tmpout,
+		    (xf->u8_bufsz),(xf->u8_inbuf),end,
+		    (((xf->u8_streaminfo)&(U8_STREAM_MALLOCD))?
+		     (U8_STREAM_MALLOCD):
+		     (U8_FIXED_STREAM)) );}
   /* Now we do the actual conversion, where u8_convert writes into the
      string stream passed it as its first argument. If this has any trouble,
      it will stop and reader will hold the most recent conversion state. */
