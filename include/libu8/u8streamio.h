@@ -30,7 +30,7 @@
 #include <assert.h>
 #include <string.h>
 
-U8_EXPORT int u8_validate(u8_string s,int n);
+U8_EXPORT ssize_t u8_validate(u8_string s,size_t n);
 
 U8_EXPORT u8_condition u8_UnexpectedEOD, u8_BadUNGETC, u8_NoZeroStreams;
 U8_EXPORT u8_condition u8_TruncatedUTF8, u8_BadUTF8;
@@ -163,40 +163,65 @@ U8_EXPORT int u8_close_output(u8_output o);
 U8_EXPORT U8_OUTPUT *u8_open_output_string(int initial_size);
 
 #if U8_INLINE_IO
-U8_INLINE_FCN void U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
+U8_INLINE_FCN void U8_SETUP_OUTPUT(u8_output s,size_t sz,
+				   unsigned char *buf,
+				   unsigned char *write,
+				   int flags);
 /** Initializes a string output stream, with options.
     This allocates a buffer for the stream if @a buf is NULL.
-    The buffer can be passed a statically allocated buffer and
+    The can be passed a statically allocated buffer and
      will track whether it is still being used as the buffer grows.
-    Note that if you are defining a flushfn on a stream,
-     you must do this after U8_INIT_OUTPUT_X, since it initializes
-     the flushfn to NULL.
+    If *write* is NULL, it defaults to *buf*;
+    A zero byte is deposited into *write to NUL-terminate the output;
+    If you are defining a flushfn on a stream, you must do this after
+     U8_SETUP_OUTPUT, since it initializes the flushfn to NULL.
     @param s a pointer to a U8_OUTPUT structure
     @param sz the number of bytes in the buffer
     @param buf a buffer pointer or NULL
+    @param write NULL or a pointer within *buf*
     @param flags flags for the stream being initialized
     @returns void
 **/
-static void U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags)
+static void U8_SETUP_OUTPUT(u8_output s,size_t sz,
+			    unsigned char *buf,
+			    unsigned char *write,
+			    int flags)
 {
-  char *usebuf;
   assert(sz>0);
-  if (buf) {
-    usebuf=(s)->u8_write=(s)->u8_outbuf=buf;
-    usebuf[0]='\0';}
+  if (flags<0) flags=0;
+  flags |= U8_OUTPUT_STREAM;
+  if (buf)
+    (s)->u8_outbuf=buf;
   else {
-    usebuf=(s)->u8_write=(s)->u8_outbuf=u8_malloc(sz);
-    usebuf[0]='\0';}
+    (s)->u8_outbuf=buf=u8_malloc(sz);
+    flags |= U8_STREAM_OWNS_BUF;}
+  if (write==NULL)
+    write=buf;
+  else if ( (write<buf) || (write>buf+sz) )
+    write=buf;
+  else write=write;
+  (s)->u8_write=write;
+  *write='\0';
   (s)->u8_outlim=(s)->u8_outbuf+sz;
   (s)->u8_bufsz=sz;
-  (s)->u8_flushfn=NULL; (s)->u8_closefn=_u8_close_soutput;
-  (s)->u8_streaminfo=
-    (flags|U8_OUTPUT_STREAM|((buf) ? (0) : (U8_STREAM_OWNS_BUF)));
+  (s)->u8_flushfn=NULL;
+  (s)->u8_closefn=_u8_close_soutput;
+  (s)->u8_streaminfo=flags;
 }
 #else
-U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
-#define U8_INIT_OUTPUT_X(s,sz,buf,flags) _U8_INIT_OUTPUT_X(s,sz,buf,flags)
+U8_EXPORT void _U8_SETUP_OUTPUT(u8_output s,size_t sz,
+				unsigned char *buf,
+				unsigned char *write,
+				int flags);
+#define U8_SETUP_OUTPUT(s,sz,buf,write,flags) _U8_SETUP_OUTPUT(s,sz,buf,write,flags)
 #endif
+
+static void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
+			     unsigned char *buf,
+			     int flags)
+{
+  U8_SETUP_OUTPUT(s,sz,buf,buf,flags);
+}
 
 /** Initializes a string output stream with a particular initial size
     This always allocates a buffer but arranges for the buffer to grow
@@ -225,9 +250,11 @@ U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags);
     @returns void
 **/
 #define U8_INIT_STATIC_OUTPUT(s,sz)	\
-  {memset((&s),0,sizeof(s)); U8_INIT_OUTPUT_X((&s),sz,NULL,0);}
-#define U8_INIT_STATIC_OUTPUT_BUF(s,sz,buf)	       \
-  {memset((&s),0,sizeof(s)); memset(buf,0,sz);      \
+  {memset((&s),0,sizeof(s));		\
+    U8_INIT_OUTPUT_X((&s),sz,NULL,0);}
+#define U8_INIT_STATIC_OUTPUT_BUF(s,sz,buf)	\
+  {memset((&s),0,sizeof(s));			\
+    memset(buf,0,sz);				\
     U8_INIT_OUTPUT_X((&s),sz,buf,0);}
 
 /** U8_INIT_FIXED_OUTPUT
@@ -395,7 +422,7 @@ U8_INLINE_FCN void U8_INIT_STRING_INPUT(u8_input s,int n,const u8_byte *buf)
     @param bits the logical OR of fields controlling the stream
     @returns void
 **/
-U8_INLINE_FCN void U8_INIT_INPUT_X(u8_input s,int n,u8_byte *buf,int bits)
+U8_INLINE_FCN void U8_INIT_INPUT_X(u8_input s,size_t n,u8_byte *buf,int bits)
 {
   if (buf==NULL) {
     bits=bits|U8_STREAM_OWNS_BUF;
@@ -407,8 +434,8 @@ U8_INLINE_FCN void U8_INIT_INPUT_X(u8_input s,int n,u8_byte *buf,int bits)
   (s)->u8_streaminfo=bits;
 }
 #else
-U8_EXPORT void _U8_INIT_INPUT_X(u8_input s,int n,u8_byte *buf,int bits);
-U8_EXPORT void _U8_INIT_STRING_INPUT(u8_input s,int n,const u8_byte *buf);
+U8_EXPORT void _U8_INIT_INPUT_X(u8_input s,size_t n,u8_byte *buf,int bits);
+U8_EXPORT void _U8_INIT_STRING_INPUT(u8_input s,size_t n,const u8_byte *buf);
 #define U8_INIT_STRING_INPUT _U8_INIT_STRING_INPUT
 #define U8_INIT_INPUT_X _U8_INIT_INPUT_X
 #endif

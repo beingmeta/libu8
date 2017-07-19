@@ -34,17 +34,29 @@
 
 /* Utility functions */
 
-U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,int sz,char *buf,int flags)
+U8_EXPORT void _U8_SETUP_OUTPUT(u8_output s,size_t sz,
+                                unsigned char *buf,
+                                unsigned char *write,
+                                int flags)
+{
+  U8_SETUP_OUTPUT(s,sz,buf,write,flags);
+}
+
+
+U8_EXPORT void _U8_INIT_OUTPUT_X(u8_output s,size_t sz,
+                                 unsigned char *buf,
+                                 unsigned char *write,
+                                 int flags)
 {
   U8_INIT_OUTPUT_X(s,sz,buf,flags);
 }
 
-U8_EXPORT void _U8_INIT_STRING_INPUT(u8_input s,int n,u8_byte *buf)
+U8_EXPORT void _U8_INIT_STRING_INPUT(u8_input s,size_t n,u8_byte *buf)
 {
   U8_INIT_STRING_INPUT(s,n,buf);
 }
 
-U8_EXPORT void _U8_INIT_INPUT_X(u8_input s,int n,u8_byte *buf,int bits)
+U8_EXPORT void _U8_INIT_INPUT_X(u8_input s,size_t n,u8_byte *buf,int bits)
 {
   U8_INIT_INPUT_X(s,n,buf,bits);
 }
