@@ -311,7 +311,7 @@ U8_EXPORT int u8_xoutput_setbuf(struct U8_XOUTPUT *xo,int bufsiz)
   else {
     off_t write_off=xo->u8_write-xo->u8_outbuf;
     off_t write_lim=xo->u8_outlim-xo->u8_outbuf;
-    u8_byte *newbuf=(bufsiz>xo->u8_bufsz) ? 
+    u8_byte *newbuf=(bufsiz>xo->u8_bufsz) ?
       (u8_realloc(xo->u8_outbuf,bufsiz)) : (NULL);
     u8_byte *newxbuf= ((xo->u8_xbuflim)<bufsiz) ?
       (u8_realloc(xo->u8_xbuf,bufsiz)) : (NULL);
@@ -341,7 +341,7 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
   u8_free(fname); u8_free(realname);
   if (fd>=0) {
     struct U8_XOUTPUT *out=u8_open_xoutput(fd,enc);
-    if (out) out->u8_streaminfo=out->u8_streaminfo|U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK;
+    if (out) out->u8_streaminfo |= U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK;
     return out;}
   else {
     u8_seterr(u8_strerror(errno),"u8_open_output_file",
