@@ -276,7 +276,7 @@ static void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
 
 #define U8_STATIC_OUTPUT_FLAGS U8_OUTPUT_STREAM
 #define U8_STATIC_OUTPUT(name,sz)	     \
-  struct U8_OUTPUT name, *name ## out=&name; \
+  U8_MAYBE_UNUSED struct U8_OUTPUT name, *name ## out=&name; \
   u8_byte _buf_ ## name[sz];		     \
   U8_INIT_OUTPUT_X(&name,sz,_buf_ ## name,U8_STATIC_OUTPUT_FLAGS)
 
