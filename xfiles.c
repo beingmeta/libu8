@@ -119,13 +119,11 @@ static int fill_xinput(struct U8_XINPUT *xf)
      buffer, arranging the output to write to the end of the valid
      input. Conversion will write to this output stream, filling up
      the input buffer. */
-  {U8_INIT_OUTPUT_X( &tmpout,
-		     (xf->u8_bufsz),(xf->u8_inbuf),
-		     (((xf->u8_streaminfo)&(U8_STREAM_MALLOCD))?
-		      (U8_STREAM_MALLOCD):
-		      (U8_FIXED_STREAM)) );}
-  /* Position the temporary output stream at the end of the valid input. */
-  tmpout.u8_write=end;
+  {U8_SETUP_OUTPUT( &tmpout,
+		    (xf->u8_bufsz),(xf->u8_inbuf),end,
+		    (((xf->u8_streaminfo)&(U8_STREAM_MALLOCD))?
+		     (U8_STREAM_MALLOCD):
+		     (U8_FIXED_STREAM)) );}
   /* Now we do the actual conversion, where u8_convert writes into the
      string stream passed it as its first argument. If this has any trouble,
      it will stop and reader will hold the most recent conversion state. */
@@ -313,7 +311,7 @@ U8_EXPORT int u8_xoutput_setbuf(struct U8_XOUTPUT *xo,int bufsiz)
   else {
     off_t write_off=xo->u8_write-xo->u8_outbuf;
     off_t write_lim=xo->u8_outlim-xo->u8_outbuf;
-    u8_byte *newbuf=(bufsiz>xo->u8_bufsz) ? 
+    u8_byte *newbuf=(bufsiz>xo->u8_bufsz) ?
       (u8_realloc(xo->u8_outbuf,bufsiz)) : (NULL);
     u8_byte *newxbuf= ((xo->u8_xbuflim)<bufsiz) ?
       (u8_realloc(xo->u8_xbuf,bufsiz)) : (NULL);
@@ -343,7 +341,7 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
   u8_free(fname); u8_free(realname);
   if (fd>=0) {
     struct U8_XOUTPUT *out=u8_open_xoutput(fd,enc);
-    if (out) out->u8_streaminfo=out->u8_streaminfo|U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK;
+    if (out) out->u8_streaminfo |= U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK;
     return out;}
   else {
     u8_seterr(u8_strerror(errno),"u8_open_output_file",

@@ -111,10 +111,17 @@ U8_EXPORT u8_exception u8_free_exception(u8_exception ex,int full)
 {
   u8_exception prev=ex;
   while (ex) {
-    if (ex->u8x_details) u8_free(ex->u8x_details);
-    if ((ex->u8x_xdata) && (ex->u8x_free_xdata))
-      (ex->u8x_free_xdata)(ex->u8x_xdata);
+    void *xdata=ex->u8x_xdata;
+    void (*freefn)(void *)=ex->u8x_free_xdata;
+    u8_string details=ex->u8x_details;
+    ex->u8x_details=NULL;
+    ex->u8x_xdata=NULL;
+    ex->u8x_free_xdata=NULL;
+    if (details) u8_free(details);
+    if ((xdata) && (freefn)) freefn(xdata);
     prev=ex->u8x_prev;
+    ex->u8x_prev=NULL;
+    /* Belts *and* suspenders */
     memset(ex,0,sizeof(struct U8_EXCEPTION));
     u8_free(ex);
     if (full) ex=prev; else break;}
@@ -127,10 +134,19 @@ U8_EXPORT u8_exception u8_pop_exception()
   if (current==NULL) {
     u8_log(LOG_CRIT,EmptyExceptionStack,"Popping a non existent error");
     return NULL;}
-  if (current->u8x_details) u8_free(current->u8x_details);
-  if ((current->u8x_xdata) && (current->u8x_free_xdata))
-    (current->u8x_free_xdata)(current->u8x_xdata);
+  void *xdata=current->u8x_xdata;
+  void (*freefn)(void *)=current->u8x_free_xdata;
+  u8_string details=current->u8x_details;
+  current->u8x_details=NULL;
+  current->u8x_xdata=NULL;
+  current->u8x_free_xdata=NULL;
+  if (details) u8_free(details);
+  current->u8x_details=NULL;
+  if ((xdata) && (freefn))
+    freefn(xdata);
   prev=current->u8x_prev;
+  current->u8x_prev=NULL;
+  /* Belts *and* suspenders */
   memset(current,0,sizeof(struct U8_EXCEPTION));
 #if (U8_USE_TLS)
   u8_tld_set(u8_current_exception_key,prev);

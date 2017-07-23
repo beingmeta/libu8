@@ -108,30 +108,30 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
   if (!(indented)) indented=message;
   if ((loglevel<0)||(eloglevel<=u8_stdout_loglevel)) {
     if ((c)&&(*level))
-      fprintf(stdout,"%s%s%s (%s) %s%s",
+      fprintf(stdout,"%s%s %s (%s) %s%s",
               u8_logprefix,prefix,level,c,indented,u8_logsuffix);
     else if (c)
       fprintf(stdout,"%s%s(%s) %s%s",
               u8_logprefix,prefix,c,indented,u8_logsuffix);
     else if (*level)
-      fprintf(stdout,"%s%s%s: %s%s",
+      fprintf(stdout,"%s%s %s: %s%s",
               u8_logprefix,prefix,level,indented,u8_logsuffix);
-    else fprintf(stdout,"%s%s%s%s",
+    else fprintf(stdout,"%s%s %s%s",
                  u8_logprefix,prefix,indented,u8_logsuffix);
     if ((indented)&&(indented!=message)) u8_free(indented);
     fflush(stdout);
     return 1;}
   if (eloglevel<=u8_stderr_loglevel) {
     if ((c)&&(*level))
-      fprintf(stderr,"%s%s%s (%s): %s%s",
+      fprintf(stderr,"%s%s %s (%s): %s%s",
               u8_logprefix,prefix,level,c,indented,u8_logsuffix);
     else if (c)
-      fprintf(stdout,"%s%s(%s) %s%s",
+      fprintf(stdout,"%s%s (%s) %s%s",
               u8_logprefix,prefix,c,indented,u8_logsuffix);
     else if (*level)
-      fprintf(stderr,"%s%s%s: %s%s",
+      fprintf(stderr,"%s%s %s: %s%s",
               u8_logprefix,prefix,level,indented,u8_logsuffix);
-    else fprintf(stderr,"%s%s%s%s",
+    else fprintf(stderr,"%s%s %s%s",
                  u8_logprefix,prefix,indented,u8_logsuffix);}
   if ((indented)&&(indented!=message)) u8_free(indented);
   return 0;

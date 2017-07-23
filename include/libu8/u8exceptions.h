@@ -288,6 +288,7 @@ U8_EXPORT int u8_poperr
   (u8_condition *conditionp,u8_context *contextp,u8_string *detailsp);
 
 U8_EXPORT u8_condition u8_MallocFailed;
+U8_EXPORT u8_condition u8_NullArg;
 U8_EXPORT u8_condition u8_UnexpectedErrno;
 U8_EXPORT u8_condition u8_NotImplemented;
 

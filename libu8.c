@@ -52,6 +52,10 @@
 #include <stdio.h>
 #include <errno.h>
 
+/* Temporarily here, remove with next minor release */
+U8_EXPORT u8_condition u8_BadUTF8byte;
+U8_EXPORT u8_condition u8_BadUTF8Continuation;
+
 /* Just in case */
 
 #define LOG_EMERG	0	/* system is unusable */
@@ -94,16 +98,21 @@ int u8_release_version=U8_RELEASE_VERSION;
 /* Exceptions */
 
 u8_condition u8_UnexpectedErrno=_("Unexpected errno");
+u8_condition u8_NullArg=_("NULL argument (unexpected)");
 u8_condition u8_MallocFailed=_("Malloc failed");
 u8_condition u8_NotImplemented=_("Function not available");
 
 u8_condition u8_UnexpectedEOD=_("Unexpected EOD"),
   u8_BadUTF8=_("Invalid UTF-8 encoded text"),
-  u8_BadUTF8byte=_("Invalid UTF-8 continuation character"),
+  u8_BadUTF8Start=_("Invalid UTF-8 start byte"),
   u8_TruncatedUTF8=_("Truncated UTF-8 sequence"),
   u8_BadUnicodeChar=_("Invalid Unicode Character"),
   u8_BadUNGETC=_("UNGETC error"),
   u8_NoZeroStreams=_("No zero-length string streams");
+
+/* Temporarily here, remove with next minor release */
+u8_condition u8_BadUTF8byte = NULL;
+u8_condition u8_BadUTF8Continuation = NULL;
 
 /* libc conversions */
 
@@ -655,6 +664,10 @@ U8_EXPORT void u8_initialize_threading(void);
 U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
+
+  /* Temporarily here, remove with next minor release */
+  u8_BadUTF8byte = u8_BadUTF8Start;
+  u8_BadUTF8Continuation = u8_TruncatedUTF8;
 
   u8_initialize_threading();
 

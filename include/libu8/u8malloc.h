@@ -118,6 +118,29 @@ U8_EXPORT void *u8_zrealloc(void *ptr,size_t sz,size_t osz);
 **/
 U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 
+/* Because it allocates memory */
+
+U8_MAYBE_UNUSED
+/** Copies a block of bytes into a freshly allocated block
+    @param size the length of the block
+    @param source a pointer to the block
+    @returns a pointer to the newly allocated block
+**/
+static unsigned char *u8_memdup(size_t len,unsigned char *source)
+{
+  unsigned char *copy=u8_malloc(len);
+  if ((copy)&&(source)) {
+    memcpy(copy,source,len);
+    return copy;}
+  else if (source==NULL) {
+    u8_seterr(u8_NullArg,"u8_memdup",NULL);
+    return NULL;}
+  else {
+    u8_seterr(u8_MallocFailed,"u8_memdup",NULL);
+    return NULL;}
+}
+
+
 /* Legacy definitions */
 #define u8_allocz u8_alloc
 #define u8_allocz_n u8_alloc_n
