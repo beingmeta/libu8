@@ -188,7 +188,9 @@ static void U8_SETUP_OUTPUT(u8_output s,size_t sz,
 			    int flags)
 {
   assert(sz>0);
-  if (flags<0) flags=0;
+  if (flags<0) 
+    flags = ( ((u8_utf8warn)?(U8_STREAM_UTF8WARN):(0)) |
+	      ((u8_utf8err)?(U8_STREAM_UTF8ERR):(0)) );
   flags |= U8_OUTPUT_STREAM;
   if (buf)
     (s)->u8_outbuf=buf;
@@ -213,7 +215,8 @@ U8_EXPORT void _U8_SETUP_OUTPUT(u8_output s,size_t sz,
 				unsigned char *buf,
 				unsigned char *write,
 				int flags);
-#define U8_SETUP_OUTPUT(s,sz,buf,write,flags) _U8_SETUP_OUTPUT(s,sz,buf,write,flags)
+#define U8_SETUP_OUTPUT(s,sz,buf,write,flags) \
+  _U8_SETUP_OUTPUT(s,sz,buf,write,flags)
 #endif
 
 static void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
@@ -251,11 +254,11 @@ static void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
 **/
 #define U8_INIT_STATIC_OUTPUT(s,sz)	\
   {memset((&s),0,sizeof(s));		\
-    U8_INIT_OUTPUT_X((&s),sz,NULL,0);}
+    U8_INIT_OUTPUT_X((&s),sz,NULL,-1);}
 #define U8_INIT_STATIC_OUTPUT_BUF(s,sz,buf)	\
   {memset((&s),0,sizeof(s));			\
     memset(buf,0,sz);				\
-    U8_INIT_OUTPUT_X((&s),sz,buf,0);}
+    U8_INIT_OUTPUT_X((&s),sz,buf,-1);}
 
 /** U8_INIT_FIXED_OUTPUT
     Initializes a string output stream with a fixed size buffer
@@ -265,7 +268,7 @@ static void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
     @param buf a pointer to a byte buffer which must exist
     @returns void
 **/
-#define U8_INIT_FIXED_OUTPUT(s,sz,buf)                              \
+#define U8_INIT_FIXED_OUTPUT(s,sz,buf)		\
   U8_INIT_OUTPUT_X(s,sz,buf,U8_FIXED_STREAM)
 
 #define U8_FIXED_OUTPUT_FLAGS (U8_OUTPUT_STREAM|U8_FIXED_STREAM)
@@ -282,7 +285,8 @@ static void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
 
 /** Returns the string content of the output stream. **/
 #define u8_outstring(s) ((s)->u8_outbuf)
-/** Returns the length in bytes of the string content of the output stream. **/
+/** Returns the length in bytes of the string content of the output
+    stream. **/
 #define u8_outlen(s)    (((s)->u8_write)-((s)->u8_outbuf))
 
 U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int c);
@@ -424,13 +428,21 @@ U8_INLINE_FCN void U8_INIT_STRING_INPUT(u8_input s,int n,const u8_byte *buf)
 **/
 U8_INLINE_FCN void U8_INIT_INPUT_X(u8_input s,size_t n,u8_byte *buf,int bits)
 {
+  if (bits<0)
+    bits= ( (-bits) |
+	    ((buf) ? (0) : (U8_STREAM_OWNS_BUF))     |
+	    ((u8_utf8warn)?(U8_STREAM_UTF8WARN):(0)) |
+	    ((u8_utf8err)?(U8_STREAM_UTF8ERR):(0)) );
+  else bits = ( bits |
+		((buf) ? (0) : (U8_STREAM_OWNS_BUF)) );
   if (buf==NULL) {
-    bits=bits|U8_STREAM_OWNS_BUF;
-    buf=u8_malloc(n); buf[0]='\0';}
+    buf=u8_malloc(n);
+    buf[0]='\0';}
   (s)->u8_bufsz=n;
   (s)->u8_inbuf=(s)->u8_read=buf;
   (s)->u8_inlim=buf;
   (s)->u8_closefn=_u8_close_sinput; (s)->u8_fillfn=NULL;
+  if (bits<0)
   (s)->u8_streaminfo=bits;
 }
 #else
