@@ -35,12 +35,31 @@ U8_EXPORT void u8_dfree(void *);
 #define u8_free(ptr) (free((char *)ptr),errno=0)
 #define u8_zmalloc(sz) (u8_dmalloc(sz))
 #else /* U8_DEBUG_MALLOC */
-#define u8_malloc(sz) (malloc(sz))
-#define u8_malloc_n(n,sz) (calloc(n,sz))
-#define u8_realloc(ptr,newsz) \
-  ((ptr==NULL) ? (u8_malloc(newsz)) : (realloc(ptr,newsz)))
-#define u8_free(ptr) free((char *)ptr)
-#define u8_zmalloc(sz) (calloc(sz,1))
+U8_INLINE_FCN void *u8_malloc(size_t sz)
+{
+  void *result = malloc(sz);
+  if (result) errno=0;
+  return result;
+}
+U8_INLINE_FCN void *u8_malloc_n(size_t n,size_t sz)
+{
+  void *result = calloc(n,sz);
+  if (result) errno=0;
+  return result;
+}
+U8_INLINE_FCN void *u8_realloc(void *ptr,size_t new_size)
+{
+  void *result = (ptr == NULL) ? (malloc(new_size)) : (realloc(ptr,new_size));
+  if (result) errno=0;
+  return result;
+}
+U8_INLINE_FCN void *u8_zmalloc(size_t sz)
+{
+  void *result = calloc(sz,1);
+  if (result) errno=0;
+  return result;
+}
+#define u8_free(ptr) (free((char *)ptr),errno=0)
 #endif /* not U8_DEBUG_MALLOC */
 
 #define u8_zero_array(r) memset(r,0,sizeof(r))
