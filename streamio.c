@@ -595,7 +595,8 @@ This mallocs and initializes an input stream to read from a particular string.
 */
 int u8_close_input(u8_input in)
 {
-  if (in->u8_closefn) return in->u8_closefn(in);
+  if (in->u8_closefn)
+    return in->u8_closefn(in);
   else return 0;
 }
 

@@ -164,12 +164,14 @@ U8_EXPORT int u8_init_xinput(struct U8_XINPUT *xi,int fd,u8_encoding enc)
   if (fd<0) return -1;
   else {
     U8_INIT_INPUT(((u8_input)xi),U8_DEFAULT_XFILE_BUFSIZE);
-    xi->u8_xfd=fd; xi->u8_xbuf=u8_malloc(U8_DEFAULT_XFILE_BUFSIZE);
-    xi->u8_xbuflive=0; xi->u8_xbuflim=U8_DEFAULT_XFILE_BUFSIZE;
+    xi->u8_xfd=fd;
+    xi->u8_xbuf=u8_malloc(U8_DEFAULT_XFILE_BUFSIZE);
+    xi->u8_xbuflim=U8_DEFAULT_XFILE_BUFSIZE;
     xi->u8_fillfn=(u8_fillfn)fill_xinput;
     xi->u8_closefn=(u8_input_closefn)u8_close_xinput;
-    xi->u8_streaminfo=xi->u8_streaminfo|U8_STREAM_OWNS_XBUF;
+    xi->u8_streaminfo |= U8_STREAM_OWNS_XBUF;
     xi->u8_xencoding=enc;
+    xi->u8_xbuflive=0;
     return fd;}
 }
 
@@ -240,10 +242,17 @@ U8_EXPORT void u8_close_xinput(struct U8_XINPUT *f)
 {
   u8_deregister_open_xfile((u8_xfile)f);
   if (f->u8_streaminfo&U8_STREAM_OWNS_BUF) u8_free(f->u8_inbuf);
-  if (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) u8_free(f->u8_xbuf);
-  if (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) close(f->u8_xfd);
+  f->u8_inbuf=f->u8_read=f->u8_inlim=NULL;
+  f->u8_bufsz=0;
+  if (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) {
+    unsigned char *buf=f->u8_xbuf;
+    f->u8_xbuf=NULL;
+    u8_free(buf);}
+  if (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET)
+    close(f->u8_xfd);
   f->u8_xfd=-1;
-  if (f->u8_streaminfo&U8_STREAM_MALLOCD) u8_free(f);
+  if (f->u8_streaminfo&U8_STREAM_MALLOCD)
+    u8_free(f);
 }
 
 /* OUTPUT */
@@ -439,8 +448,11 @@ U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *f)
   if (f->u8_flushfn) f->u8_flushfn((U8_OUTPUT *)f);
   u8_deregister_open_xfile((u8_xfile)f);
   if (f->u8_streaminfo&U8_STREAM_OWNS_BUF) u8_free(f->u8_outbuf);
+  f->u8_outbuf=f->u8_write=f->u8_outlim=NULL; f->u8_bufsz=0;
   if (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) u8_free(f->u8_xbuf);
+  f->u8_xbuf=NULL;
   if (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) close(f->u8_xfd);
+  f->u8_xfd=-1; f->u8_xbuflive=0; f->u8_xbuflim=0;
   if (f->u8_streaminfo&U8_STREAM_MALLOCD) u8_free(f);
 }
 
