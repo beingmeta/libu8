@@ -441,8 +441,8 @@ U8_INLINE_FCN void U8_INIT_INPUT_X(u8_input s,size_t n,u8_byte *buf,int bits)
   (s)->u8_bufsz=n;
   (s)->u8_inbuf=(s)->u8_read=buf;
   (s)->u8_inlim=buf;
-  (s)->u8_closefn=_u8_close_sinput; (s)->u8_fillfn=NULL;
-  if (bits<0)
+  (s)->u8_closefn=_u8_close_sinput;
+  (s)->u8_fillfn=NULL;
   (s)->u8_streaminfo=bits;
 }
 #else
