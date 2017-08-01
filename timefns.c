@@ -854,17 +854,45 @@ void u8_xtime_to_rfc822_x(u8_output ss,struct U8_XTIME *xtp,int zone,int flags)
   else if (zone==1)
     u8_local_xtime(&inzone,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs);
   else u8_init_xtime(&inzone,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs,zone,0);
-  sprintf(buf,"%s, %d %s %04d %02d:%02d:%02d",
-          dow_names[inzone.u8_wday],
-          inzone.u8_mday,
-          month_names[inzone.u8_mon],
-          (inzone.u8_year),
-          inzone.u8_hour,inzone.u8_min,inzone.u8_sec);
-  if (flags&U8_RFC822_NOZONE) u8_puts(ss,buf);
+  if (xtp->u8_prec >= u8_second)
+    u8_sprintf(buf,128,"%s, %d %s %04d %02d:%02d:%02d",
+	       dow_names[inzone.u8_wday],
+	       inzone.u8_mday,
+	       month_names[inzone.u8_mon],
+	       (inzone.u8_year),
+	       inzone.u8_hour,inzone.u8_min,inzone.u8_sec);
+  else if (xtp->u8_prec >= u8_minute)
+    u8_sprintf(buf,128,"%s, %d %s %04d %02d:%02d",
+	       dow_names[inzone.u8_wday],
+	       inzone.u8_mday,
+	       month_names[inzone.u8_mon],
+	       (inzone.u8_year),
+	       inzone.u8_hour,inzone.u8_min);
+  else if (xtp->u8_prec >= u8_hour)
+    u8_sprintf(buf,128,"%s, %d %s %04d %02d:00",
+	       dow_names[inzone.u8_wday],
+	       inzone.u8_mday,
+	       month_names[inzone.u8_mon],
+	       (inzone.u8_year),
+	       inzone.u8_hour);
+  else if (xtp->u8_prec <= u8_day)
+    u8_sprintf(buf,128,"%s, %d %s %04d",
+	       dow_names[inzone.u8_wday],
+	       inzone.u8_mday,
+	       month_names[inzone.u8_mon],
+	       (inzone.u8_year));
+  else u8_sprintf(buf,128,"%s, %d %s %04d %02d:%02d:%02d",
+		  dow_names[inzone.u8_wday],
+		  inzone.u8_mday,
+		  month_names[inzone.u8_mon],
+		  (inzone.u8_year),
+		  inzone.u8_hour,inzone.u8_min,inzone.u8_sec);
+  if ( (flags) & (U8_RFC822_NOZONE) )
+    u8_puts(ss,buf);
   else {
     int minus=(inzone.u8_tzoff+inzone.u8_dstoff)<0;
     int off=((minus)?(-(inzone.u8_tzoff+inzone.u8_dstoff)):
-             (inzone.u8_tzoff+inzone.u8_dstoff));
+	     (inzone.u8_tzoff+inzone.u8_dstoff));
     int hroff=off/3600, minoff=off%3600/60;
     u8_printf(ss,"%s %s%02d%02d",buf,((minus)?"-":"+"),hroff,minoff);}
 }
