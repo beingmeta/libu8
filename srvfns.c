@@ -811,6 +811,7 @@ static void *event_loop(void *thread_arg)
         if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
         cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       else if (cl->active>0) u8_client_done(cl);
+      else {}
       if (ex) {
         u8_log(LOG_WARN,ClientRequest,
                "Error during activity on @x%lx#%d.%d[%s/%d](%s%:hs) %s",

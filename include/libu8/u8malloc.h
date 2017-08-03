@@ -30,9 +30,8 @@ U8_EXPORT void u8_dfree(void *);
 /* Assume everything is defined */
 #elif U8_DEBUG_MALLOC
 #define u8_malloc u8_dmalloc
-#define u8_malloc_n(n,sz) (u8_dmalloc_n(n,sz))
-#define u8_realloc(n,sz) (u8_drealloc(n,sz))
-#define u8_free(ptr) (free((char *)ptr),errno=0)
+#define u8_malloc_n(n,sz) (u8_dmalloc_n((n),(sz)))
+#define u8_realloc(n,sz) (u8_drealloc((n),(sz)))
 #define u8_zmalloc(sz) (u8_dmalloc(sz))
 #else /* U8_DEBUG_MALLOC */
 U8_INLINE_FCN void *u8_malloc(size_t sz)
@@ -59,8 +58,12 @@ U8_INLINE_FCN void *u8_zmalloc(size_t sz)
   if (result) errno=0;
   return result;
 }
-#define u8_free(ptr) (free((char *)ptr),errno=0)
 #endif /* not U8_DEBUG_MALLOC */
+U8_INLINE_FCN void u8_free(void *ptr)
+{
+  free(ptr);
+  errno=0;
+}
 
 #define u8_zero_array(r) memset(r,0,sizeof(r))
 #define u8_zero_struct(r) memset(&r,0,sizeof(r))
