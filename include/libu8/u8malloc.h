@@ -59,11 +59,12 @@ U8_INLINE_FCN void *u8_zmalloc(size_t sz)
   return result;
 }
 #endif /* not U8_DEBUG_MALLOC */
-U8_INLINE_FCN void u8_free(void *ptr)
+U8_INLINE_FCN void _u8_free(void *ptr)
 {
-  free(ptr);
+  free((void *)ptr);
   errno=0;
 }
+#define u8_free(x) _u8_free((void *)(x))
 
 #define u8_zero_array(r) memset(r,0,sizeof(r))
 #define u8_zero_struct(r) memset(&r,0,sizeof(r))
