@@ -622,7 +622,8 @@ U8_EXPORT u8_string u8_strchr(u8_string haystack,int needle,int n)
     const u8_byte *last=NULL, *end=NULL;
     const u8_byte *match=_u8_strchr(haystack,needle,&end);
     while (match) {
-      last=match; match=_u8_strchr(end,needle,&end);}
+      last=match;
+      match= (end) ? (_u8_strchr(end,needle,&end)) : (NULL);}
     return last;}
   else return NULL;
 }
