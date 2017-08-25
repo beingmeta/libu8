@@ -477,8 +477,9 @@ U8_EXPORT int u8_removefile(u8_string filename)
 {
   char *abspath=u8_localpath(filename);
   int retval=remove(abspath);
+  if (retval<0)
+    u8_graberr(-1,"u8_removefile",u8_strdup(filename));
   u8_free(abspath);
-  if (retval<0) u8_graberr(-1,"u8_removefile",u8_strdup(filename));
   return retval;
 }
 
