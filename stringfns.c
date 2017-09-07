@@ -763,6 +763,9 @@ U8_EXPORT char *itoa_helper(unsigned long long int num,char *buf,
 			    unsigned long long int mult)
 {
   char *write=buf;
+  if (num==0) {
+    *write++='0'; *write++='\0';
+    return buf;}
   unsigned long long int reduce=num;
   int started=0; while (mult>0) {
     int weight=reduce/mult;
