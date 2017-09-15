@@ -452,14 +452,14 @@ U8_EXPORT u8_socket u8_connect_x(u8_string spec,u8_string *addrp)
       sockaddr.sin_port=htons((short)portno);
       memcpy(&(sockaddr.sin_addr),addr,addr_len);
       sockaddr.sin_family=family;
-      if (connect(socket_id,saddr(sockaddr),sizeof(struct sockaddr_in))<0)
-        if (*scan==NULL) {
+      if (connect(socket_id,saddr(sockaddr),sizeof(struct sockaddr_in))<0) {
+	if (*scan==NULL) {
+	  u8_graberr(-1,"u8_connect:connect",u8_strdup(spec));
           close(socket_id);
           u8_free(addrs);
           if (hostname!=_hostname) u8_free(hostname);
-          u8_graberr(-1,"u8_connect:connect",u8_strdup(spec));
           return ((u8_socket)(-1));}
-        else errno=0; /* Try the next address */
+	else errno=0;} /* Try the next address */
       else {
         if (addrp) *addrp=u8_sockaddr_string((struct sockaddr *)&sockaddr);
         if (hostname!=_hostname) u8_free(hostname);
