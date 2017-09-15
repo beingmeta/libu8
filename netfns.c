@@ -177,15 +177,18 @@ static struct hostent *copy_hostent(struct hostent *he)
   /* Count the space for the aliases, counting each string. */
   scanner=he->h_aliases; while (*scanner) {
     n_bytes=n_bytes+strlen(*scanner)+1;
-    scanner++; n_aliases++;}
+    scanner++;
+    n_aliases++;}
   n_bytes=n_bytes+sizeof(char *)*(n_aliases+1);
   scanner=he->h_addr_list; while (*scanner) {
     n_bytes=n_bytes+addr_len;
-    scanner++; n_addrs++;}
+    scanner++;
+    n_addrs++;}
   n_bytes=n_bytes+sizeof(char *)*(n_addrs+1);
   alloc=buf=u8_malloc(n_bytes);
   copy=(struct hostent *)buf;
-  copy->h_length=he->h_length; copy->h_addrtype=he->h_addrtype;
+  copy->h_length=he->h_length;
+  copy->h_addrtype=he->h_addrtype;
   alloc=buf+sizeof(struct hostent);
   /* Copy aliases */
   writer=copy->h_aliases=(char **) alloc;
@@ -438,15 +441,6 @@ U8_EXPORT u8_socket u8_connect_x(u8_string spec,u8_string *addrp)
       u8_free(addrs);
       if (hostname!=_hostname) u8_free(hostname);
       return ((u8_socket)(-1));}
-#if 0
-    if (timeout>0) {
-      struct timeval tv;
-      tv.tv_sec=timeout/1000; tv.tv_usec=(timeout%1000)*1000;
-      setsockopt(socket_id,level,SO_SNDTIMEO,(void *)&tv,sizeof(struct timeval));
-      tv.tv_sec=timeout/1000; tv.tv_usec=(timeout%1000)*1000;
-      setsockopt(socket_id,SO_RCVTIME0,(void *)&tv,sizeof(struct timeval));}
-    setsockopt(socket_id,SO_NOSIGPIPE,(void *)1,sizeof(int));
-#endif
     while (*scan) {
       char *addr=*scan++;
       sockaddr.sin_port=htons((short)portno);

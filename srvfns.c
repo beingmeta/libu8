@@ -1340,21 +1340,29 @@ int u8_add_server(struct U8_SERVER *server,u8_string hostname,int port)
           u8_free(sockaddr); addrs++;}
         else {
           struct U8_SERVER_INFO *info;
+	  u8_string addr_string=u8_sockaddr_string(sockaddr);
           u8_socket sock=open_server_socket(sockaddr,server->max_backlog);
           if (sock>=0) {
             u8_lock_mutex(&(server->lock));
             info=add_server(server,sock,sockaddr);
-            if (info) info->idstring=u8_sockaddr_string(sockaddr);
+	    if (info) info->idstring=addr_string;
             if (server->flags&U8_SERVER_LOG_LISTEN)
-              u8_log(LOG_NOTICE,NewServer,"Listening to %s",info->idstring);}
+	      u8_log(LOG_NOTICE,NewServer,"Listening to %s",addr_string);}
           else {
-            u8_log(LOG_ERROR,u8_NetworkError,"Can't open one socket");
-            if (sockaddr) u8_free(sockaddr);
-            if (hostinfo) u8_free(hostinfo);
-            u8_unlock_mutex(&(server->lock));
-            return -1;}
-          u8_unlock_mutex(&(server->lock));
-          addrs++; n_servers++;}}
+	    if (u8_current_exception) {
+	      u8_exception ex=u8_erreify();
+	      u8_condition cond = ex->u8x_cond;
+	      if (cond == u8_MissingErrno) cond = "AddServerFailed";
+	      u8_log(LOG_ERROR,cond,"Can't open server socket at %s (%s:%s)",
+		     addr_string,ex->u8x_context,ex->u8x_details);
+	      u8_free_exception(ex,1);}
+	    else {
+	      u8_log(LOG_ERROR,u8_NetworkError,"Can't open socket @%s",
+		     addr_string);}
+	    u8_free(addr_string);}
+	  u8_unlock_mutex(&(server->lock));
+          addrs++;
+	  n_servers++;}}
       if (hostinfo) u8_free(hostinfo);
       return n_servers;}}
 }
