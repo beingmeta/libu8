@@ -192,11 +192,12 @@ tests/dynamic/%: tests/%.c
 lib/%@suffix@.a:
 	@echo "# (libu8)" MKSTATIC $@ $^
 	@$(MKSTATIC) $@.tmp $^
-	mv $@.tmp $@
+	@mv $@.tmp $@
 lib/%@suffix@.so.@U8VERSION@:
 	@echo "# (libu8)" MKSO $@
 	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
-		 -L./lib -o $@ $^ $(LIBS) -lu8
+		 -L./lib -o $@.tmp $^ $(LIBS) -lu8
+	@mv $@.tmp $@
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	@ln -sf $(<F) $@
 	@ln -sf $(<F) $@.@U8MAJOR@
@@ -204,7 +205,8 @@ lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 lib/%@suffix@.dylib:
 	@echo "# (libu8)" MACLIBTOOL $@
 	@$(MACLIBTOOL) -install_name @rpath/lib/$(*F).@U8MAJOR@.dylib \
-		$(DYLIB_FLAGS) -o $@ $^
+		$(DYLIB_FLAGS) -o $@.tmp $^
+	@mv $@.tmp $@
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 
 $(LIBINSTALLDIR)/%.a: lib/%.a
