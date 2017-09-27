@@ -191,7 +191,8 @@ tests/dynamic/%: tests/%.c
 
 lib/%@suffix@.a:
 	@echo "# (libu8)" MKSTATIC $@ $^
-	@$(MKSTATIC) $@ $^
+	@$(MKSTATIC) $@.tmp $^
+	mv $@.tmp $@
 lib/%@suffix@.so.@U8VERSION@:
 	@echo "# (libu8)" MKSO $@
 	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
