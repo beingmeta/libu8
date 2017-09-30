@@ -24,7 +24,9 @@
 #include "libu8/u8streamio.h"
 #include "libu8/u8printf.h"
 #include <stdarg.h>
-#include <stdio.h> /* for sprintf */
+#if U8_WITH_STDIO
+#include <stdio.h>
+#endif
 
 #if (U8_USE_TLS)
 u8_tld_key u8_log_context_key;
@@ -35,10 +37,10 @@ u8_string u8_log_context=NULL;
 #endif
 
 int u8_log_show_date=0; /* If zero, show the date together with the time. */
-int u8_log_show_procinfo=0; /* If zero, this overrides u8_log_show_threadinfo. */
+int u8_log_show_procinfo=0;
+int u8_log_show_threadinfo=0;
 int u8_log_show_elapsed=0; /* This tells displays to show elapsed time (fine grained). */
 int u8_log_show_appid=1;
-int u8_log_show_threadinfo=0;
 
 u8_string u8_loglevels[11]={
   _("Emergency!!!"),
@@ -212,31 +214,28 @@ U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
   memset(buf,0,buflen); u8_zero_array(clockbuf);
   u8_zero_array(timebuf); u8_zero_array(procbuf);
   if (u8_log_show_date)
-    strftime(clockbuf,32,"%H:%M:%S(%d%b%y)",now);
+    strftime(clockbuf,32,"(%d%b%y)%H:%M:%S",now);
   else strftime(clockbuf,32,"%H:%M:%S",now);
   if (u8_log_show_elapsed)
-    sprintf(timebuf,"%s(%f)",clockbuf,u8_elapsed_time());
-  else sprintf(timebuf,"%s",clockbuf);
-  if (!(u8_log_show_procinfo)) {
-    sprintf(buf,"%s",timebuf);
+    u8_sprintf(timebuf,128,"%s(%f)",clockbuf,u8_elapsed_time());
+  else u8_sprintf(timebuf,128,"%s",clockbuf);
+  if (!((u8_log_show_procinfo)||(u8_log_show_threadinfo))) {
+    strcpy(buf,timebuf);
     return buf;}
+  else procid=NULL;
   if (u8_log_show_appid) appid=u8_appid();
 #if (HAVE_GETPID)
   if (u8_log_show_threadinfo)
     procid=u8_procinfo(procbuf);
-  else sprintf(procbuf,"%lu",(unsigned long)getpid());
+  else u8_write_long_long((long long)getpid(),procbuf,128);
 #else
-  if (u8_log_show_procinfo) sprintf(procbuf,"nopid");
+  if (u8_log_show_procinfo) strcpy(procbuf,"nopid");
 #endif
-  if ((appid!=NULL)&&
-      ((strlen(timebuf)+strlen(procid)+strlen(appid)+5)<buflen))
-    sprintf(buf,"%s <%s:%s>",timebuf,appid,procid);
-  else if ((u8_log_show_procinfo) &&
-           ((strlen(timebuf)+strlen(procid)+5)<buflen))
-    sprintf(buf,"%s <%s>",timebuf,procid);
-  else if ((strlen(timebuf)+2)<buflen)
-    sprintf(buf,"%s ",timebuf);
-  else return NULL;
+  if ( (appid) && (procid) )
+    u8_sprintf(buf,buflen,"%s <%s:%s>",timebuf,appid,procid);
+  else if (appid)
+    u8_sprintf(buf,buflen,"%s <%s>",timebuf,appid);
+  else u8_sprintf(buf,buflen,"%s <%s>",timebuf,procid);
   return buf;
 }
 
