@@ -128,12 +128,11 @@ U8_EXPORT char *u8_procinfo(char *buf)
 {
   pid_t pid=getpid();
   long long tid=u8_threadid();
-  char tmpbuf[64];
-  u8_write_long_long((long long) pid,tmpbuf,64);
+  char pidbuf[64], tidbuf[64];
+  u8_write_long_long((long long) pid,pidbuf,64);
+  u8_write_long_long((long long) tid,tidbuf,64);
   if (!(buf)) buf=u8_zmalloc(128);
-  strcpy(buf,tmpbuf);
-  u8_write_long_long((long long) tid,tmpbuf,64);
-  strcat(buf,tmpbuf);
+  strcpy(buf,pidbuf); strcat(buf,":"); strcat(buf,tidbuf);
   return buf;
 }
 #else
