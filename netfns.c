@@ -1151,7 +1151,7 @@ int u8_smtp(const char *mailhost,const char *maildomain,
     output_mime(&out,hdr->value,strlen(hdr->value),strlen(hdr->label)+2);}
   if (message_len<0) message_len=strlen(message);
   if (ctype==NULL)
-    sprintf(buf,"Content-type: %s; charset=utf-8;\r\n\r\n",ctype);
+    sprintf(buf,"Content-type: text/plain; charset=utf-8;\r\n\r\n");
   else if (strncmp(ctype,"text",4)==0)
     sprintf(buf,"Content-type: %s; charset=utf-8;\r\n\r\n",ctype);
   else sprintf(buf,"Content-type: %s\r\n\r\n",ctype);
