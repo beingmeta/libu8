@@ -163,10 +163,11 @@ U8_EXPORT int u8_close_output(u8_output o);
 U8_EXPORT U8_OUTPUT *u8_open_output_string(int initial_size);
 
 #if U8_INLINE_IO
-U8_INLINE_FCN void U8_SETUP_OUTPUT(u8_output s,size_t sz,
-				   unsigned char *buf,
-				   unsigned char *write,
-				   int flags);
+U8_INLINE_FCN U8_MAYBE_UNUSED
+void U8_SETUP_OUTPUT(u8_output s,size_t sz,
+		     unsigned char *buf,
+		     unsigned char *write,
+		     int flags);
 /** Initializes a string output stream, with options.
     This allocates a buffer for the stream if @a buf is NULL.
     The can be passed a statically allocated buffer and
@@ -201,7 +202,7 @@ static void U8_SETUP_OUTPUT(u8_output s,size_t sz,
     write=buf;
   else if ( (write<buf) || (write>buf+sz) )
     write=buf;
-  else write=write;
+  else {}
   (s)->u8_write=write;
   *write='\0';
   (s)->u8_outlim=(s)->u8_outbuf+sz;
@@ -219,7 +220,7 @@ U8_EXPORT void _U8_SETUP_OUTPUT(u8_output s,size_t sz,
   _U8_SETUP_OUTPUT(s,sz,buf,write,flags)
 #endif
 
-static void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
+static U8_MAYBE_UNUSED void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
 			     unsigned char *buf,
 			     int flags)
 {

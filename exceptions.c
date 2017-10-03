@@ -26,6 +26,8 @@
 #include <stdio.h>
 #include <errno.h>
 
+u8_condition u8_MissingErrno=_("Missing ERRNO");
+
 static u8_condition UnknownError=_("Unknown error");
 static u8_condition EmptyExceptionStack=_("Attempt to pop an empty exception stack");
 
@@ -303,6 +305,7 @@ static u8_mutex strerror_lock;
 
 U8_EXPORT u8_condition u8_strerror(int num)
 {
+  if (num == 0) return u8_MissingErrno;
 #if ((U8_THREADS_ENABLED) && (!(HAVE_STRERROR_R)))
   char *strerror_result;
 #endif

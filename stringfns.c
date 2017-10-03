@@ -318,7 +318,8 @@ string. */
 u8_string u8_valid_copy(u8_string s)
 {
   CHECK_NULL_STRING(s,"u8_valid_copy",NULL);
-  U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,32);
+  size_t len = strlen(s);
+  U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,len+2);
   while (*s)
     if (*s<0x80) u8_putc(&out,*s++);
     else if (check_utf8_ptr(s,get_utf8_size(*s))>0) {
@@ -356,16 +357,15 @@ u8_string u8_string2buf(u8_string string,u8_byte *buf,size_t len)
 }
 
 U8_EXPORT
-/* u8_valid_copy:
-     Input: a string which should be UTF-8 encoded
-     Output: a utf-8 encoding string
-Copies its argument, converting invalid UTF-8 sequences into
-sequences of latin-1 characters. This always returns a valid UTF8
-string. */
+/* u8_convert_crlfs:
+     Input: a supposedly UTF-8 string
+     Output: a valid UTF-8 string \r\n converted to \n
+ */
 u8_string u8_convert_crlfs(u8_string s)
 {
   CHECK_NULL_STRING(s,"u8_convert_crlfs",NULL);
-  U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,32);
+  size_t len = strlen(s);
+  U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,len+1);
   while (*s)
     if (*s=='\r')
       if (s[1]=='\n') {u8_putc(&out,'\n'); s=s+2;}
@@ -763,6 +763,9 @@ U8_EXPORT char *itoa_helper(unsigned long long int num,char *buf,
 			    unsigned long long int mult)
 {
   char *write=buf;
+  if (num==0) {
+    *write++='0'; *write++='\0';
+    return buf;}
   unsigned long long int reduce=num;
   int started=0; while (mult>0) {
     int weight=reduce/mult;

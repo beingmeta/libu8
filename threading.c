@@ -31,7 +31,6 @@
 #endif
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <errno.h>
 
 #if HAVE_PTHREAD_H
@@ -127,9 +126,13 @@ U8_EXPORT long long u8_threadid()
 #if (HAVE_GETPID)
 U8_EXPORT char *u8_procinfo(char *buf)
 {
-  pid_t pid=getpid(); long long tid=u8_threadid();
+  pid_t pid=getpid();
+  long long tid=u8_threadid();
+  char pidbuf[64], tidbuf[64];
+  u8_write_long_long((long long) pid,pidbuf,64);
+  u8_write_long_long((long long) tid,tidbuf,64);
   if (!(buf)) buf=u8_zmalloc(128);
-  sprintf(buf,"%ld:%lld",(unsigned long int)pid,(unsigned long long)tid);
+  strcpy(buf,pidbuf); strcat(buf,":"); strcat(buf,tidbuf);
   return buf;
 }
 #else

@@ -20,6 +20,7 @@
 #define U8_DEBUG_ERRNO 1
 
 U8_EXPORT int u8_debug_errno;
+U8_EXPORT u8_condition u8_MissingErrno;
 
 #define U8_CLEAR_ERRNO() if (errno) errno=0; else {}
 #define U8_DISCARD_ERRNO(num) if (errno==num) errno=0; else {}
