@@ -1,3 +1,9 @@
+libu8 (2.6.4-4) stable; urgency=medium
+
+  * Made u8_graberrno into a macro to save the errno correctly
+
+ -- Ken Haase <kh@beingmeta.com>  Tue, 03 Oct 2017 13:10:16 +0000
+
 libu8 (2.6.3-3) stable; urgency=medium
 
   * Updated libu8 release see the changelogs
