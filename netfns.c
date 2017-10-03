@@ -292,7 +292,7 @@ U8_EXPORT u8_string u8_gethostname()
 {
   char local_hostname[MAX_HOSTNAME+1];
   if (gethostname(local_hostname,MAX_HOSTNAME) < 0) {
-    u8_graberr(-1,"u8_gethostname",NULL);
+    u8_graberrno("u8_gethostname",NULL);
     return NULL;}
   else {
     int i=0; char *scan=local_hostname;
@@ -434,7 +434,7 @@ U8_EXPORT u8_socket u8_connect_x(u8_string spec,u8_string *addrp)
       return -1;}
     /* Get a socket */
     if ((socket_id=socket(family,SOCK_STREAM,0))<0) {
-      u8_graberr(-1,"u8_connect:socket",u8_strdup(spec));
+      u8_graberrno("u8_connect:socket",u8_strdup(spec));
       u8_free(addrs);
       if (hostname!=_hostname) u8_free(hostname);
       return ((u8_socket)(-1));}
@@ -457,7 +457,7 @@ U8_EXPORT u8_socket u8_connect_x(u8_string spec,u8_string *addrp)
           close(socket_id);
           u8_free(addrs);
           if (hostname!=_hostname) u8_free(hostname);
-          u8_graberr(-1,"u8_connect:connect",u8_strdup(spec));
+          u8_graberrno("u8_connect:connect",u8_strdup(spec));
           return ((u8_socket)(-1));}
         else errno=0; /* Try the next address */
       else {
@@ -472,14 +472,14 @@ U8_EXPORT u8_socket u8_connect_x(u8_string spec,u8_string *addrp)
 #if HAVE_SYS_UN_H
     struct sockaddr_un sockaddr;
     if ((socket_id=socket(PF_LOCAL,SOCK_STREAM,0))<0) {
-      u8_graberr(-1,"u8_connect:socket",u8_strdup(spec));
+      u8_graberrno("u8_connect:socket",u8_strdup(spec));
       if (hostname!=_hostname) u8_free(hostname);
       return -1;}
     sockaddr.sun_family=AF_UNIX;
     strcpy(sockaddr.sun_path,hostname);
     if (connect(socket_id,saddr(sockaddr),sizeof(struct sockaddr_un))<0) {
       close(socket_id);
-      u8_graberr(-1,"u8_connect:connect",u8_strdup(spec));
+      u8_graberrno("u8_connect:connect",u8_strdup(spec));
       if (hostname!=_hostname) u8_free(hostname);
       return ((u8_socket)(-1));}
     else return (u8_socket)socket_id;
@@ -1052,7 +1052,7 @@ int u8_sendbytes(int msecs,int socket,const char *buf,int size,int flags)
       if ((errno != EINTR) && (errno != EAGAIN)) {
         u8_log(LOG_WARN,NULL,"Error (%s) on socket %d, retval=%d",
                strerror(errno),socket,retval);
-        u8_graberr(-1,"u8_sendbytes",NULL);
+        u8_graberrno("u8_sendbytes",NULL);
         return -1;}
       continue;}}}
   return 0;

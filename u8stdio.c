@@ -237,7 +237,7 @@ U8_EXPORT void u8_fputs(u8_string s,FILE *f)
     nbytes=fwrite(start,1,scan-start,f);
     if (nbytes<0) {
       u8_log(LOG_CRIT,stdio_error,"Error writing file output");
-      u8_graberr(-1,"u8_fputs",NULL);}}
+      u8_graberrno("u8_fputs",NULL);}}
 }
 
 U8_EXPORT void u8_fprintf(FILE *f,u8_string format_string,...)

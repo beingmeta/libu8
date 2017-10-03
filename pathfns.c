@@ -71,7 +71,7 @@ U8_EXPORT u8_string u8_getcwd()
 {
   char *wd=getcwd(NULL,0); u8_string uwd;
   if (wd==NULL) {
-    u8_graberr(-1,"u8_getcwd",NULL);
+    u8_graberrno("u8_getcwd",NULL);
     return NULL;}
   else uwd=u8_fromlibc(wd);
   u8_free(wd);
@@ -83,7 +83,7 @@ U8_EXPORT int u8_setcwd(u8_string dirname)
   char *lpath=u8_localpath(dirname);
   if (lpath==NULL) return -1;
   else if (chdir(lpath)<0) {
-    u8_graberr(-1,"u8_setcwd",u8_fromlibc(lpath));
+    u8_graberrno("u8_setcwd",u8_fromlibc(lpath));
     u8_free(lpath);
     return -1;}
   else return 1;

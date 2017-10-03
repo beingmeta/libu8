@@ -256,7 +256,8 @@ U8_EXPORT time_t u8_file_ctime(u8_string filename)
   char *lpath=u8_localpath(filename);
   struct stat fileinfo;
   if (stat(lpath,&fileinfo)<0) {
-    u8_graberr(-1,"u8_file_ctime",u8_strdup(filename));
+    int saved_errno = errno; errno=0;
+    u8_graberr(saved_errno,"u8_file_ctime",u8_strdup(filename));
     u8_free(lpath);
     return (time_t) -1;}
   else {
@@ -269,7 +270,7 @@ U8_EXPORT time_t u8_file_mtime(u8_string filename)
   char *lpath=u8_localpath(filename);
   struct stat fileinfo;
   if (stat(lpath,&fileinfo)<0) {
-    u8_graberr(-1,"u8_file_mtime",u8_strdup(filename));
+    u8_graberrno("u8_file_mtime",u8_strdup(filename));
     u8_free(lpath);
     return (time_t) -1;}
   else {
@@ -284,7 +285,7 @@ U8_EXPORT time_t u8_set_mtime(u8_string filename,time_t mtime)
   struct utimbuf tbuf={-1,mtime};
   int rv=utime(lpath,&tbuf);
   if (rv<0) {
-    u8_graberr(-1,"u8_set_mtime",lpath);
+    u8_graberrno("u8_set_mtime",lpath);
     return (time_t)-1;}
   else {
     u8_free(lpath);
@@ -302,7 +303,7 @@ U8_EXPORT time_t u8_file_atime(u8_string filename)
   char *lpath=u8_localpath(filename);
   struct stat fileinfo;
   if (stat(lpath,&fileinfo)<0) {
-    u8_graberr(-1,"u8_file_atime",u8_strdup(filename));
+    u8_graberrno("u8_file_atime",u8_strdup(filename));
     u8_free(lpath);
     return (time_t) -1;}
   else {
@@ -317,7 +318,7 @@ U8_EXPORT time_t u8_set_atime(u8_string filename,time_t atime)
   struct utimbuf tbuf={atime,-1};
   int rv=utime(lpath,&tbuf);
   if (rv<0) {
-    u8_graberr(-1,"u8_set_atime",lpath);
+    u8_graberrno("u8_set_atime",lpath);
     return (time_t)-1;}
   else {
     u8_free(lpath);
@@ -335,7 +336,7 @@ U8_EXPORT int u8_file_mode(u8_string filename)
   char *lpath=u8_localpath(filename);
   struct stat fileinfo;
   if (stat(lpath,&fileinfo)<0) {
-    u8_graberr(-1,"u8_file_mode",u8_strdup(filename));
+    u8_graberrno("u8_file_mode",u8_strdup(filename));
     u8_free(lpath);
     return (time_t) -1;}
   else {
@@ -348,7 +349,7 @@ U8_EXPORT ssize_t u8_file_size(u8_string filename)
   char *lpath=u8_localpath(filename);
   struct stat fileinfo;
   if (stat(lpath,&fileinfo)<0) {
-    u8_graberr(-1,"u8_file_size",u8_strdup(filename));
+    u8_graberrno("u8_file_size",u8_strdup(filename));
     u8_free(lpath);
     return (ssize_t) -1;}
   else {
@@ -361,7 +362,7 @@ U8_EXPORT u8_string u8_file_owner(u8_string filename)
   char *lpath=u8_localpath(filename);
   struct stat fileinfo;
   if (stat(lpath,&fileinfo)<0) {
-    u8_graberr(-1,"u8_file_owner",u8_strdup(filename));
+    u8_graberrno("u8_file_owner",u8_strdup(filename));
     u8_free(lpath);
     return NULL;}
   else {
@@ -377,14 +378,14 @@ U8_EXPORT u8_string u8_readlink(u8_string filename,int absolute)
   char *linkname; ssize_t linklen;
   struct stat linkinfo;
   if (lstat(lpath,&linkinfo)<0) {
-    u8_graberr(-1,"u8_readlink",u8_strdup(filename));
+    u8_graberrno("u8_readlink",u8_strdup(filename));
     u8_free(lpath);
     return NULL;}
   else {
     linkname=u8_malloc(linkinfo.st_size+16);
     linklen=readlink(lpath,linkname,linkinfo.st_size+1);
     if (linklen<0) {
-      u8_graberr(-1,"u8_readlink",u8_strdup(filename));
+      u8_graberrno("u8_readlink",u8_strdup(filename));
       u8_free(lpath); u8_free(linkname);
       return NULL;}
     if (linklen>linkinfo.st_size+15) {
@@ -478,7 +479,7 @@ U8_EXPORT int u8_removefile(u8_string filename)
   char *abspath=u8_localpath(filename);
   int retval=remove(abspath);
   u8_free(abspath);
-  if (retval<0) u8_graberr(-1,"u8_removefile",u8_strdup(filename));
+  if (retval<0) u8_graberrno("u8_removefile",u8_strdup(filename));
   return retval;
 }
 
@@ -487,7 +488,7 @@ U8_EXPORT int u8_movefile(u8_string from,u8_string to)
   char *absfrom=u8_localpath(from);
   char *absto=u8_localpath(to);
   int retval=rename(absfrom,absto);
-  if (retval<0) u8_graberr(-1,"u8_movefile",u8_mkstring("%s->%s",from,to));
+  if (retval<0) u8_graberrno("u8_movefile",u8_mkstring("%s->%s",from,to));
   u8_free(absfrom); u8_free(absto);
   return retval;
 }
@@ -499,7 +500,7 @@ U8_EXPORT int u8_linkfile(u8_string from,u8_string to)
   char *absto=u8_localpath(to);
   int retval=symlink(absfrom,absto);
   u8_free(absfrom); u8_free(absto);
-  if (retval<0) u8_graberr(-1,"u8_linkfile",u8_mkstring("%s->%s",from,to));
+  if (retval<0) u8_graberrno("u8_linkfile",u8_mkstring("%s->%s",from,to));
   return retval;
 }
 #else
@@ -516,8 +517,8 @@ U8_EXPORT int u8_chmod(u8_string name,mode_t mode)
   struct stat fileinfo;
   char *localized=u8_localpath(name);
   int retval=-1;
-  if (stat(localized,&fileinfo)<0)
-    u8_graberr(-1,"u8_chmod",u8_strdup(name));
+  if (stat(localized,&fileinfo)<0) {
+    u8_graberrno("u8_chmod",u8_strdup(name));}
   else if (fileinfo.st_mode==mode)
     retval=0;
   else {
@@ -629,7 +630,7 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
   char *dirpath=u8_localpath(abspath);
   u8_free(abspath); dp=opendir(dirpath);
   if (dp==NULL) {
-    u8_graberr(-1,"u8_getfiles",u8_strdup(dirname));
+    u8_graberrno("u8_getfiles",u8_strdup(dirname));
     u8_free(dirpath);
     return NULL;}
   else while ((entry=readdir(dp))) {
@@ -676,7 +677,7 @@ static int remove_tree_helper(u8_string dirname)
   char *dirpath=u8_localpath(abspath);
   u8_free(abspath); dp=opendir(dirpath);
   if (dp==NULL) {
-    u8_graberr(-1,"u8_remove_tree",u8_strdup(dirname));
+    u8_graberrno("u8_remove_tree",u8_strdup(dirname));
     u8_clear_errors(1);
     u8_free(dirpath);
     return 0;}
@@ -696,14 +697,14 @@ static int remove_tree_helper(u8_string dirname)
             if (retval>=0) count++;
 	    u8_free(elt); u8_free(fullpath);}
           else {
-            u8_graberr(-1,"u8_remove_tree",fullpath);
+            u8_graberrno("u8_remove_tree",fullpath);
             u8_clear_errors(1);}}
         else if (((fileinfo.st_mode)&(S_IFLNK))||
                  ((fileinfo.st_mode)&(S_IFREG))||
                  ((fileinfo.st_mode)&(S_IFSOCK))) {
           int retval=u8_removefile(fullpath);
           if (retval<0) {
-            u8_graberr(-1,"u8_remove_tree",fullpath);
+            u8_graberrno("u8_remove_tree",fullpath);
             u8_clear_errors(1);}
           else {
             count++;

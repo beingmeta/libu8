@@ -53,7 +53,7 @@ U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
     else if (errno==EAGAIN) {errno=0; continue;}
     else {
       u8_free(data);
-      u8_graberr(-1,"u8_filedata",abspath);
+      u8_graberrno("u8_filedata",abspath);
       *n_bytes=-1;
       u8_fclose(f);
       return NULL;}}

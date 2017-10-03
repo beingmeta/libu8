@@ -249,7 +249,8 @@ U8_EXPORT void u8_graberr(int num,u8_context cxt,u8_string details);
    @param cxt a context string (a const utf-8 string)
    @param details a details string (a malloc'd utf-8 string)
 **/
-U8_EXPORT void u8_graberrno(u8_context cxt,u8_string details);
+#define u8_graberrno(cxt,details) \
+  {int _saved_errno = errno; errno=0; u8_graberr(_saved_errno,cxt,details);}
 
 /* Legacy functions */
 

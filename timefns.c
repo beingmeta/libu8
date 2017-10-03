@@ -269,7 +269,7 @@ static time_t mktime_x(struct U8_XTIME *xt,int islocal)
   /* This tells it to figure it out. */
   tick=mktime(&tptr);
   if (tick<0) {
-    u8_graberr(-1,"u8_mktime",NULL);
+    u8_graberrno("u8_mktime",NULL);
     return tick;}
   xt->u8_wday=tptr.tm_wday;
   xt->u8_yday=tptr.tm_yday;

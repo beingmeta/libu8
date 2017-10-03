@@ -190,7 +190,7 @@ U8_EXPORT u8_subscription u8_subscribe
       return scan;}
     else scan=scan->next;
   if (stat(lpath,&fileinfo)<0) {
-    u8_graberr(-1,"u8_subscribe",u8_strdup(filename));
+    u8_graberrno("u8_subscribe",u8_strdup(filename));
     u8_free(lpath);
     u8_unlock_mutex(&subscription_lock);
     return NULL;}
@@ -214,7 +214,7 @@ U8_EXPORT int u8_renew(u8_subscription s)
   struct stat fileinfo;
   if (s->callback==NULL) return 0;
   else if (stat(s->filename,&fileinfo)<0) {
-    u8_graberr(-1,"u8_renew",u8_fromlibc(s->filename));
+    u8_graberrno("u8_renew",u8_fromlibc(s->filename));
     return -1;}
   else if (s->mtime<fileinfo.st_mtime) {
     return s->callback(s->filename,s->callback_data);}

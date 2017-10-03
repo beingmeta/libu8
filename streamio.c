@@ -217,7 +217,7 @@ U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int ch)
     /* Need space */
     int rv = (f->u8_flushfn) ? (f->u8_flushfn(f)) : (0);
     if (rv<0) {
-      u8_graberr(-1,"u8_putc/flush",NULL);
+      u8_graberrno("u8_putc/flush",NULL);
       return -1;}
     else if (f->u8_write+size+1>=f->u8_outlim) {
       /* Still need space */
@@ -228,7 +228,7 @@ U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int ch)
         size_t new_size = cur_size+size+U8_BUF_MIN_GROW;
         u8_grow_output_stream(f,new_size);}}}
   if (f->u8_write+size+1>=f->u8_outlim) {
-    if (errno) u8_graberr(-1,"u8_putc",NULL);
+    if (errno) u8_graberrno("u8_putc",NULL);
     u8_seterr("NoSpaceInStream","u8_putc",NULL);
     return -1;}
   else {
@@ -251,7 +251,7 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
     /* Need space */
     int rv = (f->u8_flushfn) ? (f->u8_flushfn(f)) : (0);
     if (rv<0) {
-      u8_graberr(-1,"u8_putn/flush",NULL);
+      u8_graberrno("u8_putn/flush",NULL);
       return -1;}
     else if (f->u8_write+len+1>=f->u8_outlim) {
       /* Still need space */
@@ -263,7 +263,7 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
         u8_grow_output_stream(f,new_size);}}}
   else {}
   if (f->u8_write+len+1>=f->u8_outlim) {
-    if (errno) u8_graberr(-1,"u8_putn",NULL);
+    if (errno) u8_graberrno("u8_putn",NULL);
     u8_seterr("NoSpaceInStream","u8_putn",NULL);
     return -1;}
   else {
@@ -282,7 +282,7 @@ U8_EXPORT int _u8_output_needs(u8_output out,size_t n_bytes)
   else {
     /* Need space */
     int rv = (out->u8_flushfn) ? (out->u8_flushfn(out)) : (0);
-    if (rv<0) u8_graberr(-1,"u8_putn/flush",NULL);
+    if (rv<0) u8_graberrno("u8_putn/flush",NULL);
     if ( (u8_outbuf_space(out)) < n_bytes+1 )
       return 1;
     else if ( (out->u8_streaminfo) & (U8_FIXED_STREAM) )

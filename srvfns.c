@@ -1177,17 +1177,17 @@ static u8_socket open_server_socket(struct sockaddr *sockaddr,int max_backlog)
     return -1;}
   socket_id=socket(family,SOCK_STREAM,0);
   if (socket_id < 0) {
-    u8_graberr(-1,"open_server_socket:socket",u8_sockaddr_string(sockaddr));
+    u8_graberrno("open_server_socket:socket",u8_sockaddr_string(sockaddr));
     return -1;}
   else if (setsockopt(socket_id, SOL_SOCKET, SO_REUSEADDR,
                       (void *) &on, sizeof(on)) < 0) {
-    u8_graberr(-1,"open_server_socket:setsockopt",u8_sockaddr_string(sockaddr));
+    u8_graberrno("open_server_socket:setsockopt",u8_sockaddr_string(sockaddr));
     return -1;}
   if ((bind(socket_id,(struct sockaddr *) sockaddr,addrsize)) < 0) {
-    u8_graberr(-1,"open_server_socket:bind",u8_sockaddr_string(sockaddr));
+    u8_graberrno("open_server_socket:bind",u8_sockaddr_string(sockaddr));
     return -1;}
   if ((listen(socket_id,max_backlog)) < 0) {
-    u8_graberr(-1,"open_server_socket:listen",u8_sockaddr_string(sockaddr));
+    u8_graberrno("open_server_socket:listen",u8_sockaddr_string(sockaddr));
     return -1;}
   else {
     init_server_socket(socket_id);

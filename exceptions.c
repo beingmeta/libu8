@@ -354,14 +354,6 @@ U8_EXPORT void u8_graberr(int num,u8_context cxt,u8_string details)
   u8_seterr(u8_strerror(num),cxt,details);
 }
 
-U8_EXPORT void u8_graberrno(u8_context cxt,u8_string details)
-{
-  if (errno) {
-    u8_graberr(errno,cxt,details);
-    errno=0;}
-}
-
-
 /* Initialization */
 
 U8_EXPORT void u8_init_exceptions_c()
