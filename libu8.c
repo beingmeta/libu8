@@ -457,18 +457,26 @@ U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details)
   if (!(c)) {
     /* This is signal safe */
     {int rv=0;
+
+      /* This writes to both stdout and stderr */
 #define errout(s) \
       if (rv>=0) rv=write(STDOUT_FILENO,s,strlen(s)); \
       if (rv>=0) rv=write(STDERR_FILENO,s,strlen(s));
+
       errout("Unhandled exception (no context) ");
       errout(ex);
       if (cxt) {errout(" ("); errout(cxt); errout(")");}
       if (details) {errout(": "); errout(details); errout("\n");}
+
 #undef errout
+
       fsync(STDERR_FILENO);
       fsync(STDOUT_FILENO);
+
     }
-    /* This isn't signal safe, but we're calling exit() anyway. */
+
+    /* Calling u8_log isn't signal safe, but we're calling exit()
+       anyway, so it might not be so bad :) */
     if ((cxt)&&(details))
       u8_log(LOG_CRIT,ex,"In context %s: %s",cxt,details);
     else if (cxt)
