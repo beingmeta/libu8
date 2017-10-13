@@ -1,3 +1,9 @@
+libu8 (2.6.5-5) unstable; urgency=medium
+
+  * Added u8_big_alloc functions
+
+ -- Ken Haase <kh@beingmeta.com>  Fri, 13 Oct 2017 22:49:56 +0000
+
 libu8 (2.6.4-4) stable; urgency=medium
 
   * Made u8_graberrno into a macro to save the errno correctly
