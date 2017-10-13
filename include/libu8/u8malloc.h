@@ -26,6 +26,14 @@ U8_EXPORT void *u8_dmalloc_n(size_t,size_t);
 U8_EXPORT void *u8_drealloc(void *,size_t);
 U8_EXPORT void u8_dfree(void *);
 
+#ifndef U8_MMAP_THRESHOLD
+#define U8_MMAP_THRESHOLD 0x8000000
+#endif
+
+U8_EXPORT size_t u8_mmap_threshold;
+U8_EXPORT void *u8_big_alloc(size_t n);
+U8_EXPORT ssize_t u8_big_free(void *);
+
 #ifdef u8_malloc
 /* Assume everything is defined */
 #elif U8_DEBUG_MALLOC

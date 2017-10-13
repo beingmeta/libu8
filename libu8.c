@@ -40,6 +40,10 @@
 #include <sys/time.h>
 #endif
 
+#if ( (HAVE_MMAP) && (HAVE_SYS_MMAN_H) )
+#include <sys/mman.h>
+#endif
+
 #if ((HAVE_SYS_SYSCALL_H)&&(HAVE_SYSCALL))
 #include <sys/syscall.h>
 #endif
@@ -541,6 +545,54 @@ U8_EXPORT void *u8_reallocz(void *ptr,size_t n,size_t oldsz)
 U8_EXPORT void *u8_mallocz(size_t n)
 {
   return u8_zmalloc(n);
+}
+
+/* Big malloc */
+
+size_t u8_mmap_threshold = U8_MMAP_THRESHOLD;
+
+U8_EXPORT void *u8_big_alloc(size_t n)
+{
+  if (n == 0) return NULL;
+#if HAVE_MMAP
+  if (n > u8_mmap_threshold) {
+    size_t mmap_size = n+8;
+    void *mmapped = mmap(NULL,mmap_size,
+			 PROT_READ|PROT_WRITE,
+			 MAP_PRIVATE|MAP_ANONYMOUS,
+			 -1,0);
+    ssize_t *head = (ssize_t *) mmapped;
+    *head = n;
+    return mmapped+1;}
+#endif
+  unsigned char *ptr = u8_malloc(n+8);
+  ssize_t *head = (ssize_t *) ptr;
+  *head = -n;
+  return ptr+8;
+}
+
+U8_EXPORT ssize_t u8_big_free(void *ptr)
+{
+  if (ptr == NULL) return 0;
+  ssize_t *header = (ssize_t *) ptr;
+  ssize_t head = *header;
+#if HAVE_MMAP
+  if (head >= 0) {
+    void *mmapped = ptr-1;
+    int rv = munmap(mmapped,head);
+    if (rv<0) {
+      u8_graberr(errno,"u8_big_free",NULL);
+      u8_exception ex = u8_current_exception;
+      if (ex) {
+	ex->u8x_xdata = mmapped;
+	ex->u8x_free_xdata = NULL;}
+      return rv;}
+    else return head;}
+#endif
+  char *start = (char *) ptr;
+  char *mallocd = start-8;
+  u8_free(mallocd);
+  return -head;
 }
 
 /* Piles */
