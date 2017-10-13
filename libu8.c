@@ -551,9 +551,12 @@ U8_EXPORT void *u8_mallocz(size_t n)
 
 size_t u8_mmap_threshold = U8_MMAP_THRESHOLD;
 
-U8_EXPORT void *u8_big_alloc(size_t n)
+U8_EXPORT void *u8_big_alloc(ssize_t n)
 {
-  if (n == 0) return NULL;
+  if (n < 0)
+    return NULL;
+  else if (n == 0)
+    return NULL;
 #if HAVE_MMAP
   if (n > u8_mmap_threshold) {
     size_t mmap_size = n+8;
@@ -561,38 +564,119 @@ U8_EXPORT void *u8_big_alloc(size_t n)
 			 PROT_READ|PROT_WRITE,
 			 MAP_PRIVATE|MAP_ANONYMOUS,
 			 -1,0);
-    ssize_t *head = (ssize_t *) mmapped;
-    *head = n;
-    return mmapped+1;}
+    if (mmapped) {
+      ssize_t *head = (ssize_t *) mmapped;
+      *head = n;
+      return mmapped+8;}
+    else {
+      /* If mmap() fails, just fall through to malloc */
+      errno=0;}}
 #endif
-  unsigned char *ptr = u8_malloc(n+8);
-  ssize_t *head = (ssize_t *) ptr;
+  void *base = u8_malloc(n+8);
+  ssize_t *head = (ssize_t *) base;
   *head = -n;
-  return ptr+8;
+  return base+8;
 }
 
 U8_EXPORT ssize_t u8_big_free(void *ptr)
 {
   if (ptr == NULL) return 0;
-  ssize_t *header = (ssize_t *) ptr;
-  ssize_t head = *header;
+  void    *base   = ptr - 8;
+  ssize_t *header = (ssize_t *) base;
+  ssize_t head    = *header;
 #if HAVE_MMAP
   if (head >= 0) {
-    void *mmapped = ptr-1;
-    int rv = munmap(mmapped,head);
+    int rv = munmap(base,head);
     if (rv<0) {
       u8_graberr(errno,"u8_big_free",NULL);
       u8_exception ex = u8_current_exception;
       if (ex) {
-	ex->u8x_xdata = mmapped;
+	ex->u8x_xdata = base;
 	ex->u8x_free_xdata = NULL;}
       return rv;}
     else return head;}
 #endif
-  char *start = (char *) ptr;
-  char *mallocd = start-8;
-  u8_free(mallocd);
+  u8_free(base);
   return -head;
+}
+
+U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
+{
+  if (n < 0)
+    return NULL;
+  else if (n == 0) {
+    u8_big_free(ptr);
+    return NULL;}
+  void    *base   = ptr - 8;
+  ssize_t *header = (ssize_t *) base;
+  ssize_t  head   = *header;
+  size_t old_size = (head>0) ? (head) : (-head);
+#if HAVE_MMAP
+  if ( (n < u8_mmap_threshold) && (head < 0) ) {
+    /* Both the old and the new are malloc'd, so we just realloc */
+    void *newptr = u8_realloc(base,n+8);
+    if (newptr == NULL) {
+      u8_log(LOGCRIT,"BigReallocFailed",
+	     "u8_realloc from %lld to %lld failed, errno=%d (%s)",
+	     old_size,n,errno,u8_strerror(errno));
+      errno=0;
+      return ptr;}
+    header = (ssize_t *) newptr;
+    *header = -n;
+    return newptr+8;}
+  else {
+    /* One of the new or old pointers is mmapped, so we need to copy
+       the data and free the old pointer. */
+    void *new_chunk = NULL;
+    size_t new_extent = n+8;
+    if (n >= u8_mmap_threshold) {
+      new_chunk = mmap(NULL,new_extent,
+		       PROT_READ|PROT_WRITE,
+		       MAP_PRIVATE|MAP_ANONYMOUS,
+		       -1,0);
+      /* If mmap() failed, fall through to try malloc */
+      if (new_chunk == NULL) errno=0;}
+    if (new_chunk == NULL)
+      new_chunk = u8_malloc(new_extent);
+    if (new_chunk == NULL) {
+      u8_log(LOGCRIT,"BigReallocFailed",
+	     "u8_big_realloc from %lld to %lld failed, errno=%d (%s)",
+	     old_size,n,errno,u8_strerror(errno));
+      errno=0;
+      return ptr;}
+
+    /* The header for the new memory */
+    header = (ssize_t *) new_chunk;
+
+    /* Copy the data */
+    char *src = ((char *)ptr);
+    char *dst = ((char *)(new_chunk+1));
+    size_t copy_size = ( n > old_size) ? (old_size) : (n);
+    memcpy(dst,src,copy_size);
+
+    /* Store the size */
+    *header = n;
+
+    /* Free the old pointer */
+    if (head<0) u8_free(base);
+    else {
+      int rv = munmap(base,old_size+8);
+      if (rv<0) {
+	u8_log(LOGCRIT,"MUnmapFailed","With errno=%d (%s)",
+	       errno,u8_strerror(errno));
+	errno=0;}}
+    return (void *) dst;}
+#endif
+  void *new_chunk = u8_realloc(base,n+8);
+  if (new_chunk == NULL) {
+    u8_log(LOGCRIT,"BigReallocFailed",
+	   "u8_realloc from %lld to %lld failed, errno=%d (%s)",
+	   old_size,n,errno,u8_strerror(errno));
+    errno=0;
+    return ptr;}
+  header = (ssize_t *) new_chunk;
+  *header = -n;
+  return new_chunk+8;
 }
 
 /* Piles */
