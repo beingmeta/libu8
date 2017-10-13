@@ -303,7 +303,7 @@ fi
 AC_HEADER_STDC
 AC_HEADER_STAT
 
-AC_CHECK_HEADERS(strings.h netdb.h sys/types.h)
+AC_CHECK_HEADERS(strings.h netdb.h sys/types.h sys/mman.h)
 AC_CHECK_HEADERS(sys/stat.h unistd.h pwd.h grp.h fcntl.h poll.h sys/poll.h)
 AC_CHECK_HEADERS(sys/socket.h sys/select.h sys/un.h netdb.h)
 AC_CHECK_HEADERS(netinet/in.h netinet/tcp.h)
@@ -340,11 +340,12 @@ AC_CHECK_FUNCS(chown chmod setuid getuid geteuid utime)
 AC_CHECK_FUNCS(getpwnam getpwnam_r getpwgid getpwgid_r)
 AC_CHECK_FUNCS(setgid getgid getegid getgroups)
 AC_CHECK_FUNCS(getgrnam getgrnam_r getgrgid getgrgid_r)
-AC_CHECK_FUNCS(symlink realpath mkdtemp)
+AC_CHECK_FUNCS(symlink realpath mkdtemp mkstemp)
 AC_CHECK_FUNCS(ftime gettimeofday localtime_r gmtime_r getpid)
 AC_CHECK_FUNCS(gethostbyname2_r)
 AC_CHECK_FUNCS(getservbyname)
 AC_CHECK_FUNCS(nanosleep)
+AC_CHECK_FUNCS(mmap)
 AC_FUNC_STRERROR_R
 
 # Syslog

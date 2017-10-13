@@ -164,6 +164,15 @@
 /* Define if you have the flock function.  */
 #undef HAVE_SYSLOG
 
+/* Define if you have the mmap function.  */
+#undef HAVE_MMAP
+
+/* Define if you have sys/syscall.h */
+#undef HAVE_SYS_MMAN_H
+
+/* Define if you have the mkdtemp function.  */
+#undef HAVE_MKSTEMP
+
 /* Define if you have the mkdtemp function.  */
 #undef HAVE_MKDTEMP
 
