@@ -679,7 +679,7 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
   return new_chunk+8;
 }
 
-U8_EXPORT void *u8_big_copy(unsigned char *src,ssize_t newlen,ssize_t oldlen)
+U8_EXPORT void *u8_big_copy(const void *src,ssize_t newlen,ssize_t oldlen)
 {
   if (newlen < 0)
     return NULL;

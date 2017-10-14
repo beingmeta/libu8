@@ -34,7 +34,7 @@ U8_EXPORT size_t u8_mmap_threshold;
 U8_EXPORT void *u8_big_alloc(ssize_t n);
 U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n);
 U8_EXPORT ssize_t u8_big_free(void *);
-U8_EXPORT void *u8_big_copy(unsigned char *src,ssize_t newlen,ssize_t oldlen);
+U8_EXPORT void *u8_big_copy(const void *src,ssize_t newlen,ssize_t oldlen);
 
 #ifdef u8_malloc
 /* Assume everything is defined */
