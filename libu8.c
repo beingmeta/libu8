@@ -679,6 +679,17 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
   return new_chunk+8;
 }
 
+U8_EXPORT void *u8_big_copy(unsigned char *src,ssize_t newlen,ssize_t oldlen)
+{
+  if (newlen < 0)
+    return NULL;
+  else if (newlen == 0)
+    return NULL;
+  unsigned char *buf = u8_big_alloc(newlen);
+  memcpy(buf,src,oldlen);
+  return buf;
+}
+
 /* Piles */
 
 U8_EXPORT int _u8_grow_pile(u8_pile p,int delta)
