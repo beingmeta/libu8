@@ -1,3 +1,9 @@
+libu8 (2.6.5-6) stable; urgency=medium
+
+  * That was supposed to be stable
+
+ -- Ken Haase <kh@beingmeta.com>  Fri, 13 Oct 2017 23:14:57 +0000
+
 libu8 (2.6.5-5) unstable; urgency=medium
 
   * Added u8_big_alloc functions
