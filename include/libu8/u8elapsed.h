@@ -31,6 +31,14 @@ U8_EXPORT
 double u8_elapsed_time(void);
 
 U8_EXPORT
+/** Returns the unix time (time_t) value when the current session started
+    (particularly, when the session's "elapsed time" was 0).
+
+    @returns a time_t
+**/
+time_t u8_elapsed_base(void);
+
+U8_EXPORT
 /** Returns the number of microseconds since the epoch.
     This returns a value with whatever accuracy it can get.
     @returns a long long counting microseconds
@@ -45,3 +53,10 @@ U8_EXPORT
 long long u8_millitime(void);
 
 #endif
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make -C ../.. debug;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/
