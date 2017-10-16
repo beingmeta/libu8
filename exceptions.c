@@ -20,6 +20,8 @@
 #define _FILEINFO __FILE__
 #endif
 
+#include "libu8/u8strings.h"
+#include "libu8/u8elapsed.h"
 #include "libu8/u8streamio.h"
 #include "libu8/u8printf.h"
 #include <string.h>
@@ -43,6 +45,7 @@ u8_exception u8_current_exception=NULL;
 
 U8_EXPORT u8_exception u8_make_exception
   (u8_condition c,u8_context cxt,u8_string details,
+   double moment,long long threadid,
    void *xdata,void (*freefn)(void *))
 {
   struct U8_EXCEPTION *newex=u8_alloc(struct U8_EXCEPTION);
@@ -51,6 +54,8 @@ U8_EXPORT u8_exception u8_make_exception
   newex->u8x_details=details;
   newex->u8x_xdata=xdata;
   newex->u8x_free_xdata=freefn;
+  newex->u8x_moment=moment;
+  newex->u8x_thread=threadid;
   newex->u8x_prev=NULL;
   return newex;
 }
@@ -65,6 +70,8 @@ U8_EXPORT u8_exception u8_new_exception
   newex->u8x_details=details;
   newex->u8x_xdata=xdata;
   newex->u8x_free_xdata=freefn;
+  newex->u8x_moment=u8_elapsed_time();
+  newex->u8x_thread=u8_threadid();
   newex->u8x_prev=NULL;
   return newex;
 }
@@ -82,25 +89,9 @@ U8_EXPORT u8_exception u8_push_exception
        (current->u8x_details) )
     details=u8_strdup(current->u8x_details);
   if (current) {
-    newex=u8_make_exception(c,cxt,details,xdata,freefn);
+    newex=u8_new_exception(c,cxt,details,xdata,freefn);
     newex->u8x_prev=current;}
   else newex=u8_new_exception(c,cxt,details,xdata,freefn);
-#if (U8_USE_TLS)
-  u8_tld_set(u8_current_exception_key,newex);
-#else
-  u8_current_exception=newex;
-#endif
-  return newex;
-}
-
-U8_EXPORT u8_exception u8_extend_exception
-  (u8_context cxt,u8_string details,void *xdata,void (*freefn)(void *))
-{
-  struct U8_EXCEPTION *current=u8_current_exception;
-  struct U8_EXCEPTION *newex;
-  u8_condition c=((current) ? (current->u8x_cond) : (EmptyExceptionStack));
-  newex=u8_make_exception(c,cxt,details,xdata,freefn);
-  newex->u8x_prev=current;
 #if (U8_USE_TLS)
   u8_tld_set(u8_current_exception_key,newex);
 #else
@@ -224,14 +215,11 @@ U8_EXPORT int u8_errout(u8_output out,struct U8_EXCEPTION *ex)
 {
   if (ex==NULL) ex=u8_current_exception;
   if (ex==NULL) return 0;
-  else if ((ex->u8x_details) && (ex->u8x_context))
-    return u8_printf(out,"%m (%s): %s",
-                     ex->u8x_cond,ex->u8x_context,ex->u8x_details);
-  else if (ex->u8x_context)
-    return u8_printf(out,"%m (%s)",ex->u8x_cond,ex->u8x_context);
-  else if (ex->u8x_details)
-    return u8_printf(out,"%m: %s",ex->u8x_cond,ex->u8x_details);
-  else return u8_printf(out,"%m",ex->u8x_cond);
+  else return u8_printf(out,"%m (%s:%f:%lld) %s",
+			ex->u8x_cond,
+			U8ALT(ex->u8x_context,"nocxt"),
+			ex->u8x_moment,ex->u8x_thread,
+			U8ALT(ex->u8x_details,""));
 }
 
 U8_EXPORT u8_string u8_errstring(struct U8_EXCEPTION *ex)
@@ -240,7 +228,8 @@ U8_EXPORT u8_string u8_errstring(struct U8_EXCEPTION *ex)
   if (ex==NULL) return NULL;
   else {
     U8_OUTPUT out; U8_INIT_STATIC_OUTPUT(out,32);
-    if (u8_errout(&out,ex)>0) return out.u8_outbuf;
+    if (u8_errout(&out,ex)>0)
+      return out.u8_outbuf;
     else {
       strcpy(out.u8_outbuf,"meta error");
       return out.u8_outbuf;}}
@@ -262,11 +251,25 @@ void u8_clear_errors(int report)
 }
 
 
-/* Legacy functions, should be deprecated */
-
 U8_EXPORT void u8_seterr(u8_condition c,u8_context cxt,u8_string details)
 {
-  u8_push_exception(c,cxt,details,NULL,NULL);
+  struct U8_EXCEPTION *current=u8_current_exception;
+  struct U8_EXCEPTION *newex;
+  if ((current) && (c==NULL))
+    c=current->u8x_cond;
+  if ( (current) && (details==NULL) &&
+       (c==current->u8x_cond) &&
+       (current->u8x_details) )
+    details=u8_strdup(current->u8x_details);
+  if (current) {
+    newex=u8_new_exception(c,cxt,details,NULL,NULL);
+    newex->u8x_prev=current;}
+  else newex=u8_new_exception(c,cxt,details,NULL,NULL);
+#if (U8_USE_TLS)
+  u8_tld_set(u8_current_exception_key,newex);
+#else
+  u8_current_exception=newex;
+#endif
 }
 
 U8_EXPORT int u8_geterr(u8_condition *c,u8_context *cxt,u8_string *details)
@@ -354,7 +357,7 @@ U8_EXPORT u8_condition u8_strerror(int num)
 U8_EXPORT void u8_graberr(int num,u8_context cxt,u8_string details)
 {
   if (num<0) {num=errno; errno=0;}
-  u8_seterr(u8_strerror(num),cxt,details);
+  u8_push_exception(u8_strerror(num),cxt,details,NULL,NULL);
 }
 
 /* Initialization */
@@ -373,3 +376,10 @@ U8_EXPORT void u8_init_exceptions_c()
 
   u8_register_source_file(_FILEINFO);
 }
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make -C ../.. debug;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

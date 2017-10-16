@@ -42,8 +42,12 @@ U8_EXPORT u8_condition u8_strerror(int num);
       (or NULL) which was active when this error was indicated.
 **/
 typedef struct U8_EXCEPTION {
-  u8_condition u8x_cond; u8_context u8x_context;
-  u8_string u8x_details; void *u8x_xdata;
+  u8_condition u8x_cond;
+  u8_context u8x_context;
+  double u8x_moment;
+  long long u8x_thread;
+  u8_string u8x_details;
+  void *u8x_xdata;
   u8_exception_xdata_freefn u8x_free_xdata;
   struct U8_EXCEPTION *u8x_prev;} U8_EXCEPTION;
 typedef struct U8_EXCEPTION *u8_exception;
@@ -99,25 +103,6 @@ U8_EXPORT U8_NOINLINE u8_exception u8_push_exception
   (u8_condition condition,u8_context context,u8_string details,
    void *xdata,void (*freefn)(void *));
 
-/** Pushes an additional exception with additional data
-    Sets the current exception, pushing it onto the dynamic
-     exception stack.
-    The  context are constant strings, the details
-     should be a mallocd string.  xdata and freefn can be NULL.
-     if freefn is provided, it is called on xdata when the
-     exception is popped.
-    The condition is copied from the current exception or
-     is EmptyExceptionStack otherwise.
-   @param cxt a utf-8 context string (a const string)
-   @param details a utf-8 string detailing the error, or NULL
-   @param xdata a void pointer to additional data describing
-                  the error or its context
-   @param freefn a function to call on the xdata when freeing it
-   @returns an exception structure
-**/
-U8_EXPORT U8_NOINLINE u8_exception u8_extend_exception
-  (u8_context cxt,u8_string details,void *xdata,void (*freefn)(void *));
-
 /** Pops the exception stack
     Clears the current exception, popping it from the dynamic
      exception stack, which subsequently points to
@@ -171,6 +156,10 @@ U8_EXPORT u8_exception u8_restore_exception(u8_exception ex);
      exception is popped.
    @param condition a utf-8 condition string (u8_condition)
    @param context a utf-8 context string (a const string)
+   @param moment a double indicating the elapsed time point
+                   (in seconds) when the exception occurred
+   @param thread a long long indicating the thread id current
+                  when the exception was invoked
    @param details a utf-8 string detailing the error, or NULL
    @param xdata a void pointer to additional data describing
                   the error or its context
@@ -179,6 +168,7 @@ U8_EXPORT u8_exception u8_restore_exception(u8_exception ex);
 **/
 U8_EXPORT U8_NOINLINE u8_exception u8_make_exception
   (u8_condition condition,u8_context context,u8_string details,
+   double moment,long long thread,
    void *xdata,void (*freefn)(void *));
 
 /** Frees an exception object or stack
@@ -262,7 +252,8 @@ U8_EXPORT void u8_graberr(int num,u8_context cxt,u8_string details);
    @param details a utf-8 string detailing the error, or NULL
    @returns void
 **/
-U8_EXPORT U8_NOINLINE void u8_seterr(u8_condition condition,u8_context context,u8_string details);
+U8_EXPORT U8_NOINLINE void u8_seterr(u8_condition condition,u8_context context,
+				     u8_string details);
 
 /** Gets the current error state.
    This retrieves the current error state and stores it in designated locations.
