@@ -650,6 +650,7 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
   else if (n == 0) {
     u8_big_free(ptr);
     return NULL;}
+  int ismapped = 0;
   void    *base   = ptr - 8;
   ssize_t *header = (ssize_t *) base;
   ssize_t  head   = *header;
@@ -678,7 +679,8 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
 		       MAP_PRIVATE|MAP_ANONYMOUS,
 		       -1,0);
       /* If mmap() failed, fall through to try malloc */
-      if (new_chunk == NULL) errno=0;}
+      if (new_chunk == NULL) errno=0;
+      else ismapped=1;}
     if (new_chunk == NULL)
       new_chunk = u8_malloc(new_extent);
     if (new_chunk == NULL) {
@@ -693,12 +695,14 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
 
     /* Copy the data */
     char *src = ((char *)ptr);
-    char *dst = ((char *)(new_chunk+1));
+    char *dst = ((char *)(new_chunk))+8;
     size_t copy_size = ( n > old_size) ? (old_size) : (n);
     memcpy(dst,src,copy_size);
 
     /* Store the size */
-    *header = n;
+    if (ismapped)
+      *header = n;
+    else *header = -n;
 
     /* Free the old pointer */
     if (head<0) u8_free(base);
