@@ -1,3 +1,10 @@
+libu8 (2.6.6-7) stable; urgency=medium
+
+  * Added u8x_moment (elapsed double) and u8_thread (long long threadid)
+    to exceptions.
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 16 Oct 2017 11:34:31 -0400
+
 libu8 (2.6.5-6) stable; urgency=medium
 
   * That was supposed to be stable
