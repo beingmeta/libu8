@@ -334,6 +334,7 @@ AC_EGREP_HEADER(tm_isdst,time.h,AC_DEFINE(HAVE_TM_ISDST,1),AC_DEFINE(HAVE_TM_ISD
 # Particular functions
 
 AC_CHECK_FUNCS(isatty fstat)
+AC_CHECK_FUNCS(clock_gettime)
 AC_CHECK_FUNCS(strdup strerror_r)
 AC_CHECK_FUNCS(access flock fseeko)
 AC_CHECK_FUNCS(chown chmod setuid getuid geteuid utime)

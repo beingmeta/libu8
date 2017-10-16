@@ -213,6 +213,9 @@
 #undef HAVE_STRFTIME
 
 /* Define if you have the gettimeofday function.  */
+#undef HAVE_CLOCK_GETTIME
+
+/* Define if you have the gettimeofday function.  */
 #undef HAVE_GETTIMEOFDAY
 
 /* Define if you have the ftime function.  */

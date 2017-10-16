@@ -235,57 +235,100 @@ void u8_randomize(unsigned int seed)
 
 /* Elapsed time */
 
-static int elapsed_time_initialized=0;
-#if HAVE_GETTIMEOFDAY
-static struct timeval estart;
-#elif HAVE_FTIME
-static struct timeb estart;
+#if HAVE_CLOCK_GETTIME
+#if defined(CLOCK_BOOTTIME)
+#define USE_POSIX_CLOCK CLOCK_BOOTTIME
+#elif defined(CLOCK_MONOTONIC_RAW)
+#define USE_POSIX_CLOCK CLOCK_MONOTONIC_RAW
+#elif defined(CLOCK_MONOTONIC)
+#define USE_POSIX_CLOCK CLOCK_MONOTONIC
 #else
-static time_t estart;
+#define USE_POSIX_CLOCK 0
 #endif
+#else /* not HAVE_CLOCK_GETTIME */
+#define USE_POSIX_CLOCK 0
+#endif
+
+static time_t elapsed_time_initialized=0;
+#if USE_POSIX_CLOCK
+static struct timespec estart={0};
+#elif HAVE_GETTIMEOFDAY
+static struct timeval estart={0};
+#elif HAVE_FTIME
+static struct timeb estart={0};
+#else
+static time_t estart=-1;
+#endif
+
+static void init_elapsed_time(void);
 
 U8_EXPORT double u8_elapsed_time()
 {
-  if (elapsed_time_initialized) {
-#if HAVE_GETTIMEOFDAY
+  if (! elapsed_time_initialized) {
+    init_elapsed_time();
+    if (! elapsed_time_initialized)
+      return -1.0;}
+#if USE_POSIX_CLOCK
+    struct timespec now;
+    if (clock_gettime(USE_POSIX_CLOCK,&now)<0)
+      return -1.0;
+    else return (now.tv_sec-estart.tv_sec)+
+	   (now.tv_nsec-estart.tv_nsec)*0.000000001;
+#elif HAVE_GETTIMEOFDAY
     struct timeval now;
     if (gettimeofday(&now,NULL) < 0)
       return -1.0;
     else return (now.tv_sec-estart.tv_sec)+
 	   (now.tv_usec-estart.tv_usec)*0.000001;
+#elif HAVE_FTIME && WIN32
+    struct timeb now;
+    ftime(&now);
+    return (now.time-estart.time)+
+      (now.millitm-estart.millitm)*0.001;
 #elif HAVE_FTIME
     struct timeb now;
-#if WIN32
-    ftime(&now);
-#else /* In WIN32, ftime doesn't return an error value */
     if (ftime(&now) < 0) return -1.0;
-    else
-#endif
-      return (now.time-estart.time)+
-	(now.millitm-estart.millitm)*0.001;
+    return (now.time-estart.time)+
+      (now.millitm-estart.millitm)*0.001;
 #else
     return (1.0*(time(NULL)-estart));
 #endif
-  }
-  else {
-#if HAVE_GETTIMEOFDAY
-    if (gettimeofday(&estart,NULL)>=0)
-      elapsed_time_initialized=1;
-    else perror("u8_elapsed_time()");
-#elif HAVE_FTIME
-#if WIN32
+}
+
+static void init_elapsed_time()
+{
+  if (elapsed_time_initialized) return;
+#if USE_POSIX_CLOCK
+  if (clock_gettime(USE_POSIX_CLOCK,&estart)>=0)
+    elapsed_time_initialized=1;
+#elif HAVE_GETTIMEOFDAY
+  if (gettimeofday(&estart,NULL)>=0)
+    elapsed_time_initialized=1;
+  else perror("u8_elapsed_time()");
+#elif HAVE_FTIME && WIN32
     ftime(&estart);
-#else
+#elif  HAVE_FTIME && WIN32
     if (ftime(&estart)>=0)
       elapsed_time_initialized=1;
     else perror("u8_elapsed_time()");
-#endif
 #else
     estart=time(NULL);
     elapsed_time_initialized=1;
 #endif
-    return 0.0;
-  }
+}
+
+U8_EXPORT time_t u8_elapsed_base()
+{
+  if (elapsed_time_initialized == 0) return -1;
+#if USE_POSIX_CLOCK
+  return estart.tv_sec;
+#elif HAVE_GETTIMEOFDAY
+  return estart.tv_sec;
+#elif HAVE_FTIME
+  return estart.time
+#else
+    return estart;
+#endif
 }
 
 static char decimal_weights[10]={'0','1','2','3','4','5','6','7','8','9'};
@@ -819,6 +862,8 @@ U8_EXPORT void u8_initialize_threading(void);
 U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
+
+  init_elapsed_time();
 
   /* Temporarily here, remove with next minor release */
   u8_BadUTF8byte = u8_BadUTF8Start;
