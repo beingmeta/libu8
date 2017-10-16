@@ -621,6 +621,11 @@ U8_EXPORT void *u8_big_alloc(ssize_t n)
   return base+8;
 }
 
+U8_EXPORT void *u8_big_calloc(ssize_t n,ssize_t eltsz)
+{
+  return u8_big_alloc(n*eltsz);
+}
+
 U8_EXPORT ssize_t u8_big_free(void *ptr)
 {
   if (ptr == NULL) return 0;
