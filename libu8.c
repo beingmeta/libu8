@@ -615,7 +615,7 @@ U8_EXPORT void *u8_big_alloc(ssize_t n)
       /* If mmap() fails, just fall through to malloc */
       errno=0;}}
 #endif
-  void *base = u8_malloc(n+8);
+  void *base = calloc(n+8,1);
   ssize_t *head = (ssize_t *) base;
   *head = -n;
   return base+8;
