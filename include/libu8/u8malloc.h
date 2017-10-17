@@ -37,8 +37,7 @@ U8_EXPORT ssize_t u8_big_free(void *);
 U8_EXPORT void *u8_big_copy(const void *src,ssize_t newlen,ssize_t oldlen);
 U8_EXPORT void *u8_big_calloc(ssize_t n,ssize_t eltsz);
 
-U8_EXPORT void *u8_big_alloc_n(ssize_t n,ssize_t eltsz);
-#define u8_big_alloc_n(nmemb,type) (u8_bigalloc_n(n,sizeof(type)))
+#define u8_big_alloc_n(n,type) (u8_big_calloc((n),sizeof(type)))
 
 #ifdef u8_malloc
 /* Assume everything is defined */
