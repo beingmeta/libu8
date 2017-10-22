@@ -553,6 +553,45 @@ U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent)
     return (u8_string)output;}
 }
 
+/* Comparing strings */
+
+U8_EXPORT int u8_strcmp(u8_string s1,u8_string s2,int cmpflags)
+{
+  u8_string scan1 = s1, scan2 = s2;
+  while ( (*scan1) && (*scan2) ) {
+    if ( (*scan1 < 0x80 ) && (*scan2 < 0x80 ) ) {
+      int c1, c2;
+      if (cmpflags & U8_STRCMP_CI) {
+	c1 = u8_tolower(*scan1);
+	c2 = u8_tolower(*scan2);}
+      else {
+	c1 = *scan1;
+	c2 = *scan2;}
+      if (c1 < c2)
+	return -1;
+      else if (c1 > c2)
+	return 1;
+      else {}
+      scan1++;
+      scan2++;}
+    else {
+      int c1 = u8_sgetc(&scan1);
+      int c2 = u8_sgetc(&scan2);
+      if (cmpflags & U8_STRCMP_CI) {
+	c1 = u8_tolower(c1);
+	c2 = u8_tolower(c2);}
+      if (c1<c2)
+	return -1;
+      else if (c1>c2)
+	return 1;
+      else {}}}
+  if (*scan1)
+    return 1;
+  else if (*scan2)
+    return -1;
+  else return 0;
+}
+
 /* Searching strings */
 
 U8_EXPORT u8_string u8_strchrs(u8_string s,u8_string chars,int order)

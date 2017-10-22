@@ -54,6 +54,7 @@ LIBU8_HEADERS=											\
 	${INC}/u8printf.h ${INC}/u8random.h ${INC}/u8rusage.h ${INC}/u8signals.h		\
 	${INC}/u8sleep.h ${INC}/u8source.h ${INC}/u8sourcefiles.h ${INC}/u8srvfns.h		\
 	${INC}/u8stdio.h ${INC}/u8streamio.h ${INC}/u8stringfns.h ${INC}/u8strings.h		\
+	${INC}/u8strcmp.h									\
 	${INC}/u8subscribe.h ${INC}/u8threading.h ${INC}/u8timefns.h ${INC}/u8timestrings.h	\
 	${INC}/u8uuid.h ${INC}/u8xfiles.h ${INC}/u8xtime.h ${INC}/u8xtimefns.h
 

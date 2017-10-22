@@ -62,6 +62,13 @@ typedef ssize_t u8_charoff;
 U8_EXPORT u8_buf _u8_strdup(u8_string);
 U8_EXPORT u8_buf u8_strndup(u8_string,int);
 
+/* Comparison */
+
+#define U8_STRCMP_CI 1
+U8_EXPORT int u8_strcmp(u8_string s1,u8_string s2,int cmpflags);
+
+#define HAVE_U8_STRCMP 1
+
 /* UTF-8 handling config functions */
 
 /** Gets/sets whether warnings are produced for invalid UTF-8 sequences, which
