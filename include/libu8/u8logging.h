@@ -145,7 +145,7 @@ U8_EXPORT u8_string u8_loglevels[];
 
 /* This determines what context is delivered along with messages.  Clock
    time is always shown. */
-U8_EXPORT int u8_log_show_date, u8_log_show_elapsed;
+U8_EXPORT int u8_log_show_date, u8_log_show_elapsed, u8_log_show_appid;
 U8_EXPORT int u8_log_show_procinfo, u8_log_show_threadinfo;
 /* Whether or not syslog has been initialized. */
 U8_EXPORT int u8_logging_initialized;
