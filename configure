@@ -668,6 +668,8 @@ syslog_static
 syslog_shared
 install_static
 install_shared
+static_exe
+shared_exe
 build_static
 build_shared
 test_static
@@ -2789,10 +2791,13 @@ doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
 build_static="static-libs"
+shared_exe="shared-exe"
+static_exe=""
 test_shared="test-shared"
 test_static="test-static"
 install_shared="install-so"
 install_static="install-static"
+install_exe="install-exe"
 libc_pthreads="no"
 libc_dlopen="no"
 syslog_static="syslog-static"
@@ -2970,6 +2975,8 @@ case $target_os in
 
    ;;
 esac
+
+
 
 
 

@@ -20,6 +20,7 @@ datadir		= @datadir@
 LOCALEDIR	= $(DESTDIR)@localedir@
 MANDIR		= $(DESTDIR)@mandir@
 LIBINSTALLDIR	= $(DESTDIR)@libdir@
+BININSTALLDIR	= $(DESTDIR)@bindir@
 ENCDIR		= $(DESTDIR)@prefix@/share/libu8/encodings
 XRPMFLAGS	=
 RPMFLAGS	= $(XRPMFLAGS) @RPMFLAGS@
@@ -63,6 +64,7 @@ LIBU8_SOURCES=\
   libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c cityhash.c \
   digestfns.c cryptofns.c pathfns.c filefns.c fileio.c \
   libu8io.c xfiles.c convert.c filestring.c bytebuf.c \
+  u8run.c \
   tests/latin1u8.c tests/xtimetest.c tests/u8recode.c tests/u8xrecode.c \
   tests/echosrv.c tests/printftest.c
 COMMON_HEADERS= $(LIBU8_HEADERS)
@@ -91,7 +93,7 @@ STATIC_TEST_LIBS=lib/libu8io.a lib/libu8.a
 SHARED_TEST_LIBS=lib/libu8.@shared_suffix@ lib/libu8io.@shared_suffix@ \
 		lib/libu8stdio.@shared_suffix@
 
-ALL=@TAGS@ libs @I18N@ tests @DOCS@
+ALL=@TAGS@ libs exe @I18N@ tests @DOCS@
 
 update: buildmode
 	@make `cat buildmode`
@@ -107,6 +109,7 @@ optimizing:
 nitpicking:
 	@echo "# (libu8)" Building NITPICKING configuration
 	make XCFLAGS="-Wall" ${ALL}
+
 all: ${ALL}
 
 debug:
@@ -189,6 +192,13 @@ tests/%: tests/%.c
 tests/dynamic/%: tests/%.c
 	@echo "# (libu8)" CC_DYNAMIC_TEST $@ $<
 	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8 -lu8io
+exe/%: %.c
+	@echo "# (libu8)" CC_EXE $@ $<
+	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8 -lu8io
+exe/%.static: %.c
+	@echo "# (libu8)" CC_EXE $@ $<
+	@$(CC) $(CFLAGS) -g3 -O0 -L./lib $(LDFLAGS) -o $@ $< lib/libu8.a lib/libu8io.a ${LIBS}
+
 
 lib/%@suffix@.a:
 	@echo "# (libu8)" MKSTATIC $@ $^
@@ -244,6 +254,11 @@ $(LIBINSTALLDIR)/%@suffix@.dylib: \
 	@echo "# (libu8)" Linking to $@
 	@@SUDO@ ln -sf $(shell basename $<) $@
 
+$(BININSTALLDIR)/%: exe/%
+	@echo "# (libu8)" Installing exe $@
+	@$(INSTALL) -d $(BININSTALLDIR)
+	@$(INSTALL) $< $(BININSTALLDIR)
+
 test: @test_shared@ @test_static@
 test-shared: $(DYTESTBIN)
 test-static: $(TESTBIN)
@@ -254,6 +269,10 @@ $(DYTESTBIN): shared-libs ${REVISION_H}
 TAGS: tests/*.c include/libu8/*.h *.c
 	@echo "# (libu8)" Making TAGS table
 	@etags tests/*.c include/libu8/*.h *.c
+
+exe: @shared_exe@ @static_exe@
+static-exe: exe/u8run.static
+shared-exe: exe/u8run
 
 libs: @build_shared@ @build_static@
 static-libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a \
@@ -346,6 +365,8 @@ clean:
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* etc/fileinfo
 	@$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
 	@echo "# (libu8)" "Cleaned up libraries"
+	@$(CLEAN) exe/u8run exe/u8run.static
+	@echo "# (libu8)" "Cleaned up exes"
 	@$(CLEAN) docs/man/man3/* docs/rtf/* docs/latex/* docs/doxygen.done
 	@for dir in docs/html docs/html/search; do				\
 	  $(CLEAN) $${dir}/*.html $${dir}/*.png $${dir}/*.js $${dir}/*.css; done
@@ -564,7 +585,9 @@ build-setup-ubuntu: build-setup.debian
 
 # Installation targets
 
-install-dev install: install-libs install-headers install-encodings \
+install-dev install: install-libs install-exe 	\
+	install-headers 			\
+	install-encodings 			\
 	@INSTALLI18N@ @INSTALLDOCS@
 
 install-libs: @install_static@ @install_shared@
@@ -585,6 +608,8 @@ install-static: $(LIBINSTALLDIR)/libu8.a \
 		$(LIBINSTALLDIR)/libu8fns.a \
 		$(LIBINSTALLDIR)/libu8data.a \
 		$(LIBINSTALLDIR)/libu8stdio.a
+
+install-exe: $(BININSTALLDIR)/u8run
 
 install-so: $(LIBINSTALLDIR)/libu8@suffix@.so                  		\
 	    $(LIBINSTALLDIR)/libu8@suffix@.so.@U8MAJOR@      		\

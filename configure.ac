@@ -35,10 +35,13 @@ doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
 build_static="static-libs"
+shared_exe="shared-exe"
+static_exe=""
 test_shared="test-shared"
 test_static="test-static"
 install_shared="install-so"
 install_static="install-static"
+install_exe="install-exe"
 libc_pthreads="no"
 libc_dlopen="no"
 syslog_static="syslog-static"
@@ -100,6 +103,8 @@ AC_SUBST(test_shared)
 AC_SUBST(test_static)
 AC_SUBST(build_shared)
 AC_SUBST(build_static)
+AC_SUBST(shared_exe)
+AC_SUBST(static_exe)
 AC_SUBST(install_shared)
 AC_SUBST(install_static)
 AC_SUBST(syslog_shared)
