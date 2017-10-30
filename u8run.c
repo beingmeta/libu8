@@ -44,7 +44,11 @@ static u8_string procpath(u8_string jobid,u8_string suffix)
 {
   if (strchr(jobid,'/'))
     return u8_string_append(jobid,".",suffix,NULL);
-  else return u8_string_append(rundir,jobid,".",suffix,NULL);
+  else {
+    u8_string name = u8_string_append(jobid,".",suffix,NULL);
+    u8_string path = u8_mkpath(rundir,name);
+    u8_free(name);
+    return path;}
 }
 
 static int n_cycles=0, doexit=0, paused=0, restart=0;
