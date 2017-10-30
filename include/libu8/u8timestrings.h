@@ -18,6 +18,7 @@
 #define LIBU8_U8TIMESTRINGS_H_VERSION __FILE__
 
 #include "u8xtime.h"
+#include "u8streamio.h"
 
 /** Populates a U8_XTIME pointer based on an ISO-8601 formated timestamp.
     @param s a UTF-8 (ASCII) string containing an ISO-8601 timestamp.
