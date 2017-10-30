@@ -1,7 +1,14 @@
+libu8 (2.6.7-8) stable; urgency=medium
+
+  * Added libu8 executables starting with u8run
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 30 Oct 2017 10:46:41 -0400
+
 libu8 (2.6.6-7) stable; urgency=medium
 
   * Added u8x_moment (elapsed double) and u8_thread (long long threadid)
     to exceptions.
+  * Added libu8 executables starting with u8run
 
  -- Ken Haase <kh@beingmeta.com>  Mon, 16 Oct 2017 11:34:31 -0400
 
