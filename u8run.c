@@ -37,7 +37,7 @@ static u8_string ppid_file = NULL;
 
 void usage()
 {
-  fprintf(stderr,"fdrun [+launch] [env=val]* jobid [env=val]* exename args..\n");
+  fprintf(stderr,"fdrun [+daemon] [env=val]* jobid [env=val]* exename [args..]\n");
 }
 
 static u8_string procpath(u8_string jobid,u8_string suffix)
@@ -74,8 +74,9 @@ int main(int argc,char *argv[])
   if (argc<3) {
     usage();
     exit(1);}
-  else if (strcasecmp(argv[1],"+launch")==0) {
-    launching = 1; i++;}
+  else if (strcasecmp(argv[1],"+daemon")==0) {
+    launching = 1;
+    i++;}
   else {}
   while (i<argc) {
     char *arg = argv[i];
