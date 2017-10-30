@@ -75,4 +75,18 @@ int u8_getmajorversion(void);
 **/
 U8_EXPORT u8_string u8_getenv(u8_string envvar);
 
+/** Gets and parses (as a number), an environment variable
+    @param envvar a variable name
+    @param dflt a default value if the environment variable isn't defined or can't be parsed as a number
+    @returns a long long
+**/
+U8_EXPORT long long u8_getenv_int(u8_string envvar,long long dflt);
+
+/** Gets and parses (as a number), an environment variable
+    @param envvar a variable name
+    @param dflt a default value if the environment variable isn't defined or can't be parsed as a number
+    @returns a long long
+**/
+U8_EXPORT double u8_getenv_float(u8_string envvar,double dflt);
+
 #endif

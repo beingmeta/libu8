@@ -449,6 +449,42 @@ u8_string u8_getenv(u8_string envvar)
     return NULL;}
 }
 
+U8_EXPORT
+/** Returns a integer value from the current environment
+    @param envvar the variable name, as a UTF-8 string.
+    @param dflt a default value if the environment variable is not defined or couldn't be parsed
+    @returns an integer (long long)
+**/
+long long u8_getenv_int(u8_string var,long long dflt)
+{
+  u8_string value = u8_getenv(var), end=NULL;
+  if ( (value == NULL) || (*value == '\0') ) {
+    if (value) u8_free(value);
+    return dflt;}
+  long long intval = strtoll(value,(char **)&end,10);
+  if (end == value) intval = dflt;
+  u8_free(value);
+  return intval;
+}
+
+U8_EXPORT
+/** Returns a integer value from the current environment
+    @param envvar the variable name, as a UTF-8 string.
+    @param dflt a default value if the environment variable is not defined or couldn't be parsed
+    @returns an integer (long long)
+**/
+double u8_getenv_float(u8_string var,double dflt)
+{
+  u8_string value = u8_getenv(var), end=NULL;
+  if ( (value == NULL) || (*value == '\0') )
+    return dflt;
+  double floval = strtod(value,(char **)&end);
+  if ( end == value )
+    floval = dflt;
+  u8_free(value);
+  return floval;
+}
+
 /* Dynamic loading */
 
 static U8_MAYBE_UNUSED u8_condition NoDynamicLoading=
