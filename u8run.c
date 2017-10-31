@@ -310,8 +310,9 @@ static int launch_loop(u8_string job_id,char **launch_args,int n_args)
     double now = u8_elapsed_time();
 
     u8_log(LOGNOTICE,"u8run/INT",
-	   "Job %s:%lld signalled with rv=%d, do_exit=%d, paused=%d, restart=%d",
-	   job_id,pid,wait_rv,doexit,paused,restart);
+	   "Job %s:%lld signalled with rv=%d, do_exit=%d, paused=%d, "
+	   "exited=%d, restart=%d, started=%f now=%f",
+	   job_id,pid,wait_rv,doexit,paused,exited,restart,started,now);
 
     if (exited)
       u8_log(LOGNOTICE,"u8run","Job %s:%lld exited %s with status %d",
@@ -362,6 +363,7 @@ static int launch_loop(u8_string job_id,char **launch_args,int n_args)
 	       "Terminating existing %s:%lld",job_id,pid);
 	pid = kill_child(job_id,pid,pid_file);}
       else u8_log(LOG_INFO,"Restarting","Restarting job %s",job_id);
+      started = u8_elapsed_time();
       pid = dolaunch(launch_args);
       u8_log(LOG_NOTICE,"Restarted","Restarted job %s:%lld",job_id,pid);
       restart = 0;}
@@ -371,6 +373,7 @@ static int launch_loop(u8_string job_id,char **launch_args,int n_args)
     else {
       u8_log(LOG_INFO,"Restarting",
 	     "Automatically restarting %s after exit",job_id);
+      started = u8_elapsed_time();
       pid = dolaunch(launch_args);
       u8_log(LOG_NOTICE,"Restarted",
 	     "Automatically restarted %s after exit, pid=%lld",
