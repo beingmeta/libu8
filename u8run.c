@@ -27,10 +27,16 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <pwd.h>
+#include <grp.h>
 
-static u8_string rundir = "/var/run/u8run/";
+static u8_string rundir = "/var/run/libu8/";
+static uid_t runuser  = -1;
+static gid_t rungroup = -1;
+static int umask_value = -1;
 
 static u8_string main_job_id = NULL;
 static u8_string pid_file = NULL;
@@ -45,7 +51,7 @@ void usage()
 
 static u8_string procpath(u8_string job_id,u8_string suffix)
 {
-  if (strchr(job_id,'/'))
+  if ( (strchr(job_id,'/')) || (strchr(job_id,'.')) )
     return u8_string_append(job_id,".",suffix,NULL);
   else {
     u8_string name = u8_string_append(job_id,".",suffix,NULL);
@@ -54,9 +60,58 @@ static u8_string procpath(u8_string job_id,u8_string suffix)
     return path;}
 }
 
+/* Getting */
+
+static uid_t lookup_uid(u8_string s)
+{
+  struct passwd _info, *info=NULL;
+  char buf[2048];
+  int rv = getpwnam_r(s,&_info,buf,2048,&info);
+  if (rv<0) {
+    errno=0;
+    return -1;}
+  else if (info) {
+    uid_t uid = info->pw_uid;
+    errno=0;
+    return uid;}
+  else {
+    errno=0;
+    return -1;}
+}
+
+static uid_t lookup_gid(u8_string s)
+{
+  struct group _info, *info=NULL;
+  char buf[2048];
+  int rv = getgrnam_r(s,&_info,buf,2048,&info);
+  if (rv<0) {
+    errno=0;
+    return -1;}
+  else if (info) {
+    uid_t uid = info->gr_gid;
+    errno=0;
+    return uid;}
+  else {
+    errno=0;
+    return -1;}
+}
+
+static int parse_umask(u8_string umask_init)
+{
+  u8_string parse_ends=NULL;
+  int umask_val = strtol(umask_init,(char **)(&parse_ends),0);
+  if (parse_ends == umask_init) {
+    u8_log(LOGWARN,"UMASKFailed",
+	   "Couldn't parse value %s (errno=%d:%s)",
+	   umask_init,errno,u8_strerror(errno));
+    errno=0;
+    return -1;}
+  else return umask_val;
+}
+
 static int n_cycles=0, doexit=0, paused=0, restart=0;
 static double last_launch = -1, fast_fail = 3, fail_start=-1;
-static double exit_wait=0, error_wait=1.0, max_wait=120, backoff=10;
+static double exec_wait=0, exit_wait=0, error_wait=1.0, max_wait=120, backoff=10;
 
 static int launch_loop(u8_string job_id,char **real_args,int n_args);
 static void setup_signals(void);
@@ -106,6 +161,7 @@ int main(int argc,char *argv[])
   launch_args[n_args]=NULL;
   main_job_id = job_id;
 
+  if (getenv("EXECWAIT")) exec_wait=u8_getenv_float("EXECTWAIT",0);
   if (getenv("LOGLEVEL")) u8_loglevel=u8_getenv_int("LOGLEVEL",5);
   if (getenv("RUNDIR"))   rundir=u8_getenv("RUNDIR");
   if (getenv("FASTFAIL")) fast_fail=u8_getenv_float("FASTFAIL",fast_fail);
@@ -174,12 +230,22 @@ static pid_t dolaunch(char **launch_args)
 	     "Couldn't remove existing PID file %s",pid_file);
       return -1;}}
 
+  u8_string user_spec      = u8_getenv("RUNUSER");
+  u8_string group_spec     = u8_getenv("RUNGROUP");
+  u8_string umask_init     = u8_getenv("UMASK");
+  if (user_spec) runuser   = lookup_uid(user_spec);
+  if (group_spec) rungroup = lookup_gid(group_spec);
+  if (umask_init) umask_value = parse_umask(umask_init);
   double now = u8_elapsed_time();
   last_launch = u8_elapsed_time();
   pid_t pid = fork();
   if (pid == 0) {
+    if (umask_value>=0) umask(umask_value);
     signal(SIGINT,SIG_IGN);
     signal(SIGTSTP,SIG_IGN);
+    if (exec_wait > 0) u8_sleep(exec_wait);
+    if (runuser>0) setuid(runuser);
+    if (rungroup>0) setgid(rungroup);
     return execvp(launch_args[0],launch_args);}
   else return pid;
 }
