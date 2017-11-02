@@ -109,6 +109,56 @@ static int parse_umask(u8_string umask_init)
   else return umask_val;
 }
 
+static pid_t read_pid(u8_string file)
+{
+  FILE *f = u8_fopen(file,"r");
+  if (f == NULL)
+    return -1;
+  long long intval=-1;
+  int rv = fscanf(f,"%lld",&intval);
+  fclose(f);
+  if ( (rv < 1) || (intval<0) )
+    return -1;
+  else return (pid_t) intval;
+}
+
+static pid_t live_pidp(pid_t pid)
+{
+  if (pid>0) {
+    int rv = kill(pid,0);
+    if (rv<0) {
+      int e = errno; errno=0;
+      if (e == ESRCH)
+	return 0;
+      else return 1;}
+    else return 1;}
+  else return 0;
+}
+
+#define elapsed_since(moment) ((u8_elapsed_time())-moment)
+
+static int kill_existing(u8_string filename,pid_t pid,double wait)
+{
+  if (pid>0) {
+    u8_log(LOG_WARN,"ReplaceExisting",
+	   "Killing process #%lld from %s",pid,filename);
+    int rv = kill(pid,SIGTERM);
+    if (rv<0) {
+      u8_log(LOG_WARN,"SignalFailed","Couldn't send SIGTERM to %lld",pid);
+      return -1;}
+    double started=u8_elapsed_time();
+    while ( ( elapsed_since(started) < wait) && (live_pidp(pid) ) )
+      u8_sleep(0.5);
+    if (live_pidp(pid)) {
+      u8_log(LOG_CRIT,"SignalFailed",
+	     "Process %lld still exists %f seconds after SIGTERM, using SIGKILL",
+	     pid,u8_elapsed_time()-started);
+      kill(pid,SIGKILL);
+      return 0;}
+    else return 1;}
+  else return 0;
+}
+
 static int n_cycles=0, doexit=0, paused=0, restart=0;
 static double last_launch = -1, fast_fail = 3, fail_start=-1;
 static double exec_wait=0, exit_wait=0, error_wait=1.0, max_wait=120, backoff=10;
@@ -161,7 +211,7 @@ int main(int argc,char *argv[])
   launch_args[n_args]=NULL;
   main_job_id = job_id;
 
-  if (getenv("EXECWAIT")) exec_wait=u8_getenv_float("EXECTWAIT",0);
+  if (getenv("EXECWAIT")) exec_wait=u8_getenv_float("EXECWAIT",0);
   if (getenv("LOGLEVEL")) u8_loglevel=u8_getenv_int("LOGLEVEL",5);
   if (getenv("RUNDIR"))   rundir=u8_getenv("RUNDIR");
   if (getenv("FASTFAIL")) fast_fail=u8_getenv_float("FASTFAIL",fast_fail);
@@ -172,9 +222,28 @@ int main(int argc,char *argv[])
 
   pid_file = procpath(job_id,"pid");
   ppid_file = procpath(job_id,"ppid");
-  if (u8_file_existsp(pid_file)) {}
-  if (u8_file_existsp(ppid_file)) {}
-
+  if (u8_file_existsp(ppid_file)) {
+    pid_t live = read_pid(ppid_file);
+    if (live_pidp(live)) {
+      if (u8_getenv("FORCE"))
+	kill_existing(ppid_file,live,u8_getenv_float("KILLWAIT",15));
+      else {
+	u8_log(LOGCRIT,"ExistingPPID",
+	       "The file %s already specifies is a live PID (%lld)",
+	       ppid_file,live);
+	exit(1);}}
+    else u8_removefile(ppid_file);}
+  if (u8_file_existsp(pid_file)) {
+    pid_t live = read_pid(pid_file);
+    if (live_pidp(live)) {
+      if (u8_getenv("FORCE"))
+	kill_existing(pid_file,live,u8_getenv_float("KILLWAIT",15));
+      else {
+	u8_log(LOGCRIT,"ExistingPID",
+	       "The file %s already specifies is a live PID (%lld)",
+	       ppid_file,live);
+	exit(1);}}
+    else u8_removefile(ppid_file);}
   if (launching) {
     pid_t launched = fork();
     if (launched<0) {
@@ -261,7 +330,10 @@ static void fail_wait(u8_condition reason,u8_string job_id,char **launch_args)
   u8_log(LOG_NOTICE,reason,
 	 "Waiting %f seconds before resuming %s (%s)",
 	 fail_pause,job_id,launch_args[0]);
-  u8_sleep(fail_pause);
+  double wait_start = u8_elapsed_time();
+  while ( (elapsed_since(wait_start) < fail_pause) &&
+	  (! doexit ) && (! paused ) )
+    u8_sleep(0.5);
 }
 
 /* Signals */
