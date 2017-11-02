@@ -314,16 +314,7 @@ static pid_t dolaunch(char **launch_args)
     signal(SIGINT,SIG_IGN);
     signal(SIGTSTP,SIG_IGN);
     if (exec_wait > 0) u8_sleep(exec_wait);
-    if (runuser>0) {
-      int rv = setuid(runuser);
-      if (rv<0)  {
-	int setuid_errno = errno; errno = 0;
-	u8_log(LOGCRIT,"FailedSetUID",
-	       "Couldn't set UID to %d errno=%d:%s",
-	       runuser,setuid_errno,u8_strerror(setuid_errno));
-	exit(13);}
-      else u8_log(LOG_NOTICE,"SetGID","Set GID to %d",rungroup);}
-    if (rungroup>0) {
+    if ( ((int)rungroup) >= 0 ) {
       int rv = setgid(rungroup);
       if (rv<0)  {
 	int setgid_errno = errno; errno = 0;
@@ -332,6 +323,16 @@ static pid_t dolaunch(char **launch_args)
 	       rungroup,setgid_errno,u8_strerror(setgid_errno));
 	exit(13);}
       else u8_log(LOG_NOTICE,"SetGID","Set GID to %d",rungroup);}
+    if ( ((int)runuser) >= 0) {
+      int rv = setuid(runuser);
+      if (rv<0)  {
+	int setuid_errno = errno; errno = 0;
+	u8_log(LOGCRIT,"FailedSetUID",
+	       "Couldn't set UID to %d errno=%d:%s",
+	       runuser,setuid_errno,u8_strerror(setuid_errno));
+	exit(13);}
+      else u8_log(LOG_NOTICE,"SetUID","Set UID to %d",runuser);}
+
     return execvp(launch_args[0],launch_args);}
   else return pid;
 }
