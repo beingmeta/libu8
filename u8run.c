@@ -163,7 +163,7 @@ static int n_cycles=0, doexit=0, paused=0, restart=0;
 static double last_launch = -1, fast_fail = 3, fail_start=-1;
 static double exec_wait=0, exit_wait=0, error_wait=1.0, max_wait=120, backoff=10;
 
-static int launch_loop(u8_string job_id,char **real_args,int n_args);
+static void launch_loop(u8_string job_id,char **real_args,int n_args);
 static void setup_signals(void);
 
 int main(int argc,char *argv[])
@@ -259,7 +259,8 @@ int main(int argc,char *argv[])
 	exit(0);
       else exit(1);}}
   setup_signals();
-  return launch_loop(job_id,launch_args,n_args);
+  launch_loop(job_id,launch_args,n_args);
+  return 0;
 }
 
 static pid_t kill_child(u8_string job_id,pid_t pid,u8_string pid_file)
@@ -408,7 +409,7 @@ static void exit_u8run()
     u8_free(filename);}
 }
 
-static u8_string write_ppid_file(u8_string job_id)
+static void write_ppid_file(u8_string job_id)
 {
   if (u8_file_existsp(ppid_file))
     u8_log(LOGWARN,"OverwritePPID",
@@ -419,15 +420,16 @@ static u8_string write_ppid_file(u8_string job_id)
     pid_t pid = getpid();
     u8_byte pidstring[64]; u8_sprintf(pidstring,64,"%lld",pid);
     fputs(pidstring,f);
-    fclose(f);}
+    fclose(f);
+    return;}
   else {
     u8_log(LOGWARN,"PPIDFile","Couldn't write PPID file %s",ppid_file);
-    return NULL;}
+    return;}
 }
 
 /* The launch/keep alive loop */
 
-static int launch_loop(u8_string job_id,char **launch_args,int n_args)
+static void launch_loop(u8_string job_id,char **launch_args,int n_args)
 {
   write_ppid_file(job_id);
 
