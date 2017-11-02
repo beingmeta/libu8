@@ -311,8 +311,9 @@ static pid_t dolaunch(char **launch_args)
   pid_t pid = fork();
   if (pid == 0) {
     if (umask_value>=0) umask(umask_value);
-    signal(SIGINT,SIG_IGN);
-    signal(SIGTSTP,SIG_IGN);
+    if (! (u8_getenv_int("NOMASK",0)) ) {
+      signal(SIGINT,SIG_IGN);
+      signal(SIGTSTP,SIG_IGN);}
     if (exec_wait > 0) u8_sleep(exec_wait);
     if ( ((int)rungroup) >= 0 ) {
       int rv = setgid(rungroup);
