@@ -314,8 +314,24 @@ static pid_t dolaunch(char **launch_args)
     signal(SIGINT,SIG_IGN);
     signal(SIGTSTP,SIG_IGN);
     if (exec_wait > 0) u8_sleep(exec_wait);
-    if (runuser>0) setuid(runuser);
-    if (rungroup>0) setgid(rungroup);
+    if (runuser>0) {
+      int rv = setuid(runuser);
+      if (rv<0)  {
+	int setuid_errno = errno; errno = 0;
+	u8_log(LOGCRIT,"FailedSetUID",
+	       "Couldn't set UID to %d errno=%d:%s",
+	       runuser,setuid_errno,u8_strerror(setuid_errno));
+	exit(13);}
+      else u8_log(LOG_NOTICE,"SetGID","Set GID to %d",rungroup);}
+    if (rungroup>0) {
+      int rv = setgid(rungroup);
+      if (rv<0)  {
+	int setgid_errno = errno; errno = 0;
+	u8_log(LOGCRIT,"FailedSetGID",
+	       "Couldn't set GUID to %d errno=%d:%s",
+	       rungroup,setgid_errno,u8_strerror(setgid_errno));
+	exit(13);}
+      else u8_log(LOG_NOTICE,"SetGID","Set GID to %d",rungroup);}
     return execvp(launch_args[0],launch_args);}
   else return pid;
 }
@@ -460,7 +476,11 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args)
 	     (WIFSIGNALED(status)) ? ("on signal") : ("normally"),
 	     WEXITSTATUS(status));
 
-    if (doexit) {
+    if (status == 13) {
+      u8_log(LOG_CRIT,"LOOPFAIL",
+	     "Exiting u8run because child returned status=13");
+      exit(1);}
+    else if (doexit) {
       /* If someone has set doexit, just terminate the child and exit */
       if (! exited) pid = kill_child(job_id,pid,pid_file);
       exit(0);}
