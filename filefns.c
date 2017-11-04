@@ -70,6 +70,24 @@ U8_EXPORT u8_string u8_username(uid_t uid)
 {
   return get_uname(uid);
 }
+U8_EXPORT uid_t u8_getuid(u8_string name)
+{
+  char *s = u8_tolibc(name);
+  struct passwd _info, *info=NULL;
+  char buf[2048];
+  int rv = getpwnam_r(s,&_info,buf,2048,&info);
+  u8_free(s);
+  if (rv<0) {
+    errno=0;
+    return -1;}
+  else if (info) {
+    uid_t uid = info->pw_uid;
+    errno=0;
+    return uid;}
+  else {
+    errno=0;
+    return -1;}
+}
 #else
 static u8_string get_uname(uid_t ignored)
 {
@@ -79,7 +97,57 @@ U8_EXPORT u8_string u8_username(uid_t uid)
 {
   return get_uname(uid);
 }
+U8_EXPORT uid_t u8_getuid(u8_string name)
+{
+  return (uid_t) -1;
+}
 #endif
+
+
+#if HAVE_GRP_H
+#include <grp.h>
+static u8_string get_grname(gid_t gid)
+{
+  struct group *entry=getgrgid(gid);
+  return u8_fromlibc(entry->gr_name);
+}
+U8_EXPORT u8_string u8_groupname(gid_t gid)
+{
+  return get_uname(gid);
+}
+U8_EXPORT gid_t u8_getgid(u8_string name)
+{
+  char *s = u8_tolibc(name);
+  struct group _info, *info=NULL;
+  char buf[2048];
+  int rv = getgrnam_r(s,&_info,buf,2048,&info);
+  u8_free(s);
+  if (rv<0) {
+    errno=0;
+    return -1;}
+  else if (info) {
+    uid_t uid = info->gr_gid;
+    errno=0;
+    return uid;}
+  else {
+    errno=0;
+    return -1;}
+}
+#else
+static u8_string get_grname(uid_t ignored)
+{
+  return u8_strdup("illuminati");
+}
+U8_EXPORT u8_string u8_username(uid_t uid)
+{
+  return get_grname(uid);
+}
+U8_EXPORT uid_t u8_getuid(u8_string name)
+{
+  return (uid_t) -1;
+}
+#endif
+
 
 /* File predicates */
 

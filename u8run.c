@@ -62,40 +62,6 @@ static u8_string procpath(u8_string job_id,u8_string suffix)
 
 /* Getting */
 
-static uid_t lookup_uid(u8_string s)
-{
-  struct passwd _info, *info=NULL;
-  char buf[2048];
-  int rv = getpwnam_r(s,&_info,buf,2048,&info);
-  if (rv<0) {
-    errno=0;
-    return -1;}
-  else if (info) {
-    uid_t uid = info->pw_uid;
-    errno=0;
-    return uid;}
-  else {
-    errno=0;
-    return -1;}
-}
-
-static uid_t lookup_gid(u8_string s)
-{
-  struct group _info, *info=NULL;
-  char buf[2048];
-  int rv = getgrnam_r(s,&_info,buf,2048,&info);
-  if (rv<0) {
-    errno=0;
-    return -1;}
-  else if (info) {
-    uid_t uid = info->gr_gid;
-    errno=0;
-    return uid;}
-  else {
-    errno=0;
-    return -1;}
-}
-
 static int parse_umask(u8_string umask_init)
 {
   u8_string parse_ends=NULL;
@@ -303,8 +269,8 @@ static pid_t dolaunch(char **launch_args)
   u8_string user_spec      = u8_getenv("RUNUSER");
   u8_string group_spec     = u8_getenv("RUNGROUP");
   u8_string umask_init     = u8_getenv("UMASK");
-  if (user_spec) runuser   = lookup_uid(user_spec);
-  if (group_spec) rungroup = lookup_gid(group_spec);
+  if (user_spec) runuser   = u8_getuid(user_spec);
+  if (group_spec) rungroup = u8_getgid(group_spec);
   if (umask_init) umask_value = parse_umask(umask_init);
   double now = u8_elapsed_time();
   last_launch = u8_elapsed_time();
