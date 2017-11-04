@@ -125,14 +125,14 @@ U8_EXPORT u8_string u8_username(uid_t uid);
 U8_EXPORT uid_t u8_getuid(u8_string name);
 
 /** Returns the name associated with a GID, when available
-    @param uid (a numeric uid)
+    @param gid (a numeric uid)
     @returns a u8_string
 **/
 U8_EXPORT u8_string u8_groupname(gid_t gid);
 
 /** Returns the name associated with a UID, when available
     @param name (a u8_string)
-    @returns uid_t (probably some kind of int)
+    @returns gid_t (probably some kind of int)
 **/
 U8_EXPORT gid_t u8_getgid(u8_string name);
 
