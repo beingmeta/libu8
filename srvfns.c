@@ -265,7 +265,7 @@ U8_EXPORT unsigned char *u8_client_write_x
     return NULL;}
   else if (cl->reading>0) {
     u8_log(LOG_WARNING,"u8_client_write",
-           "Write to @x%lx#%d.%d[%s/%d](%s%:hs) which is still reading %d bytes",
+           "Write to @x%lx#%d.%d[%s/%d](%s%:hs) with %d unread bytes",
            ((unsigned long)cl),cl->clientid,cl->socket,
            get_client_state(cl,statebuf),
            cl->n_trans,cl->idstring,cl->status,
@@ -304,7 +304,7 @@ int u8_client_done(u8_client cl)
       int retval=server->donefn(cl);
       if (retval<0) {
         u8_log(LOG_ERR,"u8_client_done",
-               "Error when finishing transaction on @x%lx#%d.%d[%s/%d](%s%:hs)",
+               "Error finishing transaction on @x%lx#%d.%d[%s/%d](%s%:hs)",
                ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,
                cl->idstring,cl->status);
         u8_clear_errors(1);}}
@@ -312,7 +312,7 @@ int u8_client_done(u8_client cl)
     cl->writing=cl->reading=0;
     if (cl->queued>0) {
       u8_log(LOG_WARNING,"u8_client_done",
-             "Finishing transaction on a queued client @x%lx#%d.%d[%s/%d](%s%:hs)",
+             "Finishing transaction on queued client @x%lx#%d.%d[%s/%d](%s%:hs)",
              ((unsigned long)cl),cl->clientid,cl->socket,cl->n_trans,
              cl->idstring,cl->status);
       cl->queued=0;}
@@ -608,7 +608,8 @@ static u8_client pop_task(struct U8_SERVER *server)
   if (!(task)) {}
   else if (task->active>0) {
     /* This should probably never happen */
-    u8_log(LOG_CRIT,"pop_task(u8)","popping (%d) active task @x%lx#%d.%d[%s/%d](%s%:hs)",
+    u8_log(LOG_CRIT,"pop_task(u8)",
+           "popping (%d) active task @x%lx#%d.%d[%s/%d](%s%:hs)",
            slot,((unsigned long)task),task->clientid,task->socket,
            get_client_state(task,statebuf),
            task->n_trans,task->idstring,task->status);
@@ -618,7 +619,8 @@ static u8_client pop_task(struct U8_SERVER *server)
   else if ((task->flags&U8_CLIENT_CLOSED)||(task->socket<0)) {
     if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
         ((task->flags)&(U8_CLIENT_LOG_QUEUE)))
-      u8_log(LOG_NOTICE,"pop_task(u8)","Final pop (%d) of closed task @x%lx#%d.%d[%s/%d](%s%:hs)",
+      u8_log(LOG_NOTICE,"pop_task(u8)",
+             "Final pop (%d) of closed task @x%lx#%d.%d[%s/%d](%s%:hs)",
              slot,((unsigned long)task),task->clientid,task->socket,
              get_client_state(task,statebuf),
              task->n_trans,task->idstring,task->status);
@@ -633,7 +635,8 @@ static u8_client pop_task(struct U8_SERVER *server)
     task->queued=0; task->active=curtime;
     if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
         ((task->flags)&(U8_CLIENT_LOG_QUEUE)))
-      u8_log(LOG_NOTICE,"pop_task(u8)","Popped (%d) task @x%lx#%d.%d[%s/%d](%s%:hs)",
+      u8_log(LOG_NOTICE,"pop_task(u8)",
+             "Popped (%d) task @x%lx#%d.%d[%s/%d](%s%:hs)",
              slot,((unsigned long)task),task->clientid,task->socket,
              get_client_state(task,statebuf),
              task->n_trans,task->idstring,task->status);
@@ -676,7 +679,7 @@ static void *event_loop(void *thread_arg)
   if (sthread->u8st_threadid<0)
     sthread->u8st_threadid=u8_threadid();
   /* Check for additional thread init functions */
-  while (1) {
+  while ((server->flags&U8_SERVER_CLOSED) == 0) {
     u8_client cl; int dobreak=0; int result=0, closed=0;
     u8_utime cur;
     /* Check that this thread's init functions are up to date */
@@ -702,7 +705,7 @@ static void *event_loop(void *thread_arg)
          so we try to read/write another chunk. */
       ssize_t delta;
       if (cl->off<cl->len) { /* We're not done */
-	
+        
         if (cl->writing>0)
           delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
         else delta=read(cl->socket,cl->buf+cl->off,cl->len-cl->off);
@@ -724,7 +727,7 @@ static void *event_loop(void *thread_arg)
         if (cl->writing>0)
           server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
         else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));
-	
+        
         cl->active=0; sthread->u8st_client=-1; cl->threadnum=-1;
         if (server->xclientfn) server->xclientfn(cl);
         continue;}
@@ -744,9 +747,9 @@ static void *event_loop(void *thread_arg)
           cl->stats.rsum2+=(rtime*rtime);
           if (rtime>cl->stats.rmax) cl->stats.rmax=rtime;
           cl->stats.rcount++;}
-	if ((((server->flags)&(U8_SERVER_LOG_TRANSACT))||
-	     ((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))&&
-	    (cl->len>0))
+        if ((((server->flags)&(U8_SERVER_LOG_TRANSACT))||
+             ((cl->flags)&(U8_CLIENT_LOG_TRANSACT)))&&
+            (cl->len>0))
           u8_log(LOG_NOTICE,((cl->writing>0)?
                              ("event_loop/write"):
                              (cl->reading>0)?
@@ -757,7 +760,7 @@ static void *event_loop(void *thread_arg)
                  get_client_state(cl,statebuf),
                  cl->n_trans,cl->idstring,cl->status,
                  (unsigned long)cl->buf,cl->off,cl->len);
-	cl->off=cl->len=0;}
+        cl->off=cl->len=0;}
     }
     /* Unless there's an I/O error, call the handler */
     if ((cl->flags)&(U8_CLIENT_CLOSED|U8_CLIENT_CLOSING)) {
@@ -968,12 +971,17 @@ struct U8_SERVER *u8_init_server
   va_end(args);
 
   if (init_clients<=0) init_clients=1;
-  server->serverid=NULL; server->flags=flags; server->shutdown=0;
-  server->init_clients=init_clients; server->max_clients=max_clients;
-  server->server_info=NULL; server->n_servers=0;
+  server->serverid=NULL;
+  server->flags=flags;
+  server->shutdown=0;
+  server->init_clients=init_clients;
+  server->max_clients=max_clients;
+  server->server_info=NULL;
+  server->n_servers=0;
   server->clients=u8_alloc_n(init_clients,u8_client);
   memset(server->clients,0,sizeof(u8_client)*init_clients);
-  server->n_clients=0; server->clients_len=init_clients;
+  server->n_clients=0;
+  server->clients_len=init_clients;
   server->sockets=u8_alloc_n(init_clients,struct pollfd);
   memset(server->sockets,0,sizeof(struct pollfd)*init_clients);
   server->free_slot=server->max_slot=0;
@@ -1340,29 +1348,29 @@ int u8_add_server(struct U8_SERVER *server,u8_string hostname,int port)
           u8_free(sockaddr); addrs++;}
         else {
           struct U8_SERVER_INFO *info;
-	  u8_string addr_string=u8_sockaddr_string(sockaddr);
+          u8_string addr_string=u8_sockaddr_string(sockaddr);
           u8_socket sock=open_server_socket(sockaddr,server->max_backlog);
           if (sock>=0) {
             u8_lock_mutex(&(server->lock));
             info=add_server(server,sock,sockaddr);
-	    if (info) info->idstring=addr_string;
+            if (info) info->idstring=addr_string;
             if (server->flags&U8_SERVER_LOG_LISTEN)
-	      u8_log(LOG_NOTICE,NewServer,"Listening to %s",addr_string);}
+              u8_log(LOG_NOTICE,NewServer,"Listening to %s",addr_string);}
           else {
-	    if (u8_current_exception) {
-	      u8_exception ex=u8_erreify();
-	      u8_condition cond = ex->u8x_cond;
-	      if (cond == u8_MissingErrno) cond = "AddServerFailed";
-	      u8_log(LOG_ERROR,cond,"Can't open server socket at %s (%s:%s)",
-		     addr_string,ex->u8x_context,ex->u8x_details);
-	      u8_free_exception(ex,1);}
-	    else {
-	      u8_log(LOG_ERROR,u8_NetworkError,"Can't open socket @%s",
-		     addr_string);}
-	    u8_free(addr_string);}
-	  u8_unlock_mutex(&(server->lock));
+            if (u8_current_exception) {
+              u8_exception ex=u8_erreify();
+              u8_condition cond = ex->u8x_cond;
+              if (cond == u8_MissingErrno) cond = "AddServerFailed";
+              u8_log(LOG_ERROR,cond,"Can't open server socket at %s (%s:%s)",
+                     addr_string,ex->u8x_context,ex->u8x_details);
+              u8_free_exception(ex,1);}
+            else {
+              u8_log(LOG_ERROR,u8_NetworkError,"Can't open socket @%s",
+                     addr_string);}
+            u8_free(addr_string);}
+          u8_unlock_mutex(&(server->lock));
           addrs++;
-	  n_servers++;}}
+          n_servers++;}}
       if (hostinfo) u8_free(hostinfo);
       return n_servers;}}
 }
@@ -1386,7 +1394,8 @@ static int free_client(struct U8_SERVER *server,u8_client cl,u8_context caller)
   struct pollfd *pfd=&(server->sockets[clientid]);
   if (((server->flags)&(U8_SERVER_LOG_QUEUE))||
       ((cl->flags)&(U8_CLIENT_LOG_QUEUE)))
-    u8_log(LOG_NOTICE,"free_client(u8)","Freeing (%s) client/task @x%lx#%d.%d[%s/%d](%s%:hs)",
+    u8_log(LOG_NOTICE,"free_client(u8)",
+           "Freeing (%s) client/task @x%lx#%d.%d[%s/%d](%s%:hs)",
            caller,((unsigned long)cl),cl->clientid,cl->socket,
            get_client_state(cl,statebuf),
            cl->n_trans,cl->idstring,cl->status);
@@ -1501,8 +1510,8 @@ static int server_listen(struct U8_SERVER *server)
     if (server->shutdown) {
       do_shutdown(server,server->shutdown);
       if ((server->sockets!=NULL)&&
-	  (sockets!=server->sockets))
-	u8_free(sockets);
+          (sockets!=server->sockets))
+        u8_free(sockets);
       return 0;}
     if (server->flags&U8_SERVER_CLOSED) return 0;
     update_socketbuf(server,&sockets,&n_socks);
@@ -1513,7 +1522,7 @@ static int server_listen(struct U8_SERVER *server)
   if (server->shutdown) {
     do_shutdown(server,server->shutdown);
     if ((server->sockets!=NULL)&&
-	(sockets!=server->sockets))
+        (sockets!=server->sockets))
       u8_free(sockets);
     return 0;}
   return server_handle_poll(server,sockets,n_socks);
@@ -1806,7 +1815,9 @@ u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int buflen)
   u8_lock_mutex(&(server->lock));
   u8_printf
     (&out,
-     "%s Config: %d/%d/%d threads/maxqueue/backlog; Clients: %d/%d/%d busy/active/ever; Requests: %d/%d/%d live/queued/total;\n",
+     "%s Config: %d/%d/%d threads/maxqueue/backlog; "
+     "Clients: %d/%d/%d busy/active/ever; "
+     "Requests: %d/%d/%d live/queued/total;\n",
      server->server_info->idstring,
      server->n_threads,server->max_queued,server->max_backlog,
      server->n_busy,server->n_clients,server->n_accepted,
@@ -1833,9 +1844,11 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
 }
 
 #define CLIENT_LIST_HEADS \
-  "#  (n) (state) (how long) #socket  bytes/total\t (thread)\t @origin\t [status]\n"
+  "#  (n) (state) (how long) #socket  bytes/total" \
+  "\t (thread)\t @origin\t [status]\n"
 #define CLIENT_STATE_DOC \
-  "# Connection states: (I)dle, (A)ctive, (R)eading, (W)riting, (X)ecuting, (Q)ueued, (L)istening\n"
+  "# Connection states: (I)dle, (A)ctive, " \
+  "(R)eading, (W)riting, (X)ecuting, (Q)ueued, (L)istening\n"
 #define CLIENT_LIST_SEP \
   "#  --------------------------------------------------------------------------------------------\n"
 
