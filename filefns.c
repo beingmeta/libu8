@@ -626,6 +626,31 @@ U8_EXPORT int u8_set_access
   else return changes;
 }
 
+U8_EXPORT int u8_set_access_x
+(u8_string filename,uid_t uid,gid_t gid,mode_t mode)
+{
+  struct stat fileinfo;
+  char *localized=u8_localpath(filename);
+  if (stat(localized,&fileinfo)<0) {
+    u8_graberrno("u8_chmod",u8_strdup(filename));
+    u8_free(localized);
+    return -1;}
+  int rv = 0;
+  int changes = (uid>=0) + (gid>=0) + (mode>=0);
+  if ( ( (gid >= 0) && (fileinfo.st_gid != gid) ) ||
+       ( (uid >= 0) && (fileinfo.st_uid != uid) ) )
+    rv = chown(localized,uid,gid);
+  if (rv<0) {
+    u8_graberrno("u8_set_access/ownership",u8_strdup(filename));}
+  else if ( (mode >= 0) && ((rv=chmod(localized,mode))<0) ) {
+    u8_graberrno("u8_set_access/mode",u8_strdup(filename));}
+  else {}
+  u8_free(localized);
+  if (rv<0)
+    return rv;
+  else return changes;
+}
+
 /* Manipulating directories */
 
 mode_t u8_default_dir_mode =
