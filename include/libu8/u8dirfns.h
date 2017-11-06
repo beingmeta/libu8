@@ -19,6 +19,9 @@
 
 /* Making directories */
 
+U8_EXPORT mode_t u8_default_dir_mode;
+
+
 /** Makes a directory with a particular mode
     This handles conversion to the local character set.
     @param dirname a utf-8 pathname

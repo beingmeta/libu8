@@ -597,18 +597,61 @@ U8_EXPORT int u8_chmod(u8_string name,mode_t mode)
   return retval;
 }
 
+/* Setting access generally */
+
+U8_EXPORT int u8_set_access
+(u8_string filename,u8_string owner,u8_string group,mode_t mode)
+{
+  struct stat fileinfo;
+  char *localized=u8_localpath(filename);
+  if (stat(localized,&fileinfo)<0) {
+    u8_graberrno("u8_chmod",u8_strdup(filename));
+    u8_free(localized);
+    return -1;}
+  uid_t uid = (owner) ? (u8_getuid(owner)) : (-1);
+  gid_t gid = (group) ? (u8_getgid(group)) : (-1);
+  int rv = 0;
+  int changes = (uid>=0) + (gid>=0) + (mode>=0);
+  if ( ( (gid >= 0) && (fileinfo.st_gid != gid) ) ||
+       ( (uid >= 0) && (fileinfo.st_uid != uid) ) )
+    rv = chown(localized,uid,gid);
+  if (rv<0) {
+    u8_graberrno("u8_set_access/ownership",u8_strdup(filename));}
+  else if ( (mode >= 0) && ((rv=chmod(localized,mode))<0) ) {
+    u8_graberrno("u8_set_access/mode",u8_strdup(filename));}
+  else {}
+  u8_free(localized);
+  if (rv<0)
+    return rv;
+  else return changes;
+}
+
 /* Manipulating directories */
+
+mode_t u8_default_dir_mode =
+  (S_IFDIR |
+   S_IRUSR | S_IWUSR | S_IXUSR |
+   S_IRGRP | S_IWGRP | S_IXGRP |
+   S_IROTH | S_IXOTH);
 
 U8_EXPORT int u8_mkdir(u8_string name,mode_t mode)
 {
-  if (u8_directoryp(name))
-    return 0;
+  if (u8_directoryp(name)) {
+    if (mode>=0) {
+      char *localized = u8_tolibc(name);
+      int rv = chmod(localized,mode);
+      u8_free(localized);
+      if (rv<0) u8_graberrno("u8_mkdir/chmod",u8_strdup(name));
+      return rv;}
+    return 0;}
   else {
+    mode_t use_mode = (mode<0) ? (u8_default_dir_mode) : (mode|S_IFDIR);
     const char *localized=u8_localpath(name);
-    int retval=mkdir(localized,mode|S_IFDIR);
+    int retval=mkdir(localized,use_mode);
     u8_free(localized);
-    if (retval<0)
-      return retval;
+    if (retval<0) {
+      u8_graberrno("u8_mkdir",u8_strdup(name));
+      return retval;}
     else return 1;}
 }
 
@@ -636,7 +679,8 @@ U8_EXPORT int u8_mkdirs(u8_string arg,mode_t mode)
   u8_string dirname=
     ((rpath[len-1]=='/')?((u8_string)(u8_strdup(rpath))):(u8_dirname(rpath)));
   int retval=mkdirs(dirname,mode);
-  u8_free(dirname); u8_free(rpath);
+  u8_free(dirname);
+  u8_free(rpath);
   return retval;
 }
 

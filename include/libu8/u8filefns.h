@@ -143,6 +143,16 @@ U8_EXPORT gid_t u8_getgid(u8_string name);
  **/
 U8_EXPORT int u8_chmod(u8_string filename,mode_t mode);
 
+/** Changes access information for a file
+    @param filename a utf-8 pathname
+    @param owner a utf-8 string (or NULL)
+    @param group a utf-8 string (or NULL)
+    @param mode the file mode for the file
+    @returns int: -1 on error, number of changes (uid,gid,mode) otherwise
+ **/
+U8_EXPORT int u8_set_access
+(u8_string filename,u8_string owner,u8_string group,mode_t mode);
+
 /* File manipulation functions */
 
 /** Removes a file from the local file system.
