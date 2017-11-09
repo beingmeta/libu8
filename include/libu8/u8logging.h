@@ -125,6 +125,11 @@ U8_EXPORT u8_logtestfn u8_logbreakp;
 
 #define U8_MAX_LOGLEVEL 9
 
+/* This is defined to change the effective log level for u8_logf */
+#ifndef U8_LOGLEVEL
+#define U8_LOGLEVEL u8_loglevel
+#endif
+
 /* This is the overall log level and messages with with priorities
    above this should not produced output. */
 U8_EXPORT int u8_loglevel, u8_logging_initialized;
@@ -178,6 +183,29 @@ U8_EXPORT int u8_logger(int priority,u8_condition c,u8_string message);
 **/
 U8_EXPORT int u8_log(int priority,u8_condition c,u8_string format_string,...);
 U8_EXPORT int u8_message(u8_string format_string,...);
+
+/** Possibly formats a log message for an (optional) condition.  This
+     macro uses u8_log so the destination of any output will depend on
+     how the program is linked and configured. This macro uses the CPP
+     definition of U8_LOGLEVEL to determine whether to call
+     u8_log(). To specify a log level setting in a C file, define
+     U8_LOGLEVEL to an expression to be used as the current loglevel.
+   @param priority an (int [-1,7]) priority level
+   @param condition a string describing the condition (possibly NULL)
+   @param format_string a utf-8 printf-like format string
+   @param ... arguments for the format string
+   @returns 1 if the call actually produced output somewhere
+**/
+#define u8_logf(priority,condition,format_string,...) \
+  ( ( (priority) <= U8_LOGLEVEL ) ? \
+    (u8_log(-(priority),condition,format_string, ##__VA_ARGS__)) : \
+    (0) )
+
+/** A macro which expands int a loglevel defaulting to u8_loglevel.
+   @param level an integer describing a loglevel or -1
+   @returns the loglevel to use, which is u8_loglevel if the argument is <= 0
+**/
+#define u8_getloglevel(level) ( ( (level) > 0) ? (level) : (u8_loglevel) )
 
 /** Sets the function used for log messages
    @param logfn

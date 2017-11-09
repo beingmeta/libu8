@@ -25,6 +25,8 @@
 
 typedef struct U8_SERVER *u8_server;
 
+U8_EXPORT int u8_server_loglevel;
+
 #ifndef DEFAULT_TIMEOUT
 #define DEFAULT_TIMEOUT 200
 #endif
