@@ -47,6 +47,10 @@ static int stdoutISstderr=-1;
 
 static int stdio_logger(int priority,u8_condition c,u8_string msg)
 {
+  if ( (priority >= 0) &&
+       (! ( (priority < u8_syslog_loglevel) ||
+	    (priority < u8_loglevel) ) ) )
+    return 0;
   u8_byte buf[512]; int output=0; u8_string indented=NULL;
   u8_string prefix=u8_message_prefix(buf,512);
   u8_string level="";
@@ -67,10 +71,11 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
   else {}
 #endif
   if (priority<0) {
-    if (c) fprintf(stdout,"%s%s (%s) %s%s",
-		   u8_logprefix,prefix,c,indented,u8_logsuffix);
-    else fprintf(stdout,"%s%s %s%s",
-		 u8_logprefix,prefix,indented,u8_logsuffix);
+    if (c)
+      fprintf(stdout,"%s%s %s (%s) %s%s",
+	      u8_logprefix,prefix,level,c,indented,u8_logsuffix);
+    else fprintf(stdout,"%s%s %s %s%s",
+		 u8_logprefix,prefix,level,indented,u8_logsuffix);
     fflush(stdout);
     if ((indented)&&(msg!=indented)) u8_free(indented);
     return 1;}
