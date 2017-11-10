@@ -101,9 +101,9 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
   else if (loglevel>u8_loglevel) return 0;
   else if (loglevel<0) eloglevel=(-loglevel);
   else {}
-  level=((loglevel>=(-(U8_MAX_LOGLEVEL)))?
-         (u8_loglevels[eloglevel]):
-         ((u8_string)""));
+  level=((eloglevel<(U8_MAX_LOGLEVEL))?
+	 (u8_loglevels[eloglevel]):
+	 ((u8_string)""));
   prefix=u8_message_prefix(buf,128);
   if ((u8_logindent)&&(u8_logindent[0])&&(strchr(message,'\n')))
     indented=u8_indent_text(message,u8_logindent);
