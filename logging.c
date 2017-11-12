@@ -87,6 +87,25 @@ static u8_logfn logfn=NULL;
 U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message);
 
 #if U8_WITH_STDIO
+static void do_output(FILE *out,u8_string prefix,
+		      u8_string level,u8_condition c,
+		      u8_string body)
+{
+  if (prefix == NULL) prefix = "";
+  if ((c) && (level))
+    fprintf(out,"%s%s %s (%s) %s%s",
+	    u8_logprefix,prefix,level,c,body,u8_logsuffix);
+  else if (c)
+    fprintf(out,"%s%s %s %s%s",
+	    u8_logprefix,prefix,level,body,u8_logsuffix);
+  else if (level)
+    fprintf(out,"%s%s %s %s%s",
+	    u8_logprefix,prefix,level,body,u8_logsuffix);
+  else fprintf(out,"%s%s %s%s",
+	       u8_logprefix,prefix,body,u8_logsuffix);
+
+}
+
 U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
 {
   u8_byte buf[128]; u8_string prefix, indented=NULL;
@@ -95,48 +114,27 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message)
    level is negative, it is always output using an effective loglevel
    which is the positive complement of the negative loglevel. */
   int eloglevel=loglevel; u8_string level;
-  if (loglevel>U8_MAX_LOGLEVEL) {
+  if (loglevel > U8_MAX_LOGLEVEL) {
     fprintf(stderr,"%s!! Logging call with invalid priority %d (%s)%s",
             u8_logprefix,loglevel,c,u8_logsuffix);
     return 0;}
   else if (loglevel>u8_loglevel) return 0;
   else if (loglevel<0) eloglevel=(-loglevel);
   else {}
-  level=((eloglevel<=(U8_MAX_LOGLEVEL))?
-	 (u8_loglevels[eloglevel]):
-	 ((u8_string)""));
+  level=((eloglevel < U8_MAX_LOGLEVEL) ?
+	 (u8_loglevels[eloglevel]) :
+	 (NULL));
   prefix=u8_message_prefix(buf,128);
   if ((u8_logindent)&&(u8_logindent[0])&&(strchr(message,'\n')))
     indented=u8_indent_text(message,u8_logindent);
   if (!(indented)) indented=message;
   if ((loglevel<0)||(eloglevel<=u8_stdout_loglevel)) {
-    if ((c)&&(level))
-      fprintf(stdout,"%s%s %s (%s) %s%s",
-              u8_logprefix,prefix,level,
-	      c,indented,u8_logsuffix);
-    else if (c)
-      fprintf(stdout,"%s%s(%s) %s%s",
-              u8_logprefix,prefix,c,indented,u8_logsuffix);
-    else if (level)
-      fprintf(stdout,"%s%s %s: %s%s",
-              u8_logprefix,prefix,level,indented,u8_logsuffix);
-    else fprintf(stdout,"%s%s %s%s",
-                 u8_logprefix,prefix,indented,u8_logsuffix);
+    do_output(stdout,prefix,level,c,indented);
     if ((indented)&&(indented!=message)) u8_free(indented);
     fflush(stdout);
     return 1;}
-  if (eloglevel<=u8_stderr_loglevel) {
-    if ((c)&&(level))
-      fprintf(stderr,"%s%s %s (%s): %s%s",
-              u8_logprefix,prefix,level,c,indented,u8_logsuffix);
-    else if (c)
-      fprintf(stdout,"%s%s (%s) %s%s",
-              u8_logprefix,prefix,c,indented,u8_logsuffix);
-    else if (level)
-      fprintf(stderr,"%s%s %s: %s%s",
-              u8_logprefix,prefix,level,indented,u8_logsuffix);
-    else fprintf(stderr,"%s%s %s%s",
-                 u8_logprefix,prefix,indented,u8_logsuffix);}
+  if (eloglevel<=u8_stderr_loglevel)
+    do_output(stdout,prefix,level,c,indented);
   if ((indented)&&(indented!=message)) u8_free(indented);
   return 0;
 }
@@ -155,7 +153,7 @@ U8_EXPORT int u8_log(int loglevel,u8_condition c,u8_string format_string,...)
   u8_byte msgbuf[1000];
   U8_INIT_STATIC_OUTPUT_BUF(out,1000,msgbuf);
   if (u8_log_context) {
-    u8_puts(&out,u8_log_context); 
+    u8_puts(&out,u8_log_context);
     u8_putc(&out,'\n');}
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
@@ -188,8 +186,9 @@ U8_EXPORT int u8_message(u8_string format_string,...)
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
-  if (logfn) retval=logfn(-10,NULL,out.u8_outbuf);
-  else retval=u8_default_logger(-10,NULL,out.u8_outbuf);
+  if (logfn)
+    retval=logfn(U8_LOG_MSG,NULL,out.u8_outbuf);
+  else retval=u8_default_logger(U8_LOG_MSG,NULL,out.u8_outbuf);
   if ((out.u8_streaminfo)&(U8_STREAM_OWNS_BUF)) u8_free(out.u8_outbuf);
   return retval;
 }

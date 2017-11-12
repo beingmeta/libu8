@@ -45,7 +45,9 @@ u8_condition stdio_error=_("STDIO error");
 
 static int stdoutISstderr=-1;
 
-static void do_output(FILE *out,u8_string prefix,u8_string level,u8_condition c,u8_string body);
+static void do_output(FILE *out,u8_string prefix,
+		      u8_string level,u8_condition c,
+		      u8_string body);
 
 static int stdio_logger(int priority,u8_condition c,u8_string msg)
 {
