@@ -45,6 +45,8 @@ u8_condition stdio_error=_("STDIO error");
 
 static int stdoutISstderr=-1;
 
+static void do_output(FILE *out,u8_string prefix,u8_string level,u8_condition c,u8_string body);
+
 static int stdio_logger(int priority,u8_condition c,u8_string msg)
 {
   if ( (priority >= 0) &&
@@ -53,15 +55,15 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
     return 0;
   u8_byte buf[512]; int output=0; u8_string indented=NULL;
   u8_string prefix=u8_message_prefix(buf,512);
-  u8_string level="";
+  u8_string level=NULL;
+  if (prefix == NULL) prefix="";
   if ((u8_logindent)&&(u8_logindent[0])&&(strchr(msg,'\n')))
     indented=u8_indent_text(msg,u8_logindent);
   if (!(indented)) indented=msg;
   if ( (priority>=0) && (priority <= (U8_MAX_LOGLEVEL)) &&
        (u8_loglevels[priority]) )
     level=u8_loglevels[priority];
-  else if ( (priority<0) && (priority >= -(U8_MAX_LOGLEVEL)) &&
-	    (u8_loglevels[-priority]) )
+  else if ( (priority<0) && ((-priority) < (U8_MAX_LOGLEVEL+1)) )
     level=u8_loglevels[-priority];
   else {}
 #if HAVE_SYSLOG
@@ -71,11 +73,7 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
   else {}
 #endif
   if (priority<0) {
-    if (c)
-      fprintf(stdout,"%s%s %s (%s) %s%s",
-	      u8_logprefix,prefix,level,c,indented,u8_logsuffix);
-    else fprintf(stdout,"%s%s %s %s%s",
-		 u8_logprefix,prefix,level,indented,u8_logsuffix);
+    do_output(stdout,prefix,level,c,indented);
     fflush(stdout);
     if ((indented)&&(msg!=indented)) u8_free(indented);
     return 1;}
@@ -86,55 +84,45 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
   if (stdoutISstderr) {
     if ((priority<=u8_stderr_loglevel) ||
 	(priority<=u8_stdout_loglevel)) {
-      if ((prefix) && (c))
-	fprintf(stderr,"%s%s %s (%s): %s%s",
-		u8_logprefix,prefix,level,c,indented,u8_logsuffix);
-      else if (prefix)
-	fprintf(stderr,"%s%s %s: %s%s",
-		u8_logprefix,prefix,level,indented,u8_logsuffix);
-      else if (c)
-        fprintf(stderr,"%s%s (%s): %s%s",
-                u8_logprefix,level,c,indented,u8_logsuffix);
-      else fprintf(stderr,"%s%s: %s%s",
-		   u8_logprefix,level,indented,u8_logsuffix);
+      do_output(stderr,prefix,level,c,indented);
       if ((indented)&&(msg!=indented)) u8_free(indented);
       return 1;}
     else {
       if ((indented)&&(msg!=indented)) u8_free(indented);
       return 0;}}
   if (priority<=u8_stderr_loglevel) {
-    if ((prefix) && (c))
-      fprintf(stderr,"%s%s %s (%s): %s%s",
-              u8_logprefix,prefix,level,c,indented,u8_logsuffix);
-    else if (prefix)
-      fprintf(stderr,"%s%s %s: %s%s",
-              u8_logprefix,prefix,level,indented,u8_logsuffix);
-    else if (c)
-      fprintf(stderr,"%s %s (%s): %s%s",
-              u8_logprefix,level,c,indented,u8_logsuffix);
-    else fprintf(stderr,"%s %s: %s%s",
-		 u8_logprefix,level,indented,u8_logsuffix);
+    do_output(stderr,prefix,level,c,indented);
     output=1;}
   if (priority<=u8_stdout_loglevel) {
-    if ((prefix) && (c))
-      fprintf(stdout,"%s%s %s (%s): %s%s",
-              u8_logprefix,prefix,level,c,indented,u8_logsuffix);
-    else if (prefix)
-      fprintf(stdout,"%s%s %s: %s%s",
-              u8_logprefix,prefix,level,indented,u8_logsuffix);
-    else if (c)
-      fprintf(stdout,"%s%s (%s): %s%s",
-              u8_logprefix,level,c,indented,u8_logsuffix);
-    else fprintf(stdout,"%s%s: %s%s",
-		 u8_logprefix,level,indented,u8_logsuffix);
+    do_output(stdout,prefix,level,c,indented);
     fflush(stdout);
     output=1;}
-    if ((indented)&&(msg!=indented)) u8_free(indented);
-    return output;
+  if ((indented)&&(msg!=indented)) u8_free(indented);
+  return output;
+}
+
+static void do_output(FILE *out,u8_string prefix,
+		      u8_string level,u8_condition c,
+		      u8_string body)
+{
+  if (prefix == NULL) prefix = "";
+  if ((c) && (level))
+    fprintf(out,"%s%s %s (%s) %s%s",
+	    u8_logprefix,prefix,level,c,body,u8_logsuffix);
+  else if (c)
+    fprintf(out,"%s%s %s %s%s",
+	    u8_logprefix,prefix,level,body,u8_logsuffix);
+  else if (level)
+    fprintf(out,"%s%s %s %s%s",
+	    u8_logprefix,prefix,level,body,u8_logsuffix);
+  else fprintf(out,"%s%s %s%s",
+	       u8_logprefix,prefix,body,u8_logsuffix);
+
 }
 
 #if (!(U8_WITH_STDIO))
-U8_EXPORT int u8_default_logger(int priority_level,u8_condition c,u8_string msg)
+U8_EXPORT int u8_default_logger(int priority_level,u8_condition c,
+				u8_string msg)
 {
   return stdio_logger(priority,c,msg);
 }

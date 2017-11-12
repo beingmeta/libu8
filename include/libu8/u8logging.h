@@ -61,8 +61,11 @@
 #ifndef LOG_DETAIL
 #define LOG_DETAIL 8
 #endif
+#ifndef LOG_GLUT
+#define LOG_GLUT 9
+#endif
 #ifndef LOG_DELUGE
-#define LOG_DELUGE 9
+#define LOG_DELUGE 10
 #endif
 
 /* Common mistypes/misremembers/mnemonics, might as well define them */
@@ -86,6 +89,7 @@
 #define LOGDETAILS LOG_DETAIL
 #define LOGDETAIL LOG_DETAIL
 #define LOG_DETAILED LOG_DETAIL
+#define LOGGLUT LOG_GLUT
 #define LOGDELUGE LOG_DELUGE
 
 /* With U8 prefixes, just in case */
@@ -116,6 +120,8 @@
 #define U8_LOGDETAILS LOG_DETAIL
 #define U8_LOGDETAIL LOG_DETAIL
 #define U8_LOG_DETAILED LOG_DETAIL
+#define U8_LOG_GLUT LOG_GLUT
+#define U8_LOGGLUT LOG_GLUT
 #define U8_LOG_DELUGE LOG_DELUGE
 #define U8_LOGDELUGE LOG_DELUGE
 
@@ -123,7 +129,11 @@ typedef int (*u8_logtestfn)(int loglevel,u8_condition c);
 
 U8_EXPORT u8_logtestfn u8_logbreakp;
 
-#define U8_MAX_LOGLEVEL 9
+#define U8_MAX_LOGLEVEL 11
+
+/* This is negative, so it's always output, and it's got a loglevel
+   name of NULL, so no loglevel appears. */
+#define U8_LOG_MSG (-11)
 
 /* This is defined to change the effective log level for u8_logf */
 #ifndef U8_LOGLEVEL
