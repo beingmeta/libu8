@@ -61,16 +61,16 @@
 
 #if HAVE_PWD_H
 #include <pwd.h>
-static u8_string get_uname(uid_t uid)
+static u8_string get_uname(u8_uid uid)
 {
   struct passwd *entry=getpwuid(uid);
   return u8_fromlibc(entry->pw_name);
 }
-U8_EXPORT u8_string u8_username(uid_t uid)
+U8_EXPORT u8_string u8_username(u8_uid uid)
 {
   return get_uname(uid);
 }
-U8_EXPORT uid_t u8_getuid(u8_string name)
+U8_EXPORT u8_uid u8_getuid(u8_string name)
 {
   char *s = u8_tolibc(name);
   struct passwd _info, *info=NULL;
@@ -81,7 +81,7 @@ U8_EXPORT uid_t u8_getuid(u8_string name)
     errno=0;
     return -1;}
   else if (info) {
-    uid_t uid = info->pw_uid;
+    u8_uid uid = info->pw_uid;
     errno=0;
     return uid;}
   else {
@@ -89,33 +89,33 @@ U8_EXPORT uid_t u8_getuid(u8_string name)
     return -1;}
 }
 #else
-static u8_string get_uname(uid_t ignored)
+static u8_string get_uname(u8_uid ignored)
 {
   return u8_strdup("kilroy");
 }
-U8_EXPORT u8_string u8_username(uid_t uid)
+U8_EXPORT u8_string u8_username(u8_uid uid)
 {
   return get_uname(uid);
 }
-U8_EXPORT uid_t u8_getuid(u8_string name)
+U8_EXPORT u8_uid u8_getuid(u8_string name)
 {
-  return (uid_t) -1;
+  return (u8_uid) -1;
 }
 #endif
 
 
 #if HAVE_GRP_H
 #include <grp.h>
-static u8_string get_grname(gid_t gid)
+static u8_string get_grname(u8_gid gid)
 {
   struct group *entry=getgrgid(gid);
   return u8_fromlibc(entry->gr_name);
 }
-U8_EXPORT u8_string u8_groupname(gid_t gid)
+U8_EXPORT u8_string u8_groupname(u8_gid gid)
 {
   return get_uname(gid);
 }
-U8_EXPORT gid_t u8_getgid(u8_string name)
+U8_EXPORT u8_gid u8_getgid(u8_string name)
 {
   char *s = u8_tolibc(name);
   struct group _info, *info=NULL;
@@ -126,7 +126,7 @@ U8_EXPORT gid_t u8_getgid(u8_string name)
     errno=0;
     return -1;}
   else if (info) {
-    uid_t uid = info->gr_gid;
+    u8_uid uid = info->gr_gid;
     errno=0;
     return uid;}
   else {
@@ -134,17 +134,17 @@ U8_EXPORT gid_t u8_getgid(u8_string name)
     return -1;}
 }
 #else
-static u8_string get_grname(uid_t ignored)
+static u8_string get_grname(u8_uid ignored)
 {
   return u8_strdup("illuminati");
 }
-U8_EXPORT u8_string u8_username(uid_t uid)
+U8_EXPORT u8_string u8_username(u8_uid uid)
 {
   return get_grname(uid);
 }
-U8_EXPORT uid_t u8_getuid(u8_string name)
+U8_EXPORT u8_uid u8_getuid(u8_string name)
 {
-  return (uid_t) -1;
+  return (u8_uid) -1;
 }
 #endif
 
@@ -608,8 +608,8 @@ U8_EXPORT int u8_set_access
     u8_graberrno("u8_chmod",u8_strdup(filename));
     u8_free(localized);
     return -1;}
-  uid_t uid = (owner) ? (u8_getuid(owner)) : (-1);
-  gid_t gid = (group) ? (u8_getgid(group)) : (-1);
+  u8_uid uid = (owner) ? (u8_getuid(owner)) : (-1);
+  u8_gid gid = (group) ? (u8_getgid(group)) : (-1);
   int rv = 0;
   int changes = (uid>=0) + (gid>=0) + (mode>=0);
   if ( ( (gid >= 0) && (fileinfo.st_gid != gid) ) ||
@@ -627,7 +627,7 @@ U8_EXPORT int u8_set_access
 }
 
 U8_EXPORT int u8_set_access_x
-(u8_string filename,uid_t uid,gid_t gid,mode_t mode)
+(u8_string filename,u8_uid uid,u8_gid gid,mode_t mode)
 {
   struct stat fileinfo;
   char *localized=u8_localpath(filename);

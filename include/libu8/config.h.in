@@ -459,8 +459,13 @@
 #undef HAVE_MODE_T
 #undef HAVE_PID_T
 #undef HAVE_UID_T
+#undef HAVE_GID_T
 #undef HAVE_SIZE_T
 #undef HAVE_SSIZE_T
+
+/* Unsigned uid, gid */
+#undef UID_T_UNSIGNED
+#undef GID_T_UNSIGNED
 
 /* What kind of sanitization (if any) is being applied */
 #undef U8_SANITIZE

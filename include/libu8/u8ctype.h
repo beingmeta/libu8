@@ -144,7 +144,9 @@ U8_EXPORT int u8_base_char(unsigned int ch);
    (c))
 /** Returns the numeric weight of a numeric unicode code point. **/
 #define u8_digit_weight(c) \
-  ((u8_isdigit(c)) ? ((c<0x10000) ? (u8_getchardata(c)) : (u8_lookup_chardata(c))) : (0))
+  ((u8_isdigit(c)) ? \
+  ((c<0x10000) ? (u8_getchardata(c)) : (u8_lookup_chardata(c))) : \
+   (0))
 
 /* Entity conversion */
 

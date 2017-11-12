@@ -725,7 +725,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -818,7 +817,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1071,15 +1069,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1217,7 +1206,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1370,7 +1359,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -2736,6 +2724,65 @@ fi
 #   exception to the GPL to apply to your modified version as well.
 
 #serial 21
+
+# This is what autoupdate's m4 run will expand.  It fires
+# the warning (with _au_warn_XXX), outputs it into the
+# updated configure.ac (with AC_DIAGNOSE), and then outputs
+# the replacement expansion.
+
+
+# This is an auxiliary macro that is also run when
+# autoupdate runs m4.  It simply calls m4_warning, but
+# we need a wrapper so that each warning is emitted only
+# once.  We break the quoting in m4_warning's argument in
+# order to expand this macro's arguments, not AU_DEFUN's.
+
+
+# Finally, this is the expansion that is picked up by
+# autoconf.  It tells the user to run autoupdate, and
+# then outputs the replacement expansion.  We do not care
+# about autoupdate's warning because that contains
+# information on what to do *after* running autoupdate.
+
+
+# ===========================================================================
+#      https://www.gnu.org/software/autoconf-archive/ax_check_sign.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_CHECK_SIGN (TYPE, [ACTION-IF-SIGNED], [ACTION-IF-UNSIGNED], [INCLUDES])
+#
+# DESCRIPTION
+#
+#   Checks whether TYPE is signed or not. If no INCLUDES are specified, the
+#   default includes are used. If ACTION-IF-SIGNED is given, it is
+#   additional shell code to execute when the type is signed. If
+#   ACTION-IF-UNSIGNED is given, it is executed when the type is unsigned.
+#
+#   This macro assumes that the type exists. Therefore the existence of the
+#   type should be checked before calling this macro. For example:
+#
+#     AC_CHECK_HEADERS([wchar.h])
+#     AC_CHECK_TYPE([wchar_t],,[ AC_MSG_ERROR([Type wchar_t not found.]) ])
+#     AX_CHECK_SIGN([wchar_t],
+#       [ AC_DEFINE(WCHAR_T_SIGNED, 1, [Define if wchar_t is signed]) ],
+#       [ AC_DEFINE(WCHAR_T_UNSIGNED, 1, [Define if wchar_t is unsigned]) ], [
+#     #ifdef HAVE_WCHAR_H
+#     #include <wchar.h>
+#     #endif
+#     ])
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Ville Laurikari <vl@iki.fi>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 7
 
 # This is what autoupdate's m4 run will expand.  It fires
 # the warning (with _au_warn_XXX), outputs it into the
@@ -6067,6 +6114,99 @@ else
 fi
 rm -f conftest*
 
+
+# pwd/grp types
+signed_uid_t=1
+signed_gid_t=1
+
+ typename=`echo uid_t | sed "s/[^a-zA-Z0-9_]/_/g"`
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether uid_t is signed" >&5
+$as_echo_n "checking whether uid_t is signed... " >&6; }
+if eval \${ax_cv_decl_${typename}_signed+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  #ifdef HAVE_PWD_H
+  #include <pwd.h>
+  #endif
+
+int
+main ()
+{
+ int foo [ 1 - 2 * !(((uid_t) -1) < 0) ]
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+   eval "ax_cv_decl_${typename}_signed=\"yes\""
+else
+   eval "ax_cv_decl_${typename}_signed=\"no\""
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$ax_cv_decl_${typename}_signed
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+ symbolname=`echo uid_t | sed "s/[^a-zA-Z0-9_]/_/g" | tr "a-z" "A-Z"`
+ if eval "test \"\${ax_cv_decl_${typename}_signed}\" = \"yes\""; then
+    signed_uid_t=1
+ elif eval "test \"\${ax_cv_decl_${typename}_signed}\" = \"no\""; then
+    signed_uid_t=0
+ fi
+
+
+ typename=`echo gid_t | sed "s/[^a-zA-Z0-9_]/_/g"`
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether gid_t is signed" >&5
+$as_echo_n "checking whether gid_t is signed... " >&6; }
+if eval \${ax_cv_decl_${typename}_signed+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+  #ifdef HAVE_GRP_H
+  #include <grp.h>
+  #endif
+
+int
+main ()
+{
+ int foo [ 1 - 2 * !(((gid_t) -1) < 0) ]
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+   eval "ax_cv_decl_${typename}_signed=\"yes\""
+else
+   eval "ax_cv_decl_${typename}_signed=\"no\""
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$ax_cv_decl_${typename}_signed
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+ symbolname=`echo gid_t | sed "s/[^a-zA-Z0-9_]/_/g" | tr "a-z" "A-Z"`
+ if eval "test \"\${ax_cv_decl_${typename}_signed}\" = \"yes\""; then
+    signed_gid_t=1
+ elif eval "test \"\${ax_cv_decl_${typename}_signed}\" = \"no\""; then
+    signed_gid_t=0
+ fi
+
+
+if test ${signed_uid_t} = 0; then
+   $as_echo "#define UID_T_UNSIGNED 1" >>confdefs.h
+
+fi
+if test ${signed_gid_t} = 0; then
+   $as_echo "#define GID_T_UNSIGNED 1" >>confdefs.h
+
+fi
 
 # Particular functions
 

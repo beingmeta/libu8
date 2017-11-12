@@ -1,6 +1,7 @@
 AC_INIT(include/libu8/libu8.h)
 AC_PREFIX_PROGRAM(autoconf)
 m4_include([etc/ax_pthread.m4])
+m4_include([etc/ax_sign.m4])
 threads_default="yes"
 ifmacosx="#"
 shared_default="yes"
@@ -335,6 +336,31 @@ AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 AC_EGREP_HEADER(tm_gmtoff,time.h,AC_DEFINE(HAVE_TM_GMTOFF,1),AC_DEFINE(HAVE_TM_GMTOFF,0))
 AC_EGREP_HEADER(tm_isdst,time.h,AC_DEFINE(HAVE_TM_ISDST,1),AC_DEFINE(HAVE_TM_ISDST,0))
+
+# pwd/grp types
+signed_uid_t=1
+signed_gid_t=1
+AX_CHECK_SIGN([uid_t],
+    [ signed_uid_t=1 ],
+    [ signed_uid_t=0 ], [
+  #ifdef HAVE_PWD_H
+  #include <pwd.h>
+  #endif
+  ])
+AX_CHECK_SIGN([gid_t],
+    [ signed_gid_t=1 ],
+    [ signed_gid_t=0 ], [
+  #ifdef HAVE_GRP_H
+  #include <grp.h>
+  #endif
+  ])
+
+if test ${signed_uid_t} = 0; then
+   AC_DEFINE(UID_T_UNSIGNED,1)
+fi
+if test ${signed_gid_t} = 0; then
+   AC_DEFINE(GID_T_UNSIGNED,1)
+fi
 
 # Particular functions
 

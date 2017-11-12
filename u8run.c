@@ -34,8 +34,8 @@
 #include <grp.h>
 
 static u8_string rundir = "/var/run/libu8/";
-static uid_t runuser  = -1;
-static gid_t rungroup = -1;
+static u8_uid runuser  = -1;
+static u8_gid rungroup = -1;
 static int umask_value = -1;
 
 static u8_string main_job_id = NULL;

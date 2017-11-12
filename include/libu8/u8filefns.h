@@ -17,6 +17,18 @@
 #define LIBU8_U8FILEFNS_H 1
 #define LIBU8_U8FILEFNS_H_VERSION __FILE__
 
+#if UID_T_UNSIGNED
+typedef int u8_uid;
+#else
+typedef uid_t u8_uid;
+#endif
+
+#if GID_T_UNSIGNED
+typedef int u8_gid;
+#else
+typedef gid_t u8_gid;
+#endif
+
 /** \file u8filefns.h
     These functions access the metadata for local files.
     They include checking existing, basic type, readability,
@@ -116,25 +128,25 @@ U8_EXPORT u8_string u8_file_owner(u8_string filename);
     @param uid (a numeric uid)
     @returns a u8_string
 **/
-U8_EXPORT u8_string u8_username(uid_t uid);
+U8_EXPORT u8_string u8_username(u8_uid uid);
 
 /** Returns the name associated with a UID, when available
     @param name (a u8_string)
-    @returns uid_t (probably some kind of int)
+    @returns u8_uid (probably some kind of int)
 **/
-U8_EXPORT uid_t u8_getuid(u8_string name);
+U8_EXPORT u8_uid u8_getuid(u8_string name);
 
 /** Returns the name associated with a GID, when available
     @param gid (a numeric uid)
     @returns a u8_string
 **/
-U8_EXPORT u8_string u8_groupname(gid_t gid);
+U8_EXPORT u8_string u8_groupname(u8_gid gid);
 
 /** Returns the name associated with a UID, when available
     @param name (a u8_string)
-    @returns gid_t (probably some kind of int)
+    @returns u8_gid (probably some kind of int)
 **/
-U8_EXPORT gid_t u8_getgid(u8_string name);
+U8_EXPORT u8_gid u8_getgid(u8_string name);
 
 /** Changes the mode of a file
     @param filename a utf-8 pathname
@@ -161,7 +173,7 @@ U8_EXPORT int u8_set_access
     @returns int: -1 on error, number of changes (uid,gid,mode) otherwise
  **/
 U8_EXPORT int u8_set_access_x
-(u8_string filename,uid_t owner,gid_t group,mode_t mode);
+(u8_string filename,u8_uid owner,u8_gid group,mode_t mode);
 
 /* File manipulation functions */
 
