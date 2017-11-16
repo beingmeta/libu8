@@ -92,6 +92,19 @@
 #define LOGGLUT LOG_GLUT
 #define LOGDELUGE LOG_DELUGE
 
+#define LOGF_WARN     (-(LOG_WARN))
+#define LOGF_NOTICE   (-(LOG_NOTIFY))
+#define LOGF_NOTIFY   (-(LOG_NOTIFY))
+#define LOGF_ERR      (-(LOG_ERR))
+#define LOGF_ERROR    (-(LOG_ERR))
+#define LOGF_CRIT     (-(LOG_CRIT))
+#define LOGF_EMERG    (-(LOG_EMERG))
+#define LOGF_INFO     (-(LOG_INFO))
+#define LOGF_DEBUG    (-(LOG_DEBUG))
+#define LOGF_DETAILS  (-(LOG_DETAILS))
+#define LOGF_DELUGE   (-(LOG_DELUGE))
+#define LOGF_GLUT     (-(LOG_GLUT))
+
 /* With U8 prefixes, just in case */
 #define U8_LOG_WARNING LOG_WARNING
 #define U8_LOG_WARN LOG_WARNING
