@@ -45,10 +45,10 @@ int u8_log_show_appid=1;
 u8_string u8_loglevels[12]={
   _("Emergency!!!"),
   _("Alert!!"),
-  _("Critical"),
+  _("Critical!"),
   _("Error"),
   _("Warning"),
-  _("Note"),
+  _("Notice"),
   _("Info"),
   _("Debug"),
   _("Detail"),
