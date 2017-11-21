@@ -476,6 +476,44 @@ U8_EXPORT u8_string u8_readlink(u8_string filename,int absolute)
       return result;}}
 }
 
+U8_EXPORT u8_string u8_getlink(u8_string filename,int absolute)
+{
+  char *lpath=u8_localpath(filename);
+  char *linkname; ssize_t linklen;
+  struct stat linkinfo;
+  if (lstat(lpath,&linkinfo)<0) {
+    u8_free(lpath);
+    errno=0;
+    return NULL;}
+  else {
+    linkname=u8_malloc(linkinfo.st_size+16);
+    linklen=readlink(lpath,linkname,linkinfo.st_size+1);
+    if (linklen<0) {
+      errno = 0;
+      u8_free(lpath); u8_free(linkname);
+      return NULL;}
+    if (linklen>linkinfo.st_size+15) {
+      u8_seterr(_("Link grew between lstat and readlink"),"u8_readlink",
+                u8_strdup(filename));
+      u8_free(lpath); u8_free(linkname);
+      return NULL;}
+    else if (absolute) {
+      u8_string dir=u8_dirname(filename), abspath;
+      if (dir==NULL) dir=u8_getcwd();
+      linkname[linklen]='\0';
+      abspath=u8_abspath(linkname,dir);
+      u8_free(lpath); u8_free(linkname); u8_free(dir);
+      errno = 0;
+      return abspath;}
+    else {
+      u8_string result;
+      linkname[linklen]='\0';
+      result=u8_fromlibc(linkname);
+      u8_free(lpath); u8_free(linkname);
+      errno = 0;
+      return result;}}
+}
+
 /* Searching for files */
 
 static void buildname(u8_byte *buf,u8_string name,int namelen,
