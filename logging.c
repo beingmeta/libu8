@@ -96,13 +96,10 @@ static void do_output(FILE *out,u8_string prefix,
     fprintf(out,"%s%s %s (%s) %s%s",
 	    u8_logprefix,prefix,level,c,body,u8_logsuffix);
   else if (c)
-    fprintf(out,"%s%s %s %s%s",
-	    u8_logprefix,prefix,level,body,u8_logsuffix);
+    fprintf(out,"%s%s %s %s%s",u8_logprefix,prefix,c,body,u8_logsuffix);
   else if (level)
-    fprintf(out,"%s%s %s %s%s",
-	    u8_logprefix,prefix,level,body,u8_logsuffix);
-  else fprintf(out,"%s%s %s%s",
-	       u8_logprefix,prefix,body,u8_logsuffix);
+    fprintf(out,"%s%s %s %s%s",u8_logprefix,prefix,level,body,u8_logsuffix);
+  else fprintf(out,"%s%s %s%s",u8_logprefix,prefix,body,u8_logsuffix);
 
 }
 
