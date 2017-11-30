@@ -163,7 +163,7 @@ U8_MAYBE_UNUSED
     @param source a pointer to the block
     @returns a pointer to the newly allocated block
 **/
-static void *u8_memdup(size_t len,void *source)
+static void *u8_memdup(size_t len,const void *source)
 {
   unsigned char *copy=u8_malloc(len);
   if ((copy)&&(source)) {
