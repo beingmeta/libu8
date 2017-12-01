@@ -201,10 +201,13 @@ typedef struct U8_INT16 { u8_int8 first; u8_int8 second;} u8_int16;
 /* Wide ints are the smallest ints as big as a pointer */
 #if (SIZEOF_LONG_LONG == SIZEOF_VOID_P)
 typedef unsigned long long u8_wideint;
+typedef unsigned long long u8_ptrbits;
 #elif (SIZEOF_LONG == SIZEOF_VOID_P)
 typedef unsigned long u8_wideint;
+typedef unsigned long u8_ptrbits;
 #else
 typedef unsigned int u8_wideint;
+typedef unsigned int u8_ptrbits;
 #endif
 
 #ifndef WORDS_BIGENDIAN

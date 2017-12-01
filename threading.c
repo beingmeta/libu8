@@ -55,7 +55,7 @@ int u8_thread_debug_showid=1;
 u8_mutex_fn u8_mutex_tracefn=NULL;
 u8_rwlock_fn u8_rwlock_tracefn=NULL;
 
-#define ULL(i) ((unsigned long long)(i))
+#define ULL(i) ((unsigned long long)((u8_ptrbits)i))
 
 static u8_string ll2str(long long n,u8_byte *buf,size_t len)
 {
