@@ -23,7 +23,7 @@
 
 #include <string.h>
 
-#if ((HAVE_EVP_CIPHER_CTX_INIT)&&(HAVE_OPENSSL_EVP_H)&&(HAVE_OPENSSL_ERR_H))
+#if ((HAVE_EVP_CIPHER_CTX_INIT|HAVE_EVP_CIPHER_CTX_NEW)&&(HAVE_OPENSSL_EVP_H)&&(HAVE_OPENSSL_ERR_H))
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <openssl/rsa.h>
@@ -74,7 +74,7 @@ static void fill_bytebuf(struct U8_BYTEBUF *out,
   
 }
 
-#if ((HAVE_EVP_CIPHER_CTX_INIT|HAVE_EVP_CIPHER_CTX_NEW|)&&(HAVE_OPENSSL_EVP_H)&&(HAVE_OPENSSL_ERR_H))
+#if ((HAVE_EVP_CIPHER_CTX_INIT|HAVE_EVP_CIPHER_CTX_NEW)&&(HAVE_OPENSSL_EVP_H)&&(HAVE_OPENSSL_ERR_H))
 
 static u8_context OPENSSL_CRYPTIC="u8_cryptic/OpenSSL";
 
