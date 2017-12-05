@@ -542,8 +542,9 @@ AC_CHECK_HEADERS(openssl/md5.h)
 AC_CHECK_HEADERS(openssl/sha.h)
 AC_CHECK_HEADERS(openssl/err.h)
 AC_CHECK_HEADERS(openssl/evp.h)
+AC_CHECK_LIB(crypto,EVP_CIPHER_CTX_new)
 AC_CHECK_LIB(crypto,EVP_CIPHER_CTX_init)
-AC_CHECK_FUNCS(EVP_get_cipherbyname EVP_CIPHER_CTX_init SHA1_Init)
+AC_CHECK_FUNCS(EVP_get_cipherbyname EVP_CIPHER_CTX_new EVP_CIPHER_CTX_init SHA1_Init)
 
 # UUID functions
 AC_CHECK_HEADERS(uuid/uuid.h)
