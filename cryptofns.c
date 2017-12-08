@@ -69,9 +69,8 @@ static void fill_bytebuf(struct U8_BYTEBUF *out,
 			 void *readstate)
 {
   unsigned char buf[256]; ssize_t n_bytes;
-  while ((n_bytes=reader(buf,256,readstate))>0) 
+  while ((n_bytes=reader(buf,256,readstate))>0)
     u8_bufwrite(out,buf,n_bytes);
-  
 }
 
 #if ((HAVE_EVP_CIPHER_CTX_INIT|HAVE_EVP_CIPHER_CTX_NEW)&&(HAVE_OPENSSL_EVP_H)&&(HAVE_OPENSSL_ERR_H))
@@ -88,7 +87,7 @@ U8_EXPORT ssize_t u8_cryptic
 {
   if (strncasecmp(cname,"rsa",3)==0) {
     ENGINE *eng=ENGINE_get_default_RSA();
-    EVP_PKEY _pkey, *pkey; EVP_PKEY_CTX *ctx; 
+    EVP_PKEY *pkey; EVP_PKEY_CTX *ctx;
     int pubkeyin=(strncasecmp(cname,"rsapub",6)==0);
     const unsigned char *scankey=key;
     struct U8_BYTEBUF bb;
@@ -144,7 +143,7 @@ U8_EXPORT ssize_t u8_cryptic
     if (pkey)  EVP_PKEY_free(pkey);
     return retval;}
   else {
-    EVP_CIPHER_CTX ctx;
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
     int inlen, outlen, retval=0;
     ssize_t totalout=0, totalin=0;
     unsigned char inbuf[1024], outbuf[1024+EVP_MAX_BLOCK_LENGTH];
@@ -166,17 +165,13 @@ U8_EXPORT ssize_t u8_cryptic
 			 ((caller)?(caller):(OPENSSL_CRYPTIC)),
 			 u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 
-      memset(&ctx,0,sizeof(ctx));
-
-      EVP_CIPHER_CTX_init(&ctx);
-
-      retval=EVP_CipherInit(&ctx, cipher, key, iv, do_encrypt);
+      retval=EVP_CipherInit(ctx, cipher, key, iv, do_encrypt);
       if (retval==0)
 	u8_seterr(u8_CipherInit_Failed,
 		  ((caller)?(caller):(OPENSSL_CRYPTIC)),
 		  u8_strdup(cname));
       else {
-	retval=EVP_CIPHER_CTX_set_key_length(&ctx,keylen);
+	retval=EVP_CIPHER_CTX_set_key_length(ctx,keylen);
 	if (retval==0)
 	  u8_seterr(u8_BadCryptoKey,
 		    ((caller)?(caller):(OPENSSL_CRYPTIC)),
@@ -189,7 +184,7 @@ U8_EXPORT ssize_t u8_cryptic
 	else {}}
 
       if (retval==0) {
-	EVP_CIPHER_CTX_cleanup(&ctx);
+	if (ctx) EVP_CIPHER_CTX_free(ctx);
 	return -1;}
 
       while (1) {
@@ -201,11 +196,11 @@ U8_EXPORT ssize_t u8_cryptic
 		 cname,totalin,totalout);
 	  break;}
 	else totalin=totalin+inlen;
-	if (!(EVP_CipherUpdate(&ctx,outbuf,&outlen,inbuf,inlen))) {
+	if (!(EVP_CipherUpdate(ctx,outbuf,&outlen,inbuf,inlen))) {
 	  char *details=u8_malloc(256);
 	  unsigned long err=ERR_get_error();
 	  ERR_error_string_n(err,details,256);
-	  EVP_CIPHER_CTX_cleanup(&ctx);
+	  if (ctx) EVP_CIPHER_CTX_free(ctx);
 	  return u8_reterr(u8_InternalCryptoError,
 			   ((caller)?(caller):((u8_context)"u8_cryptic")),
 			   details);}
@@ -218,11 +213,11 @@ U8_EXPORT ssize_t u8_cryptic
 		 inbuf,inlen,outbuf,outlen);
 	  writer(outbuf,outlen,writestate);
 	  totalout=totalout+outlen;}}
-      if (!(EVP_CipherFinal(&ctx,outbuf,&outlen))) {
+      if (!(EVP_CipherFinal(ctx,outbuf,&outlen))) {
 	char *details=u8_malloc(256);
 	unsigned long err=ERR_get_error();
 	ERR_error_string_n(err,details,256);
-	EVP_CIPHER_CTX_cleanup(&ctx);
+	if (ctx) EVP_CIPHER_CTX_free(ctx);
 	return u8_reterr(u8_InternalCryptoError,
 			 ((caller)?(caller):(OPENSSL_CRYPTIC)),
 			 details);}
@@ -234,12 +229,13 @@ U8_EXPORT ssize_t u8_cryptic
 	       ((do_encrypt)?("encrypt"):("decrypt")),cname,
 	       inlen,totalin,outlen,totalout+outlen,
 	       outbuf,outlen);
-	EVP_CIPHER_CTX_cleanup(&ctx);
+	if (ctx) EVP_CIPHER_CTX_free(ctx);
 	totalout=totalout+outlen;
 	return totalout;}}
     else {
       char *details=u8_malloc(256);
       unsigned long err=ERR_get_error();
+      if (ctx) EVP_CIPHER_CTX_free(ctx);
       ERR_error_string_n(err,details,256);
       return u8_reterr("Unknown cipher",
 		       ((caller)?(caller):((u8_context)"u8_cryptic")),

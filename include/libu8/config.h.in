@@ -434,8 +434,11 @@
 /* For openssl crypto header */
 #undef HAVE_OPENSSL_EVP_H
 
-/* For openssl crypto libraries */
+/* For openssl libraries */
 #undef HAVE_LIBSSL
+
+/* For openssl crypto libraries */
+#undef HAVE_LIBCRYPTO
 
 /* For openssl crypto libraries */
 #undef HAVE_SHA1_INIT
