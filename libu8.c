@@ -152,7 +152,8 @@ U8_EXPORT
   directions can be set by the function u8_set_libcfns(); */
 char *u8_tolibc(u8_string string)
 {
-  if (u8_tolibcfn) return u8_tolibcfn(string);
+  if (u8_tolibcfn)
+    return u8_tolibcfn(string);
   else return (char *) u8_valid_copy(string);
 }
 
@@ -166,7 +167,8 @@ U8_EXPORT
   directions can be set by the function u8_set_libcfns(); */
 u8_string u8_fromlibc(char *string)
 {
-  if (u8_fromlibcfn) return u8_fromlibcfn(string);
+  if (u8_fromlibcfn)
+    return u8_fromlibcfn(string);
   else return u8_valid_copy(string);
 }
 
@@ -638,7 +640,7 @@ U8_EXPORT void *u8_big_alloc(ssize_t n)
     return NULL;
 #if HAVE_MMAP
   if (n > u8_mmap_threshold) {
-    size_t mmap_size = n+8;
+    size_t mmap_size = n+16;
     void *mmapped = mmap(NULL,mmap_size,
 			 PROT_READ|PROT_WRITE,
 			 MAP_PRIVATE|MAP_ANONYMOUS,
@@ -646,15 +648,15 @@ U8_EXPORT void *u8_big_alloc(ssize_t n)
     if (mmapped) {
       ssize_t *head = (ssize_t *) mmapped;
       *head = n;
-      return mmapped+8;}
+      return mmapped+16;}
     else {
       /* If mmap() fails, just fall through to malloc */
       errno=0;}}
 #endif
-  void *base = calloc(n+8,1);
+  void *base = calloc(n+16,1);
   ssize_t *head = (ssize_t *) base;
   *head = -n;
-  return base+8;
+  return base+16;
 }
 
 U8_EXPORT void *u8_big_calloc(ssize_t n,ssize_t eltsz)
@@ -665,7 +667,7 @@ U8_EXPORT void *u8_big_calloc(ssize_t n,ssize_t eltsz)
 U8_EXPORT ssize_t u8_big_free(void *ptr)
 {
   if (ptr == NULL) return 0;
-  void    *base   = ptr - 8;
+  void    *base   = ptr - 16;
   ssize_t *header = (ssize_t *) base;
   ssize_t head    = *header;
 #if HAVE_MMAP
@@ -692,14 +694,14 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
     u8_big_free(ptr);
     return NULL;}
   int ismapped = 0;
-  void    *base   = ptr - 8;
+  void    *base   = ptr - 16;
   ssize_t *header = (ssize_t *) base;
   ssize_t  head   = *header;
   size_t old_size = (head>0) ? (head) : (-head);
 #if HAVE_MMAP
   if ( (n < u8_mmap_threshold) && (head < 0) ) {
     /* Both the old and the new are malloc'd, so we just realloc */
-    void *newptr = u8_realloc(base,n+8);
+    void *newptr = u8_realloc(base,n+16);
     if (newptr == NULL) {
       u8_log(LOGCRIT,"BigReallocFailed",
 	     "u8_realloc from %lld to %lld failed, errno=%d (%s)",
@@ -708,12 +710,12 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
       return ptr;}
     header = (ssize_t *) newptr;
     *header = -n;
-    return newptr+8;}
+    return newptr+16;}
   else {
     /* One of the new or old pointers is mmapped, so we need to copy
        the data and free the old pointer. */
     void *new_chunk = NULL;
-    size_t new_extent = n+8;
+    size_t new_extent = n+16;
     if (n >= u8_mmap_threshold) {
       new_chunk = mmap(NULL,new_extent,
 		       PROT_READ|PROT_WRITE,
@@ -736,7 +738,7 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
 
     /* Copy the data */
     char *src = ((char *)ptr);
-    char *dst = ((char *)(new_chunk))+8;
+    char *dst = ((char *)(new_chunk))+16;
     size_t copy_size = ( n > old_size) ? (old_size) : (n);
     memcpy(dst,src,copy_size);
 
@@ -748,7 +750,7 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
     /* Free the old pointer */
     if (head<0) u8_free(base);
     else {
-      int rv = munmap(base,old_size+8);
+      int rv = munmap(base,old_size+16);
       if (rv<0) {
 	u8_log(LOGCRIT,"MUnmapFailed","With errno=%d (%s)",
 	       errno,u8_strerror(errno));
@@ -764,7 +766,7 @@ U8_EXPORT void *u8_big_realloc(void *ptr,ssize_t n)
     return ptr;}
   header = (ssize_t *) new_chunk;
   *header = -n;
-  return new_chunk+8;
+  return new_chunk+16;
 }
 
 U8_EXPORT void *u8_big_copy(const void *src,ssize_t newlen,ssize_t oldlen)
