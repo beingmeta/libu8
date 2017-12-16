@@ -165,6 +165,27 @@ U8_EXPORT int u8_close_fd(int fd)
   return close(fd);
 }
 
+/* Utility functions */
+
+U8_EXPORT ssize_t u8_writeall(int sock,const unsigned char *data,size_t len)
+{
+  size_t bytes_to_write = len;
+  while (bytes_to_write > 0) {
+    ssize_t delta=write(sock,data,bytes_to_write);
+    if (delta<0)
+      if (errno==EAGAIN) continue;
+      else return delta;
+    else if (delta==0)
+      if (errno==EAGAIN) continue;
+      else if (bytes_to_write>0)
+	return -1;
+      else return len;
+    else {
+      data=data+delta;
+      bytes_to_write -= delta;}}
+  return len;
+}
+
 /* Subscription */
 
 static struct U8_SUBSCRIPTION *subscriptions=NULL;

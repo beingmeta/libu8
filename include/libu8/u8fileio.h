@@ -93,5 +93,13 @@ U8_EXPORT int u8_get_blocking(int fd);
  **/
 U8_EXPORT int u8_set_blocking(int fd,int blocking);
 
+/** Writes a buffer to a file descriptor
+    @param fd a valid file descriptor
+    @param buf a byte vector
+    @param len the size of the data to write
+    @returns -1 on error, bytes written otherwise
+ **/
+U8_EXPORT ssize_t u8_writeall(int fd,const unsigned char *buf,size_t len);
+
 #endif
 

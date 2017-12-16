@@ -125,6 +125,4 @@ U8_EXPORT void u8_register_open_xfile(struct U8_XFILE *out);
 U8_EXPORT void u8_deregister_open_xfile(struct U8_XFILE *out);
 U8_EXPORT void u8_close_xfiles();
 
-U8_EXPORT int u8_writeall(int sock,const unsigned char *data,int len);
-
 #endif

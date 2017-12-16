@@ -55,22 +55,23 @@ static u8_condition SpecialXBUF=_("Stream XBUF is static");
 
 /* Utility functions */
 
-U8_EXPORT int u8_writeall(int sock,const unsigned char *data,int len)
+static ssize_t writeall(int sock,const unsigned char *data,size_t len)
 {
-  int bytes_to_write=len;
-  while (bytes_to_write>0) {
-    int delta=write(sock,data,bytes_to_write);
+  size_t bytes_to_write = len;
+  while (bytes_to_write > 0) {
+    ssize_t delta=write(sock,data,bytes_to_write);
     if (delta<0)
       if (errno==EAGAIN) continue;
       else return delta;
     else if (delta==0)
       if (errno==EAGAIN) continue;
-      else if (bytes_to_write>0) return -1;
-      else return 0;
+      else if (bytes_to_write>0)
+	return -1;
+      else return len;
     else {
       data=data+delta;
-      bytes_to_write=bytes_to_write-delta;}}
-  return bytes_to_write;
+      bytes_to_write -= delta;}}
+  return len;
 }
 
 /* Input */
@@ -269,7 +270,9 @@ static int flush_xoutput(struct U8_XOUTPUT *xf)
                 xf->u8_xescape,(xf->u8_streaminfo&U8_STREAM_CRLFS),
                 buf,&buflen);
     /* Write it out to the file descriptor */
-    u8_writeall(xf->u8_xfd,buf,buflen);
+    if (writeall(xf->u8_xfd,buf,buflen)<0) {
+      if (errno) u8_graberr(errno,"flush_xoutput",NULL);
+      return -1;}
     /* Write over what you just wrote out with what you haven't written
        yet and move the point to the end of the unwritten data. */
     memmove(xf->u8_outbuf,scan,xf->u8_write-scan);
