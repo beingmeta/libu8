@@ -192,4 +192,6 @@ u8_int4 u8_hashptrval(void *ptr,int n_bits)
 **/
 U8_EXPORT void u8_initialize_logging(void);
 
+U8_EXPORT time_t u8_start_tick;
+
 #endif /* ndef LIBU8_LIBU8_H */

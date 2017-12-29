@@ -136,4 +136,6 @@ U8_EXPORT time_t u8_localtime_x(struct U8_XTIME *xt,time_t tick,int nsecs);
 **/
 U8_EXPORT time_t u8_xtime_to_tptr(struct U8_XTIME *xt,struct tm *tm);
 
+U8_EXPORT struct U8_XTIME u8_start_time;
+
 #endif

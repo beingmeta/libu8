@@ -99,6 +99,8 @@ int u8_major_version=U8_MAJOR_VERSION;
 int u8_minor_version=U8_MINOR_VERSION;
 int u8_release_version=U8_RELEASE_VERSION;
 
+time_t u8_start_tick = -1;
+
 /* Exceptions */
 
 u8_condition u8_UnexpectedErrno=_("Unexpected errno");
@@ -262,12 +264,12 @@ static struct timeb estart={0};
 static time_t estart=-1;
 #endif
 
-static void init_elapsed_time(void);
+static void init_timebase(void);
 
 U8_EXPORT double u8_elapsed_time()
 {
   if (! elapsed_time_initialized) {
-    init_elapsed_time();
+    init_timebase();
     if (! elapsed_time_initialized)
       return -1.0;}
 #if USE_POSIX_CLOCK
@@ -297,9 +299,12 @@ U8_EXPORT double u8_elapsed_time()
 #endif
 }
 
-static void init_elapsed_time()
+/* Initialize time base */
+
+static void init_timebase()
 {
   if (elapsed_time_initialized) return;
+  u8_start_tick = time(NULL);
 #if USE_POSIX_CLOCK
   if (clock_gettime(USE_POSIX_CLOCK,&estart)>=0)
     elapsed_time_initialized=1;
@@ -332,6 +337,8 @@ U8_EXPORT time_t u8_elapsed_base()
     return estart;
 #endif
 }
+
+/* Hand coded num/string functions */
 
 static char decimal_weights[10]={'0','1','2','3','4','5','6','7','8','9'};
 
@@ -910,7 +917,7 @@ U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
 
-  init_elapsed_time();
+  init_timebase();
 
   /* Temporarily here, remove with next minor release */
   u8_BadUTF8byte = u8_BadUTF8Start;

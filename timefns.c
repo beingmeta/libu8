@@ -48,6 +48,8 @@ typedef unsigned int u8uint;
 static u8_mutex timefns_lock;
 #endif
 
+struct U8_XTIME u8_start_time;
+
 /* Utility functions */
 
 static U8_MAYBE_UNUSED double getprecfactor(enum u8_timestamp_precision precision)
@@ -1224,6 +1226,8 @@ U8_EXPORT time_t u8_sleep(double seconds)
 }
 #endif
 
+/* Time bases */
+
 /* Initialization functions */
 
 U8_EXPORT void u8_init_timefns_c()
@@ -1232,5 +1236,8 @@ U8_EXPORT void u8_init_timefns_c()
 #if U8_THREADS_ENABLED
   u8_init_mutex(&timefns_lock);
 #endif
+
+  u8_init_xtime(&u8_start_time,u8_start_tick,u8_second,0,0,0);
+
   u8_register_source_file(_FILEINFO);
 }
