@@ -132,20 +132,28 @@ U8_EXPORT int u8_base_char(unsigned int ch);
     ((c>=0xFE20) && (c<=0xFE2F)) )
 
 
+typedef unsigned int _uint;
+
 /** Returns a non-lowercase version of a unicode code point.  **/
-#define u8_toupper(c) \
-  ((u8_islower(c)) ? \
-   ((c<0x10000) ? (c+(u8_getchardata(c))) : (u8_lookup_chardata(c))) : \
+#define u8_toupper(c)		\
+  ((u8_islower(c)) ?		\
+   ((((_uint)c)<0x10000) ?	\
+    (c+(u8_getchardata(c))) :	\
+    (u8_lookup_chardata(c))) :	\
    (c))
 /** Returns a non-uppercase version of a unicode code point.  **/
-#define u8_tolower(c) \
-  ((u8_isupper(c)) ? \
-   ((c<0x10000) ? (c+(u8_getchardata(c))) : (u8_lookup_chardata(c))) : \
+#define u8_tolower(c)		\
+  ((u8_isupper(c)) ?		\
+   ((((_uint)c)<0x10000) ?	\
+    (c+(u8_getchardata(c))) :	\
+    (u8_lookup_chardata(c))) :	\
    (c))
 /** Returns the numeric weight of a numeric unicode code point. **/
-#define u8_digit_weight(c) \
-  ((u8_isdigit(c)) ? \
-  ((c<0x10000) ? (u8_getchardata(c)) : (u8_lookup_chardata(c))) : \
+#define u8_digit_weight(c)	\
+  ((u8_isdigit(c)) ?		\
+   ((((_uint)c)<0x10000) ?	\
+    (u8_getchardata(c)) :	\
+    (u8_lookup_chardata(c))) :	\
    (0))
 
 /* Entity conversion */
