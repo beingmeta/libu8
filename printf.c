@@ -219,6 +219,9 @@ int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
 	  else sprintf(buf,"%02x",ch);
 	  u8_puts(s,buf);}
 	string=NULL;}
+      else if (code == 'c') {
+	unsigned int codepoint = va_arg(*args,int);
+	u8_putc(s,codepoint); string = NULL; }
       else if ((code<128) && (u8_printf_handlers[(int)code]))
 	/* We pass the pointer args because some stdarg implementations
 	   work better that way. */
