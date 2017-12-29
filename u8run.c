@@ -46,7 +46,7 @@ static pid_t dependent = -1;
 
 void usage()
 {
-  fprintf(stderr,"fdrun [+daemon] [env=val]* jobid [env=val]* exename [args..]\n");
+  fprintf(stderr,"u8run [+daemon] [env=val]* jobid [env=val]* exename [args..]\n");
 }
 
 static u8_string procpath(u8_string job_id,u8_string suffix)
