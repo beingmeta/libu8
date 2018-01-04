@@ -295,7 +295,7 @@ static u8_string entity_end(u8_string entity)
     scan=scan+2; base=16;}
   else if (*scan=='#') {
     scan=scan+1; base=10;}
-  while ((*scan) && (*scan!=';'))
+  while ((*scan) && (*scan!=';') && (*scan!=','))
     if (base)
       if ((base==10) && (isdigit(*scan))) scan++;
       else if ((base==16) && (isxdigit(*scan))) scan++;

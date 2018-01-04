@@ -544,11 +544,15 @@ U8_EXPORT
 */
 int u8_get_entity(struct U8_INPUT *f)
 {
-  const u8_byte *semi=strchr(f->u8_read,';');
-  if (((semi==NULL)||(semi>=f->u8_inlim))&&(f->u8_fillfn)) {
+  const u8_byte *semi=strchr(f->u8_read,';'), *comma=strchr(f->u8_read,',');
+  while (((semi==NULL)||(semi>=f->u8_inlim))&&
+         ((comma==NULL)||(comma>=f->u8_inlim))&&
+         (f->u8_fillfn)) {
     f->u8_fillfn(f);
-    semi=strchr(f->u8_read,';');}
-  if (f->u8_read==f->u8_inlim) return -1;
+    semi=strchr(f->u8_read,';');
+    comma=strchr(f->u8_read,',');}
+  if (f->u8_read==f->u8_inlim)
+    return -1;
   else {
     const u8_byte *start=f->u8_read; u8_string end=NULL;
     int code=u8_parse_entity(start,&end);
