@@ -16,6 +16,7 @@
 
 #include "libu8/u8source.h"
 #include "libu8/libu8.h"
+#include "libu8/u8memlist.h"
 
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
@@ -906,6 +907,29 @@ U8_EXPORT void u8_for_source_files(void (*f)(u8_string s,void *),void *data)
     u8_unlock_mutex(&source_registry_lock);
     while (i<n) {f(files[i++],data);}
     u8_free(files);}
+}
+
+/* u8list functions */
+
+U8_EXPORT u8_memlist u8_cons_list(void *ptr,u8_memlist cdr,int big)
+{
+  struct U8_MEMLIST *cons = u8_alloc(struct U8_MEMLIST);
+  cons->u8ml_ptr = ptr;
+  cons->u8ml_next = cdr;
+  cons->u8ml_big = big;
+  return cons;
+}
+
+U8_EXPORT void u8_free_list(u8_memlist lst)
+{
+  struct U8_MEMLIST *scan = lst;
+  while (scan) {
+    u8_memlist next = scan->u8ml_next;
+    if (scan->u8ml_big)
+      u8_big_free(scan->u8ml_ptr);
+    else u8_free(scan->u8ml_ptr);
+    u8_free(scan);
+    scan=next;}
 }
 
 /* Initialization */

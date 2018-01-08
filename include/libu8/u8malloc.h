@@ -177,7 +177,6 @@ static void *u8_memdup(size_t len,const void *source)
     return NULL;}
 }
 
-
 /* Legacy definitions */
 #define u8_allocz u8_alloc
 #define u8_allocz_n u8_alloc_n
