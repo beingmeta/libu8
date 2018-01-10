@@ -662,6 +662,11 @@ U8_EXPORT void *u8_big_alloc(ssize_t n)
       errno=0;}}
 #endif
   void *base = calloc(n+16,1);
+  if (base == NULL) {
+    unsigned char buf[32];
+    u8_string size_string = u8_uitoa10(n,buf);
+    u8_graberrno("u8_big_alloc",u8_strdup(buf));
+    return NULL;}
   ssize_t *head = (ssize_t *) base;
   *head = -n;
   return base+16;
