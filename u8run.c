@@ -29,6 +29,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <pwd.h>
 #include <grp.h>
@@ -41,12 +42,19 @@ static int umask_value = -1;
 static u8_string main_job_id = NULL;
 static u8_string pid_file = NULL;
 static u8_string ppid_file = NULL;
+static u8_string stop_file = NULL;
 static pid_t dependent = -1;
 
+static int restart_on_error = 0;
+static int restart_on_exit = 0;
 
 void usage()
 {
   fprintf(stderr,"u8run [+daemon] [env=val]* jobid [env=val]* exename [args..]\n");
+  fprintf(stderr,"  [env]\tRUNDIR=dir LOGLEVEL=n\n");
+  fprintf(stderr,"  [env]\tRESTART=never|error|exit|always\n");
+  fprintf(stderr,"  [env]\tWAIT=secs FASTFAIL=secs BACKOFF=secs MAXWAIT=secs\n");
+  fprintf(stderr,"  [env]\tRUNUSER=name|id RUNGROUP=name|id UMASK=0mmm\n");
 }
 
 static u8_string procpath(u8_string job_id,u8_string suffix)
@@ -127,7 +135,7 @@ static int kill_existing(u8_string filename,pid_t pid,double wait)
 
 static int n_cycles=0, doexit=0, paused=0, restart=0;
 static double last_launch = -1, fast_fail = 3, fail_start=-1;
-static double exec_wait=0, exit_wait=0, error_wait=1.0, max_wait=120, backoff=10;
+static double restart_wait=0, error_wait=1.0, max_wait=120, backoff=10;
 
 static void launch_loop(u8_string job_id,char **real_args,int n_args);
 static void setup_signals(void);
@@ -177,17 +185,67 @@ int main(int argc,char *argv[])
   launch_args[n_args]=NULL;
   main_job_id = job_id;
 
-  if (getenv("EXECWAIT")) exec_wait=u8_getenv_float("EXECWAIT",0);
   if (getenv("LOGLEVEL")) u8_loglevel=u8_getenv_int("LOGLEVEL",5);
   if (getenv("RUNDIR"))   rundir=u8_getenv("RUNDIR");
   if (getenv("FASTFAIL")) fast_fail=u8_getenv_float("FASTFAIL",fast_fail);
-  if (getenv("EXITWAIT")) exit_wait=u8_getenv_float("EXITWAIT",exit_wait);
-  if (getenv("ERRWAIT"))  error_wait=u8_getenv_float("ERRORWAIT",error_wait);
+  if (getenv("WAIT"))     restart_wait=u8_getenv_float("WAIT",1);
   if (getenv("BACKOFF"))  backoff=u8_getenv_float("BACKOFF",backoff);
   if (getenv("MAXWAIT"))  max_wait=u8_getenv_float("BACKOFF",max_wait);
 
+  char *restart_val = getenv("RESTART");
+  if (restart_val==NULL) {}
+  else if ( (strcasecmp(restart_val,"never")==0) ||
+	    (strcasecmp(restart_val,"no")==0) ) {
+    restart_on_error=0;
+    restart_on_exit=0;}
+  else if (strcasecmp(restart_val,"always")==0) {
+    restart_on_error=1;
+    restart_on_exit=1;}
+  else if (strcasecmp(restart_val,"error")==0) {
+    restart_on_error=1;}
+  else if (strcasecmp(restart_val,"exit")==0) {
+    restart_on_exit=1;}
+  else {
+    usage();
+    exit(0);}
+
+  /* Now that we're past the usage checks, redirect output if requested. */
+  u8_string logfile = u8_getenv("U8LOGFILE");
+  if (logfile) {
+    int fd = open(logfile,O_WRONLY|O_APPEND|O_CREAT,0664);
+    if (fd<0) {
+      int eno = errno; errno=0;
+      fprintf(stderr,"Error opening logfile %s: %s (%d)\n",
+	      logfile,u8_strerror(eno),eno);
+      exit(1);}
+    else {
+      int rv = dup2(fd,STDOUT_FILENO);
+      if (rv<0) {
+	int eno = errno; errno=0;
+	fprintf(stderr,"Error redirecting stdout to %s: %s (%d)\n",
+		logfile,u8_strerror(eno),eno);
+	close(fd);
+	exit(1);}
+      else {
+	rv = dup2(fd,STDERR_FILENO);
+	if (rv<0) {
+	  int eno = errno; errno=0;
+	  fprintf(stderr,"Error redirecting stderr to %s: %s (%d)\n",
+		  logfile,u8_strerror(eno),eno);
+	  close(fd);
+	  exit(1);}}}}
+
   pid_file = procpath(job_id,"pid");
   ppid_file = procpath(job_id,"ppid");
+  stop_file = procpath(job_id,"stop");
+  if (u8_file_existsp(stop_file)) {
+    u8_log(LOG_WARN,"StopFile","Removing existing stop file %s",stop_file);
+    int rv = u8_removefile(stop_file);
+    if (rv<0)
+      u8_log(LOG_CRIT,"StopFile","Couldn't remove existing stop file %s",
+	     stop_file);
+    exit(1);}
+
   if (u8_file_existsp(ppid_file)) {
     pid_t live = read_pid(ppid_file);
     if (live_pidp(live)) {
@@ -280,7 +338,6 @@ static pid_t dolaunch(char **launch_args)
     if (! (u8_getenv_int("NOMASK",0)) ) {
       signal(SIGINT,SIG_IGN);
       signal(SIGTSTP,SIG_IGN);}
-    if (exec_wait > 0) u8_sleep(exec_wait);
     if ( ((int)rungroup) >= 0 ) {
       int rv = setgid(rungroup);
       if (rv<0)  {
@@ -444,14 +501,24 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args)
 	     (WIFSIGNALED(status)) ? ("on signal") : ("normally"),
 	     WEXITSTATUS(status));
 
-    if (status == 13) {
-      u8_log(LOG_CRIT,"LOOPFAIL",
+    int exit_val = WEXITSTATUS(status);
+
+    if (exit_val == 13) {
+      u8_log(LOG_WARN,"LOOPEXIT",
 	     "Exiting u8run because child returned status=13");
       exit(1);}
     else if (doexit) {
       /* If someone has set doexit, just terminate the child and exit */
       if (! exited) pid = kill_child(job_id,pid,pid_file);
       exit(0);}
+    else if (u8_file_existsp(stop_file)) {
+      /* If someone has set doexit, just terminate the child and exit */
+      if (! exited) pid = kill_child(job_id,pid,pid_file);
+      u8_removefile(stop_file);
+      exit(0);}
+    else if ( ( (exited) && (exit_val) && (restart_on_error == 0) ) ||
+	      ( (exited) && (exit_val == 0) && (restart_on_exit == 0) ) ) {
+      exit(exit_val);}
     else if ( (exited) && ((now-started) < fast_fail) )
       /* If the child exited very quickly, count it as a failure
 	 and pause before restarting. */
@@ -470,7 +537,7 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args)
 	pid = kill_child(job_id,pid,pid_file);
       while ( (paused) && (pause_rv=wait(&pause_status)) ) {
 	u8_log(LOG_INFO,"WakeUp","Woke up for rv=%d",pause_rv);
-	/* Handle signals while paused */
+	/* We might have been killed while paused */
 	if (doexit) {
 	  kill_child(job_id,pid,pid_file);
 	  exit(0);}
@@ -491,6 +558,7 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args)
 	       "Terminating existing %s:%lld",job_id,pid);
 	pid = kill_child(job_id,pid,pid_file);}
       else u8_log(LOG_INFO,"Restarting","Restarting job %s",job_id);
+      if (restart_wait>0) u8_sleep(restart_wait);
       started = u8_elapsed_time();
       pid = dolaunch(launch_args);
       u8_log(LOG_NOTICE,"Restarted","Restarted job %s:%lld",job_id,pid);
@@ -502,6 +570,7 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args)
       u8_log(LOG_INFO,"Restarting",
 	     "Automatically restarting %s after exit",job_id);
       started = u8_elapsed_time();
+      if (restart_wait>0) u8_sleep(restart_wait);
       pid = dolaunch(launch_args);
       u8_log(LOG_NOTICE,"Restarted",
 	     "Automatically restarted %s after exit, pid=%lld",
