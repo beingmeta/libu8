@@ -77,7 +77,7 @@ static ssize_t writeall(int sock,const unsigned char *data,size_t len)
 /* Input */
 
 /* This returns the number of bytes added */
-static int fill_xinput(struct U8_XINPUT *xf)
+U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
 {
   /* There are three basic steps:
        * Overwriting what we've already read with the data we have.
@@ -168,7 +168,7 @@ U8_EXPORT int u8_init_xinput(struct U8_XINPUT *xi,int fd,u8_encoding enc)
     xi->u8_xfd=fd;
     xi->u8_xbuf=u8_malloc(U8_DEFAULT_XFILE_BUFSIZE);
     xi->u8_xbuflim=U8_DEFAULT_XFILE_BUFSIZE;
-    xi->u8_fillfn=(u8_fillfn)fill_xinput;
+    xi->u8_fillfn=(u8_fillfn)u8_fill_xinput;
     xi->u8_closefn=(u8_input_closefn)u8_close_xinput;
     xi->u8_streaminfo |= U8_STREAM_OWNS_XBUF;
     xi->u8_xencoding=enc;
