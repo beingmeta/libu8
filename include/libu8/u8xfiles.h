@@ -88,18 +88,61 @@ typedef struct U8_XOUTPUT {
   } U8_XOUTPUT;
 typedef struct U8_XOUTPUT *u8_xoutput;
 
-U8_EXPORT struct U8_XOUTPUT *u8_open_xoutput(int fd,u8_encoding enc);
+/* Creates an input XFILE given a file descriptor and an encoding
+   @param fd an integer file description
+   @param enc a pointer to an U8_ENCODING structure or NULL
+   @returns a pointer to a U8_XINPUT structure
+*/
 U8_EXPORT struct U8_XINPUT *u8_open_xinput(int fd,u8_encoding enc);
 
-U8_EXPORT int u8_init_xoutput(struct U8_XOUTPUT *,int fd,u8_encoding enc);
-U8_EXPORT int u8_init_xinput(struct U8_XINPUT *,int fd,u8_encoding enc);
+/* Creates an output XFILE given a file descriptor and an encoding
+   @param fd an integer file description
+   @param enc a pointer to an U8_ENCODING structure or NULL
+   @returns a pointer to a U8_XOUTPUT structure
+*/
+U8_EXPORT struct U8_XOUTPUT *u8_open_xoutput(int fd,u8_encoding enc);
+
+/* Initializes an XFILE structure for input given a file descriptor
+   and an encoding
+
+   @param xo a pointer to an U8_XOUTPUT structure
+   @param fd an integer file description
+   @param enc a pointer to an U8_ENCODING structure or NULL
+   @returns 1 on success -1 on failure
+*/
+U8_EXPORT int u8_init_xinput(struct U8_XINPUT *xi,int fd,u8_encoding enc);
+
+/* Initializes an XFILE structure for output given a file descriptor
+   and an encoding
+
+   @param xo a pointer to an U8_XOUTPUT structure
+   @param fd an integer file description
+   @param enc a pointer to an U8_ENCODING structure or NULL
+   @returns 1 on success -1 on failure
+*/
+U8_EXPORT int u8_init_xoutput(struct U8_XOUTPUT *xo,int fd,u8_encoding enc);
 
 U8_EXPORT int u8_xoutput_setbuf(struct U8_XOUTPUT *xo,int bufsiz);
 U8_EXPORT int u8_xinput_setbuf(struct U8_XINPUT *xi,int bufsiz);
 
-U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
-  (u8_string filename,u8_encoding enc,int flags,int perm);
+/* Opens an input XFILE given a filename
+   @param filename a filename (utf8-encoded)
+   @param enc a pointer to an U8_ENCODING structure or NULL
+   @param flags to be passed to open()
+   @param perm a permissions for created files
+   @returns a pointer to a U8_XINPUT structure
+*/
 U8_EXPORT struct U8_XINPUT *u8_open_input_file
+  (u8_string filename,u8_encoding enc,int flags,int perm);
+
+/* Opens an output XFILE given a filename
+   @param filename a filename (utf8-encoded)
+   @param enc a pointer to an U8_ENCODING structure or NULL
+   @param flags to be passed to open()
+   @param perm a permissions for created files
+   @returns a pointer to a U8_XOUTPUT structure
+*/
+U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
   (u8_string filename,u8_encoding enc,int flags,int perm);
 
 U8_EXPORT off_t u8_getpos(struct U8_STREAM *);
@@ -107,10 +150,25 @@ U8_EXPORT off_t u8_setpos(struct U8_STREAM *,off_t off);
 U8_EXPORT off_t u8_endpos(struct U8_STREAM *);
 U8_EXPORT double u8_getprogress(struct U8_STREAM *);
 
-U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *);
-U8_EXPORT void u8_close_xinput(struct U8_XINPUT *);
+/* Closes an output XFILE
+   @param xo a pointer to a U8_XOUTPUT struct
+*/
+U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *xo);
+
+/* Closes an output XFILE
+   @param xi a pointer to a U8_XINPUT struct
+*/
+U8_EXPORT void u8_close_xinput(struct U8_XINPUT *xo);
 
 U8_EXPORT void u8_flush_xoutput(struct U8_XOUTPUT *f);
+
+/* Fills the buffer for an XFILE, reading input from the
+    XFILE's file descriptor and converting it according to
+    the XFILE's encoding.
+   @param xf an XFILE struct
+   @returns the number of bytes converted
+*/
+U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf);
 
 /** struct U8_OPEN_XFILES
      is a linked list of open xfiles used to ensure that
