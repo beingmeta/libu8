@@ -219,7 +219,7 @@ U8_EXPORT int u8_xinput_setbuf(struct U8_XINPUT *xi,int bufsiz)
 U8_EXPORT struct U8_XINPUT *u8_open_input_file
    (u8_string filename,u8_encoding enc,int flags,int perm)
 {
-  int fd;
+  int fd, open_errno = 0;
   u8_string realname=u8_realpath(filename,NULL);
   char *fname=u8_tolibc(realname);
   if (flags<=0)
@@ -228,14 +228,14 @@ U8_EXPORT struct U8_XINPUT *u8_open_input_file
     flags=flags|O_RDONLY;
   if (perm<=0) perm=XFILE_OPEN_PERMS;
   fd=open(fname,flags,perm);
+  if (fd<0) {open_errno=errno; errno=0;}
   u8_free(fname); u8_free(realname);
   if (fd>=0) {
     struct U8_XINPUT *xi=u8_open_xinput(fd,enc);
     xi->u8_streaminfo=xi->u8_streaminfo|U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK;
     return xi;}
   else {
-    u8_seterr(u8_strerror(errno),"u8_open_input_file",
-              u8_strdup(filename));
+    u8_seterr(u8_strerror(open_errno),"u8_open_input_file",u8_strdup(filename));
     return NULL;}
 }
 
@@ -343,21 +343,21 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
 {
   u8_string realname=u8_realpath(filename,NULL);
   char *fname=u8_tolibc(realname);
-  int fd;
+  int fd, open_errno = 0;
   if (flags<=0)
     flags=flags|O_WRONLY|O_TRUNC|O_CREAT;
   if (!((flags&O_WRONLY) || (flags&O_RDWR)))
     flags=flags|O_WRONLY;
   if (perm<=0) perm=XFILE_OPEN_PERMS;
   fd=open(fname,flags,perm);
+  if (fd<0) {open_errno=errno; errno=0;}
   u8_free(fname); u8_free(realname);
   if (fd>=0) {
     struct U8_XOUTPUT *out=u8_open_xoutput(fd,enc);
     if (out) out->u8_streaminfo |= U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK;
     return out;}
   else {
-    u8_seterr(u8_strerror(errno),"u8_open_output_file",
-              u8_strdup(filename));
+    u8_seterr(u8_strerror(open_errno),"u8_open_output_file",u8_strdup(filename));
     return NULL;}
 }
 

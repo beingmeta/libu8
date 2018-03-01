@@ -471,9 +471,6 @@ u8_string u8_gets_x(u8_byte *buf,int len,
 {
   const u8_byte *found=NULL, *start=f->u8_read, *end=NULL;
   int size, ec=-1;
-  if (f->u8_read>=f->u8_inlim) {
-    if (sizep) *sizep=0;
-    return NULL;}
   while (((found=strstr(start,eos))==NULL)||(found>f->u8_inlim)) {
     int start_pos=f->u8_inlim-f->u8_read, retval=0;
     /* Quit if we have length constraints which
