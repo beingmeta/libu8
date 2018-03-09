@@ -174,6 +174,9 @@ int main(int argc,char *argv[])
       if (strcasecmp(varname,"rundir")==0) {
 	if (rundir) u8_free(rundir);
 	rundir = u8_strdup(eqpos+1);}
+      if (strcasecmp(varname,"jobid")==0) {
+	if (job_id) u8_free(job_id);
+	job_id = u8_strdup(eqpos+1);}
       i++;}
     else if (job_id == NULL) {
       u8_string job_arg = u8_fromlibc(arg);
@@ -203,6 +206,9 @@ int main(int argc,char *argv[])
   if (getenv("WAIT"))     restart_wait=u8_getenv_float("WAIT",1);
   if (getenv("BACKOFF"))  backoff=u8_getenv_float("BACKOFF",backoff);
   if (getenv("MAXWAIT"))  max_wait=u8_getenv_float("BACKOFF",max_wait);
+  if (getenv("PIDFILE"))  pid_file=u8_getenv("PIDFILE");
+  if (getenv("PPIDFILE"))  ppid_file=u8_getenv("PPIDFILE");
+  if (getenv("STOPFILE"))  stop_file=u8_getenv("STOPFILE");
 
   char *restart_val = getenv("RESTART");
   if (restart_val==NULL) {}
@@ -247,9 +253,9 @@ int main(int argc,char *argv[])
 	  close(fd);
 	  exit(1);}}}}
 
-  pid_file = procpath(job_id,"pid");
-  ppid_file = procpath(job_id,"ppid");
-  stop_file = procpath(job_id,"stop");
+  if (pid_file == NULL) pid_file = procpath(job_id,"pid");
+  if (ppid_file == NULL) ppid_file = procpath(job_id,"ppid");
+  if (stop_file == NULL) stop_file = procpath(job_id,"stop");
   if (u8_file_existsp(stop_file)) {
     u8_log(LOG_WARN,"StopFile","Removing existing stop file %s",stop_file);
     int rv = u8_removefile(stop_file);
