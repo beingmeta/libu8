@@ -34,7 +34,7 @@
 #include <pwd.h>
 #include <grp.h>
 
-static u8_string rundir = "/var/run/libu8/";
+static u8_string rundir = NULL;
 static u8_uid runuser  = -1;
 static u8_gid rungroup = -1;
 static int umask_value = -1;
@@ -147,6 +147,8 @@ int main(int argc,char *argv[])
   int n_args = 0;
   u8_string job_id=NULL;
 
+  rundir = u8_getenv("RUNDIR");
+
   u8_log_show_date=1;
   u8_log_show_procinfo=1;
   u8_log_show_threadinfo=1;
@@ -169,6 +171,9 @@ int main(int argc,char *argv[])
       strncpy(varname,arg,name_len);
       varname[name_len]='\0';
       setenv(varname,eqpos+1,1);
+      if (strcasecmp(varname,"rundir")==0) {
+	if (rundir) u8_free(rundir);
+	rundir = u8_strdup(eqpos+1);}
       i++;}
     else if (job_id == NULL) {
       u8_string job_arg = u8_fromlibc(arg);
@@ -185,8 +190,15 @@ int main(int argc,char *argv[])
   launch_args[n_args]=NULL;
   main_job_id = job_id;
 
+  if (rundir == NULL) rundir = u8_getcwd();
+  if ( (! (u8_directoryp(rundir)) ) ||
+       (! (u8_file_writablep(rundir)) ) ) {
+    u8_log(LOGCRIT,"BadRundir",
+	   "The designated rundir %s was not a writable directory",
+	   rundir);
+    exit(1);}
+
   if (getenv("LOGLEVEL")) u8_loglevel=u8_getenv_int("LOGLEVEL",5);
-  if (getenv("RUNDIR"))   rundir=u8_getenv("RUNDIR");
   if (getenv("FASTFAIL")) fast_fail=u8_getenv_float("FASTFAIL",fast_fail);
   if (getenv("WAIT"))     restart_wait=u8_getenv_float("WAIT",1);
   if (getenv("BACKOFF"))  backoff=u8_getenv_float("BACKOFF",backoff);
