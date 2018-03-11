@@ -327,16 +327,9 @@ static void init_timebase()
 
 U8_EXPORT time_t u8_elapsed_base()
 {
-  if (elapsed_time_initialized == 0) return -1;
-#if USE_POSIX_CLOCK
-  return estart.tv_sec;
-#elif HAVE_GETTIMEOFDAY
-  return estart.tv_sec;
-#elif HAVE_FTIME
-  return estart.time
-#else
-    return estart;
-#endif
+  if (elapsed_time_initialized == 0)
+    return -1;
+  else return u8_start_tick;
 }
 
 /* Hand coded num/string functions */
