@@ -327,7 +327,7 @@ static pid_t kill_child(u8_string job_id,pid_t pid,u8_string pid_file)
     else u8_sleep(term_pause);}
   u8_log(LOG_NOTICE,"u8run/signal/wait",
 	 "%s:%lld finished, PID file %s gone",
-	 pid_file,job_id,pid);
+	 job_id,pid,pid_file);
   return -1;
 }
 
