@@ -171,6 +171,7 @@ U8_EXPORT int u8_init_xinput(struct U8_XINPUT *xi,int fd,u8_encoding enc)
     xi->u8_fillfn=(u8_fillfn)u8_fill_xinput;
     xi->u8_closefn=(u8_input_closefn)u8_close_xinput;
     xi->u8_streaminfo |= U8_STREAM_OWNS_XBUF;
+    if (isatty(fd)) xi->u8_streaminfo |= U8_STREAM_TTY;
     xi->u8_xencoding=enc;
     xi->u8_xbuflive=0;
     return fd;}
@@ -232,7 +233,7 @@ U8_EXPORT struct U8_XINPUT *u8_open_input_file
   u8_free(fname); u8_free(realname);
   if (fd>=0) {
     struct U8_XINPUT *xi=u8_open_xinput(fd,enc);
-    xi->u8_streaminfo=xi->u8_streaminfo|U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK;
+    xi->u8_streaminfo |= (U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK);
     return xi;}
   else {
     u8_seterr(u8_strerror(open_errno),"u8_open_input_file",u8_strdup(filename));
@@ -295,6 +296,7 @@ U8_EXPORT int u8_init_xoutput
     xo->u8_flushfn=(u8_flushfn)flush_xoutput;
     xo->u8_closefn=(u8_output_closefn)u8_close_xoutput;
     xo->u8_streaminfo=xo->u8_streaminfo|U8_STREAM_OWNS_XBUF;
+    if (isatty(fd)) xo->u8_streaminfo |= U8_STREAM_TTY;
     return 1;}
 }
 
@@ -305,6 +307,7 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_xoutput(int fd,u8_encoding enc)
     struct U8_XOUTPUT *xo=u8_alloc(struct U8_XOUTPUT);
     if (u8_init_xoutput(xo,fd,enc)>=0) {
       xo->u8_streaminfo=xo->u8_streaminfo|U8_STREAM_MALLOCD;
+      if (isatty(fd)) xo->u8_streaminfo |= U8_STREAM_TTY;
       u8_register_open_xfile((u8_xfile)xo);
       return xo;}
     u8_free(xo);
@@ -354,10 +357,11 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
   u8_free(fname); u8_free(realname);
   if (fd>=0) {
     struct U8_XOUTPUT *out=u8_open_xoutput(fd,enc);
-    if (out) out->u8_streaminfo |= U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK;
+    if (out) out->u8_streaminfo |= (U8_STREAM_OWNS_SOCKET|U8_STREAM_CAN_SEEK);
     return out;}
   else {
-    u8_seterr(u8_strerror(open_errno),"u8_open_output_file",u8_strdup(filename));
+    u8_seterr(u8_strerror(open_errno),"u8_open_output_file",
+	      u8_strdup(filename));
     return NULL;}
 }
 
