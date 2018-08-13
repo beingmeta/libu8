@@ -55,6 +55,8 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 
 /* Generic streams */
 
+/* TODO: These bits should be organized and updated */
+
 /** This bit describes whether the stream is mallocd or static.
     Mallocd streams are freed when closed. **/
 #define U8_STREAM_MALLOCD     0x01
@@ -95,6 +97,13 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 /** This bit describes whether the stream is fixed length and
     has overflowed.  **/
 #define U8_STREAM_OVERFLOW  0x1000
+/** This bit indicates that the stream should be verbose. **/
+#define U8_STREAM_VERBOSE   0x2000
+/** This bit indicates that the stream is talking to a user (i.e. a tty). **/
+#define U8_STREAM_TTY       0x4000
+
+#define U8_SUB_STREAM_MASK \
+  ( U8_STREAM_TACITURN | U8_STREAM_VERBOSE | U8_STREAM_TTY )
 
 #define U8_STREAM_FIELDS \
   int u8_bufsz; unsigned int u8_streaminfo;   \
@@ -283,6 +292,12 @@ static U8_MAYBE_UNUSED void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
   U8_MAYBE_UNUSED struct U8_OUTPUT name, *name ## out=&name; \
   u8_byte _buf_ ## name[sz];		     \
   U8_INIT_OUTPUT_X(&name,sz,_buf_ ## name,U8_STATIC_OUTPUT_FLAGS)
+
+#define U8_SUB_STREAM(s,size,parent)				\
+  U8_STATIC_OUTPUT(s,size);						\
+  {if (parent)								\
+     s.u8_streaminfo |=							\
+       ( ( (parent)->u8_streaminfo ) & (U8_SUB_STREAM_MASK) ); }
 
 /** Returns the string content of the output stream. **/
 #define u8_outstring(s) ((s)->u8_outbuf)
