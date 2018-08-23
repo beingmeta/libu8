@@ -535,3 +535,10 @@ U8_EXPORT int u8_run_threadinits()
 }
 
 #endif
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

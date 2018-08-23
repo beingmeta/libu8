@@ -3679,3 +3679,10 @@ static struct U8_DECOMPOSITION decompositions[]={
    {0,NULL}};
 static int n_decompositions=3677;
 
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

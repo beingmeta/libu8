@@ -379,7 +379,7 @@ U8_EXPORT void u8_init_exceptions_c()
 
 /* Emacs local variables
    ;;;  Local variables: ***
-   ;;;  compile-command: "make -C ../.. debug;" ***
+   ;;;  compile-command: "make debugging;" ***
    ;;;  indent-tabs-mode: nil ***
    ;;;  End: ***
 */

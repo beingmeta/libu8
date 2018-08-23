@@ -783,3 +783,10 @@ static struct U8_MB_MAP iso_8859_2_map[257]={
   {0xfe,0x163},
   {0xff,0x2d9}
 };
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

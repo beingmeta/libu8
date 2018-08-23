@@ -543,3 +543,10 @@ U8_EXPORT void u8_init_cryptofns()
    openssl enc -e -a -rc4 -in sample -nosalt -out sample.rc4 -md md5 -p -k testing
      key=AE2B1FCA515949E5D54FB22B8ED95575
 */
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

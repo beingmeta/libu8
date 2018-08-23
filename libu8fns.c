@@ -48,3 +48,10 @@ U8_EXPORT int u8_initialize_fns()
 
   return 8069;
 }
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

@@ -528,3 +528,10 @@ U8_EXPORT void u8_init_xfiles_c()
   atexit(u8_close_xfiles);
   u8_register_source_file(_FILEINFO);
 }
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

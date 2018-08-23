@@ -74,3 +74,11 @@ U8_EXPORT void u8_init_bytebuf_c()
 {
   u8_register_source_file(_FILEINFO);
 }
+
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

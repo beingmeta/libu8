@@ -25,3 +25,10 @@ U8_EXPORT int u8text_initialize()
   u8_register_source_file(_FILEINFO);
   return 8069;
 }
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

@@ -277,3 +277,10 @@ U8_EXPORT void u8_initialize_logging()
   u8_register_source_file(_FILEINFO);
 }
 #endif
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

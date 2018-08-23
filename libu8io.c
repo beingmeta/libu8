@@ -39,3 +39,9 @@ U8_EXPORT int u8_initialize_io()
   return u8io_init_done;
 }
 
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

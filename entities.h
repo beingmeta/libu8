@@ -1011,3 +1011,10 @@ struct ENTITY_TABLE entities[N_ENTITIES]={
 	{"zwj",0x200d},
 	{"zwnj",0x200c}
 };
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

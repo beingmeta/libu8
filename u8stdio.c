@@ -278,3 +278,10 @@ U8_EXPORT void u8_initialize_u8stdio()
   u8_set_error_handler(raisefn);
   u8_set_logfn(stdio_logger);
 }
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/

@@ -594,3 +594,10 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args)
 	     "Automatically restarted %s after exit, pid=%lld",
 	     job_id,(long long)pid);}}
 }
+
+/* Emacs local variables
+   ;;;  Local variables: ***
+   ;;;  compile-command: "make debugging;" ***
+   ;;;  indent-tabs-mode: nil ***
+   ;;;  End: ***
+*/
