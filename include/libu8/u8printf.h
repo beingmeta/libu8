@@ -76,6 +76,18 @@ U8_EXPORT u8_string u8_mkstring(u8_string fmtstring,...);
 U8_EXPORT u8_string u8_sprintf
 (unsigned char *buf,size_t buflen,u8_string fmtstring,...);
 
+/** Outputs formatted data to a pre-allocated string buffer
+    @param buf a string buffer
+    @param fmtstring a format control string
+    @param ... other arguments, interpreted by @a fmtstring
+    @returns a UTF-8 string
+    This calls printf with output going to a pre-allocated buffer.
+    This must be able to determine the size of the buffer.
+    Output beyond the end of the buffer is discarded.
+**/
+#define u8_bprintf(buf,fmtstring,...) \
+  u8_sprintf(buf,sizeof(buf),fmtstring, ##__VA_ARGS__)
+
 /** Outputs formatted data to a libu8 stream, reading inputs
        from a va_list structure.
     @param stream a pointer to a U8_OUTPUT stream

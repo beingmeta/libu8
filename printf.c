@@ -270,7 +270,7 @@ u8_string u8_mkstring(u8_string format_string,...)
 }
 
 U8_EXPORT
-/* u8_bufprintf:
+/* u8_sprintf:
     Arguments: a string buffer, its length, a format string, and other args
     Returns: a malloc'd string whose contains are generated from the arguments
 */
