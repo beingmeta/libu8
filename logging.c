@@ -161,8 +161,8 @@ U8_EXPORT int u8_log(int loglevel,u8_condition c,u8_string format_string,...)
   if ((out.u8_streaminfo)&(U8_STREAM_OWNS_BUF))
     u8_free(out.u8_outbuf);
   if ( ( (u8_breakpoint_loglevel>=0) &&
-	 ( ( (loglevel>=0) && (loglevel < u8_breakpoint_loglevel) ) ||
-	   ( (loglevel<0) && (-loglevel < u8_breakpoint_loglevel) ) ) ) ||
+	 ( ( (loglevel>=0) && (loglevel <= u8_breakpoint_loglevel) ) ||
+	   ( (loglevel<0) && (-loglevel <= u8_breakpoint_loglevel) ) ) ) ||
        ( (u8_logbreakp) && (u8_logbreakp(loglevel,c)) ) )
     u8_log_break(loglevel,c);
   return retval;

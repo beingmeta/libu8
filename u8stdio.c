@@ -52,8 +52,8 @@ static void do_output(FILE *out,u8_string prefix,
 static int stdio_logger(int priority,u8_condition c,u8_string msg)
 {
   if ( (priority >= 0) &&
-       (! ( (priority < u8_syslog_loglevel) ||
-	    (priority < u8_loglevel) ) ) )
+       (! ( (priority <= u8_syslog_loglevel) ||
+	    (priority <= u8_loglevel) ) ) )
     return 0;
   u8_byte buf[512]; int output=0; u8_string indented=NULL;
   u8_string prefix=u8_message_prefix(buf,512);
@@ -84,18 +84,18 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
     return 0;}
   if (stdoutISstderr<0) u8_check_stdio();
   if (stdoutISstderr) {
-    if ((priority<=u8_stderr_loglevel) ||
-	(priority<=u8_stdout_loglevel)) {
+    if ((priority <= u8_stderr_loglevel) ||
+	(priority <= u8_stdout_loglevel)) {
       do_output(stderr,prefix,level,c,indented);
       if ((indented)&&(msg!=indented)) u8_free(indented);
       return 1;}
     else {
       if ((indented)&&(msg!=indented)) u8_free(indented);
       return 0;}}
-  if (priority<=u8_stderr_loglevel) {
+  if (priority <= u8_stderr_loglevel) {
     do_output(stderr,prefix,level,c,indented);
     output=1;}
-  if (priority<=u8_stdout_loglevel) {
+  if (priority <= u8_stdout_loglevel) {
     do_output(stdout,prefix,level,c,indented);
     fflush(stdout);
     output=1;}
