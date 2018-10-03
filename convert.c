@@ -691,7 +691,7 @@ unsigned char *u8_localize
       else if (escape_char == 'x') {
         sprintf(write,"\\x%x;",ch);
         write=write+strlen(write);}
-      else {}}
+      else NO_ELSE;}
     /* There is another case we could handle here, which is encoding escapes
        in character sets which don't include ASCII but do have representations
        of all the characters used for the encoding.  But we don't currently

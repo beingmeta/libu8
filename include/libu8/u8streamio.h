@@ -211,7 +211,7 @@ static void U8_SETUP_OUTPUT(u8_output s,size_t sz,
     write=buf;
   else if ( (write<buf) || (write>buf+sz) )
     write=buf;
-  else {}
+  else NO_ELSE;
   (s)->u8_write=write;
   *write='\0';
   (s)->u8_outlim=(s)->u8_outbuf+sz;

@@ -101,7 +101,7 @@ ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
   if (to_size<0) to_size=new_max;
   else if ((to_size+U8_BUF_MIN_GROW)<max)
     return max;
-  else {}
+  else NO_ELSE;
   while (new_max<to_size)
     new_max = ((new_max>=U8_BUF_THROTTLE_POINT)?
                (new_max+(U8_BUF_THROTTLE_POINT/2)):
@@ -160,7 +160,7 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
   if (to_size<0) to_size=new_max;
   else if ((to_size+U8_BUF_MIN_GROW)<max)
     return max;
-  else {}
+  else NO_ELSE;
   while (new_max<to_size)
     new_max = ((new_max>=U8_BUF_THROTTLE_POINT)?
                (new_max+(U8_BUF_THROTTLE_POINT/2)):
@@ -261,7 +261,7 @@ U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string data,int len)
         size_t cur_size = f->u8_bufsz;
         size_t new_size = cur_size+len+U8_BUF_MIN_GROW;
         u8_grow_output_stream(f,new_size);}}}
-  else {}
+  else NO_ELSE;
   if (f->u8_write+len+1>=f->u8_outlim) {
     if (errno) u8_graberrno("u8_putn",NULL);
     u8_seterr("NoSpaceInStream","u8_putn",NULL);
@@ -318,7 +318,7 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
     else if ((u8_utf8warn)||
              ((f->u8_streaminfo&U8_STREAM_UTF8WARN)==U8_STREAM_UTF8WARN))
       u8_utf8_warning(u8_BadUTF8Start,f->u8_read,f->u8_inlim);
-    else {}
+    else NO_ELSE;
     (f->u8_read)++;
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */
@@ -339,7 +339,7 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
         if (f->u8_fillfn(f)==0) return -1;
         else n_u8_inbuf=f->u8_inlim-f->u8_read;}}
     else return -1;
-  else {}
+  else NO_ELSE;
   /* We have enough data, so now we just do a UTF-8 read. */
   i=size-1; f->u8_read++; scan=f->u8_read;
   while (i) {
@@ -354,7 +354,7 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
         return -2;}
       else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN))
         u8_utf8_warning(u8_TruncatedUTF8,f->u8_read,f->u8_inlim);
-      else {}
+      else NO_ELSE;
       f->u8_read=(u8_byte *)scan; /* Consume the truncated byte sequence */
       return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}
@@ -384,7 +384,7 @@ static int peekc(struct U8_INPUT *f,int fill)
       return -2;}
     else if ((u8_utf8warn)||(f->u8_streaminfo&U8_STREAM_UTF8WARN))
       u8_utf8_warning(u8_TruncatedUTF8,start,f->u8_inlim);
-    else {}
+    else NO_ELSE;
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */
   else if (byte < 0xE0) {size=2; ch=byte&0x1F;}
@@ -405,7 +405,7 @@ static int peekc(struct U8_INPUT *f,int fill)
         if (f->u8_fillfn(f)==0) return -1;
         else n_u8_inbuf=f->u8_inlim-f->u8_read;}}
     else return -1;
-  else {}
+  else NO_ELSE;
   /* We have enough data, so now we just do a UTF-8 read. */
   i=size=1; scan=f->u8_read;
   while (i) {
@@ -440,7 +440,7 @@ int _u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f)
         if (f->u8_fillfn(f)==0) return -1;
         else n_u8_inbuf=f->u8_inlim-f->u8_read;}}
     else return -1;
-  else {}
+  else NO_ELSE;
   /* Check if it worked */
   if (f->u8_read+n>f->u8_inlim) return -1;
   /* We have enough data, so now we need to get the size of
@@ -558,7 +558,7 @@ int u8_get_entity(struct U8_INPUT *f)
          didn't finish, so we call the u8_fillfn and try again. */
       f->u8_fillfn(f);
       code=u8_parse_entity(start,&end);}
-    else {}
+    else NO_ELSE;
     if (code>=0) {
       f->u8_read=(u8_byte *)end;
       return code;}

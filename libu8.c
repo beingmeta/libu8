@@ -596,7 +596,7 @@ U8_EXPORT void *u8_zrealloc(void *ptr,size_t n,size_t oldsz)
     return ptr;}
   if (ptr==NULL) memset(((unsigned char *)nptr),0,n);
   else if (n>oldsz) memset(((unsigned char *)nptr)+oldsz,0,(n-oldsz));
-  else {}
+  else NO_ELSE;
   return nptr;
 }
 

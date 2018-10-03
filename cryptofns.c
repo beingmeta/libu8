@@ -181,7 +181,7 @@ U8_EXPORT ssize_t u8_cryptic
 		    ((caller)?(caller):(OPENSSL_CRYPTIC)),
 		    u8_mkstring("%d!=%d(%s)",ivlen,needivlen,cname));
 	  retval=0;}
-	else {}}
+	else NO_ELSE;}
 
       if (retval==0) {
 	if (ctx) EVP_CIPHER_CTX_free(ctx);

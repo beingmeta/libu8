@@ -657,7 +657,7 @@ U8_EXPORT int u8_set_access
     u8_graberrno("u8_set_access/ownership",u8_strdup(filename));}
   else if ( (mode >= 0) && ((rv=chmod(localized,mode))<0) ) {
     u8_graberrno("u8_set_access/mode",u8_strdup(filename));}
-  else {}
+  else NO_ELSE;
   u8_free(localized);
   if (rv<0)
     return rv;
@@ -682,7 +682,7 @@ U8_EXPORT int u8_set_access_x
     u8_graberrno("u8_set_access/ownership",u8_strdup(filename));}
   else if ( (mode >= 0) && ((rv=chmod(localized,mode))<0) ) {
     u8_graberrno("u8_set_access/mode",u8_strdup(filename));}
-  else {}
+  else NO_ELSE;
   u8_free(localized);
   if (rv<0)
     return rv;
@@ -781,7 +781,7 @@ U8_EXPORT u8_string u8_tempdir(u8_string template)
     if (((u8_string)buf)!=template) u8_free(buf);
     buf=newbuf;}
   else if (((u8_string)buf)==template) buf=u8_strdup(buf);
-  else {}
+  else NO_ELSE;
   dir=mkdtemp(buf);
   if (dir) {
     result=u8_fromlibc(dir);
@@ -824,7 +824,7 @@ static u8_string *getfiles_helper(u8_string dirname,int which,int ret_fullpath)
 	  if (lstat(fullpath,&linkinfo)<0) {
 	    u8_free(fullpath); continue;}
 	  else if (S_ISLNK(linkinfo.st_mode)) forced=1;
-	  else {}}
+	  else NO_ELSE;}
         if ((which == 0) || (forced) ||
 	    ((which&U8_LIST_DIRS) && (S_ISDIR(fileinfo.st_mode))) ||
 	    ((which&U8_LIST_FILES) && (S_ISREG(fileinfo.st_mode))) ||

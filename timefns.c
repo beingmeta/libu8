@@ -391,8 +391,8 @@ void u8_set_xtime_precision(struct U8_XTIME *xt,u8_tmprec prec)
     else if (prec==u8_day) secs=(secs/(24*3600))*(24*3600);
     else if (prec==u8_month) secs=(secs/(30*24*3600))*(30*24*3600);
     else  if (prec==u8_year) secs=(secs/(365*24*3600))*(365*24*3600);
-    else {}}
-  else {}
+    else NO_ELSE;}
+  else NO_ELSE;
   xt->u8_prec=prec;
 }
 
@@ -645,7 +645,7 @@ void xtime_to_iso8601(u8_output ss,struct U8_XTIME *xt,int flags)
   if ((flags)&(U8_ISO8601_BASIC)) {dash=""; colon="";}
   if (((flags)&(U8_ISO8601_BASIC))&&(prec>u8_second)) prec=u8_second;
   else if (((flags)&(U8_ISO8601_NOMSECS))&&(prec>u8_second)) prec=u8_second;
-  else {}
+  else NO_ELSE;
   if ((flags)&(U8_ISO8601_UTC)&&
       ((xt->u8_tzoff!=0)||(xt->u8_dstoff!=0))) {
     u8_init_xtime(&utc,xt->u8_tick,prec,

@@ -571,7 +571,7 @@ U8_EXPORT int u8_strcmp(u8_string s1,u8_string s2,int cmpflags)
 	return -1;
       else if (c1 > c2)
 	return 1;
-      else {}
+      else NO_ELSE;
       scan1++;
       scan2++;}
     else {
@@ -584,7 +584,7 @@ U8_EXPORT int u8_strcmp(u8_string s1,u8_string s2,int cmpflags)
 	return -1;
       else if (c1>c2)
 	return 1;
-      else {}}}
+      else NO_ELSE;}}
   if (*scan1)
     return 1;
   else if (*scan2)
@@ -616,7 +616,7 @@ U8_EXPORT u8_string u8_strchrs(u8_string s,u8_string chars,int order)
       result=match;
     else if ((order>0)?(match>result):(match<result))
       result=match;
-    else {}}
+    else NO_ELSE;}
   return result;
 }
 
@@ -791,7 +791,7 @@ U8_EXPORT u8_string u8_strstrs(u8_string haystack,u8_string needles[],int order)
       result=match;
     else if ((order>0)?(match>result):(match<result))
       result=match;
-    else {}}
+    else NO_ELSE;}
   return result;
 }
 
@@ -812,7 +812,7 @@ U8_EXPORT char *itoa_helper(unsigned long long int num,char *buf,
     else if (weight) {
       *write++=digits[weight];
       started=1;}
-    else {}
+    else NO_ELSE;
     reduce=reduce%mult;
     mult=mult/base;}
   *write++='\0';

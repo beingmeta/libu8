@@ -161,7 +161,7 @@ int main(int argc,char *argv[])
   else if (strcasecmp(argv[1],"+daemon")==0) {
     launching = 1;
     i++;}
-  else {}
+  else NO_ELSE;
   while (i<argc) {
     char *arg = argv[i];
     if (strchr(arg,'=')) {

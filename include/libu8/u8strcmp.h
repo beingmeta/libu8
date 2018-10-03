@@ -33,7 +33,7 @@ static int _u8_strcmp(u8_string s1,u8_string s2,int cmpflags)
 	return -1;
       else if (c1 > c2)
 	return 1;
-      else {}
+      else NO_ELSE;
       scan1++;
       scan2++;}
     else {
@@ -46,7 +46,7 @@ static int _u8_strcmp(u8_string s1,u8_string s2,int cmpflags)
 	return -1;
       else if (c1>c2)
 	return 1;
-      else {}}}
+      else NO_ELSE;}}
   if (*scan1)
     return 1;
   else if (*scan2)

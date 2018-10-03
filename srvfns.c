@@ -610,7 +610,7 @@ static u8_client pop_task(struct U8_SERVER *server)
     server->queue_head++;
     if (server->queue_head>=server->queue_len) server->queue_head=0;
     server->n_queued--;}
-  else {}
+  else NO_ELSE;
   if (!(task)) {}
   else if (task->active>0) {
     /* This should probably never happen */
@@ -820,7 +820,7 @@ static void *event_loop(void *thread_arg)
         if ((cl->buf)&&(cl->ownsbuf)) u8_free(cl->buf);
         cl->buf=NULL; cl->off=cl->len=cl->buflen=0; cl->ownsbuf=0;}
       else if (cl->active>0) u8_client_done(cl);
-      else {}
+      else NO_ELSE;
       if (ex) {
 	u8_logf(LOG_WARN,ClientRequest,
 		"Error during activity on @x%lx#%d.%d[%s/%d](%s%:hs) %s",
@@ -901,7 +901,7 @@ static void *event_loop(void *thread_arg)
         u8_push_task(server,cl,((cl->writing)?("event_loop/w"):("event_loop/r")));
         if (server->xclientfn) server->xclientfn(cl);
         continue;}
-      else {}}
+      else NO_ELSE;}
     else {
       /* Request is not yet completed, but we're not waiting
          on input or output. */
@@ -1312,7 +1312,7 @@ int u8_add_server(struct U8_SERVER *server,u8_string hostname,int port)
       else if ((n_servers=u8_add_server(server,thishost,port))<0) {
         u8_clear_errors(1);
         n_servers=u8_add_server(server,"localhost",port);}
-      else {}
+      else NO_ELSE;
       if (thishost) u8_free(thishost);
       return n_servers;}
   else if (port==0)
@@ -1612,7 +1612,7 @@ static int server_handle_poll(struct U8_SERVER *server,
 #endif
     else if (events&POLLOUT) {
       sockets[i].events=((short)(POLLIN|HUPFLAGS));}
-    else {}
+    else NO_ELSE;
     i++;}
   if (server->xserverfn) server->xserverfn(server);
   u8_unlock_mutex(&(server->lock));
@@ -1792,7 +1792,7 @@ U8_EXPORT u8_server_stats u8_server_curstats
         stats->qsum+=interval; stats->qsum2+=(interval*interval);
         if (interval>stats->qmax) stats->qmax=interval;
         stats->qcount++;}
-      else {}
+      else NO_ELSE;
       if ((start=cl->reading)) {
         long long interval=cur-start;
         stats->rsum+=interval; stats->rsum2+=(interval*interval);
@@ -1887,7 +1887,7 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
     else if (cl->queued>0) {state="Q"; interval=cur-cl->queued;}
     else if (cl->running>0) {state="X"; interval=cur-cl->running;}
     else if (cl->active>0) {state="A"; interval=cur-cl->active;}
-    else {}
+    else NO_ELSE;
     if ((cl->buf)&&((cl->off>0)||(cl->len>0))) {
       sprintf(bufinfo,"%ld/%-5ld",(long)cl->off,(long)cl->len);}
     else strcpy(bufinfo,"no/data    ");

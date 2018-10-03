@@ -378,7 +378,7 @@ static int u8_sgetc_lim(const u8_byte **sptr,const u8_byte *lim)
       return -2;}
     else if (u8_utf8warn)
       u8_utf8_warning(u8_BadUTF8Start,*sptr,lim);
-    else {}
+    else NO_ELSE;
     (*sptr)++;
     return 0xFFFD;}
   /* Otherwise, figure out the size and initial byte fragment */
@@ -401,7 +401,7 @@ static int u8_sgetc_lim(const u8_byte **sptr,const u8_byte *lim)
 	return -2;}
       else if (u8_utf8warn)
 	u8_utf8_warning(u8_TruncatedUTF8,*sptr,lim);
-      else {}
+      else NO_ELSE;
       *sptr=scan;
       return 0xFFFD;}
     else {ch=(ch<<6)|(*scan&0x3F); scan++; i--;}}

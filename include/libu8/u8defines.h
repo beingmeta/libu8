@@ -42,6 +42,10 @@
 #pragma GCC diagnostic ignored "-Wpointer-sign"
 #endif
 
+#ifndef NO_ELSE
+#define NO_ELSE {}
+#endif
+
 #ifndef U8_DLL
 #define U8_DLL 0
 #endif

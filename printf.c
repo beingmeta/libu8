@@ -179,7 +179,7 @@ int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
 	else if (strchr(cmd,':')) prefix=":";
 	else if (strchr(cmd,'.')) prefix=".";
 	else if (strchr(cmd,',')) prefix=", ";
-	else {}
+	else NO_ELSE;
 	if (strchr(cmd,'-')) to_free=arg;
 	/* The m conversion is like s but passes its argument through the
 	   message catalog. */
@@ -201,7 +201,7 @@ int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
 	  string=(u8_byte *)u8_upcase(string);
 	  if (to_free) u8_free(to_free);
 	  to_free=string;}
-	else {}
+	else NO_ELSE;
 	if ((arg)&&(prefix)) {
 	  string=(u8_byte *)u8_string_append(prefix,string,NULL);
 	  if (to_free) u8_free(to_free);
