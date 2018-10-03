@@ -110,17 +110,16 @@ U8_EXPORT int u8_default_logger(int priority,u8_condition c,u8_string message)
    while specifying a descriptive loglevel. In particular, if the log
    level is negative, it is always output using an effective loglevel
    which is the positive complement of the negative loglevel. */
-  int epriority=priority; u8_string level;
+  unsigned int epriority = (priority < 0) ? (-priority) : (priority);
+  u8_string level = (epriority < U8_MAX_LOGLEVEL) ?
+    (u8_loglevels[epriority]) :
+    (NULL);
   if (priority > U8_MAX_LOGLEVEL) {
     fprintf(stderr,"%s!! Logging call with invalid priority %d (%s)%s",
             u8_logprefix,priority,c,u8_logsuffix);
     return 0;}
-  else if (priority>u8_loglevel) return 0;
-  else if (priority<0) epriority=(-priority);
-  else {}
-  level=((epriority < U8_MAX_LOGLEVEL) ?
-	 (u8_loglevels[priority]) :
-	 (NULL));
+  else if (priority > u8_loglevel) return 0;
+  else NO_ELSE;;
   prefix=u8_message_prefix(buf,128);
   if ((u8_logindent)&&(u8_logindent[0])&&(strchr(message,'\n')))
     indented=u8_indent_text(message,u8_logindent);

@@ -30,13 +30,16 @@ U8_EXPORT void u8_use_syslog(int flag)
 
 U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
 {
-  u8_byte buf[512]; int epriority=priority;
+  u8_byte buf[512]; 
+  unsigned int epriority = (priority < 0) ? (-priority) : (priority);
   u8_string context = u8_log_context;
   if (u8_logging_initialized==0) u8_initialize_logging();
-  if (priority > u8_loglevel) return 0;
-  else if (priority<0) epriority=-priority;
-  else {}
-  if (epriority <= u8_syslog_loglevel) return 0;
+  if (priority > u8_loglevel)
+    return 0;
+  else NO_ELSE;
+  if (epriority <= u8_syslog_loglevel)
+    return 0;
+
   u8_string prefix=u8_message_prefix(buf,512);
   if (prefix==NULL) prefix="";
   if ((c)&&(context))

@@ -51,28 +51,23 @@ static void do_output(FILE *out,u8_string prefix,
 
 static int stdio_logger(int priority,u8_condition c,u8_string msg)
 {
+  unsigned int epriority = (priority < 0) ? (-priority) : (priority);
   if ( (priority >= 0) &&
        (! ( (priority <= u8_syslog_loglevel) ||
 	    (priority <= u8_loglevel) ) ) )
     return 0;
   u8_byte buf[512]; int output=0; u8_string indented=NULL;
-  u8_string prefix=u8_message_prefix(buf,512);
-  u8_string level=NULL;
+  u8_string prefix = u8_message_prefix(buf,512);
+  u8_string level = (epriority < U8_MAX_LOGLEVEL) ? (u8_loglevels[epriority]) : (NULL);
   if (prefix == NULL) prefix="";
   if ((u8_logindent)&&(u8_logindent[0])&&(strchr(msg,'\n')))
     indented=u8_indent_text(msg,u8_logindent);
   if (!(indented)) indented=msg;
-  if ( (priority>=0) && (priority <= (U8_MAX_LOGLEVEL)) &&
-       (u8_loglevels[priority]) )
-    level=u8_loglevels[priority];
-  else if ( (priority<0) && ((-priority) < (U8_MAX_LOGLEVEL+1)) )
-    level=u8_loglevels[-priority];
-  else {}
 #if HAVE_SYSLOG
   if ((priority>=0) && (priority<=u8_syslog_loglevel)) {
     if (u8_logging_initialized==0) u8_initialize_logging();
     syslog(priority,"%s",indented);}
-  else {}
+  else NO_ELSE;
 #endif
   if (priority<0) {
     do_output(stdout,prefix,level,c,indented);
