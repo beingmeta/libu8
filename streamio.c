@@ -524,9 +524,10 @@ int u8_ungetc(struct U8_INPUT *f,int ch)
     struct U8_OUTPUT tmpout; u8_byte buf[16]; int size;
     U8_INIT_FIXED_OUTPUT(&tmpout,16,buf);
     u8_putc(&tmpout,ch); size=tmpout.u8_write-tmpout.u8_outbuf;
-    if ((f->u8_read>f->u8_inbuf+size) &&
+    if ((f->u8_read >= f->u8_inbuf+size) &&
         (strncmp(f->u8_read-size,tmpout.u8_outbuf,size)==0)) {
-      f->u8_read=f->u8_read-size; return ch;}
+      f->u8_read=f->u8_read-size;
+      return ch;}
     else {
       char buf[32];
       sprintf(buf,"\\U%08x",ch);
