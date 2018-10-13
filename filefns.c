@@ -316,6 +316,27 @@ U8_EXPORT int u8_file_writablep(u8_string filename)
   u8_free(lpath);
   return retval;
 }
+U8_EXPORT int u8_file_regularp(u8_string filename)
+{
+  char *lpath=u8_localpath(filename);
+  struct stat info;
+  int retval=stat(lpath,&info);
+  if (retval<0) {
+    if (errno) {
+      u8_log(LOG_WARN,"u8_file_normalp","Error for '%s' (%s)",
+             lpath,strerror(errno));
+      errno=0;}
+    else u8_log(LOG_WARN,"u8_file_readablep","Error for '%s'",lpath);
+    return 0;}
+  u8_free(lpath);
+  if ( ( (info.st_mode&S_IFMT) == S_IFDIR ) ||
+       ( (info.st_mode&S_IFMT) == S_IFSOCK ) )
+    return 0;
+  else if ( (info.st_mode&S_IFMT) == S_IFREG )
+    return 1;
+  else return 0;
+}
+
 
 /* File info */
 

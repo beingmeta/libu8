@@ -75,6 +75,12 @@ U8_EXPORT int u8_file_readablep(u8_string filename);
 **/
 U8_EXPORT int u8_file_writablep(u8_string filename);
 
+/** Determines if a named file exists and is a regular file
+    @param filename a utf-8 pathname
+    @returns 1 if the file is regular, 0 otherwise
+**/
+U8_EXPORT int u8_file_regularp(u8_string filename);
+
 /** Returns the creation time of a file
     @param filename a utf-8 pathname
     @returns time_t (the file creation time)
