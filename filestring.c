@@ -29,31 +29,45 @@
 #include <errno.h>
 #include <fcntl.h>
 
+#include <sys/stat.h>
+
+u8_condition u8_IrregularFile=_("does not resolve to a regular file");
 u8_condition u8_CantOpenFile=_("Can't open file for reading");
 
 U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
 {
   u8_string abspath=u8_localpath(filename);
-  unsigned int size, to_read, bytes_read=0; unsigned char *data;
+  unsigned int size, to_read, bytes_read=0;
+  unsigned char *data;
+  struct stat info;
+  int rv = stat(abspath,&info);
+  if (rv != 0) {
+    u8_graberrno("u8_filedata",abspath);
+    u8_free(abspath);
+    return NULL;}
+  else if ((info.st_mode&S_IFMT)!=S_IFREG) {
+    u8_seterr(u8_IrregularFile,"u8_filedata",abspath);
+    *n_bytes=-1;
+    return NULL;}
+  else to_read = size = info.st_size;
   FILE *f=u8_fopen(abspath,"rb");
   if (f==NULL) {
+    if (errno) u8_graberrno("u8_filedata",abspath);
     u8_seterr(u8_CantOpenFile,"u8_filedata",abspath);
     *n_bytes=-1;
     return NULL;}
-  fseek(f,0,SEEK_END);
-  to_read=size=ftell(f);
   /* We malloc an extra byte in case we're going to use this as a string. */
   data=u8_malloc(size+1);
   memset(data,0,size+1);
-  fseek(f,0,SEEK_SET);
   while (to_read) {
     int delta=fread(data+bytes_read,1,to_read,f);
     if (delta>0) {
       to_read=to_read-delta; bytes_read=bytes_read+delta;}
     else if (errno==EAGAIN) {errno=0; continue;}
     else {
-      u8_free(data);
       u8_graberrno("u8_filedata",abspath);
+      u8_free(data);
+      u8_free(abspath);
       *n_bytes=-1;
       u8_fclose(f);
       return NULL;}}
