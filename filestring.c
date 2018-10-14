@@ -43,7 +43,6 @@ U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
   int rv = stat(abspath,&info);
   if (rv != 0) {
     u8_graberrno("u8_filedata",abspath);
-    u8_free(abspath);
     return NULL;}
   else if ((info.st_mode&S_IFMT)!=S_IFREG) {
     u8_seterr(u8_IrregularFile,"u8_filedata",abspath);
@@ -67,7 +66,6 @@ U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
     else {
       u8_graberrno("u8_filedata",abspath);
       u8_free(data);
-      u8_free(abspath);
       *n_bytes=-1;
       u8_fclose(f);
       return NULL;}}
