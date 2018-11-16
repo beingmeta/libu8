@@ -30,7 +30,7 @@ GPGID           = @GPGID@
 CLEAN		= @CLEAN@
 INSTALL		= @SUDO@@INSTALL@
 RANLIB		= @RANLIB@
-MKSTATIC	= @MKSTATIC@
+MKSTATIC	= "@MKSTATIC@ -o "
 DOXYGEN		= @doxygen@
 CODENAME	= @CODENAME@
 MKSO		= $(CC) $(CFLAGS) $(XCFLAGS) -shared -L./lib $(LDFLAGS) $(XLDFLAGS) $(LIBS)
@@ -202,13 +202,11 @@ exe/%.static: %.c
 
 lib/%@suffix@.a:
 	@echo "# (libu8)" MKSTATIC $@ $^
-	@$(MKSTATIC) $@.tmp $^
-	@mv $@.tmp $@
+	@$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
 	@echo "# (libu8)" MKSO $@
 	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
-		 -L./lib -o $@.tmp $^ $(LIBS) -lu8
-	@mv $@.tmp $@
+		 -L./lib -o $@ $^ $(LIBS) -lu8
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	@ln -sf $(<F) $@
 	@ln -sf $(<F) $@.@U8MAJOR@
@@ -216,8 +214,7 @@ lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 lib/%@suffix@.dylib:
 	@echo "# (libu8)" MACLIBTOOL $@
 	@$(MACLIBTOOL) -install_name @rpath/lib/$(*F).@U8MAJOR@.dylib \
-		$(DYLIB_FLAGS) -o $@.tmp $^
-	@mv $@.tmp $@
+		$(DYLIB_FLAGS) -o $@ $^
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 
 $(LIBINSTALLDIR)/%.a: lib/%.a
@@ -442,6 +439,7 @@ staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	@git archive --prefix=libu8-@U8VERSION@/ \
 	            -o staging/libu8-@U8VERSION@.tar HEAD
 	@cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	@cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
 	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
 	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
 		> staging/libu8-@U8VERSION@/etc/revision.h;             \
@@ -502,7 +500,7 @@ dist/rpms.done: dist/rpms.ready
 		--define="__gpg_sign_cmd $(RPMGPG)" 			\
 		$(RPMDIR)/libu8-@U8VERSION@*.src.rpm 			\
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; fi && 		\
-	@@CREATEREPO@ -p -d $(RPMDIR) && 				\
+	@CREATEREPO@ -p -d $(RPMDIR) && 				\
 	touch dist/rpms.done;
 	@ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;

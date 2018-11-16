@@ -73,6 +73,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc
 %{_libdir}/*.so.*
+%{_bindir}/u8run
 %{_datadir}/libu8/encodings/CP1125
 %{_datadir}/libu8/encodings/CP1251
 %{_datadir}/libu8/encodings/CP1252

@@ -1,5 +1,6 @@
 AC_INIT(include/libu8/libu8.h)
 AC_PREFIX_PROGRAM(autoconf)
+m4_include([etc/ax_check_link_flags.m4])
 m4_include([etc/ax_pthread.m4])
 m4_include([etc/ax_sign.m4])
 threads_default="yes"
@@ -18,7 +19,7 @@ vshared_suffix=so.${U8VERSION}
 RPMVERSION=${U8RELEASE}
 DEBVERSION=${U8RELEASE}
 LD="ld"
-MKSTATIC="\$(LD) -r -o"
+MKSTATIC="\$(LD) -r "
 I18N=""
 INSTALLI18N=""
 SUDO=""
@@ -67,10 +68,11 @@ AC_CANONICAL_TARGET
 
 case $target_os in
   linux*)
+   MKSTATIC="${MKSTATIC} --build-id";
    AC_DEFINE(U8_RUSAGE_PROCFS_PATCH,1)
    ;;
   darwin*)
-   MKSTATIC="libtool -static -o ";
+   MKSTATIC="libtool -static ";
 #   if test "x$CC" = "xgcc"; then LIBS="$LIBS -lgcc"; fi
    shared_suffix="dylib";
    install_shared="install-dylib";
