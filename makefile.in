@@ -563,6 +563,7 @@ apt-upload upload-apt upload-deb: update-remote-apt-repo
 
 debfresh freshdeb:
 	@make debclean
+	@rm -f include/libu8/revision.h; make include/libu8/revision.h
 	@make debian
 
 .PHONY: debfresh freshdeb
