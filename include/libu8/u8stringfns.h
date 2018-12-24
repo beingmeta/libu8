@@ -477,10 +477,12 @@ U8_EXPORT u8_byteoff _u8_byteoffset(u8_string s,u8_charoff i,u8_byteoff l);
 static U8_MAYBE_UNUSED
 ssize_t u8_charoffset(u8_string s,u8_byteoff i)
 {
-  u8_string pt=s+i; int j=0;
-  while (s < pt) {
+  u8_string pt = s+i; int j=0;
+  while ( (s < pt) && (*s) ) {
     j++; if (u8_sgetc(&s)<0) break;}
-  return j;
+  if (s < pt)
+    return -1;
+  else return j;
 }
 
 static U8_MAYBE_UNUSED
@@ -488,9 +490,11 @@ ssize_t u8_byteoffset(u8_string s,u8_charoff offset,u8_byteoff max)
 {
   u8_string string=s, lim=s+max; int c=0;
   if (offset<0) return -1;
-  else while ((string < lim) && (offset > 0) && (c>=0)) {
-      c=u8_sgetc(&string); offset--;}
-  if (string > lim) return -1;
+  else while ( (string < lim) && (offset > 0) && (c>=0) ) {
+      c=u8_sgetc(&string);
+      offset--;}
+  if (string > lim)
+    return -1;
   else return string-s;
 }
 #else
