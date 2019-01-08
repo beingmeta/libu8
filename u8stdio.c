@@ -1,6 +1,6 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
-/* Copyright (C) 2004-2018 beingmeta, inc.
+/* Copyright (C) 2004-2019 beingmeta, inc.
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
@@ -60,7 +60,8 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
   u8_string prefix = u8_message_prefix(buf,512);
   u8_string level = (epriority < U8_MAX_LOGLEVEL) ? (u8_loglevels[epriority]) : (NULL);
   if (prefix == NULL) prefix="";
-  if ((u8_logindent)&&(u8_logindent[0])&&(strchr(msg,'\n')))
+  if ((u8_logindent)&&(u8_logindent[0])&&
+      ((strchr(msg,'\n')) || (u8_log_context)))
     indented=u8_indent_text(msg,u8_logindent);
   if (!(indented)) indented=msg;
 #if HAVE_SYSLOG
@@ -104,17 +105,17 @@ static void do_output(FILE *out,u8_string prefix,
 {
   if (prefix == NULL) prefix = "";
   if ((c) && (level))
-    fprintf(out,"%s%s %s (%s) %s%s",
-	    u8_logprefix,prefix,level,c,body,u8_logsuffix);
+    fprintf(out,"%s%s %s (%s) ",u8_logprefix,prefix,level,c);
   else if (c)
-    fprintf(out,"%s%s (%s) %s%s",
-	    u8_logprefix,prefix,c,body,u8_logsuffix);
+    fprintf(out,"%s%s (%s) ",u8_logprefix,prefix,c);
   else if (level)
-    fprintf(out,"%s%s %s %s%s",
-	    u8_logprefix,prefix,level,body,u8_logsuffix);
-  else fprintf(out,"%s%s %s%s",
-	       u8_logprefix,prefix,body,u8_logsuffix);
-
+    fprintf(out,"%s%s %s ",u8_logprefix,prefix,level);
+  else fprintf(out,"%s%s ",u8_logprefix,prefix);
+  if ( (u8_log_context) && (u8_logindent) && (u8_logindent[0]) )
+    fprintf(out,"%s\n%s%s%s",u8_log_context,u8_logindent,body,u8_logsuffix);
+  else if (u8_log_context)
+    fprintf(out,"%s\n\t%s%s",u8_log_context,body,u8_logsuffix);
+  else fprintf(out,"%s%s",body,u8_logsuffix);
 }
 
 #if (!(U8_WITH_STDIO))

@@ -1,6 +1,6 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
-/* Copyright (C) 2004-2018 beingmeta, inc.
+/* Copyright (C) 2004-2019 beingmeta, inc.
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
@@ -30,7 +30,7 @@ U8_EXPORT void u8_use_syslog(int flag)
 
 U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
 {
-  u8_byte buf[512]; 
+  u8_byte buf[512];
   unsigned int epriority = (priority < 0) ? (-priority) : (priority);
   u8_string context = u8_log_context;
   if (u8_logging_initialized==0) u8_initialize_logging();
@@ -43,14 +43,30 @@ U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
   u8_string prefix=u8_message_prefix(buf,512);
   if (prefix==NULL) prefix="";
   if ((c)&&(context))
-    syslog(priority,"%s (%s) %s\n%s",prefix,context,c,message);
+    syslog(priority,"%s (%s) %s %s%s%s",
+           prefix,context,c,
+           (u8_log_context) ? (u8_log_context) : (U8S("")),
+           (u8_log_context) ? ("\n") : (""),
+           message);
   else if (c)
-    syslog(priority,"%s (%s) %s",prefix,c,message);
+    syslog(priority,"%s (%s) %s%s%s",prefix,c,
+           (u8_log_context) ? (u8_log_context) : (U8S("")),
+           (u8_log_context) ? ("\n") : (""),
+           message);
   else if (prefix)
-    syslog(priority,"%s -- %s",prefix,message);
+    syslog(priority,"%s -- %s%s%s",prefix,
+           (u8_log_context) ? (u8_log_context) : (U8S("")),
+           (u8_log_context) ? ("\n") : (""),
+           message);
   else if (c)
-    syslog(priority,"(%s) %s",prefix,message);
-  else syslog(priority,"%s",message);
+    syslog(priority,"(%s) %s%s%s",prefix,
+           (u8_log_context) ? (u8_log_context) : (U8S("")),
+           (u8_log_context) ? ("\n") : (""),
+           message);
+  else syslog(priority,"%s%s%s",
+              (u8_log_context) ? (u8_log_context) : (U8S("")),
+              (u8_log_context) ? ("\n") : (""),
+              message);
   return 1;
 }
 
