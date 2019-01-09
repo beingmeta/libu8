@@ -44,29 +44,24 @@ U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
   if (prefix==NULL) prefix="";
   if ((c)&&(context))
     syslog(priority,"%s (%s) %s %s%s%s",
-           prefix,context,c,
-           (u8_log_context) ? (u8_log_context) : (U8S("")),
-           (u8_log_context) ? ("\n") : (""),
-           message);
+           prefix,context,c,message,
+           (u8_log_context) ? ("\n\t@ ") : (""),
+           (u8_log_context) ? (u8_log_context) : (U8S("")));
   else if (c)
-    syslog(priority,"%s (%s) %s%s%s",prefix,c,
-           (u8_log_context) ? (u8_log_context) : (U8S("")),
-           (u8_log_context) ? ("\n") : (""),
-           message);
+    syslog(priority,"%s (%s) %s%s%s",prefix,c,message,
+           (u8_log_context) ? ("\n\t@ ") : (""),
+           (u8_log_context) ? (u8_log_context) : (U8S("")));
   else if (prefix)
-    syslog(priority,"%s -- %s%s%s",prefix,
-           (u8_log_context) ? (u8_log_context) : (U8S("")),
-           (u8_log_context) ? ("\n") : (""),
-           message);
+    syslog(priority,"%s -- %s%s%s",prefix,message,
+           (u8_log_context) ? ("\n\t@ ") : (""),
+           (u8_log_context) ? (u8_log_context) : (U8S("")));
   else if (c)
-    syslog(priority,"(%s) %s%s%s",prefix,
-           (u8_log_context) ? (u8_log_context) : (U8S("")),
-           (u8_log_context) ? ("\n") : (""),
-           message);
-  else syslog(priority,"%s%s%s",
-              (u8_log_context) ? (u8_log_context) : (U8S("")),
-              (u8_log_context) ? ("\n") : (""),
-              message);
+    syslog(priority,"(%s) %s%s%s",prefix,message,
+           (u8_log_context) ? ("\n\t@ ") : (""),
+           (u8_log_context) ? (u8_log_context) : (U8S("")));
+  else syslog(priority,"%s%s%s",message,
+              (u8_log_context) ? ("\n\t@ ") : (""),
+              (u8_log_context) ? (u8_log_context) : (U8S("")));
   return 1;
 }
 

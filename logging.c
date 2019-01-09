@@ -148,9 +148,6 @@ U8_EXPORT int u8_log(int priority,u8_condition c,u8_string format_string,...)
   struct U8_OUTPUT out; va_list args; int retval;
   u8_byte msgbuf[1000];
   U8_INIT_STATIC_OUTPUT_BUF(out,1000,msgbuf);
-  if (u8_log_context) {
-    u8_puts(&out,u8_log_context);
-    u8_putc(&out,'\n');}
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
