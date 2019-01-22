@@ -86,6 +86,9 @@ U8_EXPORT void u8_set_logindent(u8_string indent)
 static u8_logfn logfn=NULL;
 U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message);
 
+static u8_log_callback logger=NULL;
+static void *logger_data=NULL;
+
 #if U8_WITH_STDIO
 static void do_output(FILE *out,u8_string prefix,
 		      u8_string level,u8_condition c,
@@ -138,7 +141,9 @@ U8_EXPORT int u8_default_logger(int priority,u8_condition c,u8_string message)
 
 U8_EXPORT int u8_logger(int priority,u8_condition c,u8_string msg)
 {
-  if (logfn)
+  if (logger)
+    return logger(priority,c,msg,logger_data);
+  else if (logfn)
     return logfn(priority,c,msg);
   else return u8_default_logger(priority,c,msg);
 }
@@ -151,7 +156,9 @@ U8_EXPORT int u8_log(int priority,u8_condition c,u8_string format_string,...)
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
-  if (logfn)
+  if (logger)
+    retval=logger(priority,c,out.u8_outbuf,logger_data);
+  else if (logfn)
     retval=logfn(priority,c,out.u8_outbuf);
   else retval=u8_default_logger(priority,c,out.u8_outbuf);
   if ((out.u8_streaminfo)&(U8_STREAM_OWNS_BUF))
@@ -171,6 +178,14 @@ U8_EXPORT u8_logfn u8_set_logfn(u8_logfn newfn)
   return oldfn;
 }
 
+U8_EXPORT u8_log_callback u8_set_logger(u8_log_callback newfn,void *newdata)
+{
+  u8_log_callback oldfn=logger;
+  logger=newfn;
+  logger_data=newdata;
+  return oldfn;
+}
+
 U8_EXPORT int u8_message(u8_string format_string,...)
 {
   u8_byte msgbuf[256];
@@ -179,7 +194,9 @@ U8_EXPORT int u8_message(u8_string format_string,...)
   va_start(args,format_string);
   u8_do_printf(&out,format_string,&args);
   va_end(args);
-  if (logfn)
+  if (logger)
+    retval=logger(U8_LOG_MSG,NULL,out.u8_outbuf,logger_data);
+  else if (logfn)
     retval=logfn(U8_LOG_MSG,NULL,out.u8_outbuf);
   else retval=u8_default_logger(U8_LOG_MSG,NULL,out.u8_outbuf);
   if ((out.u8_streaminfo)&(U8_STREAM_OWNS_BUF)) u8_free(out.u8_outbuf);

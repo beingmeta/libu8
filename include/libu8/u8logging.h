@@ -182,6 +182,9 @@ U8_EXPORT int u8_logging_initialized;
 U8_EXPORT u8_string u8_logprefix, u8_logsuffix, u8_logindent;
 
 typedef int (*u8_logfn)(int loglevel,u8_condition condition,u8_string message);
+typedef int (*u8_log_callback)(int loglevel,u8_condition condition,
+			       u8_string message,
+			       void *data);
 
 U8_EXPORT void u8_bind_logfn(u8_logfn f);
 
@@ -235,6 +238,13 @@ U8_EXPORT int u8_message(u8_string format_string,...);
    @returns the previous logfn
 **/
 U8_EXPORT u8_logfn u8_set_logfn(u8_logfn logfn);
+
+/** Sets the function and data arg used for log messages
+   @param logfn
+   @param logdata
+   @returns the previous logger
+**/
+U8_EXPORT u8_log_callback u8_set_logger(u8_log_callback logfn,void* data);
 
 /** Sets the prefix and suffix string for non-syslog log messages
    @param prefix
