@@ -240,11 +240,11 @@ U8_EXPORT int u8_message(u8_string format_string,...);
 U8_EXPORT u8_logfn u8_set_logfn(u8_logfn logfn);
 
 /** Sets the function and data arg used for log messages
-   @param logfn
-   @param logdata
+   @param logfn a function for handling log messages
+   @param logdata void * data pointr to pass the *logfn*
    @returns the previous logger
 **/
-U8_EXPORT u8_log_callback u8_set_logger(u8_log_callback logfn,void* data);
+U8_EXPORT u8_log_callback u8_set_logger(u8_log_callback logfn,void* logdata);
 
 /** Sets the prefix and suffix string for non-syslog log messages
    @param prefix
