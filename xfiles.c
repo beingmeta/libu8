@@ -7,10 +7,10 @@
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #include "libu8/u8source.h"
@@ -46,7 +46,7 @@
 #endif
 
 u8_condition
-  u8_nopos=_("XFILE does not allow positioning"),
+u8_nopos=_("XFILE does not allow positioning"),
   u8_nowrite=_("XFILE only allows writing"),
   u8_noread=_("XFILE only allows reading");
 
@@ -66,7 +66,7 @@ static ssize_t writeall(int sock,const unsigned char *data,size_t len)
     else if (delta==0)
       if (errno==EAGAIN) continue;
       else if (bytes_to_write>0)
-	return -1;
+        return -1;
       else return len;
     else {
       data=data+delta;
@@ -80,14 +80,14 @@ static ssize_t writeall(int sock,const unsigned char *data,size_t len)
 U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
 {
   /* There are three basic steps:
-       * Overwriting what we've already read with the data we have.
-       * Reading data from the file/socket
-       * Writing that data as UTF-8 into the buffer
-       * Updating all the various pointers in the structure.
-  */
+   * Overwriting what we've already read with the data we have.
+   * Reading data from the file/socket
+   * Writing that data as UTF-8 into the buffer
+   * Updating all the various pointers in the structure.
+   */
   struct U8_OUTPUT tmpout; int convert_val;
   int unread_bytes=xf->u8_inlim-xf->u8_read;
-  int bytes_read, bytes_converted;
+  int bytes_read=0, bytes_converted=0;
   const unsigned char *reader, *limit;
   u8_byte *start=(u8_byte *)xf->u8_inbuf, *cur=(u8_byte *)xf->u8_read;
   u8_byte *end=(u8_byte *)xf->u8_inlim;
@@ -105,9 +105,9 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
     cur=start+unread_bytes;}
   /* Now, fill the read buffer from the input socket */
   bytes_read=read(xf->u8_xfd,
-		  /* These are the bytes still to be converted in xbuf */
-		  xf->u8_xbuf+xf->u8_xbuflive,
-		  xf->u8_xbuflim-xf->u8_xbuflive);
+                  /* These are the bytes still to be converted in xbuf */
+                  xf->u8_xbuf+xf->u8_xbuflive,
+                  xf->u8_xbuflim-xf->u8_xbuflive);
   /* If you had trouble or didn't get any data, return zero or the error code. */
   if (bytes_read<=0) {
     return bytes_read;}
@@ -121,10 +121,10 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
      input. Conversion will write to this output stream, filling up
      the input buffer. */
   {U8_SETUP_OUTPUT( &tmpout,
-		    (xf->u8_bufsz),(xf->u8_inbuf),end,
-		    (((xf->u8_streaminfo)&(U8_STREAM_MALLOCD))?
-		     (U8_STREAM_MALLOCD):
-		     (U8_FIXED_STREAM)) );}
+                    (xf->u8_bufsz),(xf->u8_inbuf),end,
+                    (((xf->u8_streaminfo)&(U8_STREAM_MALLOCD))?
+                     (U8_STREAM_MALLOCD):
+                     (U8_FIXED_STREAM)) );}
   /* Now we do the actual conversion, where u8_convert writes into the
      string stream passed it as its first argument. If this has any trouble,
      it will stop and reader will hold the most recent conversion state. */
@@ -134,7 +134,7 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
   /* Now we start updating the input stream to reflect all of the new
      data (and possibly a new buffer) */
   if (((start)!=(tmpout.u8_outbuf)) &&
-      ((xf->u8_streaminfo)&(U8_STREAM_OWNS_BUF))) { 
+      ((xf->u8_streaminfo)&(U8_STREAM_OWNS_BUF))) {
     /* If tmpout grew its buffer during the write, we need to free the
        old buffer here. */
     u8_free(xf->u8_inbuf);
@@ -202,7 +202,7 @@ U8_EXPORT int u8_xinput_setbuf(struct U8_XINPUT *xi,int bufsiz)
   else {
     off_t read_off=xi->u8_read-xi->u8_inbuf;
     off_t read_lim=xi->u8_inlim-xi->u8_inbuf;
-    u8_byte *newbuf=(bufsiz>xi->u8_bufsz) ? 
+    u8_byte *newbuf=(bufsiz>xi->u8_bufsz) ?
       (u8_realloc(xi->u8_inbuf,bufsiz)) : (NULL);
     u8_byte *newxbuf= ((xi->u8_xbuflim)<bufsiz) ?
       (u8_realloc(xi->u8_xbuf,bufsiz)) : (NULL);
@@ -218,7 +218,7 @@ U8_EXPORT int u8_xinput_setbuf(struct U8_XINPUT *xi,int bufsiz)
 }
 
 U8_EXPORT struct U8_XINPUT *u8_open_input_file
-   (u8_string filename,u8_encoding enc,int flags,int perm)
+(u8_string filename,u8_encoding enc,int flags,int perm)
 {
   int fd, open_errno = 0;
   u8_string realname=u8_realpath(filename,NULL);
@@ -285,7 +285,7 @@ static int flush_xoutput(struct U8_XOUTPUT *xf)
 }
 
 U8_EXPORT int u8_init_xoutput
-   (struct U8_XOUTPUT *xo,int fd,u8_encoding enc)
+(struct U8_XOUTPUT *xo,int fd,u8_encoding enc)
 {
   if (fd<0) return -1;
   else {
@@ -342,7 +342,7 @@ U8_EXPORT int u8_xoutput_setbuf(struct U8_XOUTPUT *xo,int bufsiz)
 }
 
 U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
-   (u8_string filename,u8_encoding enc,int flags,int perm)
+(u8_string filename,u8_encoding enc,int flags,int perm)
 {
   u8_string realname=u8_realpath(filename,NULL);
   char *fname=u8_tolibc(realname);
@@ -361,7 +361,7 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
     return out;}
   else {
     u8_seterr(u8_strerror(open_errno),"u8_open_output_file",
-	      u8_strdup(filename));
+              u8_strdup(filename));
     return NULL;}
 }
 
