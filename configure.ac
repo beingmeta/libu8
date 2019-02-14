@@ -1,6 +1,6 @@
 AC_INIT(include/libu8/libu8.h)
 AC_PREFIX_PROGRAM(autoconf)
-m4_include([etc/ax_check_link_flags.m4])
+#m4_include([etc/ax_check_link_flags.m4])
 m4_include([etc/ax_pthread.m4])
 m4_include([etc/ax_sign.m4])
 threads_default="yes"
