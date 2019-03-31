@@ -128,8 +128,10 @@ ssize_t u8_grow_input_stream(struct U8_INPUT *in,ssize_t to_size)
                "Couldn't grow buffer for input stream");
         return max;}
       u8_log(LOGCRIT,"MemoryRestricted",
-             "Couldn't grow u8_input_stream buffer (x%llx) to %lld bytes, trying %lld",
-             (long long) in,new_max+shrink_by,new_max);
+             "Couldn't grow u8_input_stream buffer (x%llx) "
+             "to %lld bytes, trying %lld",
+             ((long long)(U8_PTR2INT(in))),
+             new_max+shrink_by,new_max);
       new_buf=(owns_buf)?(u8_realloc(in->u8_inbuf,new_max)):
         (u8_malloc(new_max));}}
   if (!(owns_buf)) {
@@ -183,8 +185,10 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *out,ssize_t to_size)
         return max;}
       errno=0; /* Reset errno */
       u8_log(LOGCRIT,"MemoryRestricted",
-             "Couldn't grow u8_output_stream buffer (x%llx) to %lld bytes, trying %lld",
-             (long long) out,new_max+shrink_by,new_max);
+             "Couldn't grow u8_output_stream buffer (x%llx) "
+             "to %lld bytes, trying %lld",
+             ((long long)U8_PTR2INT(out)),
+             new_max+shrink_by,new_max);
       new_buf=(owns_buf)?(u8_realloc(out->u8_outbuf,new_max)):
         (u8_malloc(new_max));}}
   if (!(owns_buf)) {
