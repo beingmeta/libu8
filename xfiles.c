@@ -162,8 +162,10 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
 }
 U8_EXPORT int u8_init_xinput(struct U8_XINPUT *xi,int fd,u8_encoding enc)
 {
-  if (fd<0) return -1;
+  if (fd<0)
+    return -1;
   else {
+    U8_CHECK_ERRNO();
     U8_INIT_INPUT(((u8_input)xi),U8_DEFAULT_XFILE_BUFSIZE);
     xi->u8_xfd=fd;
     xi->u8_xbuf=u8_malloc(U8_DEFAULT_XFILE_BUFSIZE);
@@ -172,6 +174,7 @@ U8_EXPORT int u8_init_xinput(struct U8_XINPUT *xi,int fd,u8_encoding enc)
     xi->u8_closefn=(u8_input_closefn)u8_close_xinput;
     xi->u8_streaminfo |= U8_STREAM_OWNS_XBUF;
     if (isatty(fd)) xi->u8_streaminfo |= U8_STREAM_TTY;
+    U8_CLEAR_ERRNO();
     xi->u8_xencoding=enc;
     xi->u8_xbuflive=0;
     return fd;}
@@ -179,9 +182,11 @@ U8_EXPORT int u8_init_xinput(struct U8_XINPUT *xi,int fd,u8_encoding enc)
 
 U8_EXPORT struct U8_XINPUT *u8_open_xinput(int fd,u8_encoding enc)
 {
-  if (fd<0) return NULL;
+  if (fd<0)
+    return NULL;
   else {
     struct U8_XINPUT *xi=u8_alloc(struct U8_XINPUT);
+    U8_CHECK_ERRNO();
     if (u8_init_xinput(xi,fd,enc)>=0) {
       xi->u8_streaminfo=xi->u8_streaminfo|U8_STREAM_MALLOCD;
       u8_register_open_xfile((u8_xfile)xi);
@@ -220,6 +225,7 @@ U8_EXPORT int u8_xinput_setbuf(struct U8_XINPUT *xi,int bufsiz)
 U8_EXPORT struct U8_XINPUT *u8_open_input_file
 (u8_string filename,u8_encoding enc,int flags,int perm)
 {
+  U8_CHECK_ERRNO();
   int fd, open_errno = 0;
   u8_string realname=u8_realpath(filename,NULL);
   char *fname=u8_tolibc(realname);
@@ -289,6 +295,7 @@ U8_EXPORT int u8_init_xoutput
 {
   if (fd<0) return -1;
   else {
+    U8_CHECK_ERRNO();
     U8_INIT_OUTPUT((u8_output)xo,U8_DEFAULT_XFILE_BUFSIZE);
     xo->u8_xfd=fd; xo->u8_xbuf=u8_malloc(U8_DEFAULT_XFILE_BUFSIZE);
     xo->u8_xbuflive=0; xo->u8_xbuflim=U8_DEFAULT_XFILE_BUFSIZE;
@@ -297,6 +304,7 @@ U8_EXPORT int u8_init_xoutput
     xo->u8_closefn=(u8_output_closefn)u8_close_xoutput;
     xo->u8_streaminfo=xo->u8_streaminfo|U8_STREAM_OWNS_XBUF;
     if (isatty(fd)) xo->u8_streaminfo |= U8_STREAM_TTY;
+    U8_CLEAR_ERRNO();
     return 1;}
 }
 
@@ -304,10 +312,12 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_xoutput(int fd,u8_encoding enc)
 {
   if (fd<0) return NULL;
   else {
+    U8_CHECK_ERRNO();
     struct U8_XOUTPUT *xo=u8_alloc(struct U8_XOUTPUT);
     if (u8_init_xoutput(xo,fd,enc)>=0) {
       xo->u8_streaminfo=xo->u8_streaminfo|U8_STREAM_MALLOCD;
       if (isatty(fd)) xo->u8_streaminfo |= U8_STREAM_TTY;
+      U8_CLEAR_ERRNO();
       u8_register_open_xfile((u8_xfile)xo);
       return xo;}
     u8_free(xo);
