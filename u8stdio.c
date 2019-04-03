@@ -165,6 +165,7 @@ U8_EXPORT void u8_check_stdio()
 #else
   else stdoutISstderr=1;
 #endif
+  U8_CLEAR_ERRNO();
 }
 
 U8_EXPORT void u8_stdoutISstderr(int flag)
