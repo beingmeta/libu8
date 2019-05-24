@@ -612,7 +612,8 @@ install-static: $(LIBINSTALLDIR)/libu8.a \
 		$(LIBINSTALLDIR)/libu8io.a \
 		$(LIBINSTALLDIR)/libu8fns.a \
 		$(LIBINSTALLDIR)/libu8data.a \
-		$(LIBINSTALLDIR)/libu8stdio.a
+		$(LIBINSTALLDIR)/libu8stdio.a \
+		$(LIBINSTALLDIR)/libu8syslog.a
 
 install-exe: $(BININSTALLDIR)/u8run
 
