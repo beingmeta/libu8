@@ -105,6 +105,8 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 #define U8_SUB_STREAM_MASK \
   ( U8_STREAM_TACITURN | U8_STREAM_VERBOSE | U8_STREAM_TTY )
 
+#define U8_STREAM_NEXT_FLAG 0x10000
+
 #define U8_STREAM_FIELDS \
   int u8_bufsz; unsigned int u8_streaminfo;   \
   u8_byte *u8_strbuf, *u8_strptr, *u8_strlim; \

@@ -73,7 +73,9 @@ U8_EXPORT u8_condition u8_BadDynamicContour;
   int u8c_depth;					     \
   sigjmp_buf u8c_jmpbuf;				     \
   u8_condition u8c_condition;				     \
-  u8_context u8c_excontext;				     \
+  union {						     \
+    u8_exception exception;				     \
+    u8_context context;} u8c_exinfo;			     \
   u8_byte u8c_exdetails[256];                                \
   struct U8_CONTOUR *u8c_outer_contour;                      \
   u8_contour_popfn u8c_popfn;				     \
@@ -120,40 +122,45 @@ static U8_MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
 /* Macros for creating dynamic contours */
 
 #define U8_WITH_CONTOUR(label,flags)                            \
-   struct U8_CONTOUR _u8_contour_struct;                        \
-   struct U8_CONTOUR *_u8_contour=&_u8_contour_struct;          \
-   U8_INIT_CONTOUR(_u8_contour,label,flags,NULL,NULL);		\
-   if (setjmp(_u8_contour_struct.u8c_jmpbuf) == 0) {		\
-     u8_push_contour(&(_u8_contour_struct));
+  struct U8_CONTOUR _u8_contour_struct = { 0 };			\
+  struct U8_CONTOUR *_u8_contour=&_u8_contour_struct;		\
+  U8_INIT_CONTOUR(_u8_contour,label,flags,NULL,NULL);		\
+  if (setjmp(_u8_contour_struct.u8c_jmpbuf) == 0) {		\
+  u8_push_contour(&(_u8_contour_struct));
 #define U8_WITH_XCONTOUR(label,flags,popfn,popdata)		\
-   struct U8_CONTOUR _u8_contour_struct;                        \
-   struct U8_CONTOUR *_u8_contour=&_u8_contour_struct;          \
-   U8_INIT_CONTOUR(_u8_contour,label,flags,popfn,popdata);	\
-   if (setjmp(_u8_contour_struct.u8c_jmpbuf) == 0) {		\
-     u8_push_contour(&(_u8_contour_struct));
+  struct U8_CONTOUR _u8_contour_struct = { 0 };			\
+  struct U8_CONTOUR *_u8_contour=&_u8_contour_struct;		\
+  U8_INIT_CONTOUR(_u8_contour,label,flags,popfn,popdata);	\
+  if (setjmp(_u8_contour_struct.u8c_jmpbuf) == 0) {		\
+  u8_push_contour(&(_u8_contour_struct));
 #define UNWIND_PROTECT U8_WITH_CONTOUR
 
-#define U8_ON_EXCEPTION u8_pop_contour(_u8_contour);} else {             \
-     if (_u8_contour->u8c_condition!=NULL) {			         \
-      u8_seterr(_u8_contour->u8c_condition,_u8_contour->u8c_excontext,   \
-		u8_strdup(_u8_contour->u8c_exdetails));			 \
-      _u8_contour->u8c_flags|=U8_CONTOUR_EXCEPTIONAL;                    \
-     _u8_contour->u8c_condition=NULL;}
+#define U8_ON_EXCEPTION } else {             \
+  if (_u8_contour->u8c_condition != NULL) {				\
+    if ( (_u8_contour->u8c_flags) & (U8_CONTOUR_EXCEPTIONAL) )		\
+      u8_expush(_u8_contour->u8c_exinfo.exception);			\
+    else u8_seterr(_u8_contour->u8c_condition,				\
+		   _u8_contour->u8c_exinfo.context,			\
+		   ((_u8_contour->u8c_exdetails[0]) ?			\
+		    (u8_strdup(_u8_contour->u8c_exdetails)) :		\
+		    (NULL)));						\
+    _u8_contour->u8c_condition=NULL;}					\
+  else {}
 #define U8_END_EXCEPTION                                         \
-  if ((_u8_contour_struct.u8c_flags)&(U8_CONTOUR_EXCEPTIONAL))   \
-     u8_throw_contour(&_u8_contour_struct);                      \
-  else u8_pop_contour(&_u8_contour_struct);}
+  u8_pop_contour(&_u8_contour_struct);}
 
-#define U8_ON_UNWIND }                                                   \
-     if (_u8_contour.u8c_condition!=NULL) {			         \
-      u8_seterr(_u8_contour->u8c_condition,_u8_contour->u8c_excontext,   \
-		u8_strdup(_u8_contour->u8c_exdetails));			 \
-      _u8_contour->u8c_flags|=U8_CONTOUR_EXCEPTIONAL;                    \
-     _u8_contour->u8c_condition=NULL;}
-#define U8_END_UNWIND                                        \
-  if ((_u8_contour_struct.flags)&(U8_CONTOUR_EXCEPTIONAL))   \
-     u8_throw_contour(&_u8_contour_struct);                  \
-  else u8_pop_contour(&_u8_contour_struct);}
+#define U8_ON_UNWIND }							\
+    if (_u8_contour->u8c_condition != NULL) {				\
+    if ( (_u8_contour->u8c_flags) & (U8_CONTOUR_EXCEPTIONAL) )		\
+      u8_expush(_u8_contour->u8c_exinfo.exception);			\
+    else u8_seterr(_u8_contour->u8c_condition,				\
+		   _u8_contour->u8c_exinfo.context,			\
+		   ((_u8_contour->u8c_exdetails[0]) ?			\
+		    (u8_strdup(_u8_contour->u8c_exdetails)) :		\
+		    (NULL)));						\
+    _u8_contour->u8c_condition=NULL;}
+#define U8_END_UNWIND				\
+  u8_pop_contour(&_u8_contour_struct);}
 
 #define U8_CLEAR_CONTOUR()                             \
   _u8_contour->u8c_flags&=(~(U8_CONTOUR_EXCEPTIONAL));
@@ -217,24 +224,7 @@ static void u8_throw_contour(u8_contour contour)
       u8_log(LOG_CRIT,u8_BadDynamicContour,"No active contour");
       exit(1);}
     else contour=cur;}
-  u8_contour next, cur=u8_dynamic_contour;
-  if (contour!=cur) {
-    /* This could be rewritten to be a little safer.
-       If we kept a thread local vector of the last few contours,
-       we could look for a valid contour and just lose some stuff. */
-    u8_log(LOG_CRIT,u8_BadDynamicContour,"The popped contour isn't current");
-    exit(1);}
-  if (cur->u8c_popfn) {
-    if (cur->u8c_popdata)
-      (cur->u8c_popfn)(cur->u8c_popdata);
-    else (cur->u8c_popfn)(cur);}
-  next=contour->u8c_outer_contour;
-#if (U8_USE_TLS)
-  u8_tld_set(u8_dynamic_contour_key,next);
-#else
-  u8_dynamic_contour=next;
-#endif
-  siglongjmp(next->u8c_jmpbuf,1);
+  siglongjmp(contour->u8c_jmpbuf,1);
 }
 #else
 #define u8_push_contour(ctr) _u8_push_contour(ctr)

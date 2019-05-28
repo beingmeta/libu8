@@ -52,12 +52,18 @@ int _u8_dbg(u8_string s);
 /** Signals an error with particular details.
     This currently exits, though it may be expanded to an exception
      throwing architecture in the near future.
-   @param ex a utf-8 condition string (u8_condition)
+   @param cond a utf-8 condition string (u8_condition)
    @param cxt a utf-8 context string (a const string)
    @param details a utf-8 string detailing the error, or NULL
    @returns void (shouldn't)
 **/
-U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details);
+U8_EXPORT void u8_raise(u8_condition cond,u8_context cxt,u8_string details);
+
+/** Signals an error described by an existing exception object.
+   @param ex a pointer to a u8_exception object
+   @returns void (shouldn't)
+**/
+U8_EXPORT void u8_raise_exception(u8_exception ex);
 
 /** Sets the function used when an error is raised.
    @param h is a function on a condition, a context, and a utf-8 string

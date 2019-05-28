@@ -100,6 +100,28 @@ U8_EXPORT u8_exception u8_push_exception
   return newex;
 }
 
+U8_EXPORT u8_exception u8_expush(u8_exception newex)
+{
+  struct U8_EXCEPTION *current=u8_current_exception;
+  if (newex == NULL)
+    return u8_push_exception("NULLException","u8_expush",NULL,NULL,NULL);
+  else if (newex->u8x_prev != current) {
+    return u8_push_exception(newex->u8x_cond,
+                             newex->u8x_context,
+                             newex->u8x_details,
+                             newex->u8x_xdata,
+                             newex->u8x_free_xdata);}
+  else {
+    newex->u8x_prev=current; /* Just in case */
+#if (U8_USE_TLS)
+    u8_tld_set(u8_current_exception_key,newex);
+#else
+    u8_current_exception=newex;
+#endif
+    return newex;
+  }
+}
+
 U8_EXPORT u8_exception u8_free_exception(u8_exception ex,int full)
 {
   u8_exception prev=ex;

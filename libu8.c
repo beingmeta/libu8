@@ -537,9 +537,10 @@ void *u8_dynamic_symbol(u8_string name,void *module)
 
 /* Raising errors */
 
-U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details)
+U8_EXPORT void u8_raise(u8_condition cond,u8_context cxt,u8_string details)
 {
   u8_contour c=u8_dynamic_contour;
+  if (cond == NULL) cond = "Unknown (NULL) condition";
   if (!(c)) {
     /* This is signal safe */
     {int rv=0;
@@ -550,7 +551,7 @@ U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details)
       if (rv>=0) rv=write(STDERR_FILENO,s,strlen(s));
 
       errout("Unhandled exception (no context) ");
-      errout(ex);
+      errout(cond);
       if (cxt) {errout(" ("); errout(cxt); errout(")");}
       if (details) {errout(": "); errout(details); errout("\n");}
 
@@ -564,20 +565,66 @@ U8_EXPORT void u8_raise(u8_condition ex,u8_context cxt,u8_string details)
     /* Calling u8_log isn't signal safe, but we're calling exit()
        anyway, so it might not be so bad :) */
     if ((cxt)&&(details))
-      u8_log(LOG_CRIT,ex,"In context %s: %s",cxt,details);
+      u8_log(LOG_CRIT,cond,"In context %s: %s",cxt,details);
     else if (cxt)
-      u8_log(LOG_CRIT,ex,"In context %s",cxt);
+      u8_log(LOG_CRIT,cond,"In context %s",cxt);
     else if (details)
-      u8_log(LOG_CRIT,ex,"Somewhere: %s",details);
-    else u8_log(LOG_CRIT,ex,"somewhere");
+      u8_log(LOG_CRIT,cond,"Somewhere: %s",details);
+    else u8_log(LOG_CRIT,cond,"somewhere");
     exit(1);}
   else {
     if (!(cxt)) cxt=c->u8c_label;
-    c->u8c_condition=ex; c->u8c_excontext=cxt;
+    c->u8c_condition=cond; c->u8c_exinfo.context=cxt;
     if (details) {
       strncpy(c->u8c_exdetails,details,sizeof(c->u8c_exdetails)-1);}
+    u8_throw_contour(c);}
+}
+
+U8_EXPORT void u8_raise_exception(u8_exception ex)
+{
+  u8_contour c=u8_dynamic_contour;
+  if (!(c)) {
+    /* This is signal safe */
+    int rv=0;
+
+    if (ex) {
+      /* This writes to both stdout and stderr */
+#define errout(s)                                       \
+      if (rv>=0) rv=write(STDOUT_FILENO,s,strlen(s));   \
+      if (rv>=0) rv=write(STDERR_FILENO,s,strlen(s));
+
+      errout("Unhandled exception (no context) ");
+      errout(ex->u8x_cond);
+      if (ex->u8x_context) {
+        errout(" (");
+        errout(ex->u8x_context);
+        errout(")");}
+      if (ex->u8x_details) {
+        errout(": ");
+        errout(ex->u8x_details);
+        errout("\n");}
+
+#undef errout
+
+      fsync(STDERR_FILENO);
+      fsync(STDOUT_FILENO);}
+
+    /* Calling u8_log isn't signal safe, but we're calling exit()
+       anyway, so it might not be so bad :) */
+    if ((ex->u8x_context)&&(ex->u8x_details))
+      u8_log(LOG_CRIT,ex->u8x_cond,"In context %s: %s",
+             ex->u8x_context,ex->u8x_details);
+    else if (ex->u8x_context)
+      u8_log(LOG_CRIT,ex->u8x_cond,"In context %s",ex->u8x_context);
+    else if (ex->u8x_details)
+      u8_log(LOG_CRIT,ex->u8x_cond,"Somewhere: %s",ex->u8x_details);
+    else u8_log(LOG_CRIT,ex->u8x_cond,"somewhere");
+    exit(1);}
+  else {
+    c->u8c_condition = ex->u8x_cond;
+    c->u8c_exinfo.exception = ex;
     c->u8c_flags|=U8_CONTOUR_EXCEPTIONAL;
-    u8_throw_contour(NULL);}
+    u8_throw_contour(c);}
 }
 
 U8_EXPORT void u8_set_error_handler

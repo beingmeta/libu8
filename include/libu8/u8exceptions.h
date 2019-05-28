@@ -84,7 +84,7 @@ U8_EXPORT U8_NOINLINE u8_exception u8_new_exception
   (u8_condition c,u8_context cxt,u8_string details,
    void *xdata,void (*freefn)(void *));
 
-/** Pushes an exception
+/** Pushes a new exception
     Sets the current exception, pushing it onto the dynamic
      exception stack.
     The condition and context are constant strings, the details
@@ -102,6 +102,13 @@ U8_EXPORT U8_NOINLINE u8_exception u8_new_exception
 U8_EXPORT U8_NOINLINE u8_exception u8_push_exception
   (u8_condition condition,u8_context context,u8_string details,
    void *xdata,void (*freefn)(void *));
+
+/** Pushes an exception object
+    Sets the current exception to *newex*
+   @param newex a pointer to an exception object
+   @returns an exception structure
+**/
+U8_EXPORT U8_NOINLINE u8_exception u8_expush(u8_exception newex);
 
 /** Pops the exception stack
     Clears the current exception, popping it from the dynamic
