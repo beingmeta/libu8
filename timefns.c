@@ -452,18 +452,69 @@ double u8_xtime_diff(struct U8_XTIME *xt,struct U8_XTIME *yt)
 }
 
 U8_EXPORT
+/* u8_get_tm_zone:
+     Arguments: a pointer to an extended time pointer
+     Returns: a time_t or -1 if it fails for some reason
+
+  This will try and get the finest precision time it can.
+*/
+u8_string u8_get_tm_zone(int tzoff,int dstoff)
+{
+  if ( (tzoff == 0) && (dstoff == 0) )
+    return "UTC";
+  else if ( (tzoff == -5*3600) && (dstoff == 0) )
+    return "EST";
+  else if ( (tzoff == -5*3600) && (dstoff == 3600) )
+    return "EDT";
+  else if ( (tzoff == -6*3600) && (dstoff == 0) )
+    return "CST";
+  else if ( (tzoff == -6*3600) && (dstoff == 3600) )
+    return "CDT";
+  else if ( (tzoff == -7*3600) && (dstoff == 0) )
+    return "MST";
+  else if ( (tzoff == -7*3600) && (dstoff == 3600) )
+    return "MDT";
+  else if ( (tzoff == -8*3600) && (dstoff == 0) )
+    return "PST";
+  else if ( (tzoff == -8*3600) && (dstoff == 3600) )
+    return "PDT";
+  else if ( (tzoff == 0) && (dstoff == 3600) )
+    return "BDST";
+  else if ( (tzoff == 3600) && (dstoff == 0) )
+    return "WET";
+  else if ( (tzoff == 3600) && (dstoff == 0) )
+    return "WEST";
+  else if ( (tzoff == 3*3600) && (dstoff == 0) )
+    return "MSK";
+  else if ( (tzoff == 3*3600) && (dstoff == 3600) )
+    return "MSD";
+  else if ( (tzoff == (3*3600+1800)) && (dstoff == 0) )
+    return "NST";
+  else if ( (tzoff == 2*3600) && (dstoff == 0) )
+    return "EET";
+  else if ( (tzoff == 2*3600) && (dstoff == 3600) )
+    return "EEST";
+  else if ( (tzoff == 13*3600) && (dstoff == 0) )
+    return "NZST";
+  else if ( (tzoff == 13*3600) && (dstoff == 3600) )
+    return "NZDT";
+  else return NULL;
+}
+
+U8_EXPORT
 /* u8_xtime_to_tptr
      Arguments: pointers to an xtime struct and a tm struct
      Returns: void
 */
-time_t u8_xtime_to_tptr(struct U8_XTIME *xt,struct tm *tm)
+struct tm *u8_xtime_to_tptr(struct U8_XTIME *xt,struct tm *tm)
 {
-
+  if (tm == NULL) tm = u8_alloc(struct tm);
   memset(tm,0,sizeof(struct tm));
   copy_xt2tm(xt,tm);
   tm->tm_gmtoff=xt->u8_tzoff;
   if (xt->u8_dstoff) tm->tm_isdst=1;
-  return mktime(tm);
+  tm->tm_zone = u8_get_tm_zone(xt->u8_tzoff,xt->u8_dstoff);
+  return tm;
 }
 
 U8_EXPORT

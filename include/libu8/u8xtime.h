@@ -130,11 +130,19 @@ U8_EXPORT time_t u8_localtime_x(struct U8_XTIME *xt,time_t tick,int nsecs);
 
 /** Populates a struct tm structure from an U8_XTIME representation
     @param xt a pointer to a U8_XTIME structure
-    @param tm a pointer to a tm structure
-    @returns the time_t value for the moment represented by both
-      data structures
+    @param tm a pointer to a tm structure, or NULL
+    @returns a filled out struct tm pointer, either *tm* or a newly allocated
+      pointer if *tm* is NULL
 **/
-U8_EXPORT time_t u8_xtime_to_tptr(struct U8_XTIME *xt,struct tm *tm);
+U8_EXPORT struct tm *u8_xtime_to_tptr(struct U8_XTIME *xt,struct tm *tm);
+
+/** Tries to return a timezone string for a combination of a timezone
+    offset and a DST offset.
+    @param tzoff time-zone offset in seconds
+    @param dstoff summer/daylight savings time offset in seconds
+    @returns a time zone string NULL
+**/
+U8_EXPORT u8_string u8_get_tm_zone(int tzoff,int dstoff);
 
 U8_EXPORT struct U8_XTIME u8_start_time;
 
