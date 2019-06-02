@@ -513,7 +513,7 @@ struct tm *u8_xtime_to_tptr(struct U8_XTIME *xt,struct tm *tm)
   copy_xt2tm(xt,tm);
   tm->tm_gmtoff=xt->u8_tzoff;
   if (xt->u8_dstoff) tm->tm_isdst=1;
-  tm->tm_zone = u8_get_tm_zone(xt->u8_tzoff,xt->u8_dstoff);
+  tm->tm_zone = (char *) u8_get_tm_zone(xt->u8_tzoff,xt->u8_dstoff);
   return tm;
 }
 
