@@ -47,6 +47,7 @@ U8_EXPORT void *u8_big_calloc(ssize_t n,ssize_t eltsz);
 #define u8_malloc_n(n,sz) (u8_dmalloc_n((n),(sz)))
 #define u8_realloc(n,sz) (u8_drealloc((n),(sz)))
 #define u8_zmalloc(sz) (u8_dmalloc(sz))
+#define u8_zmalloc_n(n,sz) (u8_dmalloc(n*sz))
 #else /* U8_DEBUG_MALLOC */
 U8_INLINE_FCN void *u8_malloc(size_t sz)
 {
@@ -72,7 +73,14 @@ U8_INLINE_FCN void *u8_zmalloc(size_t sz)
   if (result) errno=0;
   return result;
 }
+U8_INLINE_FCN void *u8_zmalloc_n(size_t n,size_t sz)
+{
+  void *result = calloc(n,sz);
+  if (result) errno=0;
+  return result;
+}
 #endif /* not U8_DEBUG_MALLOC */
+
 U8_INLINE_FCN void _u8_free(void *ptr)
 {
   free((void *)ptr);
@@ -92,8 +100,6 @@ U8_INLINE_FCN void _u8_free(void *ptr)
 #define u8_malloc_struct(sname) \
   ((struct sname *)(u8_zmalloc(sizeof(struct sname))))
 #define u8_malloc_array(n,t) ((t *)(u8_malloc(n*sizeof(t))))
-
-/* Zalloc (allocate and fill with zeros) */
 
 /* Declare here. Also declared below with docs. */
 U8_EXPORT char *u8_write_long_long(long long,char *,size_t);
@@ -117,11 +123,9 @@ void *u8_alloc_throw(size_t n_bytes,u8_context caller)
     return NULL;}
 }
 
-#define u8_zalloc_bytes(n,caller) u8_malloc(n)
-#define u8_zalloc(typename) u8_malloc(sizeof(typename))
-
-#define u8_zalloc(typename) u8_malloc(sizeof(typename))
-#define u8_zalloc_n(n,typename) u8_malloc_n(n,sizeof(typename))
+#define u8_zalloc_bytes(n,caller) u8_zmalloc(n)
+#define u8_zalloc(typename) u8_zmalloc(sizeof(typename))
+#define u8_zalloc_n(n,typename) u8_zmalloc_n(n,sizeof(typename))
 
 #define u8_zalloc_for(caller,typename) \
   u8_zalloc_bytes(sizeof(typename),caller)
