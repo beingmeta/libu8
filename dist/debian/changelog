@@ -1,3 +1,9 @@
+libu8 (2.6.7-9) stable; urgency=medium
+
+  * Updated rules to not use deprecated --with autotools-dev
+
+ -- Ken Haase <kh@beingmeta.com>  Sat, 08 Jun 2019 00:34:53 +0000
+
 libu8 (2.6.7-8) stable; urgency=medium
 
   * Added libu8 executables starting with u8run
