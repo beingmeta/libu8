@@ -878,12 +878,19 @@ void u8_xtime_to_rfc822(u8_output ss,struct U8_XTIME *xtp)
   char buf[128];
   u8_init_xtime(&asgmt,xtp->u8_tick,xtp->u8_prec,xtp->u8_nsecs,0,0);
   sprintf(buf,"%s, %d %s %04d %02d:%02d:%02d",
-          dow_names[asgmt.u8_wday],
-          asgmt.u8_mday,
-          month_names[asgmt.u8_mon],
-          (asgmt.u8_year),
-          asgmt.u8_hour,asgmt.u8_min,asgmt.u8_sec);
-  u8_printf(ss,"%s +0000",buf);
+          dow_names[xtp->u8_wday],
+          xtp->u8_mday,
+          month_names[xtp->u8_mon],
+          xtp->u8_year,
+          xtp->u8_hour,
+          xtp->u8_min,
+          xtp->u8_sec);
+  u8_string tz_name = u8_get_tm_zone(xtp->u8_tzoff,xtp->u8_dstoff);
+  if (tz_name)
+    u8_printf(ss,"%s %s",buf,tz_name);
+  else {
+    int toff = xtp->u8_tzoff + xtp->u8_dstoff;
+    u8_printf(ss,"%s +%d:%02d",buf,toff/3600,toff%3600);}
 }
 
 U8_EXPORT
