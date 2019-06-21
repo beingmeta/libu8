@@ -319,8 +319,8 @@ U8_EXPORT u8_string u8_host_primary(u8_string hostname)
     return pname;}
 }
 
-U8_EXPORT char **u8_lookup_host
-   (u8_string hname,int *addr_len,unsigned int *typep)
+U8_EXPORT char **u8_lookup_host_x
+(u8_string hname,int *addr_len,unsigned int *typep,int flags)
 {
   char *name=u8_tolibc(hname);
   struct hostent *fetched;
@@ -346,9 +346,10 @@ U8_EXPORT char **u8_lookup_host
     else retval=gethostbyname_r(name,fetched,buf,bufsiz,&result,&herrno);
     retries++;}
   if (result==NULL) {
-    if (bufsiz) u8_free(buf);
-    u8_graberr(herrno,"u8_lookup_host",u8_strdup(hname));
+    if ((flags)&(U8_LOOKUP_HOST_SETERR))
+      u8_graberr(herrno,"u8_lookup_host",u8_strdup(hname));
     u8_free(name);
+    if (bufsiz) u8_free(buf);
     return NULL;}
   addrs=copy_addrs(fetched,addr_len,NULL);
   if (typep) *typep=fetched->h_addrtype;
@@ -365,6 +366,13 @@ U8_EXPORT char **u8_lookup_host
 #endif
   u8_free(name);
   return addrs;
+}
+
+U8_EXPORT char **u8_lookup_host
+(u8_string hname,int *addr_len,unsigned int *typep)
+{
+  /* Don't set err */
+  return u8_lookup_host_x(hname,addr_len,typep,U8_LOOKUP_HOST_FLAGS);
 }
 
 /* Make connections */

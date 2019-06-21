@@ -55,6 +55,9 @@
 
 #define U8_CONNPOOL_REGISTERED 1
 
+#define U8_LOOKUP_HOST_FLAGS 0
+#define U8_LOOKUP_HOST_SETERR 1
+
 /** struct U8_CONNPOOL
    maintains a pool of sockets connected to a particular remote port/host.
 **/
@@ -129,6 +132,18 @@ U8_EXPORT struct hostent *u8_gethostbyaddr(char *addr,int len,int family);
     @returns a mallocd UTF-8 string describing the primary host name
 **/
 U8_EXPORT u8_string u8_host_primary(u8_string hostname);
+
+/** Returns a vector of addresses assigned to a particular hostname
+     The number of address is deposited in n_addrsp and the address family
+      of the returned addresses is deposited in addr_familyp.
+    @param hostname (a network hostname)
+    @param n_addrsp (a pointer to an int)
+    @param addr_familyp (a pointer to an int (address family))
+    @param seterr (boolean, whether or not to set an error on failure)
+    @returns a vector of pointers to byte arrays describing addresses
+**/
+U8_EXPORT char **u8_lookup_host_x
+(u8_string hostname,int *n_addrsp,unsigned int *addr_familyp,int seterr);
 
 /** Returns a vector of addresses assigned to a particular hostname
      The number of address is deposited in n_addrsp and the address family
