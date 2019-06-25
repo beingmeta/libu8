@@ -422,10 +422,10 @@ struct U8_TEXT_ENCODING *u8_get_default_encoding()
 U8_EXPORT int u8_set_default_encoding(char *name)
 {
   struct U8_TEXT_ENCODING *e=u8_get_encoding(name);
-  if (e==NULL) {
-    u8_seterr(u8_UnknownEncoding,"u8_set_default_encoding",u8_strdup(name));
-    return -1;}
-  else if (e==default_encoding) return 0;
+  if (e==NULL)
+    return u8err(-1,u8_UnknownEncoding,"u8_set_default_encoding",u8_strdup(name));
+  else if (e==default_encoding)
+    return 0;
   else {
     default_encoding=e;
     return 1;}
@@ -868,22 +868,22 @@ unsigned char *u8_read_base16(const char *data,int len_arg,int *result_len)
     unsigned char *write=result;
     *result_len=-1; /* Initial error value */
     if (U8_EXPECT_FALSE(result==NULL)) {
-      u8_seterr(u8_MallocFailed,"u8_read_base16",NULL);
-      *result_len=-1; return NULL;}
+      *result_len=-1;
+      return u8err(NULL,u8_MallocFailed,"u8_read_base16",NULL);}
     else while (scan<limit) {
         if ((isspace(*scan))||(ispunct(*scan))) {scan++; continue;}
         else if ((scan+1)<limit) {
           int hival=hexweight(scan[0]), loval=hexweight(scan[1]);
           if ((hival<0) || (loval<0)) {
-            u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
             u8_free(result);
-            return NULL;}
+            return u8err(NULL,u8_BadHexString,"u8_read_base16",
+                         u8_slice(data,data+len));}
           *write=(hival<<4)|loval;
           scan=scan+2; write++;}
         else {
-          u8_seterr(u8_BadHexString,"u8_read_base16",u8_slice(data,data+len));
           u8_free(result);
-          return NULL;}}
+          return u8err(NULL,u8_BadHexString,"u8_read_base16",
+                       u8_slice(data,data+len));}}
     *result_len=len/2;
     return result;}
 }

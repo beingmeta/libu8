@@ -677,14 +677,12 @@ U8_EXPORT unsigned char *u8_sha1
 U8_EXPORT unsigned char *u8_sha224
   (const unsigned char *data,int len,unsigned char *result)
 {
-  u8_seterr("SHA224 not available","u8_sha224",NULL);
-  return NULL;
+  return u8err(NULL,"SHA224 not available","u8_sha224",NULL);
 }
 U8_EXPORT unsigned char *u8_sha256
   (const unsigned char *data,int len,unsigned char *result)
 {
-  u8_seterr("SHA256 not available","u8_sha256",NULL);
-  return NULL;
+  return u8err(NULL,"SHA256 not available","u8_sha256",NULL);
 }
 #endif
 

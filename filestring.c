@@ -45,16 +45,14 @@ U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
     u8_graberrno("u8_filedata",abspath);
     return NULL;}
   else if ((info.st_mode&S_IFMT)!=S_IFREG) {
-    u8_seterr(u8_IrregularFile,"u8_filedata",abspath);
     *n_bytes=-1;
-    return NULL;}
+    return u8err(NULL,u8_IrregularFile,"u8_filedata",abspath);}
   else to_read = size = info.st_size;
   FILE *f=u8_fopen(abspath,"rb");
   if (f==NULL) {
     if (errno) u8_graberrno("u8_filedata",abspath);
-    u8_seterr(u8_CantOpenFile,"u8_filedata",abspath);
     *n_bytes=-1;
-    return NULL;}
+    return u8err(NULL,u8_CantOpenFile,"u8_filedata",abspath);}
   /* We malloc an extra byte in case we're going to use this as a string. */
   data=u8_malloc(size+1);
   memset(data,0,size+1);
