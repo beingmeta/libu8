@@ -66,8 +66,8 @@ U8_EXPORT u8_exception u8_current_exception;
 #endif
 
 /** Creates a new exception
-    Returns the current exception, pushing it onto the dynamic
-     exception stack.
+    Returns  a new exception exception, but *doesn't* push it
+     onto the exception stack.
     The condition and context are constant strings, the details
      should be a mallocd string.  xdata and freefn can be NULL.
      if freefn is provided, it is called on xdata when the
@@ -290,5 +290,10 @@ U8_EXPORT u8_condition u8_MallocFailed;
 U8_EXPORT u8_condition u8_NullArg;
 U8_EXPORT u8_condition u8_UnexpectedErrno;
 U8_EXPORT u8_condition u8_NotImplemented;
+
+#define u8err(rv,condition,context,details) \
+  ( (u8_seterr(condition,context,details)) , (rv) )
+#define u8err_x(rv,condition,context,details,data,freefn)	\
+  ( (u8_push_exception(condition,context,details,data,freefn)) , (rv) )
 
 #endif /* ndef LIBU8_U8EXCEPTIONS_H */

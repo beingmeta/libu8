@@ -147,7 +147,7 @@ static U8_MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
     _u8_contour->u8c_condition=NULL;}					\
   else {}
 #define U8_END_EXCEPTION                                         \
-  u8_pop_contour(&_u8_contour_struct);}
+  } u8_pop_contour(&_u8_contour_struct);
 
 #define U8_ON_UNWIND }							\
     if (_u8_contour->u8c_condition != NULL) {				\

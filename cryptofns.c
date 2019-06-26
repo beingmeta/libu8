@@ -272,9 +272,8 @@ U8_EXPORT ssize_t u8_cryptic
  void *readstate,void *writestate,
  u8_context caller)
 {
-  if (strncasecmp(cname,"rsa",3)==0) {
-    u8_seterr(_("RSA support NYI"),"u8_cryptic/CommonCrypto",u8_strdup(cname));
-    return -1;}
+  if (strncasecmp(cname,"rsa",3)==0)
+    return u8err(-1,_("RSA support NYI"),"u8_cryptic/CommonCrypto",u8_strdup(cname));
   else {
     CCCryptorRef ctx;
     CCOptions options=0;
@@ -470,8 +469,7 @@ U8_EXPORT ssize_t u8_cryptic
  void *readstate,void *writestate,
  u8_context caller)
 {
-  u8_seterr(u8_NoCrypto,"u8_cryptic",NULL);
-  return -1;
+  return u8err(-1,u8_NoCrypto,"u8_cryptic",NULL);
 }
 
 U8_EXPORT void u8_init_cryptofns_c()

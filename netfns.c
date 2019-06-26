@@ -253,9 +253,8 @@ U8_EXPORT struct hostent *u8_gethostbyname(u8_string hname,int type)
   u8_lock_mutex(&netfns_lock);
   fetched=gethostbyname(name);
   if (fetched==NULL) {
-    u8_seterr(UnknownHost,"u8_gethostbyname",name);
     u8_unlock_mutex(&netfns_lock);
-    return NULL;}
+    return u8err(NULL,UnknownHost,"u8_gethostbyname",name);}
   copied=copy_hostent(fetched);
   u8_unlock_mutex(&netfns_lock);
 #endif
@@ -319,8 +318,8 @@ U8_EXPORT u8_string u8_host_primary(u8_string hostname)
     return pname;}
 }
 
-U8_EXPORT char **u8_lookup_host
-   (u8_string hname,int *addr_len,unsigned int *typep)
+U8_EXPORT char **u8_lookup_host_x
+(u8_string hname,int *addr_len,unsigned int *typep,int flags)
 {
   char *name=u8_tolibc(hname);
   struct hostent *fetched;
@@ -346,9 +345,10 @@ U8_EXPORT char **u8_lookup_host
     else retval=gethostbyname_r(name,fetched,buf,bufsiz,&result,&herrno);
     retries++;}
   if (result==NULL) {
-    if (bufsiz) u8_free(buf);
-    u8_graberr(herrno,"u8_lookup_host",u8_strdup(hname));
+    if ((flags)&(U8_LOOKUP_HOST_SETERR))
+      u8_graberr(herrno,"u8_lookup_host",u8_strdup(hname));
     u8_free(name);
+    if (bufsiz) u8_free(buf);
     return NULL;}
   addrs=copy_addrs(fetched,addr_len,NULL);
   if (typep) *typep=fetched->h_addrtype;
@@ -357,14 +357,20 @@ U8_EXPORT char **u8_lookup_host
   u8_lock_mutex(&netfns_lock);
   fetched=gethostbyname(name);
   if (fetched==NULL) {
-    u8_seterr(UnknownHost,"u8_lookup_host",name);
     u8_unlock_mutex(&netfns_lock);
-    return NULL;}
+    return u8err(NULL,UnknownHost,"u8_lookup_host",name);}
   addrs=copy_addrs(fetched,addr_len,NULL);
   u8_unlock_mutex(&netfns_lock);
 #endif
   u8_free(name);
   return addrs;
+}
+
+U8_EXPORT char **u8_lookup_host
+(u8_string hname,int *addr_len,unsigned int *typep)
+{
+  /* Don't set err */
+  return u8_lookup_host_x(hname,addr_len,typep,U8_LOOKUP_HOST_FLAGS);
 }
 
 /* Make connections */
@@ -427,9 +433,7 @@ U8_EXPORT u8_socket u8_connect_x(u8_string spec,u8_string *addrp)
   if ( (strchr(spec,'@') == NULL) && (strchr(spec,':') == NULL) ) {
     if ( (u8_file_existsp(spec)) && (u8_socketp(spec)) )
       return file_socket_connect(spec,addrp);
-    else {
-      u8_seterr("BadFileSocket","u8_connect_x",u8_strdup(spec));
-      return -1;}}
+    else return u8err(-1,"BadFileSocket","u8_connect_x",u8_strdup(spec));}
   else {
     long socket_id;
     u8_byte _hostname[128]; int portno=-1;
@@ -490,8 +494,7 @@ static  u8_socket file_socket_connect(u8_string spec,u8_string *addrp)
     return ((u8_socket)(-1));}
   else return (u8_socket)socket_id;
 #else
-  u8_seterr(NoFileSockets,"u8_connect",NULL);
-  return ((u8_socket)(-1));
+  return u8err(((u8_socket)(-1)),NoFileSockets,"u8_connect",NULL);
 #endif
 }
 
@@ -695,11 +698,10 @@ static u8_socket return_connection(u8_connpool cp,u8_socket c,int discard)
       /* Didn't find connection */
       u8_unlock_mutex(&(cp->u8cp_lock));
       if (discard)
-        u8_seterr(_("Connection not in block"),"u8_discard_connection",
+        return u8err(-1,_("Connection not in block"),"u8_discard_connection",
                   u8_mkstring("%d",c));
-      else u8_seterr(_("Connection not in block"),"u8_return_connection",
-                     u8_mkstring("%d",c));
-      return -1;}
+      else return u8err(-1,_("Connection not in block"),"u8_return_connection",
+                        u8_mkstring("%d",c));}
     CPDBG2(cp,"(%s/%d/%d) Found connection %d at %d",c,scan-cp->u8cp_inuse);
     /* Move the inuse records down */
     memmove(scan,scan+1,sizeof(u8_socket)*(limit-(scan+1)));
@@ -802,9 +804,9 @@ U8_EXPORT u8_socket u8_reconnect(u8_connpool cp,u8_socket c)
   if (c<0) {
     u8_log(LOG_NOTICE,ConnPools,_("(%s/%d/%d) Failed to reconnect after %d attempts"),
            cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,retry_count);
-    u8_seterr(NoConnection,"u8_reconnect",u8_strdup(cp->u8cp_id));}
-  else u8_log(LOG_NOTICE,ConnPools,_("(%s/%d/%d) Reconnected at %d after %d attempts"),
-              cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,c,retry_count);
+    return u8err(c,NoConnection,"u8_reconnect",u8_strdup(cp->u8cp_id));}
+  u8_log(LOG_NOTICE,ConnPools,_("(%s/%d/%d) Reconnected at %d after %d attempts"),
+         cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,c,retry_count);
   return c;
 }
 
@@ -1050,16 +1052,15 @@ int u8_sendbytes(int msecs,int socket,const char *buf,int size,int flags)
         return result;
       else errno=0;
       break;
-    case 0: {
-      u8_seterr(SocketTimeout,"u8_sendbytes",NULL);
-      return -1;
+    case 0:
+      return u8err(-1,SocketTimeout,"u8_sendbytes",NULL);
     default:
       if ((errno != EINTR) && (errno != EAGAIN)) {
         u8_log(LOG_WARN,NULL,"Error (%s) on socket %d, retval=%d",
                strerror(errno),socket,retval);
         u8_graberrno("u8_sendbytes",NULL);
         return -1;}
-      continue;}}}
+      else continue;}}
   return 0;
 }
 
@@ -1075,9 +1076,8 @@ U8_EXPORT int u8_transact(int timeout,int socket,char *msg,char *expect)
          (total_bytes<1024))
     total_bytes=total_bytes+recv_length;
   buf[total_bytes]='\0';
-  if ((total_bytes<=0) && (recv_length<0)) {
-    u8_seterr(SocketTimeout,"u8_transact",NULL);
-    return recv_length;}
+  if ((total_bytes<=0) && (recv_length<0))
+    return u8err(recv_length,SocketTimeout,"u8_transact",NULL);
   else if (expect)
     if (strncmp(buf,expect,strlen(expect)) != 0)
       return 0;
@@ -1137,9 +1137,7 @@ int u8_smtp(const char *mailhost,const char *maildomain,
   if (mailhost) socket=u8_connect(mailhost);
   else if (getenv("U8MAILHOST"))
     socket=u8_connect(getenv("U8MAILHOST"));
-  else {
-    u8_seterr("No SMTP MAILHOST","u8_smtp",NULL);
-    return -1;}
+  else return u8err(-1,"No SMTP MAILHOST","u8_smtp",NULL);
   if (from==NULL) from="kilroy";
   if (socket<0) {
     u8_graberr(errno,"u8_smtp",NULL);

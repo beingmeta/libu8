@@ -358,8 +358,7 @@ U8_EXPORT int u8_parse_entity_err(const u8_byte *entity,u8_string *endp)
     *endp=semi+1; return codepoint;}
   else {
     *endp=NULL;
-    u8_seterr(BadEntityRef,"u8_parse_entity",u8_strdup(buf));
-    return -1;}
+    return u8err(-1,BadEntityRef,"u8_parse_entity",u8_strdup(buf));}
 }
 
 /* Initialization function (just records source file info) */

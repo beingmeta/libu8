@@ -313,6 +313,7 @@ static int n_threadexitfns=0;
 static u8_threadexitfn threadexitfns[MAX_THREADEXITFNS];
 static u8_threadinitfn threadinitfns[MAX_THREADINITFNS];
 static u8_mutex threadinitfns_lock;
+static u8_mutex threadexitfns_lock;
 
 #if (U8_USE_TLS)
 u8_tld_key u8_initlevel_key;
@@ -375,19 +376,20 @@ U8_EXPORT int u8_threadexit()
 U8_EXPORT int u8_register_threadexit(u8_threadexitfn fn)
 {
   int i=0;
-  u8_lock_mutex(&threadinitfns_lock);
+  u8_lock_mutex(&threadexitfns_lock);
   while (i<n_threadexitfns)
     if ((threadexitfns[i])==fn) {
-      u8_unlock_mutex(&threadinitfns_lock);
+      u8_unlock_mutex(&threadexitfns_lock);
       return 0;}
     else i++;
   if (i<MAX_THREADEXITFNS) {
-    threadexitfns[i]=fn; n_threadexitfns++;
-    u8_unlock_mutex(&threadinitfns_lock);
+    threadexitfns[i]=fn;
+    n_threadexitfns++;
+    u8_unlock_mutex(&threadexitfns_lock);
     return 1;}
   else {
     u8_seterr(_("Too many thread exit fns"),"u8_register_threadexit",NULL);
-    u8_unlock_mutex(&threadinitfns_lock);
+    u8_unlock_mutex(&threadexitfns_lock);
     return -1;}
 }
 
@@ -496,6 +498,7 @@ U8_EXPORT void u8_initialize_threading(void)
 #endif
 
   u8_init_mutex(&threadinitfns_lock);
+  u8_init_mutex(&threadexitfns_lock);
 
 #if (U8_USE_TLS)
   u8_new_threadkey(&u8_initlevel_key,NULL);
