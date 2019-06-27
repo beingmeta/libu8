@@ -1077,7 +1077,7 @@ static u8_uuid consuuid
     /* This is the variant code */
     (0x8000000000000000LL);
   high=
-    ((nanotick&       0xFFFFFFFF)<<32)|
+    ((nanotick&       0xFFFFFFFFLL)<<32)|
     ((nanotick&   0xFFFF00000000LL)>>16)|
     ((nanotick&0xFFF000000000000LL)>>48)|
     /* This is the version (time-based) */
@@ -1143,10 +1143,10 @@ U8_EXPORT u8_uuid u8_parseuuid(u8_string buf,u8_uuid uuid)
 
 #define TIMEUUIDP(uuid) ((uuid[6]&0xF0)==0x10)
 
-static long long get_nanotick(unsigned long long high)
+static unsigned long long get_nanotick(unsigned long long high)
 {
   return
-    ((high&0x0FFFFFFF00000000LL)>>32)|
+    ((high&0x0FFFFFFFF00000000LL)>>32)|
     ((high&         0xFFFF0000LL)<<16)|
     ((high&              0xFFFLL)<<48);
 }
@@ -1206,7 +1206,7 @@ U8_EXPORT struct U8_XTIME *u8_uuid_xtime(u8_uuid uuid,struct U8_XTIME *xt)
   if (!(xt)) xt=u8_alloc(struct U8_XTIME);
   u8_init_xtime
     (xt,(time_t)((nanotick-122192928000000000LL)/10000000),
-     u8_nanosecond,(nanotick%10)*100,0,0);
+     u8_nanosecond,(nanotick%10000000)*100,0,0);
   return xt;
 }
 
