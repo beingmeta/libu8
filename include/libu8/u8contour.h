@@ -133,7 +133,7 @@ static U8_MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
   U8_INIT_CONTOUR(_u8_contour,label,flags,popfn,popdata);	\
   if (setjmp(_u8_contour_struct.u8c_jmpbuf) == 0) {		\
   u8_push_contour(&(_u8_contour_struct));
-#define UNWIND_PROTECT U8_WITH_CONTOUR
+#define U8_UNWIND_PROTECT U8_WITH_CONTOUR
 
 #define U8_ON_EXCEPTION } else {             \
   if (_u8_contour->u8c_condition != NULL) {				\
@@ -160,7 +160,7 @@ static U8_MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
 		    (NULL)));						\
     _u8_contour->u8c_condition=NULL;}
 #define U8_END_UNWIND				\
-  u8_pop_contour(&_u8_contour_struct);}
+  u8_pop_contour(&_u8_contour_struct);
 
 #define U8_CLEAR_CONTOUR()                             \
   _u8_contour->u8c_flags&=(~(U8_CONTOUR_EXCEPTIONAL));
