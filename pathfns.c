@@ -69,13 +69,16 @@ static int ends_in_slashp(u8_string s)
 
 U8_EXPORT u8_string u8_getcwd()
 {
-  char *wd=getcwd(NULL,0); u8_string uwd;
+  char buf[PATH_MAX];
+  char *wd = getcwd(buf,sizeof(buf));
+  u8_string uwd;
   if (wd==NULL) {
     u8_graberrno("u8_getcwd",NULL);
     return NULL;}
   else uwd=u8_fromlibc(wd);
-  u8_free(wd);
-  return uwd;
+  if (uwd == ((u8_string)wd))
+    return u8_strdup(wd);
+  else return uwd;
 }
 
 U8_EXPORT int u8_setcwd(u8_string dirname)
