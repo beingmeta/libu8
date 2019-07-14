@@ -1,3 +1,9 @@
+libu8 (2.6.8-9) unstable; urgency=medium
+
+  * Bumped release number for fixes to u8contour
+
+ -- Ken Haase <kh@beingmeta.com>  Fri, 05 Jul 2019 15:07:13 +0000
+
 libu8 (2.6.7-8) stable; urgency=medium
 
   * Added libu8 executables starting with u8run
