@@ -105,7 +105,7 @@ U8_EXPORT u8_exception u8_expush(u8_exception newex)
   struct U8_EXCEPTION *current=u8_current_exception;
   if (newex == NULL)
     return u8_push_exception("NULLException","u8_expush",NULL,NULL,NULL);
-  else if (newex->u8x_prev != current) {
+  else if ( (newex->u8x_prev != NULL) && (newex->u8x_prev != current) ) {
     return u8_push_exception(newex->u8x_cond,
                              newex->u8x_context,
                              newex->u8x_details,

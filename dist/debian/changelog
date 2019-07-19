@@ -1,3 +1,9 @@
+libu8 (2.6.8-9) unstable; urgency=medium
+
+  * Bumped release number for fixes to u8contour
+
+ -- Ken Haase <kh@beingmeta.com>  Fri, 05 Jul 2019 15:07:13 +0000
+
 libu8 (2.6.7-9) stable; urgency=medium
 
   * Updated rules to not use deprecated --with autotools-dev
