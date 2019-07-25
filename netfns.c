@@ -903,9 +903,13 @@ u8_string u8_identify_session(u8_string newid)
     u8_log(LOG_NOTICE,NULL,"Changing session id to \"%s\" from \"%s\"",
            newid,sessionid);
   else u8_log(LOG_NOTICE,NULL,"Session id is \"%s\"",newid);
-  if (sessionid) u8_free(sessionid);
-  sessionid=newid;
-  return newid;
+  if ( (sessionid == newid) || (strcmp(sessionid,newid)==0) )
+    return newid;
+  if (sessionid) {
+    u8_string oldid = sessionid;
+    sessionid = u8_strdup(newid);
+    u8_free(oldid);}
+  return sessionid;
 }
 
 U8_EXPORT u8_string u8_sessionid()
