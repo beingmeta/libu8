@@ -249,18 +249,24 @@ U8_EXPORT struct U8_XINPUT *u8_open_input_file
 U8_EXPORT void u8_close_xinput(struct U8_XINPUT *f)
 {
   u8_deregister_open_xfile((u8_xfile)f);
-  if (f->u8_streaminfo&U8_STREAM_OWNS_BUF) u8_free(f->u8_inbuf);
+  unsigned char *buf = (f->u8_streaminfo&U8_STREAM_OWNS_BUF) ?
+    (f->u8_inbuf) : (NULL);
   f->u8_inbuf=f->u8_read=f->u8_inlim=NULL;
   f->u8_bufsz=0;
-  if (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) {
-    unsigned char *buf=f->u8_xbuf;
-    f->u8_xbuf=NULL;
-    u8_free(buf);}
-  if (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET)
-    close(f->u8_xfd);
+  if (buf) u8_free(buf);
+  unsigned char *xbuf = (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) ?
+    (f->u8_xbuf) : (NULL);
+  f->u8_xbuf=NULL;
+  f->u8_xbuflive=0;
+  f->u8_xbuflim=0;
+  if (xbuf) u8_free(xbuf);
+  int sock = (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) ? (f->u8_xfd>=0) : (-1);
   f->u8_xfd=-1;
+  if  (sock>=0) close(sock);
   if (f->u8_streaminfo&U8_STREAM_MALLOCD)
     u8_free(f);
+  else f->u8_streaminfo &= 
+         ~(U8_STREAM_OWNS_XBUF|U8_STREAM_OWNS_BUF|U8_STREAM_OWNS_SOCKET);
 }
 
 /* OUTPUT */
@@ -464,13 +470,26 @@ U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *f)
 {
   if (f->u8_flushfn) f->u8_flushfn((U8_OUTPUT *)f);
   u8_deregister_open_xfile((u8_xfile)f);
-  if (f->u8_streaminfo&U8_STREAM_OWNS_BUF) u8_free(f->u8_outbuf);
-  f->u8_outbuf=f->u8_write=f->u8_outlim=NULL; f->u8_bufsz=0;
-  if (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) u8_free(f->u8_xbuf);
+  unsigned char *buf = (f->u8_streaminfo&U8_STREAM_OWNS_BUF) ?
+    (f->u8_outbuf) : (NULL);
+  f->u8_outbuf=f->u8_write=f->u8_outlim=NULL;
+  f->u8_bufsz=0;
+  if (buf) u8_free(buf);
+  unsigned char *xbuf = (f->u8_streaminfo&U8_STREAM_OWNS_XBUF) ?
+    (f->u8_xbuf) : (NULL);
   f->u8_xbuf=NULL;
-  if (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) close(f->u8_xfd);
-  f->u8_xfd=-1; f->u8_xbuflive=0; f->u8_xbuflim=0;
-  if (f->u8_streaminfo&U8_STREAM_MALLOCD) u8_free(f);
+  f->u8_xbuflive=0;
+  f->u8_xbuflim=0;
+  if (xbuf) u8_free(xbuf);
+  int sock = (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) ? (f->u8_xfd>=0) : (-1);
+  f->u8_xfd=-1;
+  if  (sock>=0) close(sock);
+  if (f->u8_streaminfo&U8_STREAM_MALLOCD)
+    u8_free(f);
+  else f->u8_streaminfo &= ~(U8_STREAM_OWNS_XBUF|U8_STREAM_OWNS_BUF|U8_STREAM_OWNS_SOCKET);
+  f->u8_xfd=-1; 
+  if (f->u8_streaminfo&U8_STREAM_MALLOCD)
+    u8_free(f);
 }
 
 U8_EXPORT void u8_flush_xoutput(struct U8_XOUTPUT *f)
