@@ -266,8 +266,9 @@ U8_EXPORT void u8_close_xinput(struct U8_XINPUT *f)
   if  (sock>=0) close(sock);
   if (f->u8_streaminfo&U8_STREAM_MALLOCD)
     u8_free(f);
-  else f->u8_streaminfo &= 
-         ~(U8_STREAM_OWNS_XBUF|U8_STREAM_OWNS_BUF|U8_STREAM_OWNS_SOCKET);
+  else f->u8_streaminfo &=
+         ~(U8_STREAM_OWNS_XBUF|U8_STREAM_OWNS_BUF|
+           U8_STREAM_OWNS_SOCKET);
 }
 
 /* OUTPUT */
@@ -489,9 +490,6 @@ U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *f)
   if (f->u8_streaminfo&U8_STREAM_MALLOCD)
     u8_free(f);
   else f->u8_streaminfo &= ~(U8_STREAM_OWNS_XBUF|U8_STREAM_OWNS_BUF|U8_STREAM_OWNS_SOCKET);
-  f->u8_xfd=-1; 
-  if (f->u8_streaminfo&U8_STREAM_MALLOCD)
-    u8_free(f);
 }
 
 U8_EXPORT void u8_flush_xoutput(struct U8_XOUTPUT *f)
