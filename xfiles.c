@@ -260,7 +260,8 @@ U8_EXPORT void u8_close_xinput(struct U8_XINPUT *f)
   f->u8_xbuflive=0;
   f->u8_xbuflim=0;
   if (xbuf) u8_free(xbuf);
-  int sock = (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) ? (f->u8_xfd>=0) : (-1);
+  int sock = (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) ?
+    (f->u8_xfd>=0) ? (f->u8_xfd) : (-1) : (-1);
   f->u8_xfd=-1;
   if  (sock>=0) close(sock);
   if (f->u8_streaminfo&U8_STREAM_MALLOCD) {
@@ -482,7 +483,8 @@ U8_EXPORT void u8_close_xoutput(struct U8_XOUTPUT *f)
   f->u8_xbuflive=0;
   f->u8_xbuflim=0;
   if (xbuf) u8_free(xbuf);
-  int sock = (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) ? (f->u8_xfd>=0) : (-1);
+  int sock = (f->u8_streaminfo&U8_STREAM_OWNS_SOCKET) ?
+    (f->u8_xfd>=0) ? (f->u8_xfd) : (-1) : (-1);
   f->u8_xfd=-1;
   if  (sock>=0) close(sock);
   if (f->u8_streaminfo&U8_STREAM_MALLOCD)
