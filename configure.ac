@@ -296,17 +296,17 @@ AC_CHECK_SIZEOF(long long,8)
 AC_CHECK_SIZEOF(void *,4)
 
 # Check whether to use an architecture specific
-if test "x${libdir}" != "x\${exec_prefix}/lib"; then
-  echo using explicit libdir ${libdir};
-elif test ${ac_cv_sizeof_long} -eq 4 && test -d ${prefix}/lib32; then
-  libdir=${prefix}/lib32;
-  echo using libdir ${libdir};
-elif test ${ac_cv_sizeof_long} -eq 8 && test -d ${prefix}/lib64; then
-  libdir=${prefix}/lib64;
-  echo using libdir ${libdir};
-else
-  echo using default libdir ${libdir};
-fi
+dnl if test "x${libdir}" != "x\${exec_prefix}/lib"; then
+dnl  echo using explicit libdir ${libdir};
+dnl elif test ${ac_cv_sizeof_long} -eq 4 && test -d ${prefix}/lib32; then
+dnl   libdir=${prefix}/lib32;
+dnl   echo using libdir ${libdir};
+dnl elif test ${ac_cv_sizeof_long} -eq 8 && test -d ${prefix}/lib64; then
+dnl   libdir=${prefix}/lib64;
+dnl   echo using libdir ${libdir};
+dnl else
+dnl  echo using default libdir ${libdir};
+dnl fi
 
 AC_HEADER_STDC
 AC_HEADER_STAT
