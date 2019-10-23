@@ -388,6 +388,7 @@ AC_CHECK_FUNCS(syslog,syslog_target="syslog_libs",syslog_target="")
 
 # Internationalization
 AC_CHECK_HEADERS(libintl.h)
+AC_CHECK_LIB(intl,gettext)
 AC_CHECK_FUNCS(gettext,[libc_gettext="yes"])
 if test "x$libc_gettext" != "xyes"; then
    AC_CHECK_LIB(intl,gettext)
