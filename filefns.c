@@ -796,7 +796,7 @@ U8_EXPORT u8_string u8_tempdir(u8_string template)
     add_x--; scan--;}
   if (add_x) {
     char *newbuf=u8_malloc(len+add_x+1), *write=newbuf+len;;
-    strncpy(newbuf,buf,len);
+    memcpy(newbuf,buf,len);
     int i=0; while (i<add_x) {write[i++]='X';}
     write[add_x]='\0';
     if (((u8_string)buf)!=template) u8_free(buf);
