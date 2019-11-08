@@ -654,6 +654,59 @@ U8_EXPORT u8_output u8_default_output;
   ((u8_default_output)?(u8_default_output):(u8_global_output))
 #endif
 
+/* Default input ports */
+
+/** Sets the global input stream to @a out.  This is
+    used as the default when a thread doesn't specify
+    a default input stream.
+    @param out a pointer to a U8_INPUT stream
+**/
+U8_EXPORT void u8_set_global_input(u8_input out);
+
+/** Sets the default input stream (for the current thread) to @a out.
+    @param out a pointer to a U8_INPUT stream
+**/
+U8_EXPORT void u8_set_default_input(u8_input out);
+
+/** Resets the default input stream (for the current thread) to @a out.
+    If @a out is the same as u8_global_input, this clears the thread-local
+    input stream value (so that changes to u8_global_input will change
+    this threads default input stream).
+    @param out a pointer to a U8_INPUT stream
+**/
+U8_EXPORT void u8_reset_default_input(u8_input out);
+
+/** Gets the default input stream for the current thread.
+    This defaults to u8_global_input.
+    @returns a pointer to a U8_INPUT structure
+**/
+U8_EXPORT U8_INPUT *u8_get_default_input(void);
+
+/** This variable is the global input stream
+    (a pointer to a U8_INPUT structure or equivalent)
+**/
+U8_EXPORT u8_input u8_global_input;
+
+/** This macro (which looks like a variable) refers to the
+    default input for the current thread or the global input
+    (when no thread default has been defined).
+**/
+#define u8_current_input u8_global_input
+#undef u8_current_input
+
+#if (U8_USE_TLS)
+U8_EXPORT u8_tld_key u8_default_input_key;
+#define u8_current_input (u8_get_default_input())
+#elif (U8_USE__THREAD)
+U8_EXPORT __thread u8_input u8_default_input;
+#define u8_current_input \
+  ((u8_default_input)?(u8_default_input):(u8_global_input))
+#else
+U8_EXPORT u8_input u8_default_input;
+#define u8_current_input \
+  ((u8_default_input)?(u8_default_input):(u8_global_input))
+#endif
+
 /* Other functions */
 
 /** Reads and interprets an XML character entity from @a in.
