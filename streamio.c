@@ -759,6 +759,56 @@ U8_EXPORT void u8_reset_default_output(U8_OUTPUT *f)
 }
 #endif
 
+/* Default input ports */
+
+u8_input u8_global_input=NULL;
+
+U8_EXPORT void u8_set_global_input(u8_input out)
+{
+  u8_global_input=out;
+}
+
+#if U8_USE_TLS
+u8_tld_key u8_default_input_key;
+U8_EXPORT U8_INPUT *u8_get_default_input()
+{
+  U8_INPUT *f=(U8_INPUT *)u8_tld_get(u8_default_input_key);
+  if (f) return f;
+  else return u8_global_input;
+}
+U8_EXPORT void u8_set_default_input(U8_INPUT *f)
+{
+  u8_tld_set(u8_default_input_key,f);
+}
+U8_EXPORT void u8_reset_default_input(U8_INPUT *f)
+{
+  if ((f)&&(f==u8_global_input))
+    u8_tld_set(u8_default_input_key,NULL);
+  else u8_tld_set(u8_default_input_key,f);
+}
+#else /* Assume single threaded */
+#if U8_USE__THREAD
+__thread U8_INPUT *u8_default_input;
+#else
+U8_INPUT *u8_default_input=NULL;
+#endif
+U8_EXPORT U8_INPUT *u8_get_default_input()
+{
+  if (u8_default_input) return u8_default_input;
+  else return u8_global_input;
+}
+U8_EXPORT void u8_set_default_input(U8_INPUT *f)
+{
+  u8_default_input=f;
+}
+U8_EXPORT void u8_reset_default_input(U8_INPUT *f)
+{
+  if ((f)&&(f==u8_global_input))
+    u8_default_input=NULL;
+  else u8_default_input=f;
+}
+#endif
+
 /* Initialization function (just records source file info) */
 
 static int streamio_init_done=0;
@@ -769,6 +819,7 @@ U8_EXPORT void u8_init_streamio_c()
   else streamio_init_done=1;
 #if (U8_USE_TLS)
   u8_new_threadkey(&u8_default_output_key,NULL);
+  u8_new_threadkey(&u8_default_input_key,NULL);
 #endif
 
   u8_register_source_file(_FILEINFO);
