@@ -35,11 +35,13 @@
 #include <grp.h>
 
 static u8_string rundir = NULL;
+static u8_string logdir = NULL;
 static u8_uid runuser  = -1;
 static u8_gid rungroup = -1;
 static int umask_value = -1;
 
 static u8_string main_job_id = NULL;
+static u8_string logfile = NULL;
 static u8_string pid_file = NULL;
 static u8_string ppid_file = NULL;
 static u8_string stop_file = NULL;
@@ -51,7 +53,7 @@ static int restart_on_exit = 0;
 void usage()
 {
   fprintf(stderr,"u8run [+daemon] [env=val]* jobid [env=val]* exename [args..]\n");
-  fprintf(stderr,"  [env]\tRUNDIR=dir LOGLEVEL=n\n");
+  fprintf(stderr,"  [env]\tRUNDIR=dir LOGFILE=file LOGLEVEL=n\n");
   fprintf(stderr,"  [env]\tRESTART=never|error|exit|always\n");
   fprintf(stderr,"  [env]\tWAIT=secs FASTFAIL=secs BACKOFF=secs MAXWAIT=secs\n");
   fprintf(stderr,"  [env]\tRUNUSER=name|id RUNGROUP=name|id UMASK=0mmm\n");
@@ -205,7 +207,17 @@ int main(int argc,char *argv[])
   if (getenv("FASTFAIL")) fast_fail=u8_getenv_float("FASTFAIL",fast_fail);
   if (getenv("WAIT"))     restart_wait=u8_getenv_float("WAIT",1);
   if (getenv("BACKOFF"))  backoff=u8_getenv_float("BACKOFF",backoff);
-  if (getenv("MAXWAIT"))  max_wait=u8_getenv_float("BACKOFF",max_wait);
+  if (getenv("MAXWAIT"))  max_wait=u8_getenv_float("MAXWAIT",max_wait);
+  if (getenv("U8LOGFILE"))
+    logfile=u8_getenv("U8LOGFILE");
+  else if (getenv("LOGFILE"))
+    logfile=u8_getenv("LOGFILE");
+  else {}
+  if (getenv("U8LOGDIR"))
+    logdir=u8_getenv("U8LOGDIR");
+  else if (getenv("LOGDIR"))
+    logdir=u8_getenv("LOGDIR");
+  else {}
   if (getenv("PIDFILE"))  pid_file=u8_getenv("PIDFILE");
   if (getenv("PPIDFILE"))  ppid_file=u8_getenv("PPIDFILE");
   if (getenv("STOPFILE"))  stop_file=u8_getenv("STOPFILE");
@@ -228,7 +240,13 @@ int main(int argc,char *argv[])
     exit(0);}
 
   /* Now that we're past the usage checks, redirect output if requested. */
-  u8_string logfile = u8_getenv("U8LOGFILE");
+  if ( (logfile == NULL) && (logdir) ) {
+    int len = strlen(job_id);
+    u8_byte buf[len+5]; strcpy(buf,job_id); strcat(buf,".log");
+    logfile=u8_mkpath(logdir,buf);}
+  else if (logfile == NULL)
+    logfile=procpath(job_id,"log");
+  else NO_ELSE;
   if (logfile) {
     int fd = open(logfile,O_WRONLY|O_APPEND|O_CREAT,0664);
     if (fd<0) {
