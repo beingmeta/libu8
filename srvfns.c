@@ -1283,12 +1283,9 @@ static struct U8_SERVER_INFO *find_server
 
 static int add_server_from_spec(struct U8_SERVER *server,u8_string spec)
 {
-  if ((strchr(spec,'/')) ||
-      ((strchr(spec,'@')==NULL) &&
-       (strchr(spec,':')==NULL) &&
-       (strchr(spec,'.'))))
+  if (strchr(spec,'/'))
     return u8_add_server(server,spec,-1);
-  else if (((strchr(spec,'@'))==NULL)&&((strchr(spec,':'))==NULL))
+  else if (spec[0]==':')
     /* Spec is just a port */
     return u8_add_server(server,NULL,u8_get_portno(spec));
   else {
@@ -1302,8 +1299,9 @@ static int add_server_from_spec(struct U8_SERVER *server,u8_string spec)
 U8_EXPORT
 int u8_add_server(struct U8_SERVER *server,u8_string hostname,int port)
 {
-  if (hostname==NULL)
-    if (port<=0) return -1;
+  if (hostname==NULL) {
+    if (port<=0)
+      return -1;
     else {
       int n_servers=0;
       u8_string thishost=u8_gethostname();
@@ -1313,8 +1311,12 @@ int u8_add_server(struct U8_SERVER *server,u8_string hostname,int port)
         u8_clear_errors(1);
         n_servers=u8_add_server(server,"localhost",port);}
       else NO_ELSE;
+      int localhost_servers = u8_add_server(server,"localhost",port);
+      if (localhost_servers<0)
+        u8_clear_errors(1);
+      else n_servers += localhost_servers;
       if (thishost) u8_free(thishost);
-      return n_servers;}
+      return n_servers;}}
   else if (port==0)
     return add_server_from_spec(server,hostname);
   else if (port<0) {
