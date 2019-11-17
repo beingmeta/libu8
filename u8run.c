@@ -11,7 +11,6 @@
     under any of the licenses found in the the 'licenses' directory
     accompanying this distribution, including the GNU General Public License
     (GPL) Version 2 or the GNU Lesser General Public License.
-
 */
 
 #include "libu8/u8source.h"
@@ -40,6 +39,7 @@ static u8_gid rungroup = -1;
 static int umask_value = -1;
 
 static u8_string main_job_id = NULL;
+static u8_string logfile = NULL;
 static u8_string pid_file = NULL;
 static u8_string ppid_file = NULL;
 static u8_string stop_file = NULL;
@@ -51,7 +51,7 @@ static int restart_on_exit = 0;
 void usage()
 {
   fprintf(stderr,"u8run [+daemon] [env=val]* jobid [env=val]* exename [args..]\n");
-  fprintf(stderr,"  [env]\tRUNDIR=dir LOGLEVEL=n\n");
+  fprintf(stderr,"  [env]\tRUNDIR=dir LOGFILE=file LOGLEVEL=n\n");
   fprintf(stderr,"  [env]\tRESTART=never|error|exit|always\n");
   fprintf(stderr,"  [env]\tWAIT=secs FASTFAIL=secs BACKOFF=secs MAXWAIT=secs\n");
   fprintf(stderr,"  [env]\tRUNUSER=name|id RUNGROUP=name|id UMASK=0mmm\n");
@@ -68,7 +68,9 @@ static u8_string procpath(u8_string job_id,u8_string suffix)
     return path;}
 }
 
-/* Getting */
+static void write_pid_file(u8_string);
+static void write_ppid_file(u8_string);
+static pid_t kill_child(u8_string job_id,pid_t pid,u8_string pid_file);
 
 static int parse_umask(u8_string umask_init)
 {
@@ -136,6 +138,7 @@ static int kill_existing(u8_string filename,pid_t pid,double wait)
 static int n_cycles=0, doexit=0, paused=0, restart=0;
 static double last_launch = -1, fast_fail = 3, fail_start=-1;
 static double restart_wait=0, error_wait=1.0, max_wait=120, backoff=10;
+static double pid_wait=0, pid_min_wait=2.0;
 
 static void launch_loop(u8_string job_id,char **real_args,int n_args);
 static void setup_signals(void);
@@ -155,10 +158,11 @@ int main(int argc,char *argv[])
   u8_log_show_elapsed=1;
   u8_log_show_appid=1;
 
-  if (argc<3) {
+  if (argc<2) {
     usage();
     exit(1);}
-  else if (strcasecmp(argv[1],"+daemon")==0) {
+  else if ( (strcmp(argv[1],"+")==0) ||
+            (strcasecmp(argv[1],"+daemon")==0) ) {
     launching = 1;
     i++;}
   else NO_ELSE;
@@ -178,20 +182,29 @@ int main(int argc,char *argv[])
 	if (job_id) u8_free(job_id);
 	job_id = u8_strdup(eqpos+1);}
       i++;}
-    else if (job_id == NULL) {
-      u8_string job_arg = u8_fromlibc(arg);
-      if (strchr(job_arg,'/')) {
-	job_id = u8_abspath(job_arg,NULL);
-	u8_free(job_arg);}
-      else job_id = job_arg;
+    else if (*arg == '=') {
+      job_id = u8_fromlibc(arg);
       i++;}
     else {
+      if (job_id == NULL) {
+        if (arg[0] == '/')
+          job_id = u8_fromlibc(arg);
+        else if (strstr(arg,"../")) {
+          u8_string path = u8_fromlibc(arg);
+          u8_string name = u8_basename(path,NULL);
+          job_id = u8_abspath(name,NULL);
+          u8_free(name);
+          u8_free(path);}
+        else {
+          u8_string path = u8_fromlibc(arg);
+          job_id = u8_abspath(path,NULL);
+          u8_free(path);}}
       cmd = arg;
       n_args=argc-i;
       memcpy(&(launch_args[0]),&(argv[i]),sizeof(char *)*n_args);
       break;}}
   launch_args[n_args]=NULL;
-  main_job_id = job_id;
+  main_job_id=job_id;
 
   if (rundir == NULL) rundir = u8_getcwd();
   if ( (! (u8_directoryp(rundir)) ) ||
@@ -205,7 +218,15 @@ int main(int argc,char *argv[])
   if (getenv("FASTFAIL")) fast_fail=u8_getenv_float("FASTFAIL",fast_fail);
   if (getenv("WAIT"))     restart_wait=u8_getenv_float("WAIT",1);
   if (getenv("BACKOFF"))  backoff=u8_getenv_float("BACKOFF",backoff);
-  if (getenv("MAXWAIT"))  max_wait=u8_getenv_float("BACKOFF",max_wait);
+  if (getenv("MAXWAIT"))  max_wait=u8_getenv_float("MAXWAIT",max_wait);
+  if (getenv("PIDWAIT"))  pid_wait=u8_getenv_float("PIDWAIT",pid_wait);
+  if (getenv("PIDMINWAIT"))  pid_min_wait=u8_getenv_float("PIDMINWAIT",2.0);
+  if (getenv("U8LOGFILE"))
+    logfile=u8_getenv("U8LOGFILE");
+  else if (getenv("LOGFILE"))
+    logfile=u8_getenv("LOGFILE");
+  else {}
+
   if (getenv("PIDFILE"))  pid_file=u8_getenv("PIDFILE");
   if (getenv("PPIDFILE"))  ppid_file=u8_getenv("PPIDFILE");
   if (getenv("STOPFILE"))  stop_file=u8_getenv("STOPFILE");
@@ -228,8 +249,11 @@ int main(int argc,char *argv[])
     exit(0);}
 
   /* Now that we're past the usage checks, redirect output if requested. */
-  u8_string logfile = u8_getenv("U8LOGFILE");
-  if (logfile) {
+  if (logfile == NULL)
+    logfile=procpath(job_id,"log");
+  else if ( ( (logfile[0] == '.') || (logfile[0] == '-') ) &&
+            (logfile[1]==0)) {}
+  else if (logfile) {
     int fd = open(logfile,O_WRONLY|O_APPEND|O_CREAT,0664);
     if (fd<0) {
       int eno = errno; errno=0;
@@ -293,13 +317,29 @@ int main(int argc,char *argv[])
 	     "Couldn't fork to launch %s",job_id);
       exit(1);}
     else if (launched) {
+      /* When launched, we wait for a PID file to exist before we exit
+         ourselves and leave the daemon running.
+         If pid_wait is specified, we wait for the core application to
+         create the PID file; otherwise, we just wait PID_MIN_WAIT and
+         we'll create the PID file after we fork. */
       u8_log(LOG_NOTICE,"u8run/launch",
 	     "Forked (%lld) launch loop for %s (%s), waiting for %s",
 	     (long long)launched,job_id,cmd,pid_file);
-      while (! (u8_file_existsp(pid_file)) ) sleep(1);
+      double launch_start = u8_elapsed_time();
+      while (! (u8_file_existsp(pid_file)) ) {
+        if ( (elapsed_since(launch_start)) >
+             ( (pid_wait > 0) ? (pid_wait) : (pid_min_wait) ) )
+          break;
+        sleep(1);}
       if (u8_file_existsp(pid_file))
 	exit(0);
-      else exit(1);}}
+      else {
+        /* Does this need to clean anything up? */
+        u8_log(LOGCRIT,"AppLaunchFailed",
+               "Timed out waiting for PID file %s for job %s",
+               pid_file,job_id);
+        kill_child(job_id,launched,pid_file);
+        exit(1);}}}
   setup_signals();
   launch_loop(job_id,launch_args,n_args);
   return 0;
@@ -314,20 +354,26 @@ static pid_t kill_child(u8_string job_id,pid_t pid,u8_string pid_file)
   long long term_wait = u8_getenv_int("TERMWAIT",30);
   double term_pause = u8_getenv_float("TERMPAUSE",0.4);
   double checkin = u8_elapsed_time();
-  while (u8_file_existsp(pid_file)) {
-    u8_log(LOG_INFO,"u8run/signal/wait",
-	   "Waiting for PID file %s to be removed by %s:%lld",
-	   pid_file,job_id,pid);
-    double now = u8_elapsed_time();
-    if ( (now-checkin) > term_wait) {
-      int rv = kill(pid,SIGKILL);
-      if (rv<0) return rv;
-      else u8_removefile(pid_file);
-      return 0;}
-    else u8_sleep(term_pause);}
-  u8_log(LOG_NOTICE,"u8run/signal/wait",
-	 "%s:%lld finished, PID file %s gone",
-	 job_id,pid,pid_file);
+  if (pid_wait>0) {
+    while (u8_file_existsp(pid_file)) {
+      u8_log(LOG_INFO,"u8run/signal/wait",
+             "Waiting for PID file %s to be removed by %s:%lld",
+             pid_file,job_id,pid);
+      double now = u8_elapsed_time();
+      if ( (now-checkin) > term_wait) {
+        int rv = kill(pid,SIGKILL);
+        if (rv<0) return rv;
+        else u8_removefile(pid_file);
+        return 0;}
+      else u8_sleep(term_pause);}
+    u8_log(LOG_NOTICE,"u8run/signal/wait",
+           "%s:%lld finished, PID file %s gone",
+           job_id,pid,pid_file);}
+  else {
+    u8_removefile(pid_file);
+    u8_log(LOG_NOTICE,"u8run/signal/wait",
+           "%s:%lld finished, removed PID file %s",
+           job_id,pid,pid_file);}
   return -1;
 }
 
@@ -374,7 +420,10 @@ static pid_t dolaunch(char **launch_args)
 	       runuser,setuid_errno,u8_strerror(setuid_errno));
 	exit(13);}
       else u8_log(LOG_NOTICE,"SetUID","Set UID to %d",runuser);}
-
+    if (pid_wait > 0) {
+      /* This means we expect the main procedure to populate the PID file */}
+    else write_pid_file(main_job_id);
+    if (pid_file) setenv("PIDFILE",pid_file,1);
     return execvp(launch_args[0],launch_args);}
   else return pid;
 }
@@ -475,6 +524,24 @@ static void write_ppid_file(u8_string job_id)
 	   "Overwriting existing PPID file %s for %s",
 	   ppid_file,job_id);
   FILE *f = u8_fopen(ppid_file,"w");
+  if (f) {
+    pid_t pid = getpid();
+    u8_byte pidstring[64]; u8_sprintf(pidstring,64,"%lld",pid);
+    fputs(pidstring,f);
+    fclose(f);
+    return;}
+  else {
+    u8_log(LOGWARN,"PPIDFile","Couldn't write PPID file %s",ppid_file);
+    return;}
+}
+
+static void write_pid_file(u8_string job_id)
+{
+  if (u8_file_existsp(pid_file))
+    u8_log(LOGWARN,"OverwritePPID",
+	   "Overwriting existing PPID file %s for %s",
+           pid_file,job_id);
+  FILE *f = u8_fopen(pid_file,"w");
   if (f) {
     pid_t pid = getpid();
     u8_byte pidstring[64]; u8_sprintf(pidstring,64,"%lld",pid);

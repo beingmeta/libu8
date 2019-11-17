@@ -379,10 +379,12 @@ U8_EXPORT u8_byte *u8_parse_addr
     (u8_string spec,int *portp,u8_byte *result,ssize_t buflen)
 {
   u8_byte *split=strchr(spec,'@'); int len=strlen(spec);
-  if ((result==NULL)||(buflen<0)) {
-    buflen=len+1; result=u8_malloc(buflen); }
+  if ( (result==NULL) || (buflen<0) ) {
+    buflen=len+1;
+    result=u8_malloc(buflen); }
   if (split==spec) {
-    *portp=0; strcpy(result,spec+1);
+    *portp=0;
+    strcpy(result,spec+1);
     return result;}
   else if (split) {
     int portlen=split-spec, hostlen=len-(portlen+1);

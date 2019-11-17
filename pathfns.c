@@ -182,13 +182,19 @@ U8_EXPORT u8_string u8_dirname(u8_string path)
 
 U8_EXPORT u8_string u8_basename(u8_string path,u8_string suffix)
 {
-  u8_string dirend=strrchr(path,'/'); u8_byte *copy, *suff;
-  if (dirend) copy=u8_strdup(dirend+1); else copy=u8_strdup(path);
-  if (suffix == NULL) return copy;
-  if (strcmp(suffix,"*")==0) suff=strchr(copy,'.');
+  u8_string dirend=strrchr(path,'/');
+  u8_byte *copy, *suff;
+  if (dirend)
+    copy=u8_strdup(dirend+1);
+  else copy=u8_strdup(path);
+  if (suffix == NULL)
+    return copy;
+  if (strcmp(suffix,"*")==0)
+    suff=strchr(copy,'.');
   else {
     /* Get the last occurence of 'suffix' */
-    u8_byte *scan=strstr(copy,suffix); int sufflen=strlen(suffix);
+    u8_byte *scan=strstr(copy,suffix);
+    int sufflen=strlen(suffix);
     suff=scan; while (scan) {
       suff=scan; scan=strstr(suff+sufflen,suffix);}}
   /* This is good for a default case, where people leave the '.' off
