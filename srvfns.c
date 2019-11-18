@@ -1299,7 +1299,9 @@ static int add_server_from_spec(struct U8_SERVER *server,u8_string spec)
 U8_EXPORT
 int u8_add_server(struct U8_SERVER *server,u8_string hostname,int port)
 {
-  if (hostname==NULL) {
+  if ( (hostname==NULL) ||
+       (strcmp(hostname,".")==0) || 
+       (strcmp(hostname,"*")==0) ) {
     if (port<=0)
       return -1;
     else {

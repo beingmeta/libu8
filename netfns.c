@@ -378,7 +378,8 @@ U8_EXPORT char **u8_lookup_host
 U8_EXPORT u8_byte *u8_parse_addr
     (u8_string spec,int *portp,u8_byte *result,ssize_t buflen)
 {
-  u8_byte *split=strchr(spec,'@'); int len=strlen(spec);
+  int len=strlen(spec);
+  u8_byte *split=strchr(spec,'@');
   if ( (result==NULL) || (buflen<0) ) {
     buflen=len+1;
     result=u8_malloc(buflen); }
