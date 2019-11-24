@@ -7,10 +7,10 @@
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #include "libu8/u8source.h"
@@ -33,13 +33,15 @@
 #include <pwd.h>
 #include <grp.h>
 
-static u8_string rundir = NULL;
-static u8_uid runuser  = -1;
-static u8_gid rungroup = -1;
+static u8_string run_dir = NULL;
+static u8_string log_dir = NULL;
+static u8_string log_file = NULL;
+static u8_string err_file = NULL;
+static u8_string job_id = NULL;
+static u8_uid run_user  = -1;
+static u8_gid run_group = -1;
 static int umask_value = -1;
 
-static u8_string main_job_id = NULL;
-static u8_string logfile = NULL;
 static u8_string pid_file = NULL;
 static u8_string ppid_file = NULL;
 static u8_string stop_file = NULL;
@@ -50,8 +52,9 @@ static int restart_on_exit = 0;
 
 void usage()
 {
-  fprintf(stderr,"u8run [+daemon] [env=val]* jobid [env=val]* exename [args..]\n");
-  fprintf(stderr,"  [env]\tRUNDIR=dir LOGFILE=file LOGLEVEL=n\n");
+  fprintf(stderr,"u8run [+daemon] [env=val|=jobid]* exename [args..]\n");
+  fprintf(stderr,"  [env]\tRUNDIR=dir JOBID=jobid \n");
+  fprintf(stderr,"  [env]\tLOGDIR=dir LOGFILE=file LOGLEVEL=n\n");
   fprintf(stderr,"  [env]\tRESTART=never|error|exit|always\n");
   fprintf(stderr,"  [env]\tWAIT=secs FASTFAIL=secs BACKOFF=secs MAXWAIT=secs\n");
   fprintf(stderr,"  [env]\tRUNUSER=name|id RUNGROUP=name|id UMASK=0mmm\n");
@@ -63,7 +66,18 @@ static u8_string procpath(u8_string job_id,u8_string suffix)
     return u8_string_append(job_id,".",suffix,NULL);
   else {
     u8_string name = u8_string_append(job_id,".",suffix,NULL);
-    u8_string path = u8_mkpath(rundir,name);
+    u8_string path = u8_mkpath(run_dir,name);
+    u8_free(name);
+    return path;}
+}
+
+static u8_string logpath(u8_string job_id,u8_string suffix)
+{
+  if ( (strchr(job_id,'/')) || (strchr(job_id,'.')) )
+    return u8_string_append(job_id,".",suffix,NULL);
+  else {
+    u8_string name = u8_string_append(job_id,".",suffix,NULL);
+    u8_string path = u8_mkpath(log_dir,name);
     u8_free(name);
     return path;}
 }
@@ -148,15 +162,14 @@ int main(int argc,char *argv[])
   int i=1, launching = 0;
   char **launch_args = u8_alloc_n(argc,char *), *cmd=NULL;
   int n_args = 0;
-  u8_string job_id=NULL;
-
-  rundir = u8_getenv("RUNDIR");
 
   u8_log_show_date=1;
   u8_log_show_procinfo=1;
   u8_log_show_threadinfo=1;
   u8_log_show_elapsed=1;
   u8_log_show_appid=1;
+
+  run_dir = u8_getenv("RUN_DIR");
 
   if (argc<2) {
     usage();
@@ -168,51 +181,63 @@ int main(int argc,char *argv[])
   else NO_ELSE;
   while (i<argc) {
     char *arg = argv[i];
-    if (strchr(arg,'=')) {
+    if (*arg == '=') {
+      if (job_id) u8_free(job_id);
+      job_id = u8_fromlibc(arg);
+      i++;}
+    else if (strchr(arg,'=')) {
       char *eqpos = strchr(arg,'=');
       size_t name_len = eqpos-arg;
       char varname[name_len+1];
       strncpy(varname,arg,name_len);
       varname[name_len]='\0';
       setenv(varname,eqpos+1,1);
-      if (strcasecmp(varname,"rundir")==0) {
-	if (rundir) u8_free(rundir);
-	rundir = u8_strdup(eqpos+1);}
+      if (strcasecmp(varname,"run_dir")==0) {
+	if (run_dir) u8_free(run_dir);
+	run_dir = u8_strdup(eqpos+1);}
       if (strcasecmp(varname,"jobid")==0) {
 	if (job_id) u8_free(job_id);
 	job_id = u8_strdup(eqpos+1);}
       i++;}
-    else if (*arg == '=') {
-      job_id = u8_fromlibc(arg);
-      i++;}
     else {
-      if (job_id == NULL) {
-        if (arg[0] == '/')
-          job_id = u8_fromlibc(arg);
-        else if (strstr(arg,"../")) {
-          u8_string path = u8_fromlibc(arg);
-          u8_string name = u8_basename(path,NULL);
-          job_id = u8_abspath(name,NULL);
-          u8_free(name);
-          u8_free(path);}
-        else {
-          u8_string path = u8_fromlibc(arg);
-          job_id = u8_abspath(path,NULL);
-          u8_free(path);}}
       cmd = arg;
       n_args=argc-i;
       memcpy(&(launch_args[0]),&(argv[i]),sizeof(char *)*n_args);
       break;}}
+  /* Terminate the launch args */
   launch_args[n_args]=NULL;
-  main_job_id=job_id;
 
-  if (rundir == NULL) rundir = u8_getcwd();
-  if ( (! (u8_directoryp(rundir)) ) ||
-       (! (u8_file_writablep(rundir)) ) ) {
-    u8_log(LOGCRIT,"BadRundir",
-	   "The designated rundir %s was not a writable directory",
-	   rundir);
+
+  /* Make sure we have a jobid */
+  if (job_id == NULL) {
+    u8_string path = u8_fromlibc(cmd);
+    job_id = u8_basename(path,NULL);
+    u8_free(path);}
+
+  if (run_dir == NULL) run_dir = u8_getcwd();
+  if ( (! (u8_directoryp(run_dir)) ) ||
+       (! (u8_file_writablep(run_dir)) ) ) {
+    u8_log(LOGCRIT,"BadRun_Dir",
+	   "The designated run_dir %s was not a writable directory",
+	   run_dir);
     exit(1);}
+  log_dir = u8_getenv("U8LOG_DIR");
+  if (!(log_dir)) log_dir = u8_getenv("LOG_DIR");
+  if (!(log_dir)) log_dir = u8_strdup(run_dir); 
+
+  if (err_file) {}
+  else if (getenv("U8ERRFILE"))
+    err_file=u8_getenv("U8ERRFILE");
+  else if (getenv("ERRFILE"))
+    err_file=u8_getenv("ERRFILE");
+  else {}
+
+  if (log_file) {}
+  else if (getenv("U8LOGFILE"))
+    log_file=u8_getenv("U8LOGFILE");
+  else if (getenv("LOGFILE"))
+    log_file=u8_getenv("LOGFILE");
+  else log_file = logpath(job_id,".log");
 
   if (getenv("LOGLEVEL")) u8_loglevel=u8_getenv_int("LOGLEVEL",5);
   if (getenv("FASTFAIL")) fast_fail=u8_getenv_float("FASTFAIL",fast_fail);
@@ -221,11 +246,6 @@ int main(int argc,char *argv[])
   if (getenv("MAXWAIT"))  max_wait=u8_getenv_float("MAXWAIT",max_wait);
   if (getenv("PIDWAIT"))  pid_wait=u8_getenv_float("PIDWAIT",pid_wait);
   if (getenv("PIDMINWAIT"))  pid_min_wait=u8_getenv_float("PIDMINWAIT",2.0);
-  if (getenv("U8LOGFILE"))
-    logfile=u8_getenv("U8LOGFILE");
-  else if (getenv("LOGFILE"))
-    logfile=u8_getenv("LOGFILE");
-  else {}
 
   if (getenv("PIDFILE"))  pid_file=u8_getenv("PIDFILE");
   if (getenv("PPIDFILE"))  ppid_file=u8_getenv("PPIDFILE");
@@ -249,33 +269,45 @@ int main(int argc,char *argv[])
     exit(0);}
 
   /* Now that we're past the usage checks, redirect output if requested. */
-  if (logfile == NULL)
-    logfile=procpath(job_id,"log");
-  else if ( ( (logfile[0] == '.') || (logfile[0] == '-') ) &&
-            (logfile[1]==0)) {}
-  else if (logfile) {
-    int fd = open(logfile,O_WRONLY|O_APPEND|O_CREAT,0664);
+  if ( ( (log_file[0] == '.') || (log_file[0] == '-') ) && (log_file[1]==0) ) {}
+  else if (log_file) {
+    int fd = open(log_file,O_WRONLY|O_APPEND|O_CREAT,0664);
     if (fd<0) {
       int eno = errno; errno=0;
-      fprintf(stderr,"Error opening logfile %s: %s (%d)\n",
-	      logfile,u8_strerror(eno),eno);
+      fprintf(stderr,"Error opening log_file %s: %s (%d)\n",
+	      log_file,u8_strerror(eno),eno);
       exit(1);}
     else {
       int rv = dup2(fd,STDOUT_FILENO);
       if (rv<0) {
 	int eno = errno; errno=0;
 	fprintf(stderr,"Error redirecting stdout to %s: %s (%d)\n",
-		logfile,u8_strerror(eno),eno);
+		log_file,u8_strerror(eno),eno);
 	close(fd);
 	exit(1);}
-      else {
-	rv = dup2(fd,STDERR_FILENO);
+      else if (err_file) {
+        int err_fd = open(err_file,O_WRONLY|O_APPEND|O_CREAT,0664);
+        if (fd<0) {
+          int eno = errno; errno=0;
+          fprintf(stderr,"Error opening err_file %s: %s (%d)\n",
+                  err_file,u8_strerror(eno),eno);
+          exit(1);}
+        int rv = dup2(err_fd,STDERR_FILENO);
 	if (rv<0) {
 	  int eno = errno; errno=0;
 	  fprintf(stderr,"Error redirecting stderr to %s: %s (%d)\n",
-		  logfile,u8_strerror(eno),eno);
+		  err_file,u8_strerror(eno),eno);
 	  close(fd);
-	  exit(1);}}}}
+	  exit(1);}}
+      else {
+        int rv = dup2(fd,STDERR_FILENO);
+        if (rv<0) {
+          int eno = errno; errno=0;
+          fprintf(stderr,"Error redirecting stderr to %s: %s (%d)\n",
+                  log_file,u8_strerror(eno),eno);
+          close(fd);
+          exit(1);}}}}
+  else NO_ELSE;
 
   if (pid_file == NULL) pid_file = procpath(job_id,"pid");
   if (ppid_file == NULL) ppid_file = procpath(job_id,"ppid");
@@ -391,8 +423,8 @@ static pid_t dolaunch(char **launch_args)
   u8_string user_spec      = u8_getenv("RUNUSER");
   u8_string group_spec     = u8_getenv("RUNGROUP");
   u8_string umask_init     = u8_getenv("UMASK");
-  if (user_spec) runuser   = u8_getuid(user_spec);
-  if (group_spec) rungroup = u8_getgid(group_spec);
+  if (user_spec) run_user   = u8_getuid(user_spec);
+  if (group_spec) run_group = u8_getgid(group_spec);
   if (umask_init) umask_value = parse_umask(umask_init);
   double now = u8_elapsed_time();
   last_launch = u8_elapsed_time();
@@ -402,27 +434,27 @@ static pid_t dolaunch(char **launch_args)
     if (! (u8_getenv_int("NOMASK",0)) ) {
       signal(SIGINT,SIG_IGN);
       signal(SIGTSTP,SIG_IGN);}
-    if ( ((int)rungroup) >= 0 ) {
-      int rv = setgid(rungroup);
+    if ( ((int)run_group) >= 0 ) {
+      int rv = setgid(run_group);
       if (rv<0)  {
 	int setgid_errno = errno; errno = 0;
 	u8_log(LOGCRIT,"FailedSetGID",
 	       "Couldn't set GUID to %d errno=%d:%s",
-	       rungroup,setgid_errno,u8_strerror(setgid_errno));
+	       run_group,setgid_errno,u8_strerror(setgid_errno));
 	exit(13);}
-      else u8_log(LOG_NOTICE,"SetGID","Set GID to %d",rungroup);}
-    if ( ((int)runuser) >= 0) {
-      int rv = setuid(runuser);
+      else u8_log(LOG_NOTICE,"SetGID","Set GID to %d",run_group);}
+    if ( ((int)run_user) >= 0) {
+      int rv = setuid(run_user);
       if (rv<0)  {
 	int setuid_errno = errno; errno = 0;
 	u8_log(LOGCRIT,"FailedSetUID",
 	       "Couldn't set UID to %d errno=%d:%s",
-	       runuser,setuid_errno,u8_strerror(setuid_errno));
+	       run_user,setuid_errno,u8_strerror(setuid_errno));
 	exit(13);}
-      else u8_log(LOG_NOTICE,"SetUID","Set UID to %d",runuser);}
+      else u8_log(LOG_NOTICE,"SetUID","Set UID to %d",run_user);}
     if (pid_wait > 0) {
       /* This means we expect the main procedure to populate the PID file */}
-    else write_pid_file(main_job_id);
+    else write_pid_file(job_id);
     if (pid_file) setenv("PIDFILE",pid_file,1);
     return execvp(launch_args[0],launch_args);}
   else return pid;
@@ -509,7 +541,7 @@ static void setup_signals()
 static void exit_u8run()
 {
   if (dependent > 0)
-    kill_child(main_job_id,dependent,pid_file);
+    kill_child(job_id,dependent,pid_file);
   if (ppid_file) {
     u8_string filename = ppid_file;
     int rv = u8_removefile(filename);
