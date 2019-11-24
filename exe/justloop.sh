@@ -1,12 +1,13 @@
 #!/bin/sh
+OUTFILE=${1:-justloop.out}
 SLEEP_FOR=${SLEEP_FOR:-7}
 STARTED=$(date)
-echo "Starting at ${STARTED} pid=$$"
-echo "Starting at ${STARTED} pid=$$" >> justloop.out;
+echo "LOG: Starting at ${STARTED} pid=$$"
+echo "Starting at ${STARTED} pid=$$" >> ${OUTFILE};
 while [ ! -f justloop.stop ]; 
-  do date >> justloop.out; sleep ${SLEEP_FOR}; 
+  do date >> ${OUTFILE}; sleep ${SLEEP_FOR}; 
 done;
 FINISHED=$(date)
-echo "Finished at ${FINISHED} pid=$$" >> justloop.out;
-echo "Finished at ${FINISHED} pid=$$"
+echo "Finished at ${FINISHED} pid=$$" >> ${OUTFILE};
+echo "LOG: Finished at ${FINISHED} pid=$$"
 
