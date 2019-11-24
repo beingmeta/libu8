@@ -48,16 +48,18 @@ static u8_string stop_file = NULL;
 static pid_t dependent = -1;
 
 static int run_as_daemon = 0;
+static int run_without_fork = 0;
 static int restart_on_error = 0;
 static int restart_on_exit = 0;
 
 void usage()
 {
-  fprintf(stderr,"u8run [+opt|env=val|=jobid]* exename [args..]\n");
+  fprintf(stderr,"u8run [+opt|env=val|@jobid]* exename [args..]\n");
   fprintf(stderr,"  [opt]\t+daemon +restart\n");
   fprintf(stderr,"  [opt]\t+restart=onerr +restart=onexit\n");
-  fprintf(stderr,"  [env]\tRUNDIR=dir JOBID=jobid STOPFILE=filename\n");
-  fprintf(stderr,"  [env]\tLOGDIR=dir LOGFILE=file LOGLEVEL=n\n");
+  fprintf(stderr,"  [env]\tJOBID=jobid RUNDIR=dir STOPFILE=filename\n");
+  fprintf(stderr,"  [env]\tU8LOGFILE|LOGFILE=file U8ERRFILE|ERRFILE=file\n");
+  fprintf(stderr,"  [env]\tLOGDIR=dir LOGLEVEL=n\n");
   fprintf(stderr,"  [env]\tRESTART=never|error|exit|always\n");
   fprintf(stderr,"  [env]\tWAIT=secs FASTFAIL=secs BACKOFF=secs\n");
   fprintf(stderr,"  [env]\tMAXWAIT=secs\n");
@@ -159,7 +161,8 @@ static double last_launch = -1, fast_fail = 3, fail_start=-1;
 static double restart_wait=0, error_wait=1.0, max_wait=120, backoff=10;
 static double pid_wait=0, pid_min_wait=2.0;
 
-static void launch_loop(u8_string job_id,char **real_args,int n_args);
+static void launch_loop(u8_string job_id,char **launch_args,int n_args);
+static pid_t dolaunch(char **launch_args);
 static void setup_signals(void);
 
 int main(int argc,char *argv[])
@@ -178,20 +181,24 @@ int main(int argc,char *argv[])
   if (argc<2) {
     usage();
     exit(1);}
-  else if ( (strcmp(argv[1],"+")==0) ||
-            (strcasecmp(argv[1],"+daemon")==0) ) {
-    run_as_daemon = 1;
-    i++;}
-  else NO_ELSE;
   while (i<argc) {
     char *arg = argv[i];
-    if (*arg == '=') {
+    if (*arg == '@') {
       if (job_id) u8_free(job_id);
-      job_id = u8_fromlibc(arg);
+      job_id = u8_fromlibc(arg+1);
       i++;}
     else if (arg[0] == '+') {
-      if (strcasecmp(arg,"+daemon")==0)
+      if (run_without_fork) {
+        u8_log(LOG_CRIT,"InconsistentRunOption",
+               "The run option '%s' cannot be used when "
+               "running without forking (+exec)",
+               arg);
+        usage();
+        exit(1);}
+      else if (strcasecmp(arg,"+daemon")==0)
         run_as_daemon = 1;
+      else if (strcasecmp(arg,"+exec")==0)
+        run_without_fork = 1;
       else if ( (strcasecmp(arg,"+persist")==0) ||
                 (strcasecmp(arg,"+restart")==0) ){
         restart_on_exit = 1;
@@ -211,6 +218,12 @@ int main(int argc,char *argv[])
     else if (strchr(arg,'=')) {
       char *eqpos = strchr(arg,'=');
       size_t name_len = eqpos-arg;
+      if (name_len == 0) {
+        u8_log(LOG_CRIT,"InvalidEnvSpec",
+               "Invalid Envspec '%s', should specify an environment variable",
+               arg);
+        usage();
+        exit(1);}
       char varname[name_len+1];
       strncpy(varname,arg,name_len);
       varname[name_len]='\0';
@@ -223,13 +236,13 @@ int main(int argc,char *argv[])
         job_id = u8_strdup(eqpos+1);}
       i++;}
     else {
+      /* This is where the actual commands start */
       cmd = arg;
       n_args=argc-i;
       memcpy(&(launch_args[0]),&(argv[i]),sizeof(char *)*n_args);
       break;}}
   /* Terminate the launch args */
   launch_args[n_args]=NULL;
-
 
   /* Make sure we have a jobid */
   if (job_id == NULL) {
@@ -362,7 +375,7 @@ int main(int argc,char *argv[])
         kill_existing(ppid_file,live,u8_getenv_float("KILLWAIT",15));
       else {
         u8_log(LOGCRIT,"ExistingPPID",
-               "The file %s already specifies is a live PID (%lld)",
+               "The file %s already specifies is a live parent PID (%lld)",
                ppid_file,live);
         exit(1);}}
     else u8_removefile(ppid_file);}
@@ -408,8 +421,13 @@ int main(int argc,char *argv[])
         kill_child(job_id,launched,pid_file);
         exit(1);}}}
   setup_signals();
-  launch_loop(job_id,launch_args,n_args);
-  return 0;
+  if (run_without_fork) {
+    pid_t pid = dolaunch(launch_args);
+    /* Never reached */
+    return (pid>0);}
+  else {
+    launch_loop(job_id,launch_args,n_args);
+    return 0;}
 }
 
 static pid_t kill_child(u8_string job_id,pid_t pid,u8_string pid_file)
@@ -448,11 +466,11 @@ static pid_t dolaunch(char **launch_args)
 {
   if (u8_file_existsp(pid_file)) {
     u8_log(LOG_WARN,"LeftoverPIDfile",
-	   "Removing leftover pid file %s",pid_file);
+           "Removing leftover pid file %s",pid_file);
     int rv = u8_removefile(pid_file);
     if (rv<0) {
       u8_log(LOG_CRIT,"PIDCleanupFailed",
-	     "Couldn't remove existing PID file %s",pid_file);
+             "Couldn't remove existing PID file %s",pid_file);
       return -1;}}
 
   u8_string user_spec      = u8_getenv("RUNUSER");
@@ -463,7 +481,7 @@ static pid_t dolaunch(char **launch_args)
   if (umask_init) umask_value = parse_umask(umask_init);
   double now = u8_elapsed_time();
   last_launch = u8_elapsed_time();
-  pid_t pid = fork();
+  pid_t pid = (run_without_fork) ? (0) : (fork());
   if (pid == 0) {
     if (umask_value>=0) umask(umask_value);
     if (! (u8_getenv_int("NOMASK",0)) ) {
@@ -472,20 +490,20 @@ static pid_t dolaunch(char **launch_args)
     if ( ((int)run_group) >= 0 ) {
       int rv = setgid(run_group);
       if (rv<0)  {
-	int setgid_errno = errno; errno = 0;
-	u8_log(LOGCRIT,"FailedSetGID",
-	       "Couldn't set GUID to %d errno=%d:%s",
-	       run_group,setgid_errno,u8_strerror(setgid_errno));
-	exit(13);}
+        int setgid_errno = errno; errno = 0;
+        u8_log(LOGCRIT,"FailedSetGID",
+               "Couldn't set GUID to %d errno=%d:%s",
+               run_group,setgid_errno,u8_strerror(setgid_errno));
+        exit(13);}
       else u8_log(LOG_NOTICE,"SetGID","Set GID to %d",run_group);}
     if ( ((int)run_user) >= 0) {
       int rv = setuid(run_user);
       if (rv<0)  {
-	int setuid_errno = errno; errno = 0;
-	u8_log(LOGCRIT,"FailedSetUID",
-	       "Couldn't set UID to %d errno=%d:%s",
-	       run_user,setuid_errno,u8_strerror(setuid_errno));
-	exit(13);}
+        int setuid_errno = errno; errno = 0;
+        u8_log(LOGCRIT,"FailedSetUID",
+               "Couldn't set UID to %d errno=%d:%s",
+               run_user,setuid_errno,u8_strerror(setuid_errno));
+        exit(13);}
       else u8_log(LOG_NOTICE,"SetUID","Set UID to %d",run_user);}
     if (pid_wait > 0) {
       /* This means we expect the main procedure to populate the PID file */}
