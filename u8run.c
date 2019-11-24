@@ -211,7 +211,7 @@ int main(int argc,char *argv[])
   /* Make sure we have a jobid */
   if (job_id == NULL) {
     u8_string path = u8_fromlibc(cmd);
-    job_id = u8_basename(path,NULL);
+    job_id = u8_basename(path,"*");
     u8_free(path);}
 
   if (run_dir == NULL) run_dir = u8_getcwd();
@@ -224,6 +224,12 @@ int main(int argc,char *argv[])
   log_dir = u8_getenv("U8LOG_DIR");
   if (!(log_dir)) log_dir = u8_getenv("LOG_DIR");
   if (!(log_dir)) log_dir = u8_strdup(run_dir); 
+
+  
+  {/* Compute runbase (run_dir/job_id) */
+    u8_string runbase = u8_mkpath(run_dir,job_id);
+    setenv("RUNBASE",runbase,0);
+    u8_free(runbase);}
 
   if (err_file) {}
   else if (getenv("U8ERRFILE"))
