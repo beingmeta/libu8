@@ -176,7 +176,7 @@ int main(int argc,char *argv[])
   u8_log_show_elapsed=1;
   u8_log_show_appid=1;
 
-  run_dir = u8_getenv("RUN_DIR");
+  run_dir = u8_getenv("RUNDIR");
 
   if (argc<2) {
     usage();
