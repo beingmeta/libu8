@@ -655,6 +655,8 @@ GPG
 APTREPO
 RPMFLAGS
 RPMDIR
+RPATHFLAGS
+rpath
 INSTALLDOCS
 DOCS
 doxygen
@@ -680,6 +682,8 @@ mshared_suffix
 vshared_suffix
 shared_suffix
 debugcflags
+EXELIBS
+EXEFLAGS
 SUDO
 MKSTATIC
 DEBVERSION
@@ -752,6 +756,7 @@ with_codename
 with_sanitize
 with_optlib
 with_optdir
+with_rpath
 with_encodings_dir
 with_arch
 enable_maintainer_mode
@@ -1417,6 +1422,7 @@ Optional Packages:
 --with-sanitize=address*|memory|thread
 --with-optlib Use optional library directory
 --with-optdir Use optional header/lib
+--with-rpath dir
 --with-encodings-dir pathname
 --without-arch build with particular --arch flags
 --without-i18n built and install message catalogs
@@ -2822,6 +2828,7 @@ ifmacosx="#"
 shared_default="yes"
 shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
+rpath_default=$exec_prefix
 CLEAN="rm -f"
 U8MAJOR=2
 U8MINOR=6
@@ -2834,6 +2841,9 @@ RPMVERSION=${U8RELEASE}
 DEBVERSION=${U8RELEASE}
 LD="ld"
 MKSTATIC="\$(LD) -r "
+EXEFLAGS=
+EXELIBS=
+RPATHFLAGS="-Wl,'-rpath \$(RPATH)'"
 I18N=""
 INSTALLI18N=""
 SUDO=""
@@ -2863,6 +2873,7 @@ libc_dlopen="no"
 syslog_static="syslog-static"
 syslog_shared="syslog-shared"
 suffix=""
+rpath=""
 have_constructor_attributes="yes"
 archflags=""
 definefileinfo=""
@@ -2871,6 +2882,10 @@ doxygen=""
 
 if which lsb_release 2>&1 > /dev/null; then
    CODENAME=`lsb_release -cs || echo beingmeta`
+fi
+
+if (test "$rpath_default" = "NONE") || (test "$rpath_default" = ""); then
+   rpath_default=$prefix;
 fi
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
@@ -3029,6 +3044,7 @@ case $target_os in
    shared_suffix="dylib";
    install_shared="install-dylib";
    ifmacosx="";
+   RPATHFLAGS=" -rpath \$(RPATH) "
    CFLAGS="-D_DARWIN_C_SOURCE $CFLAGS"
    $as_echo "#define DESTRUCTIVE_POLL 1" >>confdefs.h
 
@@ -3036,6 +3052,11 @@ case $target_os in
 
    ;;
 esac
+
+
+
+
+
 
 
 
@@ -4495,6 +4516,19 @@ if test -d $with_optdir/lib; then
 fi
 if test -d $with_optdir/bin; then
   PATH="$PATH:$with_optdir/bin"
+fi
+
+
+# Check whether --with-rpath was given.
+if test "${with_rpath+set}" = set; then :
+  withval=$with_rpath; rpath=$withval
+else
+  rpath=$rpath_default
+fi
+
+
+if test "$rpath" != "none" && test "$rpath" != "/usr" && test "$rpath" != "/usr/local"; then
+  EXEFLAGS=" $EXEFLAGS \$(RPATHFLAGS) "
 fi
 
 

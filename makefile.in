@@ -4,8 +4,11 @@ XCFLAGS   =
 ARCHFLAGS = @archflags@
 CONFIG_CFLAGS =  @CFLAGS@
 CFLAGS    = -I./include -DLIBU8_SOURCE=1 -g3 -O2 ${CONFIG_CFLAGS} -I./include $(XCFLAGS) $(ARCHFLAGS)
+RPATH         = @rpath@
+RPATHFLAGS    = @RPATHFLAGS@
 XLDFLAGS  =
 LDFLAGS   = @LDFLAGS@ $(EFENCE)
+EXEFLAGS  = @EXEFLAGS@
 LIBS      = @LIBS@ $(EFENCE) -lm
 DYLIB_FLAGS = -compatibility_version @U8MAJOR@.0.0 -current_version @U8MAJOR@.@U8MINOR@.@U8RELEASE@
 U8VERSION = @U8VERSION@
@@ -196,10 +199,12 @@ tests/dynamic/%: tests/%.c
 	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8 -lu8io
 exe/%: %.c
 	@echo "# (libu8)" CC_EXE $@ $<
-	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8 -lu8io
+	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) $(EXEFLAGS) \
+		-o $@ $< -lu8 -lu8io
 exe/%.static: %.c
 	@echo "# (libu8)" CC_EXE $@ $<
-	@$(CC) $(CFLAGS) -g3 -O0 -L./lib $(LDFLAGS) -o $@ $< lib/libu8.a lib/libu8io.a ${LIBS}
+	@$(CC) $(CFLAGS) -g3 -O0 -L./lib $(LDFLAGS) $(EXEFLAGS) \
+		 -o $@ $< lib/libu8.a lib/libu8io.a ${LIBS}
 
 
 lib/%@suffix@.a:
@@ -215,7 +220,8 @@ lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 
 lib/%@suffix@.dylib:
 	@echo "# (libu8)" MACLIBTOOL $@
-	@$(MACLIBTOOL) -install_name @rpath/lib/$(*F).@U8MAJOR@.dylib \
+	@$(MACLIBTOOL) -install_name \
+		@rpath/lib/`basename $(@F) .dylib`.@U8MAJOR@.dylib \
 		$(DYLIB_FLAGS) -o $@ $^
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 

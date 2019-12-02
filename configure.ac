@@ -8,6 +8,7 @@ ifmacosx="#"
 shared_default="yes"
 shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
+rpath_default=$exec_prefix
 CLEAN="rm -f"
 U8MAJOR=2
 U8MINOR=6
@@ -20,6 +21,9 @@ RPMVERSION=${U8RELEASE}
 DEBVERSION=${U8RELEASE}
 LD="ld"
 MKSTATIC="\$(LD) -r "
+EXEFLAGS=
+EXELIBS=
+RPATHFLAGS="-Wl,'-rpath \$(RPATH)'"
 I18N=""
 INSTALLI18N=""
 SUDO=""
@@ -49,6 +53,7 @@ libc_dlopen="no"
 syslog_static="syslog-static"
 syslog_shared="syslog-shared"
 suffix=""
+rpath=""
 have_constructor_attributes="yes"
 archflags=""
 definefileinfo=""
@@ -57,6 +62,10 @@ doxygen=""
 
 if which lsb_release 2>&1 > /dev/null; then
    CODENAME=`lsb_release -cs || echo beingmeta`
+fi
+
+if (test "$rpath_default" = "NONE") || (test "$rpath_default" = ""); then
+   rpath_default=$prefix;
 fi
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
@@ -77,6 +86,7 @@ case $target_os in
    shared_suffix="dylib";
    install_shared="install-dylib";
    ifmacosx="";
+   RPATHFLAGS=" -rpath \$(RPATH) "
    CFLAGS="-D_DARWIN_C_SOURCE $CFLAGS"
    AC_DEFINE(DESTRUCTIVE_POLL,1)
    AC_DEFINE(CHECK_DANGLING_ERRNOS,1)
@@ -96,6 +106,8 @@ AC_SUBST(RPMVERSION)
 AC_SUBST(DEBVERSION)
 AC_SUBST(MKSTATIC)
 AC_SUBST(SUDO)
+AC_SUBST(EXEFLAGS)
+AC_SUBST(EXELIBS)
 AC_SUBST(debugcflags)
 AC_SUBST(shared_suffix)
 AC_SUBST(vshared_suffix)
@@ -121,6 +133,9 @@ AC_SUBST(GITDESCRIBE)
 AC_SUBST(doxygen)
 AC_SUBST(DOCS)
 AC_SUBST(INSTALLDOCS)
+
+AC_SUBST(rpath)
+AC_SUBST(RPATHFLAGS)
 
 AC_ARG_VAR(RPMDIR,"Location for writing built RPMs")
 AC_ARG_VAR(RPMFLAGS,"Default flags for building RPMs")
@@ -221,6 +236,12 @@ if test -d $with_optdir/lib; then
 fi
 if test -d $with_optdir/bin; then
   PATH="$PATH:$with_optdir/bin"
+fi
+
+AC_ARG_WITH(rpath,--with-rpath dir,rpath=$withval,rpath=$rpath_default)
+
+if test "$rpath" != "none" && test "$rpath" != "/usr" && test "$rpath" != "/usr/local"; then
+  EXEFLAGS=" $EXEFLAGS \$(RPATHFLAGS) "
 fi
 
 AC_ARG_WITH(encodings_dir,--with-encodings-dir pathname,,with_encodings_dir=$prefix/share/libu8/encodings)
