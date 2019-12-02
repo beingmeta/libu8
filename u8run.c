@@ -228,7 +228,7 @@ int main(int argc,char *argv[])
       strncpy(varname,arg,name_len);
       varname[name_len]='\0';
       setenv(varname,eqpos+1,1);
-      if (strcasecmp(varname,"run_dir")==0) {
+      if (strcasecmp(varname,"rundir")==0) {
         if (run_dir) u8_free(run_dir);
         run_dir = u8_strdup(eqpos+1);}
       if (strcasecmp(varname,"jobid")==0) {
@@ -250,7 +250,10 @@ int main(int argc,char *argv[])
     job_id = u8_basename(path,"*");
     u8_free(path);}
 
-  if (run_dir == NULL) run_dir = u8_getcwd();
+  if (run_dir == NULL) {
+    run_dir = u8_getenv("RUNDIR");
+    if (run_dir == NULL) run_dir = u8_getcwd();}
+
   if ( (! (u8_directoryp(run_dir)) ) ||
        (! (u8_file_writablep(run_dir)) ) ) {
     u8_log(LOGCRIT,"BadRun_Dir",
