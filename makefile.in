@@ -605,15 +605,15 @@ install-libs: @install_static@ @install_shared@
 
 install-headers: $(DESTDIR)@prefix@/include/libu8
 	@echo "# (libu8) Installing headers in $(DESTDIR)@prefix@/include/libu8"
-	@$(INSTALL) etc/libu8.pc $(DESTDIR)@prefix@/include/libu8
+	@$(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
 $(DESTDIR)@prefix@/include/libu8:
 	$(INSTALL) -d $(DESTDIR)@prefix@/include/libu8
 
-install-pkgconfig: $(DESTDIR)$(DESTDIR)@PKGCONFIG_DIR@
+install-pkgconfig: $(DESTDIR)@PKGCONFIG_DIR@
 	@echo "# (libu8) Installing libu8 pkgconfig file in $(DESTDIR)@PKGCONFIG_DIR@"
-	@$(INSTALL) include/libu8/*.h $(DESTDIR)$(DESTDIR)@PKGCONFIG_DIR@
-$(DESTDIR)$(DESTDIR)@PKGCONFIG_DIR@:
-	$(INSTALL) -d $(DESTDIR)$(DESTDIR)@PKGCONFIG_DIR@
+	@$(INSTALL) etc/libu8.pc $(DESTDIR)@PKGCONFIG_DIR@
+$(DESTDIR)@PKGCONFIG_DIR@:
+	$(INSTALL) -d $(DESTDIR)@PKGCONFIG_DIR@
 
 install-docs: docs/doxygen.done
 	@echo "# (libu8)" "Writing man pages"

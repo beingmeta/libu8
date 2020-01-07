@@ -247,7 +247,7 @@ if test "$rpath" != "none" && test "$rpath" != "/usr" && test "$rpath" != "/usr/
 fi
 
 AC_ARG_WITH(pkgconfig_dir,--with-pkgconfig-dir pathname,,with_pkgconfig_dir=$prefix/share/pkgconfig)
-AC_DEFINE_UNQUOTED(U8_PKGCONFIG_DIR,"$with_encodings_dir")
+AC_DEFINE_UNQUOTED(U8_PKGCONFIG_DIR,"$with_pkgconfig_dir")
 PKGCONFIG_DIR=${with_pkgconfig_dir}
 
 AC_ARG_WITH(encodings_dir,--with-encodings-dir pathname,,with_encodings_dir=$prefix/share/libu8/encodings)

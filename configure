@@ -4545,7 +4545,7 @@ else
 fi
 
 cat >>confdefs.h <<_ACEOF
-#define U8_PKGCONFIG_DIR "$with_encodings_dir"
+#define U8_PKGCONFIG_DIR "$with_pkgconfig_dir"
 _ACEOF
 
 PKGCONFIG_DIR=${with_pkgconfig_dir}
