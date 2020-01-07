@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=${prefix}
+libdir=@libdir@
+includedir=${exec_prefix}/include
+
+Name: libu8
+Description: The libu8 utf-8 and compatability library
+Version: @VERSION@
+Libs: -L${libdir} -lu8
+Cflags: -I${includedir}

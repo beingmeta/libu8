@@ -575,5 +575,5 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT(makefile etc/version dist/libu8-2.6.spec)
+AC_OUTPUT(makefile etc/version etc/libu8.pc dist/libu8-2.6.spec)
 
