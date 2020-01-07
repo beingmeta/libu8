@@ -686,6 +686,7 @@ EXELIBS
 EXEFLAGS
 SUDO
 MKSTATIC
+PKGCONFIG_DIR
 DEBVERSION
 RPMVERSION
 U8VERSION
@@ -757,6 +758,7 @@ with_sanitize
 with_optlib
 with_optdir
 with_rpath
+with_pkgconfig_dir
 with_encodings_dir
 with_arch
 enable_maintainer_mode
@@ -1423,6 +1425,7 @@ Optional Packages:
 --with-optlib Use optional library directory
 --with-optdir Use optional header/lib
 --with-rpath dir
+--with-pkgconfig-dir pathname
 --with-encodings-dir pathname
 --without-arch build with particular --arch flags
 --without-i18n built and install message catalogs
@@ -2857,6 +2860,7 @@ RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
 APTREPO=${APTREPO:-/srv/repo/apt}
+PKGCONFIG_DIR=
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
@@ -3052,6 +3056,7 @@ case $target_os in
 
    ;;
 esac
+
 
 
 
@@ -4530,6 +4535,20 @@ fi
 if test "$rpath" != "none" && test "$rpath" != "/usr" && test "$rpath" != "/usr/local"; then
   EXEFLAGS=" $EXEFLAGS \$(RPATHFLAGS) "
 fi
+
+
+# Check whether --with-pkgconfig_dir was given.
+if test "${with_pkgconfig_dir+set}" = set; then :
+  withval=$with_pkgconfig_dir;
+else
+  with_pkgconfig_dir=$prefix/share/pkgconfig
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define U8_PKGCONFIG_DIR "$with_encodings_dir"
+_ACEOF
+
+PKGCONFIG_DIR=${with_pkgconfig_dir}
 
 
 # Check whether --with-encodings_dir was given.

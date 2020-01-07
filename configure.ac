@@ -37,6 +37,7 @@ RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
 APTREPO=${APTREPO:-/srv/repo/apt}
+PKGCONFIG_DIR=
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
@@ -104,6 +105,7 @@ AC_SUBST(U8RELEASE)
 AC_SUBST(U8VERSION)
 AC_SUBST(RPMVERSION)
 AC_SUBST(DEBVERSION)
+AC_SUBST(PKGCONFIG_DIR)
 AC_SUBST(MKSTATIC)
 AC_SUBST(SUDO)
 AC_SUBST(EXEFLAGS)
@@ -243,6 +245,10 @@ AC_ARG_WITH(rpath,--with-rpath dir,rpath=$withval,rpath=$rpath_default)
 if test "$rpath" != "none" && test "$rpath" != "/usr" && test "$rpath" != "/usr/local"; then
   EXEFLAGS=" $EXEFLAGS \$(RPATHFLAGS) "
 fi
+
+AC_ARG_WITH(pkgconfig_dir,--with-pkgconfig-dir pathname,,with_pkgconfig_dir=$prefix/share/pkgconfig)
+AC_DEFINE_UNQUOTED(U8_PKGCONFIG_DIR,"$with_encodings_dir")
+PKGCONFIG_DIR=${with_pkgconfig_dir}
 
 AC_ARG_WITH(encodings_dir,--with-encodings-dir pathname,,with_encodings_dir=$prefix/share/libu8/encodings)
 AC_DEFINE_UNQUOTED(U8_ENCODINGS_DIR,"$with_encodings_dir")

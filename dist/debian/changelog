@@ -1,3 +1,9 @@
+libu8 (2.6.8-10) unstable; urgency=medium
+
+  * Add pkgconfig install
+
+ -- Ken Haase <kh@beingmeta.com>  Tue, 07 Jan 2020 20:36:48 +0000
+
 libu8 (2.6.8-9) unstable; urgency=medium
 
   * Bumped release number for fixes to u8contour
