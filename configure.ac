@@ -13,6 +13,7 @@ CLEAN="rm -f"
 U8MAJOR=2
 U8MINOR=6
 U8RELEASE=`cat etc/release`
+U8PATCHLEVEL=`./etc/patchlevel`
 U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
@@ -28,6 +29,7 @@ I18N=""
 INSTALLI18N=""
 SUDO=""
 GITDESCRIBE=""
+GITBRANCH=""
 TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
@@ -37,6 +39,7 @@ RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
 APTREPO=${APTREPO:-/srv/repo/apt}
+APKREPO=${APKREPO:-/srv/repo/apk}
 PKGCONFIG_DIR=
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
@@ -102,6 +105,7 @@ AC_SUBST(SHARED_LIBV)
 AC_SUBST(U8MAJOR)
 AC_SUBST(U8MINOR)
 AC_SUBST(U8RELEASE)
+AC_SUBST(U8PATCHLEVEL)
 AC_SUBST(U8VERSION)
 AC_SUBST(RPMVERSION)
 AC_SUBST(DEBVERSION)
@@ -132,6 +136,7 @@ AC_SUBST(versionsh)
 AC_SUBST(I18N)
 AC_SUBST(INSTALLI18N)
 AC_SUBST(GITDESCRIBE)
+AC_SUBST(GITBRANCH)
 AC_SUBST(doxygen)
 AC_SUBST(DOCS)
 AC_SUBST(INSTALLDOCS)
@@ -139,9 +144,11 @@ AC_SUBST(INSTALLDOCS)
 AC_SUBST(rpath)
 AC_SUBST(RPATHFLAGS)
 
+AC_ARG_VAR(GITBRANCH,"Git branch for build")
 AC_ARG_VAR(RPMDIR,"Location for writing built RPMs")
 AC_ARG_VAR(RPMFLAGS,"Default flags for building RPMs")
 AC_ARG_VAR(APTREPO,"Location of the APT repository")
+AC_ARG_VAR(APKREPO,"Location of the APK repository")
 AC_ARG_VAR(GPG,"GPG executable")
 AC_ARG_VAR(GPGID,"Default GnuPG id for signing packages")
 AC_SUBST(RPMDIR)
@@ -149,7 +156,13 @@ AC_SUBST(RPMFLAGS)
 AC_SUBST(GPG)
 AC_SUBST(GPGID)
 AC_SUBST(APTREPO)
+AC_SUBST(APKREPO)
+AC_SUBST(GITBRANCH)
 AC_SUBST(CODENAME)
+
+if test -z "${GITBRANCH}"; then
+   GITBRANCH=`etc/getbranch`;
+fi;
 
 AC_PATH_PROG(CLANG,clang,none)
 
@@ -581,5 +594,6 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT(makefile etc/version etc/libu8.pc dist/libu8-2.6.spec)
+AC_OUTPUT(makefile etc/version etc/libu8.pc
+          dist/libu8-2.6.spec dist/alpine/APKBUILD)
 

@@ -596,6 +596,20 @@ build-setup-ubuntu: build-setup.debian
 #		      --sign=$(GPGID)      \
 #		dist/libu8*_@U8VERSION@*.deb
 
+# Alpine packaging
+
+dist/alpine/APKBUILD: dist/alpine/APKBUILD.in
+	./config.status
+
+dist/alpine.done: dist/alpine/APKBUILD include/libu8/revision.h
+	cd dist/alpine; abuild checksum && \
+		abuild -P @APKREPO@ && \
+		touch $@
+
+alpine: dist/alpine.done
+
+.PHONY: alpine
+
 # Installation targets
 
 install-dev install: install-libs install-exe 	\

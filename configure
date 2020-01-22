@@ -652,6 +652,7 @@ CLANG
 CODENAME
 GPGID
 GPG
+APKREPO
 APTREPO
 RPMFLAGS
 RPMDIR
@@ -660,6 +661,7 @@ rpath
 INSTALLDOCS
 DOCS
 doxygen
+GITBRANCH
 GITDESCRIBE
 INSTALLI18N
 I18N
@@ -690,6 +692,7 @@ PKGCONFIG_DIR
 DEBVERSION
 RPMVERSION
 U8VERSION
+U8PATCHLEVEL
 U8RELEASE
 U8MINOR
 U8MAJOR
@@ -776,9 +779,11 @@ enable_largefiles
       ac_precious_vars='build_alias
 host_alias
 target_alias
+GITBRANCH
 RPMDIR
 RPMFLAGS
 APTREPO
+APKREPO
 GPG
 GPGID
 CC
@@ -1435,9 +1440,11 @@ Optional Packages:
 --without-tls Force use of threadlocal storage
 
 Some influential environment variables:
+  GITBRANCH   "Git branch for build"
   RPMDIR      "Location for writing built RPMs"
   RPMFLAGS    "Default flags for building RPMs"
   APTREPO     "Location of the APT repository"
+  APKREPO     "Location of the APK repository"
   GPG         "GPG executable"
   GPGID       "Default GnuPG id for signing packages"
   CC          C compiler command
@@ -2836,6 +2843,7 @@ CLEAN="rm -f"
 U8MAJOR=2
 U8MINOR=6
 U8RELEASE=`cat etc/release`
+U8PATCHLEVEL=`./etc/patchlevel`
 U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
@@ -2851,6 +2859,7 @@ I18N=""
 INSTALLI18N=""
 SUDO=""
 GITDESCRIBE=""
+GITBRANCH=""
 TAGS="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
@@ -2860,6 +2869,7 @@ RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
 APTREPO=${APTREPO:-/srv/repo/apt}
+APKREPO=${APKREPO:-/srv/repo/apk}
 PKGCONFIG_DIR=
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
@@ -3113,6 +3123,16 @@ esac
 
 
 
+
+
+
+
+
+
+
+if test -z "${GITBRANCH}"; then
+   GITBRANCH=`etc/getbranch`;
+fi;
 
 # Extract the first word of "clang", so it can be a program name with args.
 set dummy clang; ac_word=$2
@@ -7847,7 +7867,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files makefile etc/version etc/libu8.pc dist/libu8-2.6.spec"
+ac_config_files="$ac_config_files makefile etc/version etc/libu8.pc dist/libu8-2.6.spec dist/alpine/APKBUILD"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -8546,6 +8566,7 @@ do
     "etc/version") CONFIG_FILES="$CONFIG_FILES etc/version" ;;
     "etc/libu8.pc") CONFIG_FILES="$CONFIG_FILES etc/libu8.pc" ;;
     "dist/libu8-2.6.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-2.6.spec" ;;
+    "dist/alpine/APKBUILD") CONFIG_FILES="$CONFIG_FILES dist/alpine/APKBUILD" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac

@@ -2,18 +2,18 @@
 # Maintainer: beingmeta repository manager <repoman@beingmeta.com>
 pkgname=libu8
 pkgver=2.6.9
-pkgrel=21
+pkgrel=@U8PATCHLEVEL@
 pkgdesc="UTF-8 string and comptability library"
 url="https://libu8.org/"
 arch="all"
 license="LGPL"
-depends=""
+depends="ldns libressl libuuid"
 makedepends="ldns-dev libressl-dev libuuid libc-dev alpine-sdk"
 install=""
 #subpackages="$pkgname-dev $pkgname-doc"
 subpackages=""
-source="https://github.com/beingmeta/libu8/archive/trunk.tar.gz"
-builddir="libu8-trunk"
+source="https://github.com/beingmeta/libu8/archive/@GITBRANCH@.tar.gz"
+builddir="libu8-@GITBRANCH@"
 
 build() {
 	pwd
@@ -38,4 +38,3 @@ package() {
 	cd src/${builddir}
 	make DESTDIR="$pkgdir" SUDO= install
 }
-sha512sums="93a9da9c86c5424c328f6f40fd5bf2ec5ea6c9d7bdf12ac9a7bb6a61fbf0237052c157ab463dc8ed881ef4204ab0f35ccf1d72c134afb644ca2858318f5d2724  trunk.tar.gz"
