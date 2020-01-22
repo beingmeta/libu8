@@ -1235,6 +1235,7 @@ U8_EXPORT u8_uuid u8_getuuid(u8_uuid buf)
   uuid_generate_time(tmp);
   if (buf==NULL) buf=u8_malloc(16);
   memcpy(buf,tmp,16);
+  U8_CLEAR_ERRNO();
   return (u8_uuid)buf;
 #else
   return freshuuid(buf);
