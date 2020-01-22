@@ -2,6 +2,9 @@ prefix=@prefix@
 exec_prefix=${prefix}
 libdir=@libdir@
 includedir=${exec_prefix}/include
+major=@U8_MAJOR@
+minor=@U8_MINOR@
+abi=@U8_MAJOR@.@U8_MINOR@
 
 Name: libu8
 Description: The libu8 utf-8 and compatability library
