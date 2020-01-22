@@ -264,6 +264,8 @@ $(BININSTALLDIR)/%: exe/%
 	@$(INSTALL) -d $(BININSTALLDIR)
 	@$(INSTALL) $< $(BININSTALLDIR)
 
+check:
+
 test: @test_shared@ @test_static@
 test-shared: $(DYTESTBIN)
 test-static: $(TESTBIN)

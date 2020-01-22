@@ -1,0 +1,37 @@
+# Contributor: beingmeta repository manager <repoman@beingmeta.com>
+# Maintainer: beingmeta repository manager <repoman@beingmeta.com>
+pkgname=libu8
+pkgver=2.6.9
+pkgrel=21
+pkgdesc="UTF-8 string and comptability library"
+url="https://libu8.org/"
+arch="all"
+license="LGPL"
+depends=""
+makedepends=""
+install=""
+subpackages="$pkgname-dev $pkgname-doc"
+source="https://github.com/beingmeta/libu8/archive/trunk.tar.gz"
+builddir="libu8-trunk"
+
+build() {
+	pwd
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--mandir=/usr/share/man \
+		--localstatedir=/var
+	make
+}
+
+check() {
+	make check
+}
+
+package() {
+	make DESTDIR="$pkgdir" install
+}
+
+sha512sums="8647536e7e8b6f23abf2ee5a377f9a8b98d3a45a144d4ac188eab7ede058bb362556b49ac082e22ec35a02deb45ae16f2d4ae7ab1bed279855a5bba573f3e01f  trunk.tar.gz"
