@@ -603,7 +603,7 @@ dist/alpine/APKBUILD: dist/alpine/APKBUILD.in
 
 dist/alpine.done: dist/alpine/APKBUILD include/libu8/revision.h
 	cd dist/alpine; \
-		abuild clean cacheclean cleanpkg && \
+		abuild clean cleancache cleanpkg && \
 		abuild checksum && \
 		abuild -P @APKREPO@ && \
 		touch $@
