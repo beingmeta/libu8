@@ -10,8 +10,8 @@ license="LGPL"
 depends="ldns libressl libuuid libressl2.7-libcrypto"
 makedepends="util-linux-dev ldns-dev libressl-dev libressl2.7-libcrypto libuuid libc-dev alpine-sdk"
 install=""
-subpackages="$pkgname-dev $pkgname-doc"
-#subpackages=""
+#subpackages="$pkgname-dev $pkgname-doc $pkgname-static"
+subpackages=""
 depends_dev="$pkgname"
 depends_doc="$pkgname"
 source="https://github.com/beingmeta/libu8/archive/@GITBRANCH@.tar.gz"
@@ -31,12 +31,11 @@ build() {
 }
 
 check() {
-	cd src/${builddir}
 	pwd
 	make
 }
 
 package() {
 	cd src/${builddir}
-	make DESTDIR="$pkgdir" SUDO= install
+	make DESTDIR="$pkgdir" SUDO= install install-docs
 }
