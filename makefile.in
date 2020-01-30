@@ -623,7 +623,7 @@ install: install-core install-docs install-static install-dev
 install-core: install-shared install-exe @INSTALLI18N@
 install-dev: install-headers install-pkgconfig
 install-shared: @install_shared@
-install-docs: @INSTALLDOCS@
+install-doc: @INSTALLDOCS@
 install-libs: install-static install-shared
 
 install-headers: $(DESTDIR)@prefix@/include/libu8
@@ -641,7 +641,8 @@ $(DESTDIR)@PKGCONFIG_DIR@:
 install-docs: docs/doxygen.done
 	@echo "# (libu8)" "Writing man pages"
 	@$(INSTALL) -d $(MANDIR)/man3
-	@$(INSTALL) docs/man/man3/* $(MANDIR)/man3
+	@for manpage in docs/man/man3/*; do gzip $${manpage}; done
+	@$(INSTALL) docs/man/man3/*.gz $(MANDIR)/man3
 
 install-static: $(LIBINSTALLDIR)/libu8.a \
 		$(LIBINSTALLDIR)/libu8io.a \
