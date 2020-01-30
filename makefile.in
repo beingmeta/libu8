@@ -620,7 +620,7 @@ alpine: dist/alpine.done
 # Installation targets
 
 install: install-core install-docs install-static install-dev
-install-core: install-shared install-exe @INSTALLI18N@
+install-core: install-shared install-exe install-encodings @INSTALLI18N@
 install-dev: install-headers install-pkgconfig
 install-shared: @install_shared@
 install-doc: @INSTALLDOCS@
