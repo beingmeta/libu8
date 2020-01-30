@@ -602,12 +602,16 @@ build-setup-ubuntu: build-setup.debian
 dist/alpine/APKBUILD: dist/alpine/APKBUILD.in
 	./config.status
 
-dist/alpine.done: dist/alpine/APKBUILD include/libu8/revision.h makefile
+@APKREPO@/dist/x86_64:
+	@@INSTALL@ -d $@
+
+dist/alpine.done: dist/alpine/APKBUILD include/libu8/revision.h \
+	makefile @APKREPO@/dist/x86_64
 	cd dist/alpine; \
 		abuild -P @APKREPO@ clean cleancache cleanpkg && \
 		abuild checksum && \
 		abuild -P @APKREPO@ && \
-		touch $@
+		touch ../../$@
 
 alpine: dist/alpine.done
 
@@ -615,14 +619,12 @@ alpine: dist/alpine.done
 
 # Installation targets
 
-install: install-core install-docs install-dev
-
+install: install-core install-docs install-static install-dev
+install-core: install-shared install-exe @INSTALLI18N@
 install-dev: install-headers install-pkgconfig
-
-install-core: install-libs install-exe @INSTALLI18N@
+install-shared: @install_shared@
 install-docs: @INSTALLDOCS@
-
-install-libs: @install_static@ @install_shared@
+install-libs: install-static install-shared
 
 install-headers: $(DESTDIR)@prefix@/include/libu8
 	@echo "# (libu8) Installing headers in $(DESTDIR)@prefix@/include/libu8"
