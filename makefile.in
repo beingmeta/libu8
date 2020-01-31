@@ -146,6 +146,8 @@ showbuildmode showmode showbuild: buildmode
 
 .PHONY: showbuildmode showmode showbuild tests fast nitpick standard debug all
 
+# buildmode dependencies
+
 # configure/autoconf stuff
 
 # If the generated makefile is the same as the current makefile,
@@ -420,221 +422,26 @@ install-i18n: $(LOCALEDIR)/fr/LC_MESSAGES/libu8msg.mo \
 		$(LOCALEDIR)/nl/LC_MESSAGES/libu8msg.mo
 i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 
-# Packaging targets
+# dependencies
 
-debian deb debs: dist/debs.done
-rpms: dist/rpms.done 
-.PHONY: rpms debian debs
+streamio.o printf.o atomic.o logging.o exceptions.o signals.o chardata.o stringfns.o convert.o libu8.o libu8io.o: \
+  $(COMMON_HEADERS) include/libu8/revision.h
+ctype.o: $(COMMON_HEADERS) entities.h
+atomic.o: $(COMMON_HEADERS) include/libu8/u8atomic.h
+cityhash.o: $(COMMON_HEADERS) include/libu8/cityhash.h
+timefns.o: $(COMMON_HEADERS) include/libu8/u8timefns.h
+rusage.o: $(COMMON_HEADERS) include/libu8/u8rusage.h
+printf.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8printf.h
+xfiles.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8xfiles.h
+netfns.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8netfns.h
+srvfns.o: $(COMMON_HEADERS) \
+	include/libu8/libu8io.h include/libu8/u8netfns.h \
+	include/libu8/u8srvfns.h
 
-install-debian install-debian debinstall installdeb: dist/debs.installed
-dist/debs.installed: dist/debs.done
-	@SUDO@ dpkg -i dist/*.deb && touch $@
-.PHONY: install-debian install-debian debinstall installdeb
-
-install-rpms rpminstall installrpms: dist/rpms.installed
-dist/rpms.installed: dist/rpms.done
-	@SUDO@ rpm -Uvh dist/*.rpm && touch $@
-
-cleandist cleanrpms cleandeb rpmclean debclean:
-	@rm -rf dist/rpms.done dist/rpms.ready
-	@rm -rf dist/debs.built dist/debs.signed dist/debs.done
-	@rm -f dist/*.deb dist/*.tar dist/*.gz dist/*.changes dist/*.dsc
-	@find dist -name "*.rpm" | xargs -r rm
-	@rm -rf staging/libu8*
-.PHONY: cleandist cleanrpms cleandeb rpmclean debclean
-
-# Creating staging areas from GIT
-
-staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
-	@rm -rf staging/libu8-@U8VERSION@
-	git archive --prefix=libu8-@U8VERSION@/ \
-	            -o staging/libu8-@U8VERSION@.tar HEAD
-	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
-	cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
-	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/libu8-@U8VERSION@/etc/revision.h;             \
-	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/libu8-@U8VERSION@/etc/revision.h;             \
-	fi
-
-
-staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
-	@rm -rf staging/libu8_@U8VERSION@
-	@git archive --prefix=libu8_@U8VERSION@/ \
-	            -o staging/libu8_@U8VERSION@.tar HEAD
-	@cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
-	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/libu8_@U8VERSION@/etc/revision.h;             \
-	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/libu8_@U8VERSION@/etc/revision.h;             \
-	fi
-	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz \
-		libu8_@U8VERSION@;
-	@mv staging/libu8_@U8VERSION@/dist/debian \
-	   staging/libu8_@U8VERSION@/debian;
-	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	  etc/gitchangelog libu8 ${CODENAME} < dist/debian/changelog \
-	     > staging/libu8_@U8VERSION@/debian/changelog; \
-	fi
-
-staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
-	@make staging/libu8-@U8VERSION@
-	@tar -czvf $@ -C staging libu8-@U8VERSION@
-staging/libu8_@U8VERSION@.orig.tar.gz: staging/libu8-@U8VERSION@
-	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz libu8-@U8VERSION@
-
-# RPM rules
-
-dist/rpms.ready: staging/libu8-@U8VERSION@ \
-	staging/libu8_@U8VERSION@.orig.tar.gz \
-	staging/libu8-@U8VERSION@.tar.gz
-	@@buildrpm@ $(RPMFLAGS)  			\
-	   --define="_rpmdir $(RPMDIR)"			\
-	   --define="_srcrpmdir $(RPMDIR)" 		\
-	   --nodeps -ta 				\
-	    staging/libu8-@U8VERSION@.tar.gz && 	\
-	touch dist/rpms.ready
-dist/rpms.done: dist/rpms.ready
-	@if (test "x$(GPGID)" = "xnone"); then 				\
-	    touch dist/rpms.done;					\
-	elif (test "x$(GPGID)" = "x"); then 				\
-	   echo "# (libu8) Enter passphrase for the RPM signing key:";	\
-	   @rpm@ --addsign 						\
-		--define="__gpg_sign_cmd $(RPMGPG)" 			\
-		$(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
-		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; 			\
-	   else 							\
-	     echo "# (libu8) Enter passphrase for '$(GPGID)':";		\
-	     @rpm@ --addsign --define="_gpg_name $(GPGID)" 		\
-		--define="__gpg_sign_cmd $(RPMGPG)" 			\
-		$(RPMDIR)/libu8-@U8VERSION@*.src.rpm 			\
-		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; 			\
-	fi && touch dist/rpms.done;
-	@ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
-		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
-
-rpmupdate update-rpms freshrpms: cleanrpms
-	@rm -f dist/rpms.done dist/rpms.ready
-	@make dist/rpms.done RPMDIR=$(RPMDIR) GPGID=$(GPGID:-default)
-
-dist/rpms.zip: dist/rpms.done
-	@rm -f dist/rpms.zip
-	@zip dist/rpms.zip \
-		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
-		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm
-
-.PHONY: rpms rpmupdate update-rpms freshrpms
-
-# Rules for debian building
-
-dist/debs.built: staging/libu8_@U8VERSION@
-	@(cd staging/libu8_@U8VERSION@; \
-	 dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
-	touch dist/debs.built
-dist/debs.signed: dist/debs.built
-	@(cd staging; debsign -p${GPG} --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
-	 (cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
-	 (cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && \
-	 touch dist/debs.signed
-dist/debs.done: dist/debs.signed
-	@touch dist/debs.done
-
-install-debian install-debs: dist/debs.done
-	@SUDO@dpkg -i dist/libu8*_@U8VERSION@*.deb
-
-update-local-apt-repo: dist/debs.done
-	@if test ! `id -u` -eq 0; then 					\
-	  for change in dist/*.changes; do 				\
-	    reprepro -Vb ${APTREPO} include ${CODENAME} $${change} && 	\
-	    rm -f $${change}; 						\
-	   done; 							\
-	else 								\
-	 echo "# (libu8/makefile) Don't update the repo as root";	\
-	fi;
-
-update-remote-apt-repo: dist/debs.done
-	@cd dist; for change in *.changes; do \
-	  dupload -c ./dupload.conf --nomail --to ${CODENAME} $${change} && \
-	  rm -f $${change}; \
-	done
-
-apt-update update-apt update-apt-repo: dist/debs.done
-	@if test -d ${APTREPO}; then	\
-	  make update-local-apt-repo;	\
-	else				\
-	  make update-remote-apt-repo;	\
-	fi;
-
-apt-upload upload-apt upload-deb: update-remote-apt-repo
-
-.PHONY: apt-upload upload-apt upload-deb
-.PHONY: update-apt-repo update-remote-apt-repo update-local-apt-repo
-
-debfresh freshdeb:
-	@make debclean
-	@rm -f include/libu8/revision.h; make include/libu8/revision.h
-	@make debian
-
-.PHONY: debfresh freshdeb
-
-debupdate:
-	@if [ "${DEBNAME}" = "libu8_${APTVERSION}" ]; then 	\
-	  echo "Debian build of utf8 is up to date"; 		\
-	else make debfresh; fi;
-
-build-setup.debian:
-	@SUDO@ apt-get install libssl-dev uuid uuid-dev
-
-build-setup-ubuntu: build-setup.debian
-
-.PHONY: build-setup.debian build-setup.ubuntu
-
-#	deb-s3 upload --bucket=repo.beingmeta.com \
-#		      --component=$(COMPONENT) \
-#		      --codename=$(CODENAME) \
-#		      --sign=$(GPGID)      \
-#		dist/libu8*_@U8VERSION@*.deb
-
-# Alpine packaging
-
-dist/alpine/APKBUILD: dist/alpine/APKBUILD.in
-	./config.status
-
-@APKREPO@/dist/x86_64:
-	@@INSTALL@ -d $@
-
-staging/alpine:
-	@@INSTALL@ -d $@
-
-staging/alpine/APKBUILD: dist/alpine/APKBUILD staging/alpine
-	cp dist/alpine/APKBUILD staging/alpine
-
-staging/alpine/libu8-@U8VERSION@.tar.gz: staging/alpine
-	git archive --prefix=libu8/ -o staging/alpine/libu8-@U8VERSION@.tar HEAD
-	cd staging/alpine; tar -xf libu8-@U8VERSION@.tar;
-	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	  echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/alpine/libu8/etc/revision.h;             \
-	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/alpine/libu8/etc/revision.h;             \
-	fi
-	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
-	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
-
-dist/alpine.done: dist/alpine/APKBUILD include/libu8/revision.h makefile \
-	staging/alpine/libu8-@U8VERSION@.tar.gz staging/alpine/APKBUILD \
-	@APKREPO@/dist/x86_64
-	cd staging/alpine; \
-		abuild -P @APKREPO@ clean cleancache cleanpkg && \
-		abuild checksum && \
-		abuild -P @APKREPO@ && \
-		touch ../../$@
-
-alpine: dist/alpine.done
-
-.PHONY: alpine
+$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8DATA_OBJECTS): \
+	buildmode makefile
+$(LIBU8IO_OBJECTS) $(LIBU8STDIO_OBJECTS) $(LIBU8SYSLOG_OBJECTS): \
+	buildmode makefile
 
 # Installation targets
 
@@ -886,27 +693,219 @@ install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
 $(DESTDIR)@prefix@/share/libu8/encodings:
 	$(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
 
-# buildmode dependencies
+# Packaging targets
 
-$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8DATA_OBJECTS): \
-	buildmode makefile
-$(LIBU8IO_OBJECTS) $(LIBU8STDIO_OBJECTS) $(LIBU8SYSLOG_OBJECTS): \
-	buildmode makefile
+debian deb debs: dist/debs.done
+rpms: dist/rpms.done 
+.PHONY: rpms debian debs
 
-# dependencies
+install-debian install-debian debinstall installdeb: dist/debs.installed
+dist/debs.installed: dist/debs.done
+	@SUDO@ dpkg -i dist/*.deb && touch $@
+.PHONY: install-debian install-debian debinstall installdeb
 
-streamio.o printf.o atomic.o logging.o exceptions.o signals.o chardata.o stringfns.o convert.o libu8.o libu8io.o: \
-  $(COMMON_HEADERS) include/libu8/revision.h
-ctype.o: $(COMMON_HEADERS) entities.h
-atomic.o: $(COMMON_HEADERS) include/libu8/u8atomic.h
-cityhash.o: $(COMMON_HEADERS) include/libu8/cityhash.h
-timefns.o: $(COMMON_HEADERS) include/libu8/u8timefns.h
-rusage.o: $(COMMON_HEADERS) include/libu8/u8rusage.h
-printf.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8printf.h
-xfiles.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8xfiles.h
-netfns.o: $(COMMON_HEADERS) include/libu8/libu8io.h include/libu8/u8netfns.h
-srvfns.o: $(COMMON_HEADERS) \
-	include/libu8/libu8io.h include/libu8/u8netfns.h \
-	include/libu8/u8srvfns.h
+install-rpms rpminstall installrpms: dist/rpms.installed
+dist/rpms.installed: dist/rpms.done
+	@SUDO@ rpm -Uvh dist/*.rpm && touch $@
 
-#tests/printftest: tests/printftest.c ${STATIC_TEST_LIBS}
+cleandist cleanrpms cleandeb rpmclean debclean:
+	@rm -rf dist/rpms.done dist/rpms.ready
+	@rm -rf dist/debs.built dist/debs.signed dist/debs.done
+	@rm -f dist/*.deb dist/*.tar dist/*.gz dist/*.changes dist/*.dsc
+	@find dist -name "*.rpm" | xargs -r rm
+	@rm -rf staging/libu8*
+.PHONY: cleandist cleanrpms cleandeb rpmclean debclean
+
+# Creating staging areas from GIT
+
+staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+	@rm -rf staging/libu8-@U8VERSION@
+	git archive --prefix=libu8-@U8VERSION@/ \
+	            -o staging/libu8-@U8VERSION@.tar HEAD
+	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
+	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
+		> staging/libu8-@U8VERSION@/etc/revision.h;             \
+	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
+		> staging/libu8-@U8VERSION@/etc/revision.h;             \
+	fi
+
+
+staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+	@rm -rf staging/libu8_@U8VERSION@
+	@git archive --prefix=libu8_@U8VERSION@/ \
+	            -o staging/libu8_@U8VERSION@.tar HEAD
+	@cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
+	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
+		> staging/libu8_@U8VERSION@/etc/revision.h;             \
+	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
+		> staging/libu8_@U8VERSION@/etc/revision.h;             \
+	fi
+	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz \
+		libu8_@U8VERSION@;
+	@mv staging/libu8_@U8VERSION@/dist/debian \
+	   staging/libu8_@U8VERSION@/debian;
+	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	  etc/gitchangelog libu8 ${CODENAME} < dist/debian/changelog \
+	     > staging/libu8_@U8VERSION@/debian/changelog; \
+	fi
+
+staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
+	@make staging/libu8-@U8VERSION@
+	@tar -czvf $@ -C staging libu8-@U8VERSION@
+staging/libu8_@U8VERSION@.orig.tar.gz: staging/libu8-@U8VERSION@
+	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz libu8-@U8VERSION@
+
+# RPM rules
+
+dist/rpms.ready: staging/libu8-@U8VERSION@ \
+	staging/libu8_@U8VERSION@.orig.tar.gz \
+	staging/libu8-@U8VERSION@.tar.gz
+	@@buildrpm@ $(RPMFLAGS)  			\
+	   --define="_rpmdir $(RPMDIR)"			\
+	   --define="_srcrpmdir $(RPMDIR)" 		\
+	   --nodeps -ta 				\
+	    staging/libu8-@U8VERSION@.tar.gz && 	\
+	touch dist/rpms.ready
+dist/rpms.done: dist/rpms.ready
+	@if (test "x$(GPGID)" = "xnone"); then 				\
+	    touch dist/rpms.done;					\
+	elif (test "x$(GPGID)" = "x"); then 				\
+	   echo "# (libu8) Enter passphrase for the RPM signing key:";	\
+	   @rpm@ --addsign 						\
+		--define="__gpg_sign_cmd $(RPMGPG)" 			\
+		$(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
+		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; 			\
+	   else 							\
+	     echo "# (libu8) Enter passphrase for '$(GPGID)':";		\
+	     @rpm@ --addsign --define="_gpg_name $(GPGID)" 		\
+		--define="__gpg_sign_cmd $(RPMGPG)" 			\
+		$(RPMDIR)/libu8-@U8VERSION@*.src.rpm 			\
+		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; 			\
+	fi && touch dist/rpms.done;
+	@ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
+		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
+
+rpmupdate update-rpms freshrpms: cleanrpms
+	@rm -f dist/rpms.done dist/rpms.ready
+	@make dist/rpms.done RPMDIR=$(RPMDIR) GPGID=$(GPGID:-default)
+
+dist/rpms.zip: dist/rpms.done
+	@rm -f dist/rpms.zip
+	@zip dist/rpms.zip \
+		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
+		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm
+
+.PHONY: rpms rpmupdate update-rpms freshrpms
+
+# Rules for debian building
+
+dist/debs.built: staging/libu8_@U8VERSION@
+	@(cd staging/libu8_@U8VERSION@; \
+	 dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
+	touch dist/debs.built
+dist/debs.signed: dist/debs.built
+	@(cd staging; debsign -p${GPG} --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
+	 (cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
+	 (cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && \
+	 touch dist/debs.signed
+dist/debs.done: dist/debs.signed
+	@touch dist/debs.done
+
+install-debian install-debs: dist/debs.done
+	@SUDO@dpkg -i dist/libu8*_@U8VERSION@*.deb
+
+update-local-apt-repo: dist/debs.done
+	@if test ! `id -u` -eq 0; then 					\
+	  for change in dist/*.changes; do 				\
+	    reprepro -Vb ${APTREPO} include ${CODENAME} $${change} && 	\
+	    rm -f $${change}; 						\
+	   done; 							\
+	else 								\
+	 echo "# (libu8/makefile) Don't update the repo as root";	\
+	fi;
+
+update-remote-apt-repo: dist/debs.done
+	@cd dist; for change in *.changes; do \
+	  dupload -c ./dupload.conf --nomail --to ${CODENAME} $${change} && \
+	  rm -f $${change}; \
+	done
+
+apt-update update-apt update-apt-repo: dist/debs.done
+	@if test -d ${APTREPO}; then	\
+	  make update-local-apt-repo;	\
+	else				\
+	  make update-remote-apt-repo;	\
+	fi;
+
+apt-upload upload-apt upload-deb: update-remote-apt-repo
+
+.PHONY: apt-upload upload-apt upload-deb
+.PHONY: update-apt-repo update-remote-apt-repo update-local-apt-repo
+
+debfresh freshdeb:
+	@make debclean
+	@rm -f include/libu8/revision.h; make include/libu8/revision.h
+	@make debian
+
+.PHONY: debfresh freshdeb
+
+debupdate:
+	@if [ "${DEBNAME}" = "libu8_${APTVERSION}" ]; then 	\
+	  echo "Debian build of utf8 is up to date"; 		\
+	else make debfresh; fi;
+
+build-setup.debian:
+	@SUDO@ apt-get install libssl-dev uuid uuid-dev
+
+build-setup-ubuntu: build-setup.debian
+
+.PHONY: build-setup.debian build-setup.ubuntu
+
+#	deb-s3 upload --bucket=repo.beingmeta.com \
+#		      --component=$(COMPONENT) \
+#		      --codename=$(CODENAME) \
+#		      --sign=$(GPGID)      \
+#		dist/libu8*_@U8VERSION@*.deb
+
+# Alpine packaging
+
+dist/alpine/APKBUILD: dist/alpine/APKBUILD.in
+	./config.status
+
+@APKREPO@/dist/x86_64:
+	@@INSTALL@ -d $@
+
+staging/alpine:
+	@@INSTALL@ -d $@
+
+staging/alpine/APKBUILD: dist/alpine/APKBUILD staging/alpine
+	cp dist/alpine/APKBUILD staging/alpine
+
+staging/alpine/libu8-@U8VERSION@.tar.gz: staging/alpine
+	git archive --prefix=libu8/ -o staging/alpine/libu8-@U8VERSION@.tar HEAD
+	cd staging/alpine; tar -xf libu8-@U8VERSION@.tar;
+	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	  echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
+		> staging/alpine/libu8/etc/revision.h;             \
+	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
+		> staging/alpine/libu8/etc/revision.h;             \
+	fi
+	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
+	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
+
+dist/alpine.done: dist/alpine/APKBUILD include/libu8/revision.h makefile \
+	staging/alpine/libu8-@U8VERSION@.tar.gz staging/alpine/APKBUILD \
+	@APKREPO@/dist/x86_64
+	cd staging/alpine; \
+		abuild -P @APKREPO@ clean cleancache cleanpkg && \
+		abuild checksum && \
+		abuild -P @APKREPO@ && \
+		touch ../../$@
+
+alpine: dist/alpine.done
+
+.PHONY: alpine
+
