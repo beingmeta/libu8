@@ -447,11 +447,11 @@ cleandist cleanrpms cleandeb rpmclean debclean:
 
 staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	@rm -rf staging/libu8-@U8VERSION@
-	@git archive --prefix=libu8-@U8VERSION@/ \
+	git archive --prefix=libu8-@U8VERSION@/ \
 	            -o staging/libu8-@U8VERSION@.tar HEAD
-	@cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
-	@cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
-	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
+	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
 	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
 		> staging/libu8-@U8VERSION@/etc/revision.h;             \
 	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
@@ -605,9 +605,28 @@ dist/alpine/APKBUILD: dist/alpine/APKBUILD.in
 @APKREPO@/dist/x86_64:
 	@@INSTALL@ -d $@
 
-dist/alpine.done: dist/alpine/APKBUILD include/libu8/revision.h \
-	makefile @APKREPO@/dist/x86_64
-	cd dist/alpine; \
+staging/alpine:
+	@@INSTALL@ -d $@
+
+staging/alpine/APKBUILD: dist/alpine/APKBUILD staging/alpine
+	cp dist/alpine/APKBUILD staging/alpine
+
+staging/alpine/libu8-@U8VERSION@.tar.gz: staging/alpine
+	git archive --prefix=libu8/ -o staging/alpine/libu8-@U8VERSION@.tar HEAD
+	cd staging/alpine; tar -xf libu8-@U8VERSION@.tar;
+	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	  echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
+		> staging/alpine/libu8/etc/revision.h;             \
+	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
+		> staging/alpine/libu8/etc/revision.h;             \
+	fi
+	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
+	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
+
+dist/alpine.done: dist/alpine/APKBUILD include/libu8/revision.h makefile \
+	staging/alpine/libu8-@U8VERSION@.tar.gz staging/alpine/APKBUILD \
+	@APKREPO@/dist/x86_64
+	cd staging/alpine; \
 		abuild -P @APKREPO@ clean cleancache cleanpkg && \
 		abuild checksum && \
 		abuild -P @APKREPO@ && \

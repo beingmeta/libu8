@@ -1,7 +1,7 @@
 # Contributor: beingmeta repository manager <repoman@beingmeta.com>
 # Maintainer: beingmeta repository manager <repoman@beingmeta.com>
 pkgname=libu8
-pkgver=2.6.9
+pkgver=@U8VERSION@
 pkgrel=@U8PATCHLEVEL@
 pkgdesc="UTF-8 string and comptability library"
 url="https://libu8.org/"
@@ -10,15 +10,15 @@ license="LGPL"
 depends="ldns libressl libuuid libressl2.7-libcrypto"
 makedepends="util-linux-dev ldns-dev libressl-dev libressl2.7-libcrypto libuuid libc-dev alpine-sdk"
 install=""
-#subpackages="$pkgname-dev $pkgname-doc $pkgname-static"
 subpackages=""
-depends_dev="$pkgname"
-depends_doc="$pkgname"
-source="https://github.com/beingmeta/libu8/archive/@GITBRANCH@.tar.gz"
-builddir="libu8-@GITBRANCH@"
+#subpackages="$pkgname-dev $pkgname-doc $pkgname-static"
+#depends_dev="$pkgname"
+#depends_doc="$pkgname"
+source="libu8-@U8VERSION@.tar.gz"
+builddir="${srcdir}/libu8"
 
 build() {
-	pwd
+#	echo "@build pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir}"
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
@@ -31,11 +31,11 @@ build() {
 }
 
 check() {
-	pwd
+#	echo "@check pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir}"
 	make
 }
 
 package() {
-	cd src/${builddir}
-	make DESTDIR="$pkgdir" SUDO= install install-docs
+#	echo "@package pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir}"
+        make DESTDIR="$pkgdir" SUDO= install install-docs
 }
