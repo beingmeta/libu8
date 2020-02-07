@@ -38,8 +38,6 @@ RPMDIR=${RPMDIR:-dist}
 RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
-APTREPO=${APTREPO:-/srv/repo/apt}
-APKREPO=${APKREPO:-/srv/repo/apk}
 PKGCONFIG_DIR=
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
@@ -63,6 +61,7 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
+default_buildopts_dir="\$prefix/etc/beingmeta/opts"
 
 if which lsb_release 2>&1 > /dev/null; then
    CODENAME=`lsb_release -cs || echo beingmeta`
@@ -97,6 +96,14 @@ case $target_os in
    ;;
 esac  
 
+if test $prefix == "/usr"; then
+   default_config_dir=/etc/kno;
+   default_buildopts_dir=/etc/beingmeta/opts;
+else
+   default_config_dir=$prefix/etc/kno;
+   default_buildopts_dir=$prefix/etc/beingmeta/opts;
+fi
+
 AC_SUBST(LD)
 AC_SUBST(CLEAN)
 AC_SUBST(TAGS)
@@ -130,6 +137,7 @@ AC_SUBST(install_shared)
 AC_SUBST(install_static)
 AC_SUBST(syslog_shared)
 AC_SUBST(syslog_static)
+AC_SUBST(buildopts_dir)
 AC_SUBST(archflags)
 AC_SUBST(definefileinfo)
 AC_SUBST(versionsh)
@@ -147,16 +155,12 @@ AC_SUBST(RPATHFLAGS)
 AC_ARG_VAR(GITBRANCH,"Git branch for build")
 AC_ARG_VAR(RPMDIR,"Location for writing built RPMs")
 AC_ARG_VAR(RPMFLAGS,"Default flags for building RPMs")
-AC_ARG_VAR(APTREPO,"Location of the APT repository")
-AC_ARG_VAR(APKREPO,"Location of the APK repository")
 AC_ARG_VAR(GPG,"GPG executable")
 AC_ARG_VAR(GPGID,"Default GnuPG id for signing packages")
 AC_SUBST(RPMDIR)
 AC_SUBST(RPMFLAGS)
 AC_SUBST(GPG)
 AC_SUBST(GPGID)
-AC_SUBST(APTREPO)
-AC_SUBST(APKREPO)
 AC_SUBST(GITBRANCH)
 AC_SUBST(CODENAME)
 
@@ -168,6 +172,9 @@ AC_PATH_PROG(CLANG,clang,none)
 
 AC_ARG_WITH(codename,--with-codename for distribution,with_codename=$withval,with_codename=$CODENAME)
 CODENAME=$with_codename
+
+AC_ARG_WITH(buildopts,--with-buildopts-dir location used by getbuildopt,,with_buildopts_dir=$default_buildopts_dir)
+buildopts_dir=$with_buildopts_dir
 
 AC_ARG_WITH(sanitize,--with-sanitize[=address*|memory|thread],with_sanitize=$withval,with_sanitize="none")
 
@@ -594,6 +601,8 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT(makefile etc/version etc/libu8.pc
-          dist/libu8-2.6.spec dist/alpine/APKBUILD)
+AC_OUTPUT([makefile etc/version etc/libu8.pc etc/getbuildopt
+           dist/libu8-2.6.spec dist/alpine/APKBUILD],
+          [chmod a+x etc/getbuildopt])
+
 

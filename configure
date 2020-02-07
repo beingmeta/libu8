@@ -652,8 +652,6 @@ CLANG
 CODENAME
 GPGID
 GPG
-APKREPO
-APTREPO
 RPMFLAGS
 RPMDIR
 RPATHFLAGS
@@ -668,6 +666,7 @@ I18N
 versionsh
 definefileinfo
 archflags
+buildopts_dir
 syslog_static
 syslog_shared
 install_static
@@ -757,6 +756,7 @@ ac_subst_files=''
 ac_user_opts='
 enable_option_checking
 with_codename
+with_buildopts
 with_sanitize
 with_optlib
 with_optdir
@@ -782,8 +782,6 @@ target_alias
 GITBRANCH
 RPMDIR
 RPMFLAGS
-APTREPO
-APKREPO
 GPG
 GPGID
 CC
@@ -1426,6 +1424,7 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
 --with-codename for distribution
+--with-buildopts-dir location used by getbuildopt
 --with-sanitize=address*|memory|thread
 --with-optlib Use optional library directory
 --with-optdir Use optional header/lib
@@ -1443,8 +1442,6 @@ Some influential environment variables:
   GITBRANCH   "Git branch for build"
   RPMDIR      "Location for writing built RPMs"
   RPMFLAGS    "Default flags for building RPMs"
-  APTREPO     "Location of the APT repository"
-  APKREPO     "Location of the APK repository"
   GPG         "GPG executable"
   GPGID       "Default GnuPG id for signing packages"
   CC          C compiler command
@@ -2868,8 +2865,6 @@ RPMDIR=${RPMDIR:-dist}
 RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
-APTREPO=${APTREPO:-/srv/repo/apt}
-APKREPO=${APKREPO:-/srv/repo/apk}
 PKGCONFIG_DIR=
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
@@ -2893,6 +2888,7 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
+default_buildopts_dir="\$prefix/etc/beingmeta/opts"
 
 if which lsb_release 2>&1 > /dev/null; then
    CODENAME=`lsb_release -cs || echo beingmeta`
@@ -3067,8 +3063,13 @@ case $target_os in
    ;;
 esac
 
-
-
+if test $prefix == "/usr"; then
+   default_config_dir=/etc/kno;
+   default_buildopts_dir=/etc/beingmeta/opts;
+else
+   default_config_dir=$prefix/etc/kno;
+   default_buildopts_dir=$prefix/etc/beingmeta/opts;
+fi
 
 
 
@@ -3185,6 +3186,16 @@ else
 fi
 
 CODENAME=$with_codename
+
+
+# Check whether --with-buildopts was given.
+if test "${with_buildopts+set}" = set; then :
+  withval=$with_buildopts;
+else
+  with_buildopts_dir=$default_buildopts_dir
+fi
+
+buildopts_dir=$with_buildopts_dir
 
 
 # Check whether --with-sanitize was given.
@@ -7867,7 +7878,9 @@ fi
 done
 
 
-ac_config_files="$ac_config_files makefile etc/version etc/libu8.pc dist/libu8-2.6.spec dist/alpine/APKBUILD"
+ac_config_files="$ac_config_files makefile etc/version etc/libu8.pc etc/getbuildopt dist/libu8-2.6.spec dist/alpine/APKBUILD"
+
+ac_config_commands="$ac_config_commands default"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -8403,6 +8416,7 @@ cat >>$CONFIG_STATUS <<_ACEOF || ac_write_fail=1
 # Files that config.status was made for.
 config_files="$ac_config_files"
 config_headers="$ac_config_headers"
+config_commands="$ac_config_commands"
 
 _ACEOF
 
@@ -8431,6 +8445,9 @@ $config_files
 
 Configuration headers:
 $config_headers
+
+Configuration commands:
+$config_commands
 
 Report bugs to the package provider."
 
@@ -8565,8 +8582,10 @@ do
     "makefile") CONFIG_FILES="$CONFIG_FILES makefile" ;;
     "etc/version") CONFIG_FILES="$CONFIG_FILES etc/version" ;;
     "etc/libu8.pc") CONFIG_FILES="$CONFIG_FILES etc/libu8.pc" ;;
+    "etc/getbuildopt") CONFIG_FILES="$CONFIG_FILES etc/getbuildopt" ;;
     "dist/libu8-2.6.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-2.6.spec" ;;
     "dist/alpine/APKBUILD") CONFIG_FILES="$CONFIG_FILES dist/alpine/APKBUILD" ;;
+    "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -8580,6 +8599,7 @@ done
 if $ac_need_defaults; then
   test "${CONFIG_FILES+set}" = set || CONFIG_FILES=$config_files
   test "${CONFIG_HEADERS+set}" = set || CONFIG_HEADERS=$config_headers
+  test "${CONFIG_COMMANDS+set}" = set || CONFIG_COMMANDS=$config_commands
 fi
 
 # Have a temporary directory for convenience.  Make it in the build tree
@@ -8876,7 +8896,7 @@ cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
 fi # test -n "$CONFIG_HEADERS"
 
 
-eval set X "  :F $CONFIG_FILES  :H $CONFIG_HEADERS    "
+eval set X "  :F $CONFIG_FILES  :H $CONFIG_HEADERS    :C $CONFIG_COMMANDS"
 shift
 for ac_tag
 do
@@ -9114,9 +9134,16 @@ $as_echo "$as_me: $ac_file is unchanged" >&6;}
   fi
  ;;
 
-
+  :C)  { $as_echo "$as_me:${as_lineno-$LINENO}: executing $ac_file commands" >&5
+$as_echo "$as_me: executing $ac_file commands" >&6;}
+ ;;
   esac
 
+
+  case $ac_file$ac_mode in
+    "default":C) chmod a+x etc/getbuildopt ;;
+
+  esac
 done # for ac_tag
 
 
@@ -9152,5 +9179,6 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
+
 
 
