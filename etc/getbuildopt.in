@@ -26,9 +26,7 @@ elif [ -f ~/.opts/${optname} ]; then
 elif [ -f @buildopts_dir@/${optname} ]; then
     cat ~/.opts/${optname};
 elif printenv ${env_name} 2>&1 > /dev/null; then
-    echo $(date) "Using env for optname='${optname}'" >> /tmp/gbo.log
     printenv ${env_name};
 elif [ $# -gt 1 ]; then
-    echo $(date) "Using default for optname='${optname}'" >> /tmp/gbo.log
     echo $dflt;
 fi;
