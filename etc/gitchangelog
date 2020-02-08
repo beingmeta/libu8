@@ -1,8 +1,8 @@
 #!/bin/sh
-PACKAGE=${1:-libu8};
+PKGNAME=${1:-libu8};
 CODENAME=${2:-debian};
-STATUS=${3:-stable};
-BRANCH=$4;
+BRANCH=$3;
+STATUS=${4:-stable};
 URGENCY=${5:-medium};
 get_git_branch() {
     branch=$(git branch | \
@@ -15,7 +15,7 @@ get_git_branch() {
 get_git_version() {
     version=$(git describe | \
 		  sed -e "s/-g[0123456789ABCDEFabcdef]*$//" | \
-		  sed -e "s/^${PACKAGE}-//")
+		  sed -e "s/^${PKGNAME}-//")
     if [ -z $version ]; then return 1; fi
     echo $version;
     return 0;
@@ -23,7 +23,7 @@ get_git_version() {
 DATE=`date -R`;
 gitid=$(git describe);
 version=$(get_git_version);
-if [ -z ${BRANCH} ]; then
+if [ -z ${BRANCH} ] || [ ${BRANCH} = "current" ]; then
     BRANCH=$(get_git_branch);
 fi;
 if [ -z "${STATUS}" ] || 
@@ -38,14 +38,16 @@ if [ -z "${BRANCH}" ] || \
    [ ${BRANCH} = "master" ] || \
    [ ${BRANCH} = "default" ]; then
     DBRANCH=
-    UBRANCH=
 else
     DBRANCH="-${BRANCH}";
-    UBRANCH="_${BRANCH}";
 fi;
-echo ${PACKAGE} \(${version}-${CODENAME}${DBRANCH}\) ${CODENAME}${DBRANCH}${STATUS}\; urgency=${URGENCY}
+echo ${PKGNAME} \(${version}-${CODENAME}${DBRANCH}\) ${CODENAME}${DBRANCH}${STATUS}\; urgency=${URGENCY}
 echo
-echo "  * ${gitid} point release of ${PACKAGE} for ${CODENAME} (${STATUS})"
+if [ -z ${DBRANCH} ]; then
+    echo "  * ${gitid} point release of ${PKGNAME} for ${CODENAME} (${STATUS})"
+else
+    echo "  * ${gitid} point release of ${PKGNAME} (branch '${BRANCH}') for ${CODENAME} (${STATUS})"
+fi;
 echo
 echo " -- Repository Manager <repoman@beingmeta.com>  ${DATE}"
 echo
