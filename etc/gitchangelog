@@ -4,12 +4,28 @@ CODENAME=${2:-debian};
 STATUS=${3:-stable};
 BRANCH=$4;
 URGENCY=${5:-medium};
-if [ -z ${BRANCH} ]; then
-    BRANCH=$(git branch | head -1 | sed -e 's/^\* *//');
-fi;
+get_git_branch() {
+    branch=$(git branch | \
+		 grep "^ *[*-+0123456789][0123456789]*" | \
+		 sed -e 's/^ *[*-+0123456789][0123456789]* *//')
+    if [ -z $branch ]; then return 1; fi
+    echo $branch;
+    return 0;
+}
+get_git_version() {
+    version=$(git describe | \
+		  sed -e "s/-g[0123456789ABCDEFabcdef]*$//" | \
+		  sed -e "s/^${PACKAGE}-//")
+    if [ -z $version ]; then return 1; fi
+    echo $version;
+    return 0;
+}
 DATE=`date -R`;
-gitid=`git describe`;
-version=`git describe | sed -e "s/-g[0123456789ABCDEFabcdef]*$//" | sed -e "s/^${PACKAGE}-//"`;
+gitid=$(git describe);
+version=$(get_git_version);
+if [ -z ${BRANCH} ]; then
+    BRANCH=$(get_git_branch);
+fi;
 if [ -z "${STATUS}" ] || 
    [ ${STATUS} = "stable" ] || 
    [ ${STATUS} = "default" ]; then
@@ -30,8 +46,6 @@ fi;
 echo ${PACKAGE} \(${version}-${CODENAME}${DBRANCH}\) ${CODENAME}${DBRANCH}${STATUS}\; urgency=${URGENCY}
 echo
 echo "  * ${gitid} point release of ${PACKAGE} for ${CODENAME} (${STATUS})"
-echo "  * Debug branch=${BRANCH} dbranch=${DBRANCH} ubranch=${UBRANCH}"
-echo "  * Debug `git branch`="$(git branch)
 echo
 echo " -- Repository Manager <repoman@beingmeta.com>  ${DATE}"
 echo
