@@ -2,8 +2,11 @@
 PACKAGE=${1:-libu8};
 CODENAME=${2:-debian};
 STATUS=${3:-stable};
-BRANCH=${4:-default};
+BRANCH=$4;
 URGENCY=${5:-medium};
+if [ -z ${BRANCH} ]; then
+    BRANCH=$(git branch | head -1 | sed -e 's/^\* *//');
+fi;
 DATE=`date -R`;
 gitid=`git describe`;
 version=`git describe | sed -e "s/-g[0123456789ABCDEFabcdef]*$//" | sed -e "s/^${PACKAGE}-//"`;
@@ -18,13 +21,17 @@ if [ -z "${BRANCH}" ] || \
    [ ${BRANCH} = "trunk" ] || \
    [ ${BRANCH} = "master" ] || \
    [ ${BRANCH} = "default" ]; then
-    BRANCH=
+    DBRANCH=
+    UBRANCH=
 else
-    BRANCH="-${BRANCH}";
+    DBRANCH="-${BRANCH}";
+    UBRANCH="_${BRANCH}";
 fi;
-echo ${PACKAGE} \(${version}-${CODENAME}\) ${CODENAME}${BRANCH}${STATUS}\; urgency=${URGENCY}
+echo ${PACKAGE} \(${version}-${CODENAME}${DBRANCH}\) ${CODENAME}${DBRANCH}${STATUS}\; urgency=${URGENCY}
 echo
 echo "  * ${gitid} point release of ${PACKAGE} for ${CODENAME} (${STATUS})"
+echo "  * Debug branch=${BRANCH} dbranch=${DBRANCH} ubranch=${UBRANCH}"
+echo "  * Debug `git branch`="$(git branch)
 echo
 echo " -- Repository Manager <repoman@beingmeta.com>  ${DATE}"
 echo
