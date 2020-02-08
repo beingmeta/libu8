@@ -1,3 +1,9 @@
+libu8 (2.7.1-10) unstable; urgency=medium
+
+  * Welcome 2.7
+
+ -- Ken Haase <kh@beingmeta.com>  Tue, 08 Feb 2020 12:33:48 +0000
+
 libu8 (2.6.8-10) unstable; urgency=medium
 
   * Add pkgconfig install
