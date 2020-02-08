@@ -24,6 +24,8 @@ datarootdir	= @datarootdir@
 datadir		= @datadir@
 LOCALEDIR	= $(DESTDIR)@localedir@
 MANDIR		= $(DESTDIR)@mandir@
+LIBSOURCE	= @LIBSOURCE@
+EXESOURCE	= @EXESOURCE@
 LIBINSTALLDIR	= $(DESTDIR)@libdir@
 BININSTALLDIR	= $(DESTDIR)@bindir@
 ENCDIR		= $(DESTDIR)@prefix@/share/libu8/encodings
@@ -237,13 +239,21 @@ lib/%@suffix@.dylib:
 		$(DYLIB_FLAGS) -o $@ $^
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 
-$(LIBINSTALLDIR)/%.a: lib/%.a
-	@echo "# (libu8)" Installing $@
+lib/stripped/%: lib/%
+	@cp $< $@
+	@strip $@
+
+exe/stripped/%: exe/%
+	@cp $< $@
+	@strip $@
+
+$(LIBINSTALLDIR)/%.a: ${LIBSOURCE}/%.a
+	@echo "# (libu8)" Installing $@ from $<
 	@$(INSTALL) -d $(LIBINSTALLDIR)
 	@$(INSTALL) $< $(LIBINSTALLDIR)
 
-$(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: lib/%@suffix@.so
-	@echo "# (libu8)" Installing $@
+$(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: ${LIBSOURCE}/%@suffix@.so
+	@echo "# (libu8)" Installing $@ from $<
 	@$(INSTALL) -d $(@D)
 	@$(INSTALL) $< $@
 $(LIBINSTALLDIR)/%@suffix@.so.@U8MAJOR@: \
@@ -254,7 +264,7 @@ $(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 	@echo "# (libu8)" Linking to $@
 	@@SUDO@ ln -sf $(shell basename $<) $@
 
-$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: lib/%@suffix@.dylib
+$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: {LIBSOURCE}/%@suffix@.dylib
 	@echo "# (libu8)" Installing $@
 	@$(INSTALL) -d $(LIBINSTALLDIR)
 	@$(INSTALL) $< $@
@@ -271,7 +281,7 @@ $(LIBINSTALLDIR)/%@suffix@.dylib: \
 	@echo "# (libu8)" Linking to $@
 	@@SUDO@ ln -sf $(shell basename $<) $@
 
-$(BININSTALLDIR)/%: exe/%
+$(BININSTALLDIR)/%: ${EXESOURCE}/%
 	@echo "# (libu8)" Installing exe $@
 	@$(INSTALL) -d $(BININSTALLDIR)
 	@$(INSTALL) $< $(BININSTALLDIR)

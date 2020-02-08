@@ -25,6 +25,8 @@ MKSTATIC="\$(LD) -r "
 EXEFLAGS=
 EXELIBS=
 RPATHFLAGS="-Wl,'-rpath \$(RPATH)'"
+LIBSOURCE=lib
+EXESOURCE=exe
 I18N=""
 INSTALLI18N=""
 SUDO=""
@@ -151,6 +153,9 @@ AC_SUBST(INSTALLDOCS)
 
 AC_SUBST(rpath)
 AC_SUBST(RPATHFLAGS)
+
+AC_SUBST(LIBSOURCE)
+AC_SUBST(EXESOURCE)
 
 AC_ARG_VAR(GITBRANCH,"Git branch for build")
 AC_ARG_VAR(RPMDIR,"Location for writing built RPMs")
@@ -288,6 +293,12 @@ fi
 
 AC_ARG_ENABLE(maintainer-mode,--en[dis]able-maintainer-mode doesn't do anything)
 AC_ARG_ENABLE(dependency-tracking,--en[dis]able-dependency-tracking doesn't do anything)
+
+AC_ARG_ENABLE(stripping,--enable-stripping strip libraries and executables before installing,,enable_stripping="no")
+if test enable_stripping != "no"; then
+   LIBSOURCE=lib/stripped
+   EXESOURCE=exe/stripped
+fi
 
 AC_ARG_ENABLE(shared,--en[dis]able-shared Build with/without shared libraries,,enable_shared=$shared_default)
 if test $target = "i686-pc-mingw32"; then
