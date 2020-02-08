@@ -15,9 +15,9 @@ else
     STATUS="-${STATUS}";
 fi;
 if [ -z "${BRANCH}" ] || \
-   [ ${BRANCH} = "trunk"] || \
-   [ ${BRANCH} = "master"] || \
-   [ ${BRANCH} = "default"]; then
+   [ ${BRANCH} = "trunk" ] || \
+   [ ${BRANCH} = "master" ] || \
+   [ ${BRANCH} = "default" ]; then
     BRANCH=
 else
     BRANCH="-${BRANCH}";
