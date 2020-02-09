@@ -613,7 +613,7 @@ AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
 AC_OUTPUT([makefile etc/version etc/libu8.pc etc/getbuildopt
-           dist/libu8-2.6.spec dist/alpine/APKBUILD],
+           dist/libu8-2.7.spec dist/alpine/APKBUILD],
           [chmod a+x etc/getbuildopt])
 
 

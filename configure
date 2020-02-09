@@ -7899,7 +7899,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files makefile etc/version etc/libu8.pc etc/getbuildopt dist/libu8-2.6.spec dist/alpine/APKBUILD"
+ac_config_files="$ac_config_files makefile etc/version etc/libu8.pc etc/getbuildopt dist/libu8-2.7.spec dist/alpine/APKBUILD"
 
 ac_config_commands="$ac_config_commands default"
 
@@ -8604,7 +8604,7 @@ do
     "etc/version") CONFIG_FILES="$CONFIG_FILES etc/version" ;;
     "etc/libu8.pc") CONFIG_FILES="$CONFIG_FILES etc/libu8.pc" ;;
     "etc/getbuildopt") CONFIG_FILES="$CONFIG_FILES etc/getbuildopt" ;;
-    "dist/libu8-2.6.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-2.6.spec" ;;
+    "dist/libu8-2.7.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-2.7.spec" ;;
     "dist/alpine/APKBUILD") CONFIG_FILES="$CONFIG_FILES dist/alpine/APKBUILD" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 
