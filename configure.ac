@@ -295,7 +295,8 @@ AC_ARG_ENABLE(maintainer-mode,--en[dis]able-maintainer-mode doesn't do anything)
 AC_ARG_ENABLE(dependency-tracking,--en[dis]able-dependency-tracking doesn't do anything)
 
 AC_ARG_ENABLE(stripping,--enable-stripping strip libraries and executables before installing,,enable_stripping="no")
-if test enable_stripping != "no"; then
+echo "enable_stripping=${enable_stripping}";
+if test $enable_stripping != "no"; then
    LIBSOURCE=lib/stripped
    EXESOURCE=exe/stripped
 fi
