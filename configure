@@ -4640,8 +4640,7 @@ else
   enable_stripping="no"
 fi
 
-echo "enable_stripping=${enable_stripping}";
-if test $enable_stripping != "no"; then
+if test "$enable_stripping" != "no"; then
    LIBSOURCE=lib/stripped
    EXESOURCE=exe/stripped
 fi
