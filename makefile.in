@@ -470,6 +470,10 @@ install-dev: install-headers install-pkgconfig
 install-shared: @install_shared@
 install-doc: @INSTALLDOCS@
 install-libs: install-static install-shared
+install-bin: install-shared install-static install-exe
+install-stripped:
+	make LIBSOURCE=lib/stripped LIBSOURCE=exe/stripped install-bin
+install-extras:  install-encodings @INSTALLI18N@ install-doc
 
 install-headers: $(DESTDIR)@prefix@/include/libu8
 	@echo "# (libu8) Installing headers in $(DESTDIR)@prefix@/include/libu8"
