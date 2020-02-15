@@ -97,7 +97,7 @@ LIBU8IO_OBJECTS=libu8io.o xfiles.o convert.o filestring.o
 LIBU8DATA_OBJECTS=chardata.o
 LIBU8STDIO_OBJECTS=u8stdio.o
 LIBU8SYSLOG_OBJECTS=u8syslog.o
-LIBU8_OBJECTS=$(LIBU8CORE_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8SYSLOG_OBJECTS)
+LIBU8_OBJECTS=$(LIBU8CORE_OBJECTS) $(LIBU8IO_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8SYSLOG_OBJECTS)
 TESTBIN=tests/u8recode tests/latin1u8 tests/u8xrecode tests/getentity \
 	tests/echosrv tests/xtimetest # tests/printftest
 DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
@@ -106,7 +106,7 @@ DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
 
 STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
             lib/libu8data.a lib/libu8stdio.a
-STATIC_TEST_LIBS=lib/libu8io.a lib/libu8.a
+STATIC_TEST_LIBS=lib/libu8.a
 SHARED_TEST_LIBS=lib/libu8.@shared_suffix@ lib/libu8io.@shared_suffix@ \
 		lib/libu8stdio.@shared_suffix@
 
@@ -210,15 +210,15 @@ tests/%: tests/%.c
 	@$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< ${STATIC_TEST_LIBS} ${LIBS}
 tests/dynamic/%: tests/%.c
 	@echo "# (libu8)" CC_DYNAMIC_TEST $@ $<
-	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8 -lu8io
+	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8
 exe/%: %.c
 	@echo "# (libu8)" CC_EXE $@ $<
 	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) $(EXEFLAGS) \
-		-o $@ $< -lu8 -lu8io
+		-o $@ $< -lu8
 exe/%.static: %.c
 	@echo "# (libu8)" CC_EXE $@ $<
 	@$(CC) $(CFLAGS) -g3 -O0 -L./lib $(LDFLAGS) $(EXEFLAGS) \
-		 -o $@ $< lib/libu8.a lib/libu8io.a ${LIBS}
+		 -o $@ $< lib/libu8.a ${LIBS}
 
 
 lib/%@suffix@.a:
