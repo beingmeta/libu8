@@ -10,15 +10,15 @@ license="LGPL"
 depends="ldns libressl libuuid libressl2.7-libcrypto"
 makedepends="util-linux-dev ldns-dev libressl-dev libressl2.7-libcrypto libuuid libc-dev alpine-sdk"
 install=""
-subpackages=""
-#subpackages="$pkgname-dev $pkgname-doc $pkgname-static"
-#depends_dev="$pkgname"
-#depends_doc="$pkgname"
+#subpackages=""
+subpackages="$pkgname-dev $pkgname-doc $pkgname-static"
+depends_dev="$pkgname"
+depends_doc="$pkgname"
 source="libu8-@U8VERSION@.tar.gz"
 builddir="${srcdir}/libu8"
 
 build() {
-#	echo "@build pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir}"
+	#echo "@build pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir}"
 	./configure \
 		--build=$CBUILD \
 		--host=$CHOST \
@@ -32,11 +32,29 @@ build() {
 }
 
 check() {
-#	echo "@check pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir}"
+	#echo "@check pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir}"
 	make
 }
 
 package() {
-#	echo "@package pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir}"
-        make DESTDIR="$pkgdir" SUDO= install install-docs
+	#echo "@package pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir}"
+        make DESTDIR="$pkgdir" SUDO= install-core
+}
+
+dev() {
+        cd ${builddir}
+	# echo "@dev pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir} subpkgdir=${subpkgdir}"
+        make DESTDIR="${subpkgdir}" SUDO= install-dev
+}
+
+static() {
+        cd ${builddir}
+	# echo "@static pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir} subpkgdir=${subpkgdir}"
+        make DESTDIR="${subpkgdir}" SUDO= install-static
+}
+
+doc() {
+        cd ${builddir}
+	#echo "@doc pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir} subpkgdir=${subpkgdir}"
+        make DESTDIR="${subpkgdir}" SUDO= install-docs
 }
