@@ -8,7 +8,7 @@ url="https://libu8.org/"
 arch="all"
 license="LGPL"
 depends="ldns libressl libuuid libressl2.7-libcrypto"
-makedepends="util-linux-dev ldns-dev libressl-dev libressl2.7-libcrypto libuuid libc-dev alpine-sdk"
+makedepends="util-linux-dev ldns-dev libressl-dev libressl2.7-libcrypto libuuid libc-dev alpine-sdk ronn gzip"
 install=""
 #subpackages=""
 subpackages="$pkgname-dev $pkgname-doc $pkgname-static"
@@ -24,10 +24,10 @@ build() {
 		--host=$CHOST \
 		--prefix=/usr \
 		--sysconfdir=/etc \
-		--enable-stripping \
 		--mandir=/usr/share/man \
 		--localstatedir=/var \
 		--without-sudo
+#		--enable-stripping
 	make
 }
 
