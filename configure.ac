@@ -348,10 +348,11 @@ AC_TYPE_PID_T
 AC_TYPE_MODE_T
 AC_C_INLINE
 AC_C_BIGENDIAN
-AC_CHECK_SIZEOF(int,4)
-AC_CHECK_SIZEOF(long,4)
-AC_CHECK_SIZEOF(long long,8)
-AC_CHECK_SIZEOF(void *,4)
+AC_CHECK_SIZEOF(int)
+AC_CHECK_SIZEOF(long)
+AC_CHECK_SIZEOF(long long)
+AC_CHECK_SIZEOF(void *)
+AC_CHECK_SIZEOF(off_t)
 
 # Check whether to use an architecture specific
 dnl if test "x${libdir}" != "x\${exec_prefix}/lib"; then
