@@ -86,7 +86,7 @@ case $target_os in
    AC_DEFINE(U8_RUSAGE_PROCFS_PATCH,1)
    ;;
   darwin*)
-   MKSTATIC="libtool -static ";
+#   MKSTATIC="/usr/bin/libtool -static ";
 #   if test "x$CC" = "xgcc"; then LIBS="$LIBS -lgcc"; fi
    shared_suffix="dylib";
    install_shared="install-dylib";
