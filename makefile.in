@@ -236,6 +236,7 @@ lib/%@suffix@.dylib:
 	@echo "# (libu8)" MACLIBTOOL $@
 	@$(MACLIBTOOL) -install_name \
 		@rpath/lib/`basename $(@F) .dylib`.@U8MAJOR@.dylib \
+		-current_version @U8VERSION@ -compatibility_version @U8MAJOR@.@U8MINOR@ \
 		$(DYLIB_FLAGS) -o $@ $^
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 
