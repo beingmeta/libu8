@@ -11,7 +11,7 @@ XLDFLAGS        =
 LDFLAGS         = @LDFLAGS@ $(EFENCE)
 EXEFLAGS        = @EXEFLAGS@
 LIBS            = @LIBS@ $(EFENCE) -lm
-DYLIB_FLAGS     = -compatibility_version @U8MAJOR@.0.0 \
+DYLIB_FLAGS     = -compatibility_version @U8MAJOR@.@U8MINOR@ \
 	          -current_version @U8MAJOR@.@U8MINOR@.@U8RELEASE@
 U8VERSION       = @U8VERSION@
 BUILDMODE       = $(cat buildmode)
@@ -236,7 +236,6 @@ lib/%@suffix@.dylib:
 	@echo "# (libu8)" MACLIBTOOL $@
 	@$(MACLIBTOOL) -install_name \
 		@rpath/lib/`basename $(@F) .dylib`.@U8MAJOR@.dylib \
-		-current_version @U8VERSION@ -compatibility_version @U8MAJOR@.@U8MINOR@ \
 		$(DYLIB_FLAGS) -o $@ $^
 	@ln -sf $(@F) $(@D)/$(*F).@U8MAJOR@.dylib
 
@@ -491,7 +490,7 @@ $(DESTDIR)@PKGCONFIG_DIR@:
 install-docs: docs/doxygen.done
 	@echo "# (libu8)" "Writing man pages"
 	@$(INSTALL) -d $(MANDIR)/man3
-	@for manpage in docs/man/man3/*; do gzip $${manpage}; done
+	@for manpage in docs/man/man3/*; do if test -f "$${manpage}"; then gzip $${manpage}; fi; done; 
 	@$(INSTALL) docs/man/man3/*.gz $(MANDIR)/man3
 
 install-static: $(LIBINSTALLDIR)/libu8.a \
