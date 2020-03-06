@@ -264,7 +264,7 @@ $(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 	@echo "# (libu8)" Linking to $@
 	@@SUDO@ ln -sf $(shell basename $<) $@
 
-$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: {LIBSOURCE}/%@suffix@.dylib
+$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: ${LIBSOURCE}/%@suffix@.dylib
 	@echo "# (libu8)" Installing $@
 	@$(INSTALL) -d $(LIBINSTALLDIR)
 	@$(INSTALL) $< $@
