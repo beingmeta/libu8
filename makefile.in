@@ -34,8 +34,11 @@ RPMFLAGS	= $(XRPMFLAGS) @RPMFLAGS@
 RPMDIR		= @RPMDIR@
 GPG             = @GPG@
 GPGID           = @GPGID@
+GZIP            = @GZIP@
 CLEAN		= @CLEAN@
-INSTALL		= @SUDO@@INSTALL@
+SUDO		= @SUDO@
+INSTALL		= $(SUDO)@INSTALL@
+GZINSTALL	= $(SUDO)$(GZIP) -cf 
 RANLIB		= @RANLIB@
 MKSTATIC	= @MKSTATIC@ -o 
 DOXYGEN		= @doxygen@
@@ -113,17 +116,22 @@ SHARED_TEST_LIBS=lib/libu8.@shared_suffix@ lib/libu8io.@shared_suffix@ \
 ALL=@TAGS@ libs exe @I18N@ tests @DOCS@
 
 update: buildmode
+	@make TAGS
 	@make `cat buildmode`
 normal:
+	@make TAGS
 	@echo "# (libu8)" Building NORMAL configuration
 	@make ${ALL}
 debugging:
+	@make TAGS
 	@echo "# (libu8)" Building DEBUGGING configuration
 	make XCFLAGS="@debugcflags@ $(XCFLAGS)" ${ALL}
 optimizing:
+	@make TAGS
 	@echo "# (libu8)" Building OPTIMIZING configuration
 	make XCFLAGS="-O3" ${ALL}
 nitpicking:
+	@make TAGS
 	@echo "# (libu8)" Building NITPICKING configuration
 	make XCFLAGS="-Wall" ${ALL}
 
@@ -259,10 +267,10 @@ $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: ${LIBSOURCE}/%@suffix@.so
 $(LIBINSTALLDIR)/%@suffix@.so.@U8MAJOR@: \
 	$(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 	@echo "# (libu8)" Linking $< to $@
-	@@SUDO@ ln -sf $(shell basename $<) $@
+	@$(SUDO) ln -sf $(shell basename $<) $@
 $(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 	@echo "# (libu8)" Linking to $@
-	@@SUDO@ ln -sf $(shell basename $<) $@
+	@$(SUDO) ln -sf $(shell basename $<) $@
 
 $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: ${LIBSOURCE}/%@suffix@.dylib
 	@echo "# (libu8)" Installing $@
@@ -271,15 +279,15 @@ $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: ${LIBSOURCE}/%@suffix@.dylib
 $(LIBINSTALLDIR)/%@suffix@.@U8MAJOR@.dylib: \
 	$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
 	@echo "# (libu8)" Linking $< to $@
-	@@SUDO@ ln -sf $(shell basename $<) $@
+	@$(SUDO) ln -sf $(shell basename $<) $@
 $(LIBINSTALLDIR)/%@suffix@.dylib: $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
 	@echo "# (libu8)" Linking $< to $@
-	@@SUDO@ ln -sf $(shell basename $<) $@
+	@$(SUDO) ln -sf $(shell basename $<) $@
 
 $(LIBINSTALLDIR)/%@suffix@.dylib: \
 		$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
 	@echo "# (libu8)" Linking to $@
-	@@SUDO@ ln -sf $(shell basename $<) $@
+	@$(SUDO) ln -sf $(shell basename $<) $@
 
 $(BININSTALLDIR)/%: ${EXESOURCE}/%
 	@echo "# (libu8)" Installing exe $@
@@ -490,8 +498,12 @@ $(DESTDIR)@PKGCONFIG_DIR@:
 install-docs: docs/doxygen.done
 	@echo "# (libu8)" "Writing man pages"
 	@$(INSTALL) -d $(MANDIR)/man3
-	@for manpage in docs/man/man3/*; do if test -f "$${manpage}"; then gzip $${manpage}; fi; done; 
-	@$(INSTALL) docs/man/man3/*.gz $(MANDIR)/man3
+	@for manpage in docs/man/man3/*.3; do 				\
+	  if test -f "$${manpage}"; then 				\
+	    $(GZINSTALL) $${manpage} >					\
+		$(MANDIR)/man3/$$(basename $$manpage).gz; 		\
+	   fi; 								\
+	 done; 
 
 install-static: $(LIBINSTALLDIR)/libu8.a \
 		$(LIBINSTALLDIR)/libu8io.a \
@@ -624,94 +636,94 @@ install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
 	@$(INSTALL) $(ENCODINGS) $(ENCDIR)
 	@for x in $(CP1125_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1125 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1125 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1250_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1250 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1250 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1251_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1251 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1251 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1252_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1252 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1252 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1253_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1253 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1253 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1254_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1254 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1254 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1255_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1255 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1255 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1256_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1256 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1256 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1257_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1257 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1257 $(ENCDIR)/$$x; fi; done; \
 	for x in $(CP1258_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf CP1258 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf CP1258 $(ENCDIR)/$$x; fi; done; \
 	for x in $(ISO88591_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf ISO88591 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf ISO88591 $(ENCDIR)/$$x; fi; done; \
 	for x in $(ISO88592_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf ISO88592 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf ISO88592 $(ENCDIR)/$$x; fi; done; \
 	for x in $(ISO88593_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf ISO88593 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf ISO88593 $(ENCDIR)/$$x; fi; done; \
 	for x in $(ISO88594_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf ISO88594 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf ISO88594 $(ENCDIR)/$$x; fi; done; \
 	for x in $(ISO88595_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf ISO88595 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf ISO88595 $(ENCDIR)/$$x; fi; done; \
 	for x in $(ISO88596_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf ISO88596 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf ISO88596 $(ENCDIR)/$$x; fi; done; \
 	for x in $(ISO88597_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf ISO88597 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf ISO88597 $(ENCDIR)/$$x; fi; done; \
 	for x in $(ISO88598_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf ISO88598 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf ISO88598 $(ENCDIR)/$$x; fi; done; \
 	for x in $(ISO88599_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf ISO88599 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf ISO88599 $(ENCDIR)/$$x; fi; done; \
 	for x in $(EUCJP_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf EUCJP $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf EUCJP $(ENCDIR)/$$x; fi; done; \
 	for x in $(EUCKR_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf EUCKR $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf EUCKR $(ENCDIR)/$$x; fi; done; \
 	for x in $(EUCTW_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf EUCTW $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf EUCTW $(ENCDIR)/$$x; fi; done; \
 	for x in $(KOI8R_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf KOI8R $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf KOI8R $(ENCDIR)/$$x; fi; done; \
 	for x in $(SHIFTJIS_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf SHIFTJIS $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf SHIFTJIS $(ENCDIR)/$$x; fi; done; \
 	for x in $(GB2312_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf GB2312 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf GB2312 $(ENCDIR)/$$x; fi; done; \
 	for x in $(GBK_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf GBK $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf GBK $(ENCDIR)/$$x; fi; done; \
 	for x in $(BIG5_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf BIG5 $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf BIG5 $(ENCDIR)/$$x; fi; done; \
 	for x in $(MACINTOSH_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf MACINTOSH $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf MACINTOSH $(ENCDIR)/$$x; fi; done; \
 	for x in $(MACCYRILLIC_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf MACCYRILLIC $(ENCDIR)/$$x; fi; done; \
+		then $(SUDO) ln -sf MACCYRILLIC $(ENCDIR)/$$x; fi; done; \
 	for x in $(MACCENTRALEUROPE_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
-		then @SUDO@ ln -sf MACCENTRALEUROPE $(ENCDIR)/$$x; fi; done;
+		then $(SUDO) ln -sf MACCENTRALEUROPE $(ENCDIR)/$$x; fi; done;
 
 $(DESTDIR)@prefix@/share/libu8/encodings:
 	$(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
@@ -724,12 +736,12 @@ rpms: dist/rpms.done
 
 install-debian install-debian debinstall installdeb: dist/debs.installed
 dist/debs.installed: dist/debs.done
-	@SUDO@ dpkg -i dist/*.deb && touch $@
+	$(SUDO) dpkg -i dist/*.deb && touch $@
 .PHONY: install-debian install-debian debinstall installdeb
 
 install-rpms rpminstall installrpms: dist/rpms.installed
 dist/rpms.installed: dist/rpms.done
-	@SUDO@ rpm -Uvh dist/*.rpm && touch $@
+	$(SUDO) rpm -Uvh dist/*.rpm && touch $@
 
 cleandist cleanrpms cleandeb rpmclean debclean:
 	@rm -rf dist/rpms.done dist/rpms.ready
@@ -840,7 +852,7 @@ dist/debs.done: dist/debs.signed
 	@touch dist/debs.done
 
 install-debian install-debs: dist/debs.done
-	@SUDO@dpkg -i dist/libu8*_@U8VERSION@*.deb
+	$(SUDO)dpkg -i dist/libu8*_@U8VERSION@*.deb
 
 debfresh freshdeb:
 	@make debclean
@@ -855,7 +867,7 @@ debupdate:
 	else make debfresh; fi;
 
 build-setup.debian:
-	@SUDO@ apt-get install libssl-dev uuid uuid-dev
+	$(SUDO) apt-get install libssl-dev uuid uuid-dev
 
 build-setup-ubuntu: build-setup.debian
 
