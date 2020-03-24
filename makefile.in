@@ -37,8 +37,8 @@ GPGID           = @GPGID@
 GZIP            = @GZIP@
 CLEAN		= @CLEAN@
 SUDO		= @SUDO@
-INSTALL		= $(SUDO)@INSTALL@
-GZINSTALL	= $(SUDO)$(GZIP) -cf 
+INSTALL		= @INSTALL@
+GZINSTALL	= $(GZIP) -cf 
 RANLIB		= @RANLIB@
 MKSTATIC	= @MKSTATIC@ -o 
 DOXYGEN		= @doxygen@
@@ -257,13 +257,13 @@ exe/stripped/%: exe/%
 
 $(LIBINSTALLDIR)/%.a: ${LIBSOURCE}/%.a
 	@echo "# (libu8)" Installing $@ from $<
-	@$(INSTALL) -d $(LIBINSTALLDIR)
-	@$(INSTALL) $< $(LIBINSTALLDIR)
+	@$(SUDO) $(INSTALL) -d $(LIBINSTALLDIR)
+	@$(SUDO) $(INSTALL) $< $(LIBINSTALLDIR)
 
 $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: ${LIBSOURCE}/%@suffix@.so
 	@echo "# (libu8)" Installing $@ from $<
-	@$(INSTALL) -d $(@D)
-	@$(INSTALL) $< $@
+	@$(SUDO) $(INSTALL) -d $(@D)
+	@$(SUDO) $(INSTALL) $< $@
 $(LIBINSTALLDIR)/%@suffix@.so.@U8MAJOR@: \
 	$(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 	@echo "# (libu8)" Linking $< to $@
@@ -274,8 +274,8 @@ $(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 
 $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: ${LIBSOURCE}/%@suffix@.dylib
 	@echo "# (libu8)" Installing $@
-	@$(INSTALL) -d $(LIBINSTALLDIR)
-	@$(INSTALL) $< $@
+	@$(SUDO) $(INSTALL) -d $(LIBINSTALLDIR)
+	@$(SUDO) $(INSTALL) $< $@
 $(LIBINSTALLDIR)/%@suffix@.@U8MAJOR@.dylib: \
 	$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
 	@echo "# (libu8)" Linking $< to $@
@@ -291,8 +291,8 @@ $(LIBINSTALLDIR)/%@suffix@.dylib: \
 
 $(BININSTALLDIR)/%: ${EXESOURCE}/%
 	@echo "# (libu8)" Installing exe $@
-	@$(INSTALL) -d $(BININSTALLDIR)
-	@$(INSTALL) $< $(BININSTALLDIR)
+	@$(SUDO) $(INSTALL) -d $(BININSTALLDIR)
+	@$(SUDO) $(INSTALL) $< $(BININSTALLDIR)
 
 check:
 
@@ -485,25 +485,31 @@ install-extras:  install-encodings @INSTALLI18N@ install-doc
 
 install-headers: $(DESTDIR)@prefix@/include/libu8
 	@echo "# (libu8) Installing headers in $(DESTDIR)@prefix@/include/libu8"
-	@$(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
+	@$(SUDO) $(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
 $(DESTDIR)@prefix@/include/libu8:
-	$(INSTALL) -d $(DESTDIR)@prefix@/include/libu8
+	$(SUDO) $(INSTALL) -d $(DESTDIR)@prefix@/include/libu8
 
 install-pkgconfig: $(DESTDIR)@PKGCONFIG_DIR@
 	@echo "# (libu8) Installing libu8 pkgconfig file in $(DESTDIR)@PKGCONFIG_DIR@"
-	@$(INSTALL) etc/libu8.pc $(DESTDIR)@PKGCONFIG_DIR@
+	@$(SUDO) $(INSTALL) etc/libu8.pc $(DESTDIR)@PKGCONFIG_DIR@
 $(DESTDIR)@PKGCONFIG_DIR@:
-	$(INSTALL) -d $(DESTDIR)@PKGCONFIG_DIR@
+	$(SUDO) $(INSTALL) -d $(DESTDIR)@PKGCONFIG_DIR@
 
 install-docs: docs/doxygen.done
 	@echo "# (libu8)" "Writing man pages"
-	@$(INSTALL) -d $(MANDIR)/man3
-	@for manpage in docs/man/man3/*.3; do 				\
-	  if test -f "$${manpage}"; then 				\
-	    $(GZINSTALL) $${manpage} >					\
-		$(MANDIR)/man3/$$(basename $$manpage).gz; 		\
-	   fi; 								\
-	 done; 
+	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3
+	@if test -z "$(SUDO)"; then 									\
+	  for manpage in docs/man/man3/*.3; do 								\
+	   if test -f "$${manpage}"; then 								\
+	     $(GZINSTALL) $${manpage} > $(MANDIR)/man3/$$(basename $$manpage).gz; 			\
+	   fi; 												\
+	 done; 												\
+	else for manpage in docs/man/man3/*.3; do 							\
+	  if test -f "$${manpage}"; then 								\
+	    ${SUDO} sh -c "$(GZINSTALL) $${manpage} > $(MANDIR)/man3/$$(basename $$manpage).gz";	\
+	   fi; 												\
+	 done; 												\
+	fi;
 
 install-static: $(LIBINSTALLDIR)/libu8.a \
 		$(LIBINSTALLDIR)/libu8io.a \
@@ -556,7 +562,7 @@ install-dll: libu8.dll libu8io.dll \
 	    libu8fns.dll libu8data.dll \
 	    libu8stdio.dll \
 	    $(LIBINSTALLDIR)
-	$(INSTALL) -D $^ $(LIBINSTALLDIR)
+	$(SUDO) $(INSTALL) -D $^ $(LIBINSTALLDIR)
 
 ENCODINGS=\
 	encodings/ISO88591 \
@@ -633,7 +639,7 @@ MACINTOSH_ALIASES=MACROMAN CSMACINTOSH MAC
 
 install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
 	@echo "# (libu8)" Installing encodings in $(ENCDIR)
-	@$(INSTALL) $(ENCODINGS) $(ENCDIR)
+	@$(SUDO) $(INSTALL) $(ENCODINGS) $(ENCDIR)
 	@for x in $(CP1125_ALIASES); do \
 		if ! test -h $(ENCDIR)/$$x; \
 		then $(SUDO) ln -sf CP1125 $(ENCDIR)/$$x; fi; done; \
@@ -726,7 +732,7 @@ install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
 		then $(SUDO) ln -sf MACCENTRALEUROPE $(ENCDIR)/$$x; fi; done;
 
 $(DESTDIR)@prefix@/share/libu8/encodings:
-	$(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
+	$(SUDO) $(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
 
 # Packaging targets
 
