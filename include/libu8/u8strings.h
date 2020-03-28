@@ -42,6 +42,7 @@ typedef ssize_t u8_charoff;
 #define U8S(s)     ((s)?((u8_string)(s)):((u8_string)""))
 #define U8S0()     ((u8_string)(""))
 
+#define U80STR  ((u8_string)(""))
 #define U8SNUL  ((u8_string)(""))
 #define U8SPACE ((u8_string)(" "))
 
