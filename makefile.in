@@ -850,11 +850,17 @@ dist/debs.built: staging/libu8_@U8VERSION@
 	 dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
 	touch dist/debs.built
 dist/debs.signed: dist/debs.built
-	@(cd staging; debsign -p${GPG} --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
-	 (cd staging; cp libu8_@U8VERSION@*.gz ../dist) && \
-	 (cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && \
-	 touch dist/debs.signed
-dist/debs.done: dist/debs.signed
+	@if test "x${GPGID}" = "xnone"; then 			\
+	  echo "Skipping GPG signing of debian packages";  	\
+	  touch dist/debs.signed; 				\
+	else 							\
+	  (cd staging; debsign -p${GPG} --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
+	  (cd staging; cp libu8_@U8VERSION@*.gz ../dist) && 	\
+	  (cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && 	\
+	  touch dist/debs.signed; 				\
+	fi;
+
+dist/debs.done: @DEB_BUILD_TARGET@
 	@touch dist/debs.done
 
 install-debian install-debs: dist/debs.done
