@@ -847,18 +847,15 @@ dist/rpms.zip: dist/rpms.done
 
 dist/debs.built: staging/libu8_@U8VERSION@
 	@(cd staging/libu8_@U8VERSION@; \
-	 dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
-	touch dist/debs.built
+	  dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
+	  cp staging/libu8_@U8VERSION@*.gz dist && 	\
+	  mv -f staging/libu8*_@U8VERSION@*.* dist && 	\
+	  touch dist/debs.built;
 dist/debs.signed: dist/debs.built
-	@if test "x${GPGID}" = "xnone"; then 			\
-	  echo "Skipping GPG signing of debian packages";  	\
-	  touch dist/debs.signed; 				\
-	else 							\
-	  (cd staging; debsign -p${GPG} --re-sign -k${GPGID} libu8_@U8VERSION@*.changes) && \
-	  (cd staging; cp libu8_@U8VERSION@*.gz ../dist) && 	\
-	  (cd staging; mv -f libu8*_@U8VERSION@*.* ../dist) && 	\
-	  touch dist/debs.signed; 				\
-	fi;
+	@(if test "x${GPGID}" = "xnone"; then 			\
+	    echo "Skipping GPG signing of debian packages";  	\
+	  else debsign -p${GPG} --re-sign -k${GPGID} dist/libu8_@U8VERSION@*.changes; fi) && \
+	  touch dist/debs.signed;
 
 dist/debs.done: @DEB_BUILD_TARGET@
 	@touch dist/debs.done

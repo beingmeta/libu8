@@ -4639,6 +4639,7 @@ if test "${enable_dependency_tracking+set}" = set; then :
   enableval=$enable_dependency_tracking;
 fi
 
+
 # Check whether --enable-debsign was given.
 if test "${enable_debsign+set}" = set; then :
   enableval=$enable_debsign;
@@ -4646,6 +4647,9 @@ else
   enable_debsign="yes"
 fi
 
+if test "$enable_debsign" == "no"; then
+   DEB_BUILD_TARGET=dist/debs.built;
+fi;
 
 # Check whether --enable-stripping was given.
 if test "${enable_stripping+set}" = set; then :
@@ -4658,10 +4662,6 @@ if test "$enable_stripping" != "no"; then
    LIBSOURCE=lib/stripped
    EXESOURCE=exe/stripped
 fi
-
-if test "$enable_debsign" == "no"; then
-   DEB_BUILD_TARGET=dist/debs.built;
-fi;
 
 # Check whether --enable-shared was given.
 if test "${enable_shared+set}" = set; then :

@@ -296,17 +296,17 @@ fi
 
 AC_ARG_ENABLE(maintainer-mode,--en[dis]able-maintainer-mode doesn't do anything)
 AC_ARG_ENABLE(dependency-tracking,--en[dis]able-dependency-tracking doesn't do anything)
+
 AC_ARG_ENABLE(debsign,--dis[en]able-debian package signing,,enable_debsign="yes")
+if test "$enable_debsign" == "no"; then
+   DEB_BUILD_TARGET=dist/debs.built;
+fi;
 
 AC_ARG_ENABLE(stripping,--enable-stripping strip libraries and executables before installing,,enable_stripping="no")
 if test "$enable_stripping" != "no"; then
    LIBSOURCE=lib/stripped
    EXESOURCE=exe/stripped
 fi
-
-if test "$enable_debsign" == "no"; then
-   DEB_BUILD_TARGET=dist/debs.built;
-fi;
 
 AC_ARG_ENABLE(shared,--en[dis]able-shared Build with/without shared libraries,,enable_shared=$shared_default)
 if test $target = "i686-pc-mingw32"; then
