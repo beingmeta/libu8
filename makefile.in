@@ -113,7 +113,7 @@ STATIC_TEST_LIBS=lib/libu8.a
 SHARED_TEST_LIBS=lib/libu8.@shared_suffix@ lib/libu8io.@shared_suffix@ \
 		lib/libu8stdio.@shared_suffix@
 
-ALL=@TAGS@ libs exe @I18N@ tests @DOCS@
+ALL=@TAGS_TARGET@ libs exe @I18N@ tests @DOCS@
 
 update: buildmode
 	@make TAGS
