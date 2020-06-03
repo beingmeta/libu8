@@ -701,7 +701,7 @@ U8MINOR
 U8MAJOR
 SHARED_LIBV
 SHARED_LIB
-TAGS
+TAGSTARGET
 CLEAN
 LD
 target_os
@@ -2867,7 +2867,7 @@ INSTALLI18N=""
 SUDO=""
 GITDESCRIBE=""
 GITBRANCH=""
-TAGS="TAGS"
+TAGSTARGET="TAGS"
 DOCS="docs"
 INSTALLDOCS="install-docs"
 BUILDRPM="lsbrpmbuild"
@@ -5098,7 +5098,7 @@ fi
 
 
 if test $etags = "na"; then
-   TAGS=""
+   TAGSTARGET="NOTAGS"
 fi
 if test $git = "na"; then
    GITDESCRIBE="false"

@@ -306,6 +306,8 @@ $(DYTESTBIN): shared-libs ${REVISION_H}
 TAGS: tests/*.c include/libu8/*.h *.c
 	@echo "# (libu8)" Making TAGS table
 	@etags tests/*.c include/libu8/*.h *.c
+NOTAGS:
+	@echo "# (libu8)" Not making tags table
 
 exe: @shared_exe@ @static_exe@
 static-exe: exe/u8run.static
