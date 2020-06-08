@@ -1,3 +1,9 @@
+libu8 (2.7.3-11) stable; urgency=medium
+
+  * Bumped release number
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 08 Jun 2020 11:27:35 -0400
+
 libu8 (2.7.1-10) unstable; urgency=medium
 
   * Welcome 2.7
