@@ -89,4 +89,20 @@ U8_EXPORT long long u8_getenv_int(u8_string envvar,long long dflt);
 **/
 U8_EXPORT double u8_getenv_float(u8_string envvar,double dflt);
 
+U8_EXPORT
+/** Sets a variable i the current environment.
+    @param envvar the variable name, as a UTF-8 string.
+    @param setval a string to set
+    @param overwrite whether to replace an existing value
+    @returns 1 if anything was done, 0 if not, -1 on error
+**/
+int u8_setenv(u8_string envvar,u8_string setval,int overwrite);
+
+U8_EXPORT
+/** Sets a variable i the current environment.
+    @param envvar the variable name, as a UTF-8 string.
+    @returns 1 if anything was done, 0 if not, -1 on error
+**/
+int u8_unsetenv(u8_string envvar);
+
 #endif

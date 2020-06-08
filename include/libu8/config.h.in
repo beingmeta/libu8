@@ -155,6 +155,15 @@
 /* Define if you have the strdup function.  */
 #undef HAVE_STRRSTR
 
+/* Define if you have the getenv function */
+#undef HAVE_GETENV
+
+/* Define if you have the setenv function */
+#undef HAVE_SETENV
+
+/* Define if you have the unsetenv function */
+#undef HAVE_UNSETENV
+
 /* Define if you have the flock function.  */
 #undef HAVE_FLOCK
 

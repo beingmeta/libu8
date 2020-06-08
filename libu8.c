@@ -442,6 +442,7 @@ U8_EXPORT
 **/
 u8_string u8_getenv(u8_string envvar)
 {
+  if (envvar == NULL) return NULL;
   char *var=u8_tolibc(envvar);
   char *envval=getenv(var);
   if (envval) {
@@ -460,6 +461,7 @@ U8_EXPORT
 **/
 long long u8_getenv_int(u8_string var,long long dflt)
 {
+  if (var == NULL) return u8_reterr("NullEnvVar","u8_getenv_int",NULL);
   u8_string value = u8_getenv(var), end=NULL;
   if ( (value == NULL) || (*value == '\0') ) {
     if (value) u8_free(value);
@@ -478,6 +480,7 @@ U8_EXPORT
 **/
 double u8_getenv_float(u8_string var,double dflt)
 {
+  if (var == NULL) return u8_reterr("NullEnvVar","u8_getenv_float",NULL);
   u8_string value = u8_getenv(var), end=NULL;
   if ( (value == NULL) || (*value == '\0') )
     return dflt;
@@ -486,6 +489,57 @@ double u8_getenv_float(u8_string var,double dflt)
     floval = dflt;
   u8_free(value);
   return floval;
+}
+
+U8_EXPORT
+/** Sets a variable i the current environment.
+    @param envvar the variable name, as a UTF-8 string.
+    @param setval a string to set
+    @param overwrite whether to replace an existing value
+    @returns 1 if anything was done, 0 if not, -1 on error
+**/
+int u8_setenv(u8_string envvar,u8_string setval,int overwrite)
+{
+  if (envvar == NULL) return u8_reterr("NullEnvVar","u8_setenv",NULL);
+#if HAVE_SETENV
+  const char *var=u8_tolibc(envvar);
+  const char *val=(setval) ? (u8_tolibc(setval)) : (NULL);
+  const char *cur=getenv(var);
+  int rv = setenv(var,val,overwrite);
+  if (rv<0) {
+    u8_graberrno("u8_setenv",u8_strdup(envvar));}
+  else if ( (cur) && (!overwrite) )
+    rv = 0;
+  else rv = 1;
+  u8_free(var); if (val) u8_free(val);
+  return rv;
+#else
+  return u8_reterr(u8_NotImplemented,"u8_setenv",u8_strdup(envvar));
+#endif
+}
+
+U8_EXPORT
+/** Sets a variable i the current environment.
+    @param envvar the variable name, as a UTF-8 string.
+    @returns 1 if anything was done, 0 if not, -1 on error
+**/
+int u8_unsetenv(u8_string envvar)
+{
+  if (envvar == NULL) return u8_reterr("NullEnvVar","u8_setenv",NULL);
+#if HAVE_SETENV
+  const char *var=u8_tolibc(envvar);
+  int cur = (getenv(var) != NULL);
+  int rv = unsetenv(var);
+  if (rv<0) {
+    u8_graberrno("u8_setenv",u8_strdup(envvar));}
+  else if (cur)
+    rv = 1;
+  else rv = 0;
+  u8_free(var);
+  return rv;
+#else
+  return u8_reterr(u8_NotImplemented,"u8_unsetenv",u8_strdup(envvar));
+#endif
 }
 
 /* Dynamic loading */
