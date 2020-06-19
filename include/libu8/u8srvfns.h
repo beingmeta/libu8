@@ -256,64 +256,60 @@ typedef struct U8_SERVER_INFO *u8_server_info;
 
 /* The server struct itself */
 
+#define U8_SERVER_FIELDS						\
+  u8_string serverid;							\
+  /* Server-wide flags, whether we're shutting down, and		\
+     how many connections to start with/grow by. */			\
+  int flags, shutdown, init_clients, max_clients;			\
+  /* The server addreses we're listening to for new connections */	\
+  struct U8_SERVER_INFO *server_info; int n_servers;			\
+  /* The connections (clients) we are currently serving */		\
+  struct U8_CLIENT **clients; int n_clients, clients_len;		\
+  /* free_slot is the first slot where a new client can be stored */	\
+  int free_slot, max_slot;						\
+  /* All sockets: n_sockets=n_servers+n_clients				\
+     To simplify things, sockets_len is always the same as clients_len, \
+     and we just have NULL entries for server sockets. */		\
+  struct pollfd *sockets;						\
+  long poll_timeout; /* Timeout value to use when selecting */		\
+  int n_busy; /* How many clients are currently active */		\
+  long n_accepted; /* # of connections accepted to date */		\
+  long n_trans; /* How many transactions have been completed to date */	\
+  long n_errs; /* How many transactions yielded errors */		\
+  struct U8_CLIENT_STATS aggrestats;					\
+  /* Handling functions */						\
+  u8_client (*acceptfn)(struct U8_SERVER *,u8_socket sock,		\
+			struct sockaddr *,size_t);			\
+  int (*servefn)(u8_client);						\
+  int (*donefn)(u8_client);						\
+  int (*closefn)(u8_client);						\
+  /* Called with each iteration of the server (accept) loop */		\
+  int (*xserverfn)(struct U8_SERVER *);					\
+  /* Called with each iteration of the client (transact) loop */	\
+  int (*xclientfn)(struct U8_CLIENT *);					\
+  /* Miscellaneous data */						\
+  void *serverdata;							\
+  u8_mutex lock;							\
+  u8_condvar empty, full;						\
+  /* n_queued is the number of waiting requests in ->queue */		\
+  int n_queued;								\
+  /* max_tasks is the space available in ->queue */			\
+  int max_queued;							\
+  /* n_threads is the number of threads in the pool */			\
+  int n_threads;							\
+  /* max_backlog is the number of requests which can be kept waiting */	\
+  int max_backlog;							\
+  /* The threadpool, a vector of n_threads thread objects */		\
+  struct U8_SERVER_THREAD *thread_pool;					\
+  u8_client *queue;							\
+  int queue_len, queue_head, queue_tail
+
+
 /** struct U8_SERVER
      This structure represents a server's state and connections.
 **/
 typedef struct U8_SERVER {
-  u8_string serverid;
-
-  /* Server-wide flags, whether we're shutting down, and
-     how many connections to start with/grow by. */
-  int flags, shutdown, init_clients, max_clients;
-
-  /* The server addreses we're listening to for new connections */
-  struct U8_SERVER_INFO *server_info; int n_servers;
-
-  /* The connections (clients) we are currently serving */
-  struct U8_CLIENT **clients; int n_clients, clients_len;
-  /* free_slot is the first slot where a new client can be stored */
-  int free_slot, max_slot;
-
-  /* All sockets: n_sockets=n_servers+n_clients
-     To simplify things, sockets_len is always the same as clients_len,
-     and we just have NULL entries for server sockets. */
-  struct pollfd *sockets;
-  long poll_timeout; /* Timeout value to use when selecting */
-
-  int n_busy; /* How many clients are currently active (mid transaction) */
-  long n_accepted; /* How many connections have been accepted to date */
-  long n_trans; /* How many transactions have been completed to date */
-  long n_errs; /* How many transactions yielded errors */
-
-  struct U8_CLIENT_STATS aggrestats;
-
-  /* Handling functions */
-  u8_client (*acceptfn)(struct U8_SERVER *,u8_socket sock,
-                        struct sockaddr *,size_t);
-  int (*servefn)(u8_client);
-  int (*donefn)(u8_client);
-  int (*closefn)(u8_client);
-
-  /* These are functions called with each iteration of the
-     server and client loops */
-  int (*xserverfn)(struct U8_SERVER *);
-  int (*xclientfn)(struct U8_CLIENT *);
-  /* Miscellaneous data */
-  void *serverdata;
-
-  /* We don't handle non-threaded right now */
-#if U8_THREADS_ENABLED
-  u8_mutex lock;
-  u8_condvar empty, full;
-  /* n_tasks is the number of waiting requests in ->queue.
-     max_tasks is the space available in ->queue
-     n_threads is the number of threads in the pool */
-  int n_queued, max_queued, n_threads, max_backlog;
-  struct U8_SERVER_THREAD *thread_pool;
-  u8_client *queue;
-  int queue_len, queue_head, queue_tail;
-#endif
-} U8_SERVER;
+  U8_SERVER_FIELDS;} U8_SERVER;
 
 U8_EXPORT
 /** Initializes a server
@@ -356,27 +352,6 @@ int u8_server_init(struct U8_SERVER *server,
                                          struct sockaddr *,size_t),
                    int (*servefn)(u8_client),
                    int (*closefn)(u8_client));
-
-U8_EXPORT
-/** Initializes a server
-     @param server a pointer to a U8_SERVER struct
-     @param acceptfn the function for accepting connections
-     @param servefn the function called to process data for a client
-     @param donefn the function called when data processing is done
-     @param closefn the function called when a client is closed
-     @param ... alternating property/value pairs
-     @returns a pointer to the server object
- This initializes a server object, allocating one if server is NULL.  To
-  actually start listening for requests, u8_add_server must be called
-  at least once to add a listening address.
-**/
-struct U8_SERVER *u8_init_server
-   (struct U8_SERVER *server,
-    u8_client (*acceptfn)(u8_server,u8_socket,struct sockaddr *,size_t),
-    int (*servefn)(u8_client),
-    int (*donefn)(u8_client),
-    int (*closefn)(u8_client),
-    ...);
 
 U8_EXPORT
 /** Configures a server to listen on a particular address (port/host or file)
