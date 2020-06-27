@@ -791,9 +791,12 @@ static u8_socket replace_connection(u8_connpool cp,u8_socket oldc,u8_socket newc
 U8_EXPORT u8_socket u8_reconnect(u8_connpool cp,u8_socket c)
 {
   int retry_count=0;
-  int retry_wait=(((cp->u8cp_reconnect_wait)>=0) ? (cp->u8cp_reconnect_wait) : (u8_reconnect_wait));
-  int retry_wait1=(((cp->u8cp_reconnect_wait1)>=0) ? (cp->u8cp_reconnect_wait1) : (u8_reconnect_wait1));
-  int max_retries=(((cp->u8cp_reconnect_tries)>=0) ? (cp->u8cp_reconnect_tries) : (u8_reconnect_tries));
+  int retry_wait = ((cp->u8cp_reconnect_wait)>=0) ?
+    (cp->u8cp_reconnect_wait) : (u8_reconnect_wait);
+  int retry_wait1 = ((cp->u8cp_reconnect_wait1)>=0) ?
+    (cp->u8cp_reconnect_wait1) : (u8_reconnect_wait1);
+  int max_retries = ((cp->u8cp_reconnect_tries)>=0) ?
+    (cp->u8cp_reconnect_tries) : (u8_reconnect_tries);
   u8_log(LOG_NOTICE,ConnPools,"(%s/%d/%d) Reconnecting replaces %d",
          cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,c);
   /* Put the connection back */
@@ -805,10 +808,12 @@ U8_EXPORT u8_socket u8_reconnect(u8_connpool cp,u8_socket c)
     c=u8_get_connection(cp); retry_count++;
     if (c<0) sleep(retry_wait);}
   if (c<0) {
-    u8_log(LOG_NOTICE,ConnPools,_("(%s/%d/%d) Failed to reconnect after %d attempts"),
+    u8_log(LOG_NOTICE,ConnPools,
+           _("(%s/%d/%d) Failed to reconnect after %d attempts"),
            cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,retry_count);
     return u8err(c,NoConnection,"u8_reconnect",u8_strdup(cp->u8cp_id));}
-  u8_log(LOG_NOTICE,ConnPools,_("(%s/%d/%d) Reconnected at %d after %d attempts"),
+  u8_log(LOG_NOTICE,ConnPools,
+         _("(%s/%d/%d) Reconnected at %d after %d attempts"),
          cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,c,retry_count);
   return c;
 }
@@ -853,6 +858,9 @@ U8_EXPORT u8_connpool u8_open_connpool
   return conn;
 }
 
+/* TODO: Have closing of a connpool be more graceful, setting a CLOSED
+ bit (which keeps it from handing out new connections) and waiting
+ (with a timeout) for live connections to finish. */
 U8_EXPORT u8_connpool u8_close_connpool(u8_connpool cp,int dowarn)
 {
   u8_lock_mutex(&(cp->u8cp_lock));
