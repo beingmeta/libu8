@@ -29,7 +29,7 @@
 /* UUIDs */
 
 typedef unsigned char U8_UUID[16];
-typedef U8_UUID *u8_uuid;
+typedef unsigned char *u8_uuid;
 
 U8_EXPORT
 /**
