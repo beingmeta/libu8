@@ -1038,7 +1038,7 @@ static unsigned long long generate_nodeid(int temp)
     return u8_uuid_node;
   uuid_generate_time(tmp);
   memcpy(buf,tmp,16);
-  id=u8_uuid_nodeid(buf);
+  id=u8_uuid_nodeid((u8_uuid)buf);
   if (!(temp)) u8_uuid_node=id;
   return id;
 }
@@ -1110,14 +1110,15 @@ U8_EXPORT u8_uuid u8_consuuid
 U8_EXPORT u8_string u8_uuidstring(u8_uuid uuid,u8_byte *buf)
 {
   if (buf==NULL) buf=u8_malloc(37);
+  char *bytes = (char *)uuid;
   sprintf(buf,
           "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
-          ((u8uint)(uuid[0])),((u8uint)(uuid[1])),((u8uint)(uuid[2])),
-          ((u8uint)(uuid[3])),((u8uint)(uuid[4])),((u8uint)(uuid[5])),
-          ((u8uint)(uuid[6])),((u8uint)(uuid[7])),((u8uint)(uuid[8])),
-          ((u8uint)(uuid[9])),((u8uint)(uuid[10])),((u8uint)(uuid[11])),
-          ((u8uint)(uuid[12])),((u8uint)(uuid[13])),((u8uint)(uuid[14])),
-          ((u8uint)(uuid[15])));
+          ((u8uint)(bytes[0])),((u8uint)(bytes[1])),((u8uint)(bytes[2])),
+          ((u8uint)(bytes[3])),((u8uint)(bytes[4])),((u8uint)(bytes[5])),
+          ((u8uint)(bytes[6])),((u8uint)(bytes[7])),((u8uint)(bytes[8])),
+          ((u8uint)(bytes[9])),((u8uint)(bytes[10])),((u8uint)(bytes[11])),
+          ((u8uint)(bytes[12])),((u8uint)(bytes[13])),((u8uint)(bytes[14])),
+          ((u8uint)(bytes[15])));
   return buf;
 }
 
@@ -1153,7 +1154,7 @@ static unsigned long long get_nanotick(unsigned long long high)
 
 U8_EXPORT long long u8_uuid_nodeid(u8_uuid uuid)
 {
-  unsigned char *ubuf=uuid;
+  unsigned char *ubuf = (unsigned char *)uuid;
 #if WORDS_BIGENDIAN
   u8ull *lowp=(u8ull *)(ubuf+8), low=*lowp;
 #else
@@ -1166,7 +1167,7 @@ U8_EXPORT long long u8_uuid_nodeid(u8_uuid uuid)
 
 U8_EXPORT long long u8_uuid_timestamp(u8_uuid uuid)
 {
-  unsigned char *ubuf=uuid;
+  unsigned char *ubuf = (unsigned char *) uuid;
 #if WORDS_BIGENDIAN
   u8ull *highp=(u8ull *)(ubuf), high=*highp;
 #else
@@ -1179,7 +1180,7 @@ U8_EXPORT long long u8_uuid_timestamp(u8_uuid uuid)
 
 U8_EXPORT time_t u8_uuid_tick(u8_uuid uuid)
 {
-  unsigned char *ubuf=uuid;
+  unsigned char *ubuf = (unsigned char *) uuid;
 #if WORDS_BIGENDIAN
   u8ull *highp=(u8ull *)(ubuf), high=*lowp;
 #else
@@ -1195,7 +1196,7 @@ U8_EXPORT time_t u8_uuid_tick(u8_uuid uuid)
 
 U8_EXPORT struct U8_XTIME *u8_uuid_xtime(u8_uuid uuid,struct U8_XTIME *xt)
 {
-  unsigned char *ubuf=uuid;
+  unsigned char *ubuf = (unsigned char *) uuid;
 #if WORDS_BIGENDIAN
   u8ull *highp=(u8ull *)(ubuf), high=*highp;
 #else
