@@ -82,19 +82,20 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
      and debugging, and the server field is the server (a U8_SERVER
      struct) to which the client is connected. **/
 typedef struct U8_CLIENT {
-    u8_socket socket;
-    int clientid, threadnum;
-    unsigned int flags, n_trans, n_errs;
-    u8_utime started, queued, active;
-    u8_utime reading, writing, running;
-    u8_string idstring, status;
-    unsigned char *buf;
-    size_t off, len, buflen, delta;
-    unsigned int ownsbuf, grows;
-    struct U8_CLIENT_STATS stats;
-    u8_client_callback callback;
-    void *cbstate;
-    struct U8_SERVER *server;} U8_CLIENT;
+  u8_socket socket;
+  int clientid, threadnum;
+  int client_loglevel;
+  unsigned int flags, n_trans, n_errs;
+  u8_utime started, queued, active;
+  u8_utime reading, writing, running;
+  u8_string idstring, status;
+  unsigned char *buf;
+  size_t off, len, buflen, delta;
+  unsigned int ownsbuf, grows;
+  struct U8_CLIENT_STATS stats;
+  u8_client_callback callback;
+  void *cbstate;
+  struct U8_SERVER *server;} U8_CLIENT;
 
 /* u8_init_client:
  Initializes the client structure.
@@ -276,6 +277,7 @@ typedef struct U8_SERVER_INFO *u8_server_info;
   long n_accepted; /* # of connections accepted to date */		\
   long n_trans; /* How many transactions have been completed to date */	\
   long n_errs; /* How many transactions yielded errors */		\
+  int server_loglevel; /* Loglevel for transactions */			\
   struct U8_CLIENT_STATS aggrestats;					\
   /* Handling functions */						\
   u8_client (*acceptfn)(struct U8_SERVER *,u8_socket sock,		\

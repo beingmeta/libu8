@@ -77,6 +77,7 @@ typedef struct U8_CONNPOOL {
   int u8cp_reconnect_wait1; /* how long to wait before starting to try to reconnect */
   int u8cp_reconnect_wait; /* how long to wait between reconnect attempts */
   int u8cp_reconnect_tries; /* how many reconnect attempts to make */
+  int u8cp_loglevel; /* Specify a log level for the connection pool */
   u8_socket *u8cp_inuse; /* array of all sockets in use */
   u8_socket *u8cp_free;  /* array of all sockets available to use */
   struct U8_CONNPOOL *u8cp_next;

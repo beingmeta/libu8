@@ -232,6 +232,8 @@ U8_EXPORT int u8_message(u8_string format_string,...);
    @returns the loglevel to use, which is u8_loglevel if the argument is <= 0
 **/
 #define u8_getloglevel(level) ( ( (level) > 0) ? (level) : (u8_loglevel) )
+#define u8_loglevels(local,module) \
+  ( ( (local) > 0) ? (local) : (module > 0) ? (module) : (u8_loglevel) )
 
 /** Sets the function used for log messages
    @param logfn

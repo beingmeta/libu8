@@ -13,6 +13,8 @@
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
+#define U8_LOGLEVEL (u8_loglevels(local_loglevel,u8_conn_loglevel))
+
 #include "libu8/u8source.h"
 #include "libu8/libu8.h"
 
@@ -55,6 +57,9 @@ static u8_condition NoConnection   = _("Cannot connect to server");
 static u8_condition NoFileSockets U8_MAYBE_UNUSED
                       =_("No UNIX domain (file) sockets");
 static u8_condition UnknownHost U8_MAYBE_UNUSED = _("Unknown host");
+
+int u8_conn_loglevel = -1;
+static int local_loglevel = -1;
 
 int u8_reconnect_wait1=1;
 int u8_reconnect_wait=5;
@@ -620,6 +625,7 @@ U8_EXPORT u8_socket u8_get_connection(u8_connpool cp)
 {
   u8_socket retval=-1;
   u8_lock_mutex(&(cp->u8cp_lock));
+  int local_loglevel = (cp->u8cp_loglevel>0) ? (cp->u8cp_loglevel) : (-1);
   CPDBG0(cp,"(%s/%d/%d) Getting connection");
   if (cp->u8cp_reserve<1) {
     /* If we're not really maintaining a pool, just connect. */
@@ -645,10 +651,10 @@ U8_EXPORT u8_socket u8_get_connection(u8_connpool cp)
       /* If there's a cap and we're at it, start waiting. */
       cp->u8cp_n_waiting++;
       if (cp->u8cp_n_waiting>u8_warn_waitlevel)
-        u8_log(LOG_WARNING,ConnPools,
-               "(%s/%d/%d) %d requests currently waiting",
-               cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,
-               cp->u8cp_n_waiting);
+        u8_logf(LOG_WARNING,ConnPools,
+                "(%s/%d/%d) %d requests currently waiting",
+                cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,
+                cp->u8cp_n_waiting);
       CPDBG0(cp,"(%s/%d/%d) Waiting for free connection");
       while (1) {
         u8_condvar_wait(&(cp->u8cp_drained),&(cp->u8cp_lock));
@@ -672,8 +678,8 @@ U8_EXPORT u8_socket u8_get_connection(u8_connpool cp)
         return retval;}
       cp->u8cp_inuse[cp->u8cp_n_inuse]=retval;
       cp->u8cp_n_inuse++; cp->u8cp_n_open++;
-      u8_log(LOG_NOTICE,ConnPools,"(%s/%d/%d) Added new connection %d",
-             cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,retval);
+      u8_logf(LOG_NOTICE,ConnPools,"(%s/%d/%d) Added new connection %d",
+              cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,retval);
       CPDBG2(cp,"(%s/%d/%d) Stored new connection %d at %d",
              retval,cp->u8cp_n_inuse-1);}
     u8_unlock_mutex(&(cp->u8cp_lock));
@@ -685,6 +691,7 @@ static u8_socket return_connection(u8_connpool cp,u8_socket c,int discard)
 {
   u8_lock_mutex(&(cp->u8cp_lock));
   CPDBG1(cp,"(%s/%d/%d) Freeing (returning) connection %d",c);
+  int local_loglevel = (cp->u8cp_loglevel>0) ? (cp->u8cp_loglevel) : (-1);
   if (cp->u8cp_reserve<1) {
     /* non-pooling mode */
     close(c); cp->u8cp_n_open--;
@@ -712,8 +719,8 @@ static u8_socket return_connection(u8_connpool cp,u8_socket c,int discard)
     cp->u8cp_n_inuse--;
     CPDBG1(cp,"(%s/%d/%d) Removed %d from inuse",c);
     if (discard)
-      u8_log(LOG_NOTICE,ConnPools,"(%s/%d/%d) Discarding %d",
-             cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,c);
+      u8_logf(LOG_NOTICE,ConnPools,"(%s/%d/%d) Discarding %d",
+              cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,c);
     /* Now either discard the connection or add it to the free vector. */
     if (discard)
       /* If we're discarding this connection but there are still waiting
@@ -725,9 +732,9 @@ static u8_socket return_connection(u8_connpool cp,u8_socket c,int discard)
           cp->u8cp_n_open--; close(c);
           /* Couldn't open the connection, bump n_open down */
           CPDBG0(cp,"(%s/%d/%d) Couldn't open replacement connection");
-          u8_log(LOG_WARNING,ConnPools,
-                 "(%s/%d/%d) Couldn't open replacement connection",
-                 cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open);
+          u8_logf(LOG_WARNING,ConnPools,
+                  "(%s/%d/%d) Couldn't open replacement connection",
+                  cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open);
           u8_unlock_mutex(&(cp->u8cp_lock));
           return c;}
         /* We don't bump n_open because we're doing a replacement.
@@ -791,14 +798,15 @@ static u8_socket replace_connection(u8_connpool cp,u8_socket oldc,u8_socket newc
 U8_EXPORT u8_socket u8_reconnect(u8_connpool cp,u8_socket c)
 {
   int retry_count=0;
+  int local_loglevel = (cp->u8cp_loglevel>0) ? (cp->u8cp_loglevel) : (-1);
   int retry_wait = ((cp->u8cp_reconnect_wait)>=0) ?
     (cp->u8cp_reconnect_wait) : (u8_reconnect_wait);
   int retry_wait1 = ((cp->u8cp_reconnect_wait1)>=0) ?
     (cp->u8cp_reconnect_wait1) : (u8_reconnect_wait1);
   int max_retries = ((cp->u8cp_reconnect_tries)>=0) ?
     (cp->u8cp_reconnect_tries) : (u8_reconnect_tries);
-  u8_log(LOG_NOTICE,ConnPools,"(%s/%d/%d) Reconnecting replaces %d",
-         cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,c);
+  u8_logf(LOG_NOTICE,ConnPools,"(%s/%d/%d) Reconnecting replaces %d",
+          cp->u8cp_id,cp->u8cp_n_inuse,cp->u8cp_n_open,c);
   /* Put the connection back */
   return_connection(cp,c,1);
   /* Wait before reconnecting */
@@ -861,15 +869,16 @@ U8_EXPORT u8_connpool u8_open_connpool
 /* TODO: Have closing of a connpool be more graceful, setting a CLOSED
  bit (which keeps it from handing out new connections) and waiting
  (with a timeout) for live connections to finish. */
-U8_EXPORT u8_connpool u8_close_connpool(u8_connpool cp,int dowarn)
+U8_EXPORT u8_connpool u8_close_connpool(u8_connpool cp,int dolog)
 {
   u8_lock_mutex(&(cp->u8cp_lock));
   if (cp->u8cp_n_inuse)
-    u8_log(LOG_WARN,"BADCLOSE",
-           "Closing the connection pool %s while %d connections  are still active",
-           cp->u8cp_n_inuse,cp->u8cp_id);
-  else if (dowarn)
-    u8_log(LOG_WARN,"BADCLOSE","Closing the connection pool %s",cp->u8cp_n_inuse);
+    u8_logf(LOG_WARN,"Connpool/BadClose",
+            "Closing the pool %s while %d connections  are still active",
+            cp->u8cp_n_inuse,cp->u8cp_id);
+  else if (dolog)
+    u8_logf(LOG_NOTICE,"Connpool/Close",
+            "Closing the connection pool %s",cp->u8cp_n_inuse);
   else NO_ELSE;
   {
     int n_open=cp->u8cp_n_open, n_inuse=cp->u8cp_n_inuse;
@@ -897,12 +906,10 @@ U8_EXPORT u8_connpool u8_close_connpool(u8_connpool cp,int dowarn)
         last->u8cp_next=scan->u8cp_next;
         u8_free(scan);
         return NULL;}
-      else if (dowarn) {
-        u8_log(LOG_WARN,"BADCLOSE",
-               "Internal inconsistency: can't find registered connpool",
-               cp->u8cp_id);
-        return cp;}
-      else return cp;}}
+      u8_logf(LOG_WARN,"BADCLOSE",
+              "Internal inconsistency: can't find registered connpool",
+              cp->u8cp_id);
+      return cp;}}
   else return cp;
 }
 
@@ -1074,8 +1081,8 @@ int u8_sendbytes(int msecs,int socket,const char *buf,int size,int flags)
       return u8err(-1,SocketTimeout,"u8_sendbytes",NULL);
     default:
       if ((errno != EINTR) && (errno != EAGAIN)) {
-        u8_log(LOG_WARN,NULL,"Error (%s) on socket %d, retval=%d",
-               strerror(errno),socket,retval);
+        u8_logf(LOG_WARN,NULL,"Error (%s) on socket %d, retval=%d",
+                strerror(errno),socket,retval);
         u8_graberrno("u8_sendbytes",NULL);
         return -1;}
       else continue;}}
