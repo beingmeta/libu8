@@ -261,7 +261,6 @@ static U8_MAYBE_UNUSED void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
     This always allocates a buffer but arranges for the buffer to grow
     @param s a pointer to a U8_OUTPUT structure
     @param sz the number of bytes in the buffer
-    @param sz the number of bytes in the buffer
     @returns void
 **/
 #define U8_INIT_STATIC_OUTPUT(s,sz)	\

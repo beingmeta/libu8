@@ -856,10 +856,13 @@ U8_EXPORT u8_connpool u8_open_connpool
 U8_EXPORT u8_connpool u8_close_connpool(u8_connpool cp,int dowarn)
 {
   u8_lock_mutex(&(cp->u8cp_lock));
-  if ((dowarn) && (cp->u8cp_n_inuse))
+  if (cp->u8cp_n_inuse)
     u8_log(LOG_WARN,"BADCLOSE",
-           "Closing the connection block for %s while some connections are still active",
-           cp->u8cp_id);
+           "Closing the connection pool %s while %d connections  are still active",
+           cp->u8cp_n_inuse,cp->u8cp_id);
+  else if (dowarn)
+    u8_log(LOG_WARN,"BADCLOSE","Closing the connection pool %s",cp->u8cp_n_inuse);
+  else NO_ELSE;
   {
     int n_open=cp->u8cp_n_open, n_inuse=cp->u8cp_n_inuse;
     int i, n_free=n_open-n_inuse;
@@ -888,10 +891,10 @@ U8_EXPORT u8_connpool u8_close_connpool(u8_connpool cp,int dowarn)
         return NULL;}
       else if (dowarn) {
         u8_log(LOG_WARN,"BADCLOSE",
-               "Internal inconsitency: can't find registered connpool",
+               "Internal inconsistency: can't find registered connpool",
                cp->u8cp_id);
         return cp;}
-      else return NULL;}}
+      else return cp;}}
   else return cp;
 }
 
