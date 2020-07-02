@@ -991,6 +991,7 @@ struct U8_SERVER *u8_init_server
       if (level>2) flags|=U8_SERVER_LOG_TRANSACT;
       if (level>1) flags|=U8_SERVER_LOG_CONNECT;
       if (level>0) flags|=U8_SERVER_LOG_LISTEN;
+      server->server_loglevel = level;
       continue;}
     default:
       u8_logf(LOG_CRIT,"u8_init_server",
