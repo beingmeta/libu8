@@ -1684,10 +1684,6 @@ U8_EXPORT
 void u8_server_loop(struct U8_SERVER *server)
 {
   while ((server->flags&U8_SERVER_CLOSED)==0) server_listen(server);
-  u8_string status = u8_server_status(server,NULL,-1);
-  u8_log(LOGWARN,"ServerLoopExit",
-         "Server %s\n%s",server->serverid,status);
-  u8_free(status);
 }
 
 /* Getting server status */
