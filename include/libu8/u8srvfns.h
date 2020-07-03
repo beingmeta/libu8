@@ -168,14 +168,15 @@ typedef struct U8_SERVER_THREAD *u8_server_thread;
 
 /* Bits of the server flags field */
 
-#define U8_SERVER_CLOSED 1
-#define U8_SERVER_ASYNC 2
-#define U8_SERVER_LOG_LISTEN 4
-#define U8_SERVER_LOG_CONNECT 8
-#define U8_SERVER_LOG_TRANSACT 16
-#define U8_SERVER_LOG_TRANSFER 32
-#define U8_SERVER_LOG_QUEUE 64
-#define U8_SERVER_FLAG_MAX 64
+#define U8_SERVER_CLOSED	 1
+#define U8_SERVER_CLOSING	 2
+#define U8_SERVER_ASYNC		 4
+#define U8_SERVER_LOG_LISTEN	 8
+#define U8_SERVER_LOG_CONNECT   16
+#define U8_SERVER_LOG_TRANSACT  32
+#define U8_SERVER_LOG_TRANSFER  64
+#define U8_SERVER_LOG_QUEUE    128
+#define U8_SERVER_FLAG_MAX     128
 
 /* Argument names to u8_init_server */
 

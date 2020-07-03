@@ -530,7 +530,9 @@ static int close_client_core(u8_client cl,int server_locked,u8_context caller)
       cl->stats.qsum2+=(interval*interval);
       if (interval>cl->stats.qmax) cl->stats.qmax=interval;
       cl->stats.qcount++;}
-    push_task(server,cl,caller);
+    if ( (server->flags) & (U8_SERVER_CLOSED) )
+      free_client(server,cl,"close_client_core");
+    else push_task(server,cl,caller);
 
     if (!(server_locked)) u8_unlock_mutex(&(server->lock));
 
@@ -618,9 +620,10 @@ static u8_client pop_task(struct U8_SERVER *server)
   u8_client task=NULL; char statebuf[16]; int slot;
   int local_loglevel = server->server_loglevel;
   u8_lock_mutex(&(server->lock));
-  while ((server->n_queued == 0) && ((server->flags&U8_SERVER_CLOSED)==0))
+  while ((server->n_queued == 0) &&
+         (((server->flags)&(U8_SERVER_CLOSED|U8_SERVER_CLOSING))==0))
     u8_condvar_wait(&(server->empty),&(server->lock));
-  if (server->flags&U8_SERVER_CLOSED) {}
+  if ((server->flags)&(U8_SERVER_CLOSED|U8_SERVER_CLOSING)) {}
   else if (server->n_queued) {
     slot=server->queue_head;
     task=server->queue[server->queue_head];
@@ -648,7 +651,7 @@ static u8_client pop_task(struct U8_SERVER *server)
 	      slot,((unsigned long)task),task->clientid,task->socket,
 	      get_client_state(task,statebuf),
 	      task->n_trans,task->idstring,task->status);
-    free_client(task->server,task,"pop_task/closed");
+    // free_client(task->server,task,"pop_task/closed");
     task=NULL;}
   else {
     u8_utime curtime=u8_microtime();
@@ -1074,6 +1077,12 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
   struct pollfd *sockets; u8_client *clients;
   int local_loglevel = server->server_loglevel;
   if (server->flags&U8_SERVER_CLOSED) return 0;
+  else if (server->flags&U8_SERVER_CLOSING) {
+    while (!(server->flags&U8_SERVER_CLOSED)) {
+      u8_utime now = u8_microtime();
+      if (now>deadline) return 0;
+      else u8_sleep(0.005);}
+    return 0;}
   u8_lock_mutex(&server->lock);
   if (server->flags&U8_SERVER_CLOSED) {
     u8_unlock_mutex(&server->lock);
@@ -1082,7 +1091,7 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
     sockets=server->sockets;
     clients=server->clients;
     clients_len=server->clients_len;}
-  server->flags=server->flags|U8_SERVER_CLOSED;
+  server->flags=server->flags|U8_SERVER_CLOSING;
   /* Close all the server sockets */
   u8_logf(LOG_INFO,ServerShutdown,"Closing %d listening socket(s)",n_servers);
   while (i<n_servers) {
@@ -1108,9 +1117,6 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
 	    n_servers,n_errs);
   else u8_logf(LOG_INFO,ServerShutdown,
 	       "Closed %d listening socket(s)",n_servers);
-  if (server->server_info) {
-    u8_free(server->server_info);
-    server->server_info=NULL;}
   /* Close all the idle client sockets and mark all the busy clients closed */
   i=0; while (i<clients_len) {
     u8_client client=clients[i];
@@ -1161,10 +1167,18 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
   u8_free(server->thread_pool); server->thread_pool=NULL;
   u8_free(server->queue); server->queue=NULL;
 #endif
+  if (server->server_info) {
+    u8_free(server->server_info);
+    server->server_info=NULL;}
+  if (server->serverid) {
+    u8_free(server->serverid);
+    server->serverid=NULL;}
   u8_unlock_mutex(&server->lock);
   u8_destroy_mutex(&server->lock);
   u8_destroy_condvar(&(server->empty));
   u8_destroy_condvar(&(server->full));
+  server->flags |= U8_SERVER_CLOSED;
+  server->flags &= (~U8_SERVER_CLOSING);
   return 1;
 }
 
@@ -1444,8 +1458,8 @@ static int free_client(struct U8_SERVER *server,u8_client cl,u8_context caller)
   /* If the newly empty slot is before the current free_slot,
      make it the free_slot. */
   if (clientid<server->free_slot) server->free_slot=clientid;
-  if (cl->idstring) u8_free(cl->idstring);
-  if (cl->status) u8_free(cl->status);
+  if (cl->idstring) u8_free(cl->idstring); cl->idstring=NULL;
+  if (cl->status) u8_free(cl->status); cl->status=NULL;
   u8_free(cl);
   return 1;
 }
@@ -1670,6 +1684,10 @@ U8_EXPORT
 void u8_server_loop(struct U8_SERVER *server)
 {
   while ((server->flags&U8_SERVER_CLOSED)==0) server_listen(server);
+  u8_string status = u8_server_status(server,NULL,-1);
+  u8_log(LOGWARN,"ServerLoopExit",
+         "Server %s\n%s",server->serverid,status);
+  u8_free(status);
 }
 
 /* Getting server status */
@@ -1860,7 +1878,8 @@ u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int buflen)
      "%s Config: %d/%d/%d threads/maxqueue/backlog; "
      "Clients: %d/%d/%d busy/active/ever; "
      "Requests: %d/%d/%d live/queued/total;\n",
-     server->server_info->idstring,
+     ( (server->server_info) ? (server->server_info->idstring) :
+       (server->serverid) ),
      server->n_threads,server->max_queued,server->max_backlog,
      server->n_busy,server->n_clients,server->n_accepted,
      server->n_busy,server->n_queued,server->n_trans);
