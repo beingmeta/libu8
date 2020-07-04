@@ -1127,7 +1127,6 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
     if (client) {
       if (client->started<=0) {
 	client_close_for_shutdown(client);
-	free_client(server,client,"do_shutdown");
 	clients[i]=NULL;
 	sockets[i].fd=-1;
 	sockets[i].events=((short)0);
@@ -1209,6 +1208,7 @@ static void init_server_socket(u8_socket socket_id)
 #if (defined(F_SETFL) && defined(O_NDELAY))
   fcntl(socket_id,F_SETFL,O_NDELAY);
 #endif
+#if 0
 #if (defined(F_SETFL) && defined(O_NONBLOCK))
   fcntl(socket_id,F_SETFL,O_NONBLOCK);
 #endif
@@ -1216,6 +1216,7 @@ static void init_server_socket(u8_socket socket_id)
   ioctlsocket(socket_id,FIONBIO,&nonblocking);
 #else
   u8_logf(LOG_WARNING,_("sockopt"),"Can't set server socket to non-blocking");
+#endif
 #endif
 }
 
@@ -1467,6 +1468,7 @@ static int free_client(struct U8_SERVER *server,u8_client cl,u8_context caller)
   if (clientid<server->free_slot) server->free_slot=clientid;
   if (cl->idstring) u8_free(cl->idstring); cl->idstring=NULL;
   if (cl->status) u8_free(cl->status); cl->status=NULL;
+
   u8_free(cl);
   return 1;
 }
