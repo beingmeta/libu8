@@ -48,6 +48,9 @@ static int local_loglevel = -1;
 #define HUPFLAGS POLLHUP
 #endif
 
+#define POLLIN_EVENTS (POLLIN|POLLPRI|HUPFLAGS)
+#define POLLOUT_EVENTS (POLLOUT|POLLPRI|HUPFLAGS)
+
 static u8_condition ClosedClient=_("ClientClosed");
 static u8_condition ServerShutdown=_("ServerShutdown");
 static u8_condition NewServer=_("NewListenerPort");
@@ -333,7 +336,7 @@ int u8_client_done(u8_client cl)
     if (cl->socket>0) {
       struct pollfd *pfd=&(server->sockets[clientid]);
       cl->reading=u8_microtime();
-      pfd->events=((short)(POLLIN|HUPFLAGS));}
+      pfd->events=((short)(POLLIN_EVENTS));}
     u8_lock_mutex(&(server->lock));
     if (cl->started>0) {
       server->n_busy--;
@@ -530,9 +533,8 @@ static int close_client_core(u8_client cl,int server_locked,u8_context caller)
       cl->stats.qsum2+=(interval*interval);
       if (interval>cl->stats.qmax) cl->stats.qmax=interval;
       cl->stats.qcount++;}
-    if ( (server->flags) & (U8_SERVER_CLOSED) )
-      free_client(server,cl,"close_client_core");
-    else push_task(server,cl,caller);
+
+    free_client(server,cl,"close_client_core");
 
     if (!(server_locked)) u8_unlock_mutex(&(server->lock));
 
@@ -653,7 +655,7 @@ static u8_client pop_task(struct U8_SERVER *server)
 	      slot,((unsigned long)task),task->clientid,task->socket,
 	      get_client_state(task,statebuf),
 	      task->n_trans,task->idstring,task->status);
-    // free_client(task->server,task,"pop_task/closed");
+    free_client(task->server,task,"pop_task/closed");
     task=NULL;}
   else {
     u8_utime curtime=u8_microtime();
@@ -757,8 +759,8 @@ static void *event_loop(void *thread_arg)
       if (cl->off<cl->len) {
 	/* u8_lock_mutex(&server->lock); */
 	if (cl->writing>0)
-	  server->sockets[cl->clientid].events=((short)(POLLOUT|HUPFLAGS));
-	else server->sockets[cl->clientid].events=((short)(POLLIN|HUPFLAGS));
+	  server->sockets[cl->clientid].events=((short)(POLLOUT_EVENTS));
+	else server->sockets[cl->clientid].events=((short)(POLLIN_EVENTS));
 	
 	cl->active=0; sthread->u8st_client=-1; cl->threadnum=-1;
 	if (server->xclientfn) server->xclientfn(cl);
@@ -1435,7 +1437,7 @@ int u8_add_server(struct U8_SERVER *server,u8_string hostname,int port)
 static int add_client(struct U8_SERVER *server,u8_client client)
 {
   u8_socket sock=client->socket;
-  int slot=add_socket(server,sock,POLLIN);
+  int slot=add_socket(server,sock,POLLIN_EVENTS);
   if (slot<0) return slot;
   server->clients[slot]=client; client->clientid=slot;
   client->threadnum=-1; client->server=server; server->n_clients++;
