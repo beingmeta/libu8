@@ -61,7 +61,8 @@ typedef struct U8_CLIENT_STATS *u8_client_stats;
 
 #define U8_CLIENT_FIELDS                                       \
     u8_socket socket;                                          \
-    int clientid, threadnum;                                   \
+    int clientid, threadnum;				       \
+    int client_loglevel;				       \
     unsigned int flags, n_trans, n_errs;                       \
     u8_utime started, queued, active;                          \
     u8_utime reading, writing, running;                        \
