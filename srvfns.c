@@ -1164,6 +1164,9 @@ static int do_shutdown(struct U8_SERVER *server,int grace)
 #endif
   u8_free(server->clients); server->clients=NULL;
   u8_free(server->sockets); server->sockets=NULL;
+  if (server->serverid) {
+    u8_free(server->serverid);
+    server->serverid=NULL;}
   server->clients_len=0;
 #if U8_THREADS_ENABLED
   u8_free(server->thread_pool); server->thread_pool=NULL;
