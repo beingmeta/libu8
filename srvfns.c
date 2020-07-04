@@ -619,6 +619,8 @@ static u8_client pop_task(struct U8_SERVER *server)
 {
   u8_client task=NULL; char statebuf[16]; int slot;
   int local_loglevel = server->server_loglevel;
+  if ( (server->flags) & (U8_SERVER_CLOSED|U8_SERVER_CLOSING) )
+    return NULL;
   u8_lock_mutex(&(server->lock));
   while ((server->n_queued == 0) &&
          (((server->flags)&(U8_SERVER_CLOSED|U8_SERVER_CLOSING))==0))
@@ -1481,11 +1483,14 @@ static int server_accept(u8_server server,u8_socket i)
     return -1;}
   else if ((server->max_clients>0)&&
 	   (server->n_clients>server->max_clients)) {
-    u8_string connid=
-      u8_sockaddr_string((struct sockaddr *)addrbuf);
+    u8_string serverid = (server->serverid) ? (server->serverid) :
+      ( (server->server_info) && (server->server_info->idstring) ) ?
+      (server->server_info->idstring) :
+      U8S("srv");
+    u8_string connid = u8_sockaddr_string((struct sockaddr *)addrbuf);
     u8_logf(LOG_NOTICE,RejectedConnection,
-	    "Rejected (closed) connection from %s, nclients=%d>%d=max_clients",
-	    server->n_clients,server->max_clients);
+	    "Rejected (closed) connection %s/%s, nclients=%d>%d=max_clients",
+            serverid,connid,server->n_clients,server->max_clients);
     u8_free(connid);
     close(sock);
     return 0;}
