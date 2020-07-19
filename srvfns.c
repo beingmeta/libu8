@@ -13,7 +13,7 @@
     (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
-#define U8_LOGLEVEL (u8_loglevels(local_loglevel,u8_server_loglevel))
+#define U8_LOGLEVEL (u8_merge_loglevels(local_loglevel,u8_server_loglevel))
 
 #include "libu8/u8source.h"
 #include "libu8/libu8.h"
