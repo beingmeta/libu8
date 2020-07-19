@@ -913,20 +913,19 @@ staging/alpine/libu8-@U8VERSION@.tar.gz: staging/alpine
 	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
 	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
 
-dist/alpine.setup: dist/alpine/APKBUILD include/libu8/revision.h makefile \
-	staging/alpine/libu8-@U8VERSION@.tar.gz staging/alpine/APKBUILD
+dist/alpine.setup: dist/alpine/APKBUILD include/libu8/revision.h makefile
+	make staging/alpine/libu8-@U8VERSION@.tar.gz staging/alpine/APKBUILD && \
 	if test ! -d ${APK_ARCH_DIR}; then mkdir -p ${APK_ARCH_DIR}; fi && \
 	( cd staging/alpine; abuild -P ${APKREPO} clean cleancache cleanpkg && abuild checksum ) && \
 	touch $@
 
-dist/alpine.done: dist/alpine.setup
-	( cd staging/alpine; abuild -P ${APKREPO} ) && touch $@
+ALPINE_PKGS=libu8 libu8-dev libu8-doc libu8-static
 
-dist/alpine.installed: dist/alpine.setup
-	( cd staging/alpine; abuild -i -P ${APKREPO} ) && touch $@ && touch dist/alpine.done
+dist/alpine.build: dist/alpine.setup
+	cd staging/alpine; abuild -P ${APKREPO};
 
-alpine: dist/alpine.done
-install-alpine: dist/alpine.installed
+dist/alpine.install:
+	cd staging/alpine; apk add --repository=${APKREPO}/staging ${ALPINE_PKGS}
 
 alpine: 
 	@echo APKREPO=${APKREPO}
