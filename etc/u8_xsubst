@@ -1,0 +1,30 @@
+#!/bin/sh
+OUTPUT=$1
+shift;
+INPUT=$1
+shift;
+cp $INPUT $OUTPUT.tmp;
+EDIT_ARGS=
+while [ $# -gt 1 ]; do
+    find=$1; replace=$2; shift; shift;
+    EDIT_EXPR="s/@${find}@/${replace}/g"
+    EDIT_ARGS="${EDIT_ARGS} -e ${EDIT_EXPR}";
+    done;
+echo EDIT_ARGS=${EDIT_ARGS}
+if [ ! -z "${EDIT_ARGS}" ]; then
+    sed -i ${EDIT_ARGS} ${OUTPUT}.tmp
+else
+    echo "No substitutions on command line";
+    exit;
+fi;
+if [ ! -f ${OUTPUT} ]; then
+    echo ${OUTPUT} created;
+    mv $OUTPUT.tmp $OUTPUT;
+elif diff ${OUTPUT} ${OUTPUT}.tmp > /dev/null; then
+    echo ${OUTPUT} unchanged;
+    rm ${OUTPUT}.tmp;
+else
+    echo ${OUTPUT} updated;
+    mv $OUTPUT.tmp $OUTPUT;
+fi;
+

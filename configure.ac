@@ -10,11 +10,11 @@ shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 rpath_default=$exec_prefix
 CLEAN="rm -f"
-U8MAJOR=2
-U8MINOR=7
-U8RELEASE=`cat etc/release`
-U8PATCHLEVEL=`./etc/patchlevel`
-U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
+U8VERSION=$(cat ./version)
+U8MAJOR=$(cat ./version | cut -d'.' -f1)
+U8MINOR=$(cat ./version | cut -d'.' -f2)
+U8RELEASE=$(cat ./version | cut -d'.' -f2)
+U8PATCHLEVEL=`./etc/u8_gitpatchcount ./version`
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
 vshared_suffix=so.${U8VERSION}
@@ -173,7 +173,7 @@ AC_SUBST(GITBRANCH)
 AC_SUBST(CODENAME)
 
 if test -z "${GITBRANCH}"; then
-   GITBRANCH=`etc/getbranch`;
+   GITBRANCH=`etc/u8_gitbranch`;
 fi;
 
 AC_PATH_PROG(CLANG,clang,none)
@@ -624,7 +624,7 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT([makefile etc/version etc/libu8.pc etc/getbuildopt
+AC_OUTPUT([makefile etc/libu8.pc etc/getbuildopt
            dist/libu8-2.7.spec dist/alpine/APKBUILD],
           [chmod a+x etc/getbuildopt])
 

@@ -2845,11 +2845,11 @@ shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 rpath_default=$exec_prefix
 CLEAN="rm -f"
-U8MAJOR=2
-U8MINOR=7
-U8RELEASE=`cat etc/release`
-U8PATCHLEVEL=`./etc/patchlevel`
-U8VERSION=${U8MAJOR}.${U8MINOR}.${U8RELEASE}
+U8VERSION=$(cat ./version)
+U8MAJOR=$(cat ./version | cut -d'.' -f1)
+U8MINOR=$(cat ./version | cut -d'.' -f2)
+U8RELEASE=$(cat ./version | cut -d'.' -f2)
+U8PATCHLEVEL=`./etc/u8_gitpatchcount ./version`
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
 vshared_suffix=so.${U8VERSION}
@@ -3148,7 +3148,7 @@ fi
 
 
 if test -z "${GITBRANCH}"; then
-   GITBRANCH=`etc/getbranch`;
+   GITBRANCH=`etc/u8_gitbranch`;
 fi;
 
 # Extract the first word of "clang", so it can be a program name with args.
@@ -8006,7 +8006,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files makefile etc/version etc/libu8.pc etc/getbuildopt dist/libu8-2.7.spec dist/alpine/APKBUILD"
+ac_config_files="$ac_config_files makefile etc/libu8.pc etc/getbuildopt dist/libu8-2.7.spec dist/alpine/APKBUILD"
 
 ac_config_commands="$ac_config_commands default"
 
@@ -8708,7 +8708,6 @@ do
     "include/libu8/u8source.h") CONFIG_HEADERS="$CONFIG_HEADERS include/libu8/u8source.h" ;;
     "include/libu8/config.h") CONFIG_HEADERS="$CONFIG_HEADERS include/libu8/config.h" ;;
     "makefile") CONFIG_FILES="$CONFIG_FILES makefile" ;;
-    "etc/version") CONFIG_FILES="$CONFIG_FILES etc/version" ;;
     "etc/libu8.pc") CONFIG_FILES="$CONFIG_FILES etc/libu8.pc" ;;
     "etc/getbuildopt") CONFIG_FILES="$CONFIG_FILES etc/getbuildopt" ;;
     "dist/libu8-2.7.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-2.7.spec" ;;

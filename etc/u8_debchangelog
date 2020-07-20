@@ -1,0 +1,41 @@
+#!/bin/sh
+PKGNAME=${1:-libu8};
+CODENAME=${2:-debian};
+BRANCH=$3;
+VERSION=$4;
+STATUS=${5:-stable};
+URGENCY=${6:-medium};
+GITID=$7
+DATE=`date -R`;
+if [ ! -z "${GITID}" ]; then
+    GITID="${GITID}"
+elif [ -d .git ] && which git > /dev/null; then
+    GITID=$(git describe);
+else GITID="no git"
+fi;
+if [ -z "${STATUS}" ] || 
+   [ ${STATUS} = "stable" ] || 
+   [ ${STATUS} = "default" ]; then
+    STATUS=
+else
+    STATUS="-${STATUS}";
+fi;
+if [ -z "${BRANCH}" ] || \
+   [ ${BRANCH} = "trunk" ] || \
+   [ ${BRANCH} = "master" ] || \
+   [ ${BRANCH} = "default" ]; then
+    DBRANCH=
+else
+    DBRANCH="-${BRANCH}";
+fi;
+echo ${PKGNAME} \(${VERSION}-${CODENAME}${DBRANCH}\) ${CODENAME}${DBRANCH}${STATUS}\; urgency=${URGENCY}
+echo
+if [ -z ${DBRANCH} ]; then
+    echo "  * ${GITID} point release of ${PKGNAME} for ${CODENAME} (${STATUS})"
+else
+    echo "  * ${GITID} point release of ${PKGNAME} (branch '${BRANCH}') for ${CODENAME} (${STATUS})"
+fi;
+echo
+echo " -- Repository Manager <repoman@beingmeta.com>  ${DATE}"
+echo
+cat -

@@ -1,0 +1,6 @@
+#!/bin/sh
+REV_FILE=$1
+COMMIT=$(git log -n 1 --no-decorate ${REV_FILE} | head -1 | cut -d' ' -f2)
+PATCHLEVEL=$(git rev-list --count ${COMMIT}..HEAD)
+echo -n "${N_COMMITS} "; cat ${REV_FILE}
+
