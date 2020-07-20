@@ -759,6 +759,23 @@ cleandist cleanrpms cleandeb rpmclean debclean:
 	@rm -rf staging/libu8*
 .PHONY: cleandist cleanrpms cleandeb rpmclean debclean
 
+# Making a source tarball
+
+dist/libu8.tar.gz: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
+	@rm -rf staging/libu8-@U8VERSION@
+	git archive --prefix=libu8-@U8VERSION@/ \
+	            -o staging/libu8-@U8VERSION@.tar HEAD
+	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
+	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
+	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
+		> staging/libu8-@U8VERSION@/etc/revision.h;             \
+	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
+		> staging/libu8-@U8VERSION@/etc/revision.h;             \
+	fi
+	cd staging; tar -czf ../$@ libu8-@U8VERSION@/
+	rm -rf staging/libu8-@U8VERSION@;
+
 # Creating staging areas from GIT
 
 staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
