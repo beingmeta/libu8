@@ -332,10 +332,7 @@ syslog-static: lib/libu8syslog.a
 include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile
 	@if test -f etc/revision.h; then				\
 	    cp etc/revision.h etc/use_revision.h; 			\
-	elif $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> etc/use_revision.h; 					\
-	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
+	else echo "#define LIBU8_REVISION \"${U8VERSION}-${PATCHLEVEL}\""	\
 		> etc/use_revision.h; 					\
 	fi
 	@if test ! -f $@; then 						\
@@ -343,7 +340,7 @@ include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile
 	elif diff etc/use_revision.h $@>/dev/null; then			\
 	  rm etc/use_revision.h; 					\
 	else 								\
-	  echo "# (libu8)" "Revision changed to "`@GITDESCRIBE@`;	\
+	  echo "# (libu8)" "Revision changed";	\
 	  mv $@ etc/old_revision.h; 					\
 	  mv etc/use_revision.h $@; 					\
 	fi
@@ -488,7 +485,8 @@ install-doc: @INSTALLDOCS@
 install-libs: install-static install-shared
 install-bin: install-shared install-static install-exe
 install-scripts: $(BININSTALLDIR)/u8_xsubst $(BININSTALLDIR)/u8_gitpatchcount \
-	$(BININSTALLDIR)/u8_gitbranch $(BININSTALLDIR)/u8_debchangelog
+	$(BININSTALLDIR)/u8_gitbranch $(BININSTALLDIR)/u8_debchangelog \
+	$(BININSTALLDIR)/u8_aptversion
 install-stripped:
 	make LIBSOURCE=lib/stripped LIBSOURCE=exe/stripped install-bin
 install-extras:  install-encodings @INSTALLI18N@ install-doc
@@ -771,33 +769,25 @@ cleandist cleanrpms cleandeb rpmclean debclean:
 
 dist/source.tar.gz: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
 	@rm -rf staging/libu8-@U8VERSION@
-	git archive --prefix=libu8-@U8VERSION@/ \
+	@git archive --prefix=libu8-@U8VERSION@/ \
 	            -o staging/libu8-@U8VERSION@.tar HEAD
-	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
-	cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
-	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/libu8-@U8VERSION@/etc/revision.h;             \
-	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/libu8-@U8VERSION@/etc/revision.h;             \
-	fi
-	cd staging; tar -czf ../$@ libu8-@U8VERSION@/
-	rm -rf staging/libu8-@U8VERSION@;
+	@cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	@cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
+	@echo "#define LIBU8_REVISION \"${U8VERSION}-${PATCHLEVEL}\""	\
+		> staging/libu8-@U8VERSION@/etc/revision.h;
+	@cd staging; tar -czf ../$@ libu8-@U8VERSION@/
+	@rm -rf staging/libu8-@U8VERSION@;
 
 # Creating staging areas from GIT
 
 staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	@rm -rf staging/libu8-@U8VERSION@
-	git archive --prefix=libu8-@U8VERSION@/ \
+	@git archive --prefix=libu8-@U8VERSION@/ \
 	            -o staging/libu8-@U8VERSION@.tar HEAD
-	cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
-	cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
-	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/libu8-@U8VERSION@/etc/revision.h;             \
-	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/libu8-@U8VERSION@/etc/revision.h;             \
-	fi
+	@cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
+	@cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
+	@echo "#define LIBU8_REVISION \"${U8VERSION}-${PATCHLEVEL}\""	\
+		> staging/libu8-@U8VERSION@/etc/revision.h;
 
 
 staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
@@ -805,22 +795,17 @@ staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	@git archive --prefix=libu8_@U8VERSION@/ \
 	            -o staging/libu8_@U8VERSION@.tar HEAD
 	@cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
-	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	    echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/libu8_@U8VERSION@/etc/revision.h;             \
-	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/libu8_@U8VERSION@/etc/revision.h;             \
-	fi
+	@echo "#define LIBU8_REVISION \"${U8VERSION}-${PATCHLEVEL}\""	\
+		> staging/libu8_@U8VERSION@/etc/revision.h;
 	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz \
 		libu8_@U8VERSION@;
 	@mv staging/libu8_@U8VERSION@/dist/debian \
 	   staging/libu8_@U8VERSION@/debian;
-	@if $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	  etc/u8_debchangelog libu8 ${CODENAME}				\
-		${REL_BRANCH} @U8VERSION@ ${REL_STATUS} ${REL_PRIORITY}	\
+	etc/u8_debchangelog libu8 ${CODENAME}				\
+		${REL_BRANCH} "@U8VERSION@-@U8PATCHLEVEL@" 		\
+		 ${REL_STATUS} ${REL_PRIORITY}				\
 		< dist/debian/changelog 				\
-		     > staging/libu8_@U8VERSION@/debian/changelog; 	\
-	fi
+		     > staging/libu8_@U8VERSION@/debian/changelog;
 
 staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	@make staging/libu8-@U8VERSION@
@@ -929,12 +914,8 @@ staging/alpine/APKBUILD: dist/alpine/APKBUILD staging/alpine
 staging/alpine/libu8-@U8VERSION@.tar.gz: staging/alpine
 	git archive --prefix=libu8/ -o staging/alpine/libu8-@U8VERSION@.tar HEAD
 	cd staging/alpine; tar -xf libu8-@U8VERSION@.tar;
-	if $(GITDESCRIBE) > /dev/null 2>&1; then			\
-	  echo "#define LIBU8_REVISION \""`@GITDESCRIBE@`"\"" 	\
-		> staging/alpine/libu8/etc/revision.h;             \
-	else echo "#define LIBU8_REVISION \"@U8VERSION@-exported\""	\
-		> staging/alpine/libu8/etc/revision.h;             \
-	fi
+	echo "#define LIBU8_REVISION \"@U8VERSION@-@U8PATCHLEVEL@\""	\
+		> staging/alpine/libu8/etc/revision.h;
 	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
 	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
 

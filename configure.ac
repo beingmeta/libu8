@@ -333,11 +333,6 @@ AC_PATH_PROG(MSGFMT,msgfmt)
 if test $etags = "na"; then
    TAGS_TARGET="NOTAGS"
 fi
-if test $git = "na"; then
-   GITDESCRIBE="false"
-else
-   GITDESCRIBE="$git describe"
-fi
 if test "x$doxygen" = "xna"; then
    DOCS=""
    INSTALLDOCS=""
