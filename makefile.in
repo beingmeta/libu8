@@ -761,7 +761,7 @@ cleandist cleanrpms cleandeb rpmclean debclean:
 
 # Making a source tarball
 
-dist/libu8.tar.gz: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
+dist/source.tar.gz: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
 	@rm -rf staging/libu8-@U8VERSION@
 	git archive --prefix=libu8-@U8VERSION@/ \
 	            -o staging/libu8-@U8VERSION@.tar HEAD
