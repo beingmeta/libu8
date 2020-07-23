@@ -137,11 +137,11 @@ nitpicking:
 	make XCFLAGS="-Wall" ${ALL}
 
 VERSION:
-	if test -d .git; then
-	  u8_gitversion etc/base_version > $@;
-	elif test -f VERSION; then
-	  touch VERSION;
-	else cp etc/base_version > VERSION;
+	if test -d .git; then 			\
+	  u8_gitversion etc/base_version > $@;	\
+	elif test -f VERSION; then 		\
+	  touch VERSION;			\
+	else cp etc/base_version > VERSION; 	\
 	fi;
 NEWVERSION:
 	scripts/u8_gitversion etc/base_version > VERSION
