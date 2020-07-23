@@ -1,0 +1,31 @@
+#!/bin/sh
+REV_FILE=$1
+if [ ! -f ${REV_FILE} ]; then
+    echo "Usage: u8_gitversion *releasefile* [w/commits]";
+    exit 2;
+fi;
+BASE_VERSION=$(cat ${REV_FILE})
+if [ ! -d .git ] || ! which git > /dev/null; then
+    echo "${BASE_VERSION}-nobranch-nopatchlevel-nocommit-nobasecommit";
+    exit;
+fi;
+CUR_COMMIT=$(git log -n 1 --no-decorate | head -1 | cut -d' ' -f2)
+BASE_COMMIT=$(git log -n 1 --no-decorate ${REV_FILE} | head -1 | cut -d' ' -f2)
+N_COMMITS=$(git rev-list --count ${BASE_COMMIT}..HEAD)
+BRANCH_NAME=$(git symbolic-ref -q HEAD)
+BRANCH_NAME=${BRANCH_NAME##refs/heads/}
+if [ -z "${N_COMMITS}" ]; then N_COMMITS="0"; fi;
+if [ -z "${BRANCH_NAME}" ]; then
+    BRANCH_NAME="-nobranch";
+fi;
+if [ $# -eq 1 ]; then
+    if [ ${BRANCH_NAME} = "trunk" ] || [ ${BRANCH_NAME} = "master" ]; then
+	echo ${BASE_VERSION}-${N_COMMITS};
+    else
+	echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
+    fi;
+else
+    if [ -z "${CUR_COMMIT}" ]; then CUR_COMMIT="nocommit"; fi;
+    if [ -z "${BASE_COMMIT}" ]; then CUR_COMMIT="nobasecommit"; fi;
+    echo ${BASE_VERSION}${BRANCH_NAME}-${N_COMMITS}-${CUR_COMMIT}-${BASE_COMMIT};
+fi;

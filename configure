@@ -2845,11 +2845,11 @@ shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 rpath_default=$exec_prefix
 CLEAN="rm -f"
-U8VERSION=$(cat ./version)
-U8MAJOR=$(cat ./version | cut -d'.' -f1)
-U8MINOR=$(cat ./version | cut -d'.' -f2)
-U8RELEASE=$(cat ./version | cut -d'.' -f2)
-U8PATCHLEVEL=`./etc/u8_gitpatchcount ./version`
+U8VERSION=$(cat etc/base_version)
+U8MAJOR=$(cat ./etc/base_version | cut -d'.' -f1)
+U8MINOR=$(cat ./etc/base_version | cut -d'.' -f2)
+U8RELEASE=$(cat ./etc/base_version | cut -d'.' -f2)
+U8PATCHLEVEL=`./scripts/u8_gitpatchcount ./etc/base_version`
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
 vshared_suffix=so.${U8VERSION}
@@ -3148,7 +3148,7 @@ fi
 
 
 if test -z "${GITBRANCH}"; then
-   GITBRANCH=`etc/u8_gitbranch`;
+   GITBRANCH=`scripts/u8_gitbranch`;
 fi;
 
 # Extract the first word of "clang", so it can be a program name with args.
@@ -6857,7 +6857,7 @@ else
 fi
 
 if test "x$with_fileinfo" = "xyes" ; then
-   definefileinfo="-D_FILEINFO=\"\\\"\`./fileinfo ./$< .\`\\\"\""
+   definefileinfo="-D_FILEINFO=\"\\\"\`exe/u8_fileinfo ./$< .\`\\\"\""
    versionsh="include/framerd/versions.h"
 fi
 

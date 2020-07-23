@@ -15,8 +15,8 @@ DYLIB_FLAGS     = -compatibility_version @U8MAJOR@.@U8MINOR@ \
 	          -current_version @U8MAJOR@.@U8MINOR@.@U8RELEASE@
 INC	        = include/libu8
 BUILDMODE       := $(cat buildmode)
-U8VERSION       := $(cat ./version)
-PATCHLEVEL      := $(etc/u8_gitpatchcount ./version)
+U8VERSION       := $(cat etc/base_version)
+PATCHLEVEL      := $(scripts/u8_gitpatchcount ./etc/base_version)
 
 DESTDIR		=
 prefix		= @prefix@
@@ -53,7 +53,7 @@ RPMGPG		  = %__gpg gpg --force-v3-sigs --digest-algo=sha1 -u \
 		    -sbo %{__signature_filename} %{__plaintext_filename}
 APKREPO	        ::= $(shell ./etc/getbuildopt APKREPO /srv/repo/kno/apk)
 DEBNAME		::= "libu8-@U8VERSION@-${PATCHLEVEL}"
-APTVERSION	::= $(shell ./etc/u8_aptversion libu8)
+APTVERSION	::= $(shell ./scripts/u8_aptversion libu8)
 REL_BRANCH      ::= $(shell ./etc/getbuildopt REL_BRANCH current)
 REL_STATUS      ::= $(shell ./etc/getbuildopt REL_STATUS stable)
 REL_PRIORITY    ::= $(shell ./etc/getbuildopt REL_PRIORITY medium)
@@ -109,7 +109,10 @@ DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
 	tests/dynamic/echosrv tests/xtimetest
 
 STATIC_LIBS=lib/libu8.a lib/libu8core.a lib/libu8io.a lib/libu8fns.a \
-            lib/libu8data.a lib/libu8stdio.a
+            lib/libu8data.a lib/libu8stdio.a lib/libu8syslog.a
+SHARED_LIBS=lib/libu8.@shared_suffix@ lib/libu8fns.@shared_suffix@ \
+        lib/libu8io.@shared_suffix@ lib/libu8data.@shared_suffix@ \
+        lib/libu8stdio.@shared_suffix@ lib/libu8syslog.@shared_suffix@
 STATIC_TEST_LIBS=lib/libu8.a
 SHARED_TEST_LIBS=lib/libu8.@shared_suffix@ lib/libu8io.@shared_suffix@ \
 		lib/libu8stdio.@shared_suffix@
@@ -135,6 +138,11 @@ nitpicking:
 	@make TAGS
 	@echo "# (libu8)" Building NITPICKING configuration
 	make XCFLAGS="-Wall" ${ALL}
+
+VERSION:
+	scripts/u8_gitversion etc/base_version > $@
+NEWVERSION:
+	scripts/u8_gitversion etc/base_version > VERSION
 
 all: ${ALL}
 
@@ -182,7 +190,7 @@ makefile: makefile.in config.status
 	fi
 ./config.status: configure
 	./config.status --recheck
-configure: configure.ac version
+configure: configure.ac etc/base_version
 	@if test -f .autoautoconf; then 				\
 	     echo "# (libu8)" "REBUILDING configure"; autoconf; 	\
 	else echo "# (libu8) WARNING: configure may be out of date"; 	\
@@ -195,8 +203,8 @@ include/libu8/u8source.h: include/libu8/u8source.h.in
 # Fileinfo gets version-related information about a file to pass in
 # with -D
 
-./fileinfo: etc/fileinfo.c
-	$(CC) -o ./fileinfo etc/fileinfo.c
+exe/u8_fileinfo: etc/u8_fileinfo.c
+	$(CC) -o exe/u8_fileinfo etc/u8_fileinfo.c
 
 # Makes everything and then sudoes install.  Keeps build files non-root
 
@@ -211,7 +219,7 @@ dbginstall:
 
 # Make rules
 
-%.o: %.c ./fileinfo ${REVISION_H}
+%.o: %.c exe/u8_fileinfo ${REVISION_H}
 	@echo "# (libu8)" CC $@ $<
 	@$(CC) $(CFLAGS) @definefileinfo@ -o $@ -c $<
 tests/%: tests/%.c 
@@ -228,7 +236,6 @@ exe/%.static: %.c
 	@echo "# (libu8)" CC_EXE $@ $<
 	@$(CC) $(CFLAGS) -g3 -O0 -L./lib $(LDFLAGS) $(EXEFLAGS) \
 		 -o $@ $< lib/libu8.a ${LIBS}
-
 
 lib/%@suffix@.a:
 	@echo "# (libu8)" MKSTATIC $@ $^
@@ -300,14 +307,19 @@ $(BININSTALLDIR)/%: etc/%
 	@$(SUDO) $(INSTALL) -d $(BININSTALLDIR)
 	@$(SUDO) $(INSTALL) $< $(BININSTALLDIR)
 
+$(BININSTALLDIR)/%: scripts/%
+	@echo "# (libu8)" Installing script $@ from $<
+	@$(SUDO) $(INSTALL) -d $(BININSTALLDIR)
+	@$(SUDO) $(INSTALL) $< $(BININSTALLDIR)
+
 check:
 
 test: @test_shared@ @test_static@
 test-shared: $(DYTESTBIN)
 test-static: $(TESTBIN)
 
-$(TESTBIN): static-libs ${REVISION_H}
-$(DYTESTBIN): shared-libs ${REVISION_H}
+$(TESTBIN): ${STATIC_LIBS} ${REVISION_H}
+$(DYTESTBIN): ${SHARED_LIBS} ${REVISION_H}
 
 TAGS: tests/*.c include/libu8/*.h *.c
 	@echo "# (libu8)" Making TAGS table
@@ -320,32 +332,23 @@ static-exe: exe/u8run.static
 shared-exe: exe/u8run
 
 libs: @build_shared@ @build_static@
-static-libs: lib/libu8.a lib/libu8core.a lib/libu8fns.a lib/libu8io.a \
-	lib/libu8data.a lib/libu8stdio.a @syslog_static@
-shared-libs: lib/libu8.@shared_suffix@ lib/libu8fns.@shared_suffix@ \
-        lib/libu8io.@shared_suffix@ lib/libu8data.@shared_suffix@ \
-        lib/libu8stdio.@shared_suffix@ @syslog_shared@
+static-libs: ${STATIC_LIBS}
+shared-libs: ${SHARED_LIBS}
 
-syslog-shared: lib/libu8syslog.@shared_suffix@
-syslog-static: lib/libu8syslog.a
-
-include/libu8/revision.h: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile
-	@if test -f etc/revision.h; then				\
-	    cp etc/revision.h etc/use_revision.h; 			\
-	else echo "#define LIBU8_REVISION \"${U8VERSION}-${PATCHLEVEL}\""	\
-		> etc/use_revision.h; 					\
-	fi
-	@if test ! -f $@; then 						\
-	  mv etc/use_revision.h $@; 					\
-	elif diff etc/use_revision.h $@>/dev/null; then			\
-	  rm etc/use_revision.h; 					\
-	else 								\
-	  echo "# (libu8)" "Revision changed";	\
-	  mv $@ etc/old_revision.h; 					\
-	  mv etc/use_revision.h $@; 					\
+include/libu8/revision.h: VERSION
+	@echo "#define LIBU8_REVISION \"`cat VERSION`\""	\
+		> etc/use_revision.h;
+	@if test ! -f $@; then					\
+	  mv etc/use_revision.h $@;				\
+	elif diff etc/use_revision.h $@ >/dev/null; then	\
+	  rm etc/use_revision.h;				\
+	else							\
+	  echo "# (libu8)" "Revision changed";			\
+	  mv $@ etc/old_revision.h;				\
+	  mv etc/use_revision.h $@;				\
 	fi
 lib/libu8.a: $(LIBU8_OBJECTS)
-lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)
+lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)	
 lib/libu8.dylib: $(LIBU8_OBJECTS)
 lib/libu8.dll: $(LIBU8_OBJECTS)
 # Avoid recursive reference for the libu8 library itself
@@ -484,9 +487,9 @@ install-shared: @install_shared@
 install-doc: @INSTALLDOCS@
 install-libs: install-static install-shared
 install-bin: install-shared install-static install-exe
-install-scripts: $(BININSTALLDIR)/u8_xsubst $(BININSTALLDIR)/u8_gitpatchcount \
-	$(BININSTALLDIR)/u8_gitbranch $(BININSTALLDIR)/u8_debchangelog \
-	$(BININSTALLDIR)/u8_aptversion
+install-scripts: $(BININSTALLDIR)/u8_xsubst \
+	$(BININSTALLDIR)/u8_gitpatchcount $(BININSTALLDIR)/u8_gitbranch $(BININSTALLDIR)/u8_gitversion \
+	$(BININSTALLDIR)/u8_aptversion $(BININSTALLDIR)/u8_debchangelog 
 install-stripped:
 	make LIBSOURCE=lib/stripped LIBSOURCE=exe/stripped install-bin
 install-extras:  install-encodings @INSTALLI18N@ install-doc
@@ -767,16 +770,9 @@ cleandist cleanrpms cleandeb rpmclean debclean:
 
 # Making a source tarball
 
-dist/source.tar.gz: $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
-	@rm -rf staging/libu8-@U8VERSION@
-	@git archive --prefix=libu8-@U8VERSION@/ \
-	            -o staging/libu8-@U8VERSION@.tar HEAD
-	@cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
-	@cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
-	@echo "#define LIBU8_REVISION \"${U8VERSION}-${PATCHLEVEL}\""	\
-		> staging/libu8-@U8VERSION@/etc/revision.h;
-	@cd staging; tar -czf ../$@ libu8-@U8VERSION@/
-	@rm -rf staging/libu8-@U8VERSION@;
+dist/source.tar: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
+	@git archive -o dist/source.tar HEAD
+	@tar -rf dist/source.tar VERSION
 
 # Creating staging areas from GIT
 
@@ -786,8 +782,7 @@ staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	            -o staging/libu8-@U8VERSION@.tar HEAD
 	@cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
 	@cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
-	@echo "#define LIBU8_REVISION \"${U8VERSION}-${PATCHLEVEL}\""	\
-		> staging/libu8-@U8VERSION@/etc/revision.h;
+	@./scripts/u8_gitversion etc/base_version full > staging/libu8-@U8VERSION@/VERSION
 
 
 staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
@@ -795,13 +790,12 @@ staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	@git archive --prefix=libu8_@U8VERSION@/ \
 	            -o staging/libu8_@U8VERSION@.tar HEAD
 	@cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
-	@echo "#define LIBU8_REVISION \"${U8VERSION}-${PATCHLEVEL}\""	\
-		> staging/libu8_@U8VERSION@/etc/revision.h;
+	@./scripts/u8_gitversion etc/base_version full > staging/libu8_@U8VERSION@/VERSION
 	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz \
 		libu8_@U8VERSION@;
 	@mv staging/libu8_@U8VERSION@/dist/debian \
 	   staging/libu8_@U8VERSION@/debian;
-	etc/u8_debchangelog libu8 ${CODENAME}				\
+	scripts/u8_debchangelog libu8 ${CODENAME}				\
 		${REL_BRANCH} "@U8VERSION@-@U8PATCHLEVEL@" 		\
 		 ${REL_STATUS} ${REL_PRIORITY}				\
 		< dist/debian/changelog 				\
@@ -902,7 +896,7 @@ build-setup-ubuntu: build-setup.debian
 
 # Alpine packaging
 
-dist/alpine/APKBUILD: dist/alpine/APKBUILD.in
+dist/alpine/APKBUILD: dist/alpine/APKBUILD.in 
 	./config.status
 
 staging/alpine:

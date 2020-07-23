@@ -1,2 +1,8 @@
 usr/lib/lib*.so.*
 usr/bin/u8run
+usr/bin/u8_xsubst
+usr/bin/u8_gitversion
+usr/bin/u8_gitpatchcount
+usr/bin/u8_gitbranch
+usr/bin/u8_debchangelog
+usr/bin/u8_aptversion

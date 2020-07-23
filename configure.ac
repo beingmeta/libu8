@@ -10,11 +10,11 @@ shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 rpath_default=$exec_prefix
 CLEAN="rm -f"
-U8VERSION=$(cat ./version)
-U8MAJOR=$(cat ./version | cut -d'.' -f1)
-U8MINOR=$(cat ./version | cut -d'.' -f2)
-U8RELEASE=$(cat ./version | cut -d'.' -f2)
-U8PATCHLEVEL=`./etc/u8_gitpatchcount ./version`
+U8VERSION=$(cat etc/base_version)
+U8MAJOR=$(cat ./etc/base_version | cut -d'.' -f1)
+U8MINOR=$(cat ./etc/base_version | cut -d'.' -f2)
+U8RELEASE=$(cat ./etc/base_version | cut -d'.' -f2)
+U8PATCHLEVEL=`./scripts/u8_gitpatchcount ./etc/base_version`
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
 vshared_suffix=so.${U8VERSION}
@@ -55,8 +55,6 @@ install_static="install-static"
 install_exe="install-exe"
 libc_pthreads="no"
 libc_dlopen="no"
-syslog_static="syslog-static"
-syslog_shared="syslog-shared"
 suffix=""
 rpath=""
 have_constructor_attributes="yes"
@@ -140,8 +138,6 @@ AC_SUBST(shared_exe)
 AC_SUBST(static_exe)
 AC_SUBST(install_shared)
 AC_SUBST(install_static)
-AC_SUBST(syslog_shared)
-AC_SUBST(syslog_static)
 AC_SUBST(buildopts_dir)
 AC_SUBST(archflags)
 AC_SUBST(definefileinfo)
@@ -173,7 +169,7 @@ AC_SUBST(GITBRANCH)
 AC_SUBST(CODENAME)
 
 if test -z "${GITBRANCH}"; then
-   GITBRANCH=`etc/u8_gitbranch`;
+   GITBRANCH=`scripts/u8_gitbranch`;
 fi;
 
 AC_PATH_PROG(CLANG,clang,none)
@@ -450,7 +446,6 @@ AC_FUNC_STRERROR_R
 # Syslog
 AC_CHECK_FUNCS(syslog,syslog_target="syslog_libs",syslog_target="")
 
-
 # Internationalization
 AC_CHECK_HEADERS(libintl.h)
 AC_CHECK_LIB(intl,gettext)
@@ -472,7 +467,7 @@ fi
 
 AC_ARG_WITH(fileinfo,--with[out]-fileinfo record fileinfo,,with_fileinfo="yes")
 if test "x$with_fileinfo" = "xyes" ; then
-   definefileinfo="-D_FILEINFO=\"\\\"\`./fileinfo ./$< .\`\\\"\""
+   definefileinfo="-D_FILEINFO=\"\\\"\`exe/u8_fileinfo ./$< .\`\\\"\""
    versionsh="include/framerd/versions.h"
 fi
 
