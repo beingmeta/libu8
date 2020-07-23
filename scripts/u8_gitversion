@@ -19,7 +19,7 @@ if [ -z "${BRANCH_NAME}" ]; then
     BRANCH_NAME="-nobranch";
 fi;
 if [ $# -eq 1 ]; then
-    if [ ${BRANCH_NAME} = "trunk" ] || [ ${BRANCH_NAME} = "master" ]; then
+    if [ ${BRANCH_NAME} = "trunk" ] || [ ${BRANCH_NAME} = "master" ] || [ ${BRANCH_NAME} = "current" ]; then
 	echo ${BASE_VERSION}-${N_COMMITS};
     else
 	echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};

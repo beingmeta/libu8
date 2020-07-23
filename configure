@@ -669,8 +669,6 @@ versionsh
 definefileinfo
 archflags
 buildopts_dir
-syslog_static
-syslog_shared
 install_static
 install_shared
 static_exe
@@ -2890,8 +2888,6 @@ install_static="install-static"
 install_exe="install-exe"
 libc_pthreads="no"
 libc_dlopen="no"
-syslog_static="syslog-static"
-syslog_shared="syslog-shared"
 suffix=""
 rpath=""
 have_constructor_attributes="yes"
@@ -3081,8 +3077,6 @@ else
    default_config_dir=$prefix/etc/kno;
    default_buildopts_dir=$prefix/etc/beingmeta/opts;
 fi
-
-
 
 
 
@@ -6689,7 +6683,6 @@ else
   syslog_target=""
 fi
 done
-
 
 
 # Internationalization

@@ -23,6 +23,7 @@ fi;
 if [ -z "${BRANCH}" ] || \
    [ ${BRANCH} = "trunk" ] || \
    [ ${BRANCH} = "master" ] || \
+   [ ${BRANCH} = "current" ] || \
    [ ${BRANCH} = "default" ]; then
     DBRANCH=
 else

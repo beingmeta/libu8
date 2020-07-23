@@ -14,8 +14,8 @@ LIBS            = @LIBS@ $(EFENCE) -lm
 DYLIB_FLAGS     = -compatibility_version @U8MAJOR@.@U8MINOR@ \
 	          -current_version @U8MAJOR@.@U8MINOR@.@U8RELEASE@
 INC	        = include/libu8
-BUILDMODE       := $(cat buildmode)
-U8VERSION       := $(cat etc/base_version)
+BUILDMODE       := $(shell cat ./buildmode)
+U8VERSION       := $(shell cat ./etc/base_version)
 PATCHLEVEL      := $(scripts/u8_gitpatchcount ./etc/base_version)
 
 DESTDIR		=
@@ -770,11 +770,33 @@ cleandist cleanrpms cleandeb rpmclean debclean:
 
 # Making a source tarball
 
-dist/source.tar: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
-	@git archive -o dist/source.tar HEAD
-	@tar -rf dist/source.tar VERSION
+dist/libu8.tar: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
+	@git archive -o dist/libu8.tar HEAD
+	@tar -rf dist/libu8.tar VERSION
+	@cd dist; ln -s libu8.tar source.tar
+dist/source.tar: libu8.tar
+	@cd dist; ln -s libu8.tar source.tar
+
+staging/libu8: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
+	@git archive --prefix=libu8/ -o staging/libu8.tar HEAD
+	@cd staging; tar -xf libu8.tar; rm libu8.tar;
+	@cp VERSION staging/libu8
 
 # Creating staging areas from GIT
+
+staging/libu8_@U8VERSION@:
+	make staging/libu8;
+	cd staging; mv libu8/dist/debian libu8/debian;
+	scripts/u8_debchangelog libu8 ${CODENAME} \
+		${REL_BRANCH} ${U8VERSION} ${REL_STATUS} ${REL_PRIORITY} \
+			< dist/debian/changelog \
+			> staging/libu8/debian/changelog;
+	rm -rf staging/libu8_@U8VERSION@;
+	cd staging; mv libu8 libu8_@U8VERSION@; 
+staging/libu8_@U8VERSION@.tar.gz: staging/libu8_@U8VERSION@
+	cd staging; tar -czvf libu8_@U8VERSION@.tar.gz libu8_@U8VERSION@
+
+# RPM rules
 
 staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	@rm -rf staging/libu8-@U8VERSION@
@@ -784,30 +806,9 @@ staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	@cp dist/libu8-@U8MAJOR@.@U8MINOR@.spec staging/libu8-@U8VERSION@/dist;
 	@./scripts/u8_gitversion etc/base_version full > staging/libu8-@U8VERSION@/VERSION
 
-
-staging/libu8_@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
-	@rm -rf staging/libu8_@U8VERSION@
-	@git archive --prefix=libu8_@U8VERSION@/ \
-	            -o staging/libu8_@U8VERSION@.tar HEAD
-	@cd staging; tar -xf libu8_@U8VERSION@.tar; rm libu8_@U8VERSION@.tar
-	@./scripts/u8_gitversion etc/base_version full > staging/libu8_@U8VERSION@/VERSION
-	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz \
-		libu8_@U8VERSION@;
-	@mv staging/libu8_@U8VERSION@/dist/debian \
-	   staging/libu8_@U8VERSION@/debian;
-	scripts/u8_debchangelog libu8 ${CODENAME}				\
-		${REL_BRANCH} "@U8VERSION@-@U8PATCHLEVEL@" 		\
-		 ${REL_STATUS} ${REL_PRIORITY}				\
-		< dist/debian/changelog 				\
-		     > staging/libu8_@U8VERSION@/debian/changelog;
-
 staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	@make staging/libu8-@U8VERSION@
 	@tar -czvf $@ -C staging libu8-@U8VERSION@
-staging/libu8_@U8VERSION@.orig.tar.gz: staging/libu8-@U8VERSION@
-	@cd staging; tar -czvf libu8_@U8VERSION@.orig.tar.gz libu8-@U8VERSION@
-
-# RPM rules
 
 dist/rpms.ready: staging/libu8-@U8VERSION@ \
 	staging/libu8_@U8VERSION@.orig.tar.gz \
@@ -851,11 +852,13 @@ dist/rpms.zip: dist/rpms.done
 
 # Rules for debian building
 
-dist/debs.built: staging/libu8_@U8VERSION@
-	@(cd staging/libu8_@U8VERSION@; \
+dist/debs.built: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+	make staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.tar.gz && \
+	(cd staging/libu8_@U8VERSION@; \
 	  dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
-	  cp staging/libu8_@U8VERSION@*.gz dist && 	\
-	  mv -f staging/libu8*_@U8VERSION@*.* dist && 	\
+	  mv staging/libu8_@U8VERSION@*.gz dist && 	\
+	  mv staging/libu8*_@U8VERSION@*.* dist && 	\
+	  rm -rf staging/libu8_@U8VERSION@ && 	\
 	  touch dist/debs.built;
 dist/debs.signed: dist/debs.built
 	@(if test "x${GPGID}" = "xnone"; then 			\
