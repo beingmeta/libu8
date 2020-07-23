@@ -1,7 +1,7 @@
 #!/bin/sh
 REV_FILE=$1
 if [ ! -d .git ] || ! which git > /dev/null; then
-    echo "unknown"; exit; fi;
+    echo "-1"; exit; fi;
 COMMIT=$(git log -n 1 --no-decorate ${REV_FILE} | head -1 | cut -d' ' -f2)
 PATCHLEVEL=$(git rev-list --count ${COMMIT}..HEAD)
 if [ -z "${N_COMMITS}" ]; then

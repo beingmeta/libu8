@@ -16,8 +16,6 @@ DYLIB_FLAGS     = -compatibility_version @U8MAJOR@.@U8MINOR@ \
 INC	        = include/libu8
 BUILDMODE       := $(shell cat ./buildmode)
 U8VERSION       := $(shell cat ./etc/base_version)
-PATCHLEVEL      := $(scripts/u8_gitpatchcount ./etc/base_version)
-
 DESTDIR		=
 prefix		= @prefix@
 exec_prefix	= @exec_prefix@
@@ -52,7 +50,6 @@ RPMGPG		  = %__gpg gpg --force-v3-sigs --digest-algo=sha1 -u \
 		    \"%{_gpg_name}\" --no-armor --no-secmem-warning \
 		    -sbo %{__signature_filename} %{__plaintext_filename}
 APKREPO	        ::= $(shell ./etc/getbuildopt APKREPO /srv/repo/kno/apk)
-DEBNAME		::= "libu8-@U8VERSION@-${PATCHLEVEL}"
 APTVERSION	::= $(shell ./scripts/u8_aptversion libu8)
 REL_BRANCH      ::= $(shell ./etc/getbuildopt REL_BRANCH current)
 REL_STATUS      ::= $(shell ./etc/getbuildopt REL_STATUS stable)
@@ -140,7 +137,12 @@ nitpicking:
 	make XCFLAGS="-Wall" ${ALL}
 
 VERSION:
-	scripts/u8_gitversion etc/base_version > $@
+	if test -d .git; then
+	  u8_gitversion etc/base_version > $@;
+	elif test -f VERSION; then
+	  touch VERSION;
+	else cp etc/base_version > VERSION;
+	fi;
 NEWVERSION:
 	scripts/u8_gitversion etc/base_version > VERSION
 
@@ -880,7 +882,8 @@ debfresh freshdeb:
 .PHONY: debfresh freshdeb
 
 debupdate:
-	@if [ "${DEBNAME}" = "libu8_${APTVERSION}" ]; then 	\
+	@SRCVERSION=$(shell cat VERSION); 			\
+	if [ "${SRCVERSION}" = "libu8_${APTVERSION}" ]; then 	\
 	  echo "Debian build of utf8 is up to date"; 		\
 	else make debfresh; fi;
 
@@ -911,8 +914,7 @@ staging/alpine/APKBUILD: dist/alpine/APKBUILD staging/alpine
 staging/alpine/libu8-@U8VERSION@.tar.gz: staging/alpine
 	git archive --prefix=libu8/ -o staging/alpine/libu8-@U8VERSION@.tar HEAD
 	cd staging/alpine; tar -xf libu8-@U8VERSION@.tar;
-	echo "#define LIBU8_REVISION \"@U8VERSION@-@U8PATCHLEVEL@\""	\
-		> staging/alpine/libu8/etc/revision.h;
+	cp VERSION staging/alpine/libu8;
 	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
 	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
 
