@@ -1,0 +1,10 @@
+#!/bin/sh
+if [ ! -d .git ] || ! which git > /dev/null; then
+    echo "none";
+elif [ $# -eq 0 ]; then
+    git log -n 1 --no-decorate | head -1 | cut -d' ' -f2;
+elif [ ! -f $1 ]; then
+    echo "Usage: gitcommit [file]"
+else 
+    git log -n 1 --no-decorate $1 | head -1 | cut -d' ' -f2;
+fi;

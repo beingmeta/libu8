@@ -6,7 +6,7 @@ if [ ! -f ${REV_FILE} ]; then
 fi;
 BASE_VERSION=$(cat ${REV_FILE})
 if [ ! -d .git ] || ! which git > /dev/null; then
-    echo "${BASE_VERSION}-nobranch-nopatchlevel-nocommit-nobasecommit";
+    echo "${BASE_VERSION}";
     exit;
 fi;
 CUR_COMMIT=$(git log -n 1 --no-decorate | head -1 | cut -d' ' -f2)
@@ -22,10 +22,10 @@ if [ $# -eq 1 ]; then
     if [ ${BRANCH_NAME} = "trunk" ] || [ ${BRANCH_NAME} = "master" ] || [ ${BRANCH_NAME} = "current" ]; then
 	echo ${BASE_VERSION}-${N_COMMITS};
     else
-	echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
+	echo ${BASE_VERSION-${N_COMMITS}}-${BRANCH_NAME};
     fi;
 else
-    if [ -z "${CUR_COMMIT}" ]; then CUR_COMMIT="nocommit"; fi;
-    if [ -z "${BASE_COMMIT}" ]; then CUR_COMMIT="nobasecommit"; fi;
-    echo ${BASE_VERSION}${BRANCH_NAME}-${N_COMMITS}-${CUR_COMMIT}-${BASE_COMMIT};
+    if [ ! -z "${CUR_COMMIT}" ]; then CUR_COMMIT="-${CUR_COMMIT}"; fi;
+    if [ ! -z "${BASE_COMMIT}" ]; then BASE_COMMIT="-${BASE_COMMIT}"; fi;
+    echo ${BASE_VERSION}-${N_COMMITS}-${BRANCH_NAME}${CUR_COMMIT}${BASE_COMMIT};
 fi;

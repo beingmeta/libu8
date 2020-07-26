@@ -337,9 +337,16 @@ libs: @build_shared@ @build_static@
 static-libs: ${STATIC_LIBS}
 shared-libs: ${SHARED_LIBS}
 
-include/libu8/revision.h: VERSION
-	@echo "#define LIBU8_REVISION \"`cat VERSION`\""	\
-		> etc/use_revision.h;
+etc/use_revision.h:
+	@REVISION=$$(scripts/u8_gitversion etc/base_version); 			\
+	 FULL_REVISION=$$(scripts/u8_gitversion etc/base_version full);		\
+	 if [ -z "$${REVISION}" ]; then REVISION=$$(cat ./VERSION); fi;	\
+	 echo "#define LIBU8_REVISION \"$$REVISION\"" > $@; 		\
+	 if [ ! -z "$${FULL_REVISION}" ]; then 				\
+	   echo "#define LIBU8_FULL_REVISION \"$$FULL_REVISION\"" >> $@; \
+	else echo "#define LIBU8_FULL_REVISION \"$$REVISION\"" >> $@; fi;
+
+include/libu8/revision.h: VERSION etc/use_revision.h
 	@if test ! -f $@; then					\
 	  mv etc/use_revision.h $@;				\
 	elif diff etc/use_revision.h $@ >/dev/null; then	\
@@ -349,6 +356,7 @@ include/libu8/revision.h: VERSION
 	  mv $@ etc/old_revision.h;				\
 	  mv etc/use_revision.h $@;				\
 	fi
+
 lib/libu8.a: $(LIBU8_OBJECTS)
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)	
 lib/libu8.dylib: $(LIBU8_OBJECTS)
@@ -490,7 +498,8 @@ install-doc: @INSTALLDOCS@
 install-libs: install-static install-shared
 install-bin: install-shared install-static install-exe
 install-scripts: $(BININSTALLDIR)/u8_xsubst \
-	$(BININSTALLDIR)/u8_gitpatchcount $(BININSTALLDIR)/u8_gitbranch $(BININSTALLDIR)/u8_gitversion \
+	$(BININSTALLDIR)/u8_gitpatchcount $(BININSTALLDIR)/u8_gitbranch \
+	$(BININSTALLDIR)/u8_gitversion $(BININSTALLDIR)/u8_gitcommit \
 	$(BININSTALLDIR)/u8_aptversion $(BININSTALLDIR)/u8_debchangelog 
 install-stripped:
 	make LIBSOURCE=lib/stripped LIBSOURCE=exe/stripped install-bin
@@ -795,8 +804,9 @@ staging/libu8_@U8VERSION@:
 			> staging/libu8/debian/changelog;
 	rm -rf staging/libu8_@U8VERSION@;
 	cd staging; mv libu8 libu8_@U8VERSION@; 
-staging/libu8_@U8VERSION@.tar.gz: staging/libu8_@U8VERSION@
 	cd staging; tar -czvf libu8_@U8VERSION@.tar.gz libu8_@U8VERSION@
+staging/libu8_@U8VERSION@.tar.gz: staging/libu8_@U8VERSION@
+
 
 # RPM rules
 
