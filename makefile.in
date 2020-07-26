@@ -338,13 +338,10 @@ static-libs: ${STATIC_LIBS}
 shared-libs: ${SHARED_LIBS}
 
 etc/use_revision.h:
-	@REVISION=$$(scripts/u8_gitversion etc/base_version); 			\
-	 FULL_REVISION=$$(scripts/u8_gitversion etc/base_version full);		\
-	 if [ -z "$${REVISION}" ]; then REVISION=$$(cat ./VERSION); fi;	\
-	 echo "#define LIBU8_REVISION \"$$REVISION\"" > $@; 		\
-	 if [ ! -z "$${FULL_REVISION}" ]; then 				\
-	   echo "#define LIBU8_FULL_REVISION \"$$FULL_REVISION\"" >> $@; \
-	else echo "#define LIBU8_FULL_REVISION \"$$REVISION\"" >> $@; fi;
+	@REVISION=$$(scripts/u8_gitversion etc/base_version);		\
+	 FULL_REVISION=$$(scripts/u8_gitversion etc/base_version full);	\
+	 echo "#define LIBU8_REVISION \"libu8-$$REVISION\"" > $@; 		\
+	 echo "#define LIBU8_FULL_REVISION \"libu8-$$FULL_REVISION\"" >> $@;
 
 include/libu8/revision.h: VERSION etc/use_revision.h
 	@if test ! -f $@; then					\
