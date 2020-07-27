@@ -136,16 +136,6 @@ nitpicking:
 	@echo "# (libu8)" Building NITPICKING configuration
 	make XCFLAGS="-Wall" ${ALL}
 
-VERSION:
-	if test -d .git; then 			\
-	  scripts/u8_gitversion etc/base_version > $@;	\
-	elif test -f VERSION; then 		\
-	  touch VERSION;			\
-	else cp etc/base_version > VERSION; 	\
-	fi;
-NEWVERSION:
-	scripts/u8_gitversion etc/base_version > VERSION
-
 all: ${ALL}
 
 debug:
@@ -176,7 +166,28 @@ showbuildmode showmode showbuild: buildmode
 
 .PHONY: showbuildmode showmode showbuild tests fast nitpick standard debug all
 
-# buildmode dependencies
+# Versioning
+
+REVISION:
+	if test -d .git; then 				\
+	  scripts/u8_gitversion etc/base_version > $@;	\
+	elif test -f $@; then 				\
+	  touch REVISION;				\
+	else cp etc/base_version $@; 			\
+	fi;
+FULL_REVISION:
+	if test -d .git; then 					\
+	  scripts/u8_gitversion etc/base_version full > $@;	\
+	elif test -f $@; then 					\
+	  touch REVISION;					\
+	else cp etc/base_version $@; 				\
+	fi;
+
+include/libu8/revision.h: REVISION FULL_REVISION
+	@REVISION=$$(cat REVISION);		\
+	 FULL_REVISION=$$(cat FULL_REVISION);	\
+	 echo "#define LIBU8_REVISION \"libu8-$$REVISION\"" > $@; 		\
+	 echo "#define LIBU8_FULL_REVISION \"libu8-$$FULL_REVISION\"" >> $@;
 
 # configure/autoconf stuff
 
@@ -337,23 +348,6 @@ libs: @build_shared@ @build_static@
 static-libs: ${STATIC_LIBS}
 shared-libs: ${SHARED_LIBS}
 
-etc/use_revision.h:
-	@REVISION=$$(scripts/u8_gitversion etc/base_version);		\
-	 FULL_REVISION=$$(scripts/u8_gitversion etc/base_version full);	\
-	 echo "#define LIBU8_REVISION \"libu8-$$REVISION\"" > $@; 		\
-	 echo "#define LIBU8_FULL_REVISION \"libu8-$$FULL_REVISION\"" >> $@;
-
-include/libu8/revision.h: VERSION etc/use_revision.h
-	@if test ! -f $@; then					\
-	  mv etc/use_revision.h $@;				\
-	elif diff etc/use_revision.h $@ >/dev/null; then	\
-	  rm etc/use_revision.h;				\
-	else							\
-	  echo "# (libu8)" "Revision changed";			\
-	  mv $@ etc/old_revision.h;				\
-	  mv etc/use_revision.h $@;				\
-	fi
-
 lib/libu8.a: $(LIBU8_OBJECTS)
 lib/libu8@suffix@.so.@U8VERSION@: $(LIBU8_OBJECTS)	
 lib/libu8.dylib: $(LIBU8_OBJECTS)
@@ -414,6 +408,7 @@ libu8.org: docs/doxygen.done
 # Clean/rebuild/reconfig targets
 
 clean: 
+	@$(CLEAN) REVISION FULL_REVISION
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* etc/fileinfo
 	@$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
 	@echo "# (libu8)" "Cleaned up libraries"
@@ -778,17 +773,17 @@ cleandist cleanrpms cleandeb rpmclean debclean:
 
 # Making a source tarball
 
-dist/libu8.tar: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
+dist/libu8.tar: REVISION FULL_REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
 	@git archive -o dist/libu8.tar HEAD
-	@tar -rf dist/libu8.tar VERSION
+	@tar -rf dist/libu8.tar REVISION FULL_REVISION
 	@cd dist; ln -s libu8.tar source.tar
 dist/source.tar: libu8.tar
 	@cd dist; ln -s libu8.tar source.tar
 
-staging/libu8: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
+staging/libu8: REVISION FULL_REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
 	@git archive --prefix=libu8/ -o staging/libu8.tar HEAD
 	@cd staging; tar -xf libu8.tar; rm libu8.tar;
-	@cp VERSION staging/libu8
+	@cp REVISION FULL_REVISION staging/libu8
 
 # Creating staging areas from GIT
 
@@ -867,7 +862,6 @@ dist/debs.built: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	  dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
 	  mv staging/libu8_@U8VERSION@*.gz dist && 	\
 	  mv staging/libu8*_@U8VERSION@*.* dist && 	\
-	  rm -rf staging/libu8_@U8VERSION@ && 	\
 	  touch dist/debs.built;
 dist/debs.signed: dist/debs.built
 	@(if test "x${GPGID}" = "xnone"; then 			\
@@ -918,10 +912,10 @@ staging/alpine:
 staging/alpine/APKBUILD: dist/alpine/APKBUILD staging/alpine
 	cp dist/alpine/APKBUILD staging/alpine
 
-staging/alpine/libu8-@U8VERSION@.tar.gz: staging/alpine
+staging/alpine/libu8-@U8VERSION@.tar.gz: REVISION FULL_REVISION staging/alpine
 	git archive --prefix=libu8/ -o staging/alpine/libu8-@U8VERSION@.tar HEAD
 	cd staging/alpine; tar -xf libu8-@U8VERSION@.tar;
-	cp VERSION staging/alpine/libu8;
+	cp REVISION FULL_REVISION staging/alpine/libu8;
 	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
 	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
 

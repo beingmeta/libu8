@@ -10,11 +10,13 @@ shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 rpath_default=$exec_prefix
 CLEAN="rm -f"
-U8VERSION=$(cat etc/base_version)
-U8MAJOR=$(cat ./etc/base_version | cut -d'.' -f1)
-U8MINOR=$(cat ./etc/base_version | cut -d'.' -f2)
-U8RELEASE=$(cat ./etc/base_version | cut -d'.' -f2)
-U8PATCHLEVEL=`./scripts/u8_gitpatchcount ./etc/base_version`
+U8PATCHVERSION=$(if -f REVISION; then cat REVISION; else cat etc/base_version; fi)
+U8VERSION=$(echo ${U8PATCHVERSION} | cut -d'-' -f1)
+U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
+U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
+U8MINOR=$(echo ${U8VERSION} | cut -d'.' -f2)
+U8RELEASE=$(echo ${U8VERSION} | cut -d'.' -f3)
+U8PATCHLEVEL=$(echo ${U8PATCHVERSION} | cut -d'-' -f2)
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
 vshared_suffix=so.${U8VERSION}
@@ -63,6 +65,10 @@ definefileinfo=""
 versionsh=""
 doxygen=""
 default_buildopts_dir="\$prefix/etc/beingmeta/opts"
+
+if test -z "${U8PATCHLEVEL}"; then
+   U8PATCHLEVEL=$(./scripts/u8_gitpatchcount ./etc/base_version)
+fi;
 
 if which lsb_release 2>&1 > /dev/null; then
    CODENAME=`lsb_release -cs || echo beingmeta`
