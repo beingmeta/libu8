@@ -787,7 +787,7 @@ staging/libu8: REVISION FULL_REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile
 
 # Creating staging areas from GIT
 
-staging/libu8_@U8VERSION@: VERSION
+staging/libu8_@U8VERSION@: REVISION FULL_REVISION
 	make staging/libu8;
 	cd staging; mv libu8/dist/debian libu8/debian;
 	scripts/u8_debchangelog libu8 ${CODENAME} \
@@ -856,7 +856,7 @@ dist/rpms.zip: dist/rpms.done
 
 # Rules for debian building
 
-dist/debs.built: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+dist/debs.built: REVISION FULL_REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	make staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.tar.gz && \
 	(cd staging/libu8_@U8VERSION@; \
 	  dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
@@ -882,8 +882,8 @@ debfresh freshdeb:
 
 .PHONY: debfresh freshdeb
 
-debupdate:
-	@SRCVERSION=$(shell cat VERSION); 			\
+debupdate: REVISION
+	@SRCVERSION=$(shell cat REVISION); 			\
 	if [ "${SRCVERSION}" = "libu8_${APTVERSION}" ]; then 	\
 	  echo "Debian build of utf8 is up to date"; 		\
 	else make debfresh; fi;
