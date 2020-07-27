@@ -791,7 +791,7 @@ staging/libu8_@U8VERSION@: REVISION FULL_REVISION
 	make staging/libu8;
 	cd staging; mv libu8/dist/debian libu8/debian;
 	scripts/u8_debchangelog libu8 ${CODENAME} \
-		${REL_BRANCH} $(shell cat ./VERSION) ${REL_STATUS} ${REL_PRIORITY} \
+		${REL_BRANCH} $(shell cat ./REVISION) ${REL_STATUS} ${REL_PRIORITY} \
 			< dist/debian/changelog \
 			> staging/libu8/debian/changelog;
 	rm -rf staging/libu8_@U8VERSION@;
