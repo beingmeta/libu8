@@ -14,7 +14,7 @@ LIBS            = @LIBS@ $(EFENCE) -lm
 DYLIB_FLAGS     = -compatibility_version @U8MAJOR@.@U8MINOR@ \
 	          -current_version @U8MAJOR@.@U8MINOR@.@U8RELEASE@
 INC	        = include/libu8
-BUILDMODE       := $(shell if -f ./buildmode; then cat ./buildmode; else echo none; fi)
+BUILDMODE       := $(shell if test -f ./buildmode; then cat ./buildmode; else echo none; fi)
 U8VERSION       := $(shell cat ./etc/base_version)
 DESTDIR		=
 prefix		= @prefix@
