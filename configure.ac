@@ -578,12 +578,17 @@ dnl ***********************************
 dnl *** Checks for working constructor attributes ***
 dnl ***********************************
 AC_MSG_CHECKING(for working __constructor_attributes)
-AC_TRY_RUN([static void tmp_meth() __attribute__ ((constructor));
-	    static void tmp_meth() { exit(0); }
-	    int main(int argc,char **argv) { exit(1); }],
-        [AC_DEFINE(HAVE_CONSTRUCTOR_ATTRIBUTES,1) AC_MSG_RESULT(yes)],
-	[AC_DEFINE(HAVE_CONSTRUCTOR_ATTRIBUTES,0) AC_MSG_RESULT(no)], 
-	[AC_DEFINE(HAVE_CONSTRUCTOR_ATTRIBUTES,1) AC_MSG_RESULT(assume no)])
+dnl ***********************************
+dnl *** Checks for working constructor attributes ***
+dnl ***********************************
+AC_MSG_CHECKING(for working __constructor_attributes)
+AC_TRY_COMPILE([],[
+             int tmpinit(void) __attribute__ ((constructor));
+
+	    ], [
+		AC_MSG_RESULT(yes)
+		AC_DEFINE(HAVE_CONSTRUCTOR_ATTRIBUTES)],
+	       [AC_MSG_RESULT(no)])
 
 dnl ***********************************
 dnl *** Checks for working __builtin_expect ***
