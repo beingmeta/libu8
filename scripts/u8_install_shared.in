@@ -1,0 +1,26 @@
+#!/bin/sh
+SOURCE=$1
+BASE=$(basename ${SOURCE} .@shared_suffix@)
+DIR=$2
+VERSION=$3
+INSTALLER=${4:-@INSTALL@}
+if [ "@shared_suffix@" = "dylib" ]; then
+    INSTALL_NAME=${BASE}.${VERSION}.@shared_suffix@
+else
+    INSTALL_NAME=${BASE}.@shared_suffix@.${VERSION}
+fi;
+${INSTALLER} ${SOURCE} ${DIR}/${INSTALL_NAME}
+LAST_VERSION=${VERSION}
+VERSION=$(echo ${LAST_VERSION} | sed -e 's/\.[^.]$//')
+while [ "${VERSION}" != "${LAST_VERSION}" ]; do
+    if [ "@shared_suffix@" = "dylib" ]; then
+	NEW_NAME=${BASE}.${VERSION}.@shared_suffix@;
+    else
+	NEW_NAME=${BASE}.@shared_suffix@;.${VERSION}
+    fi;
+    ln -sf ${INSTALL_NAME} ${DIR}/${NEW_NAME};
+    INSTALL_NAME=${NEW_NAME};
+    LAST_VERSION=${VERSION};
+    VERSION=$(echo ${LAST_VERSION} | sed -e 's/\.[^.]$//')
+done;
+ln -sf ${INSTALL_NAME} ${DIR}/${BASE}.@shared_suffix@;

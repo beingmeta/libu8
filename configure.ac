@@ -13,7 +13,6 @@ CLEAN="rm -f"
 U8PATCHVERSION=$(if test -f REVISION; then cat REVISION; else cat etc/base_version; fi)
 U8VERSION=$(echo ${U8PATCHVERSION} | cut -d'-' -f1)
 U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
-U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
 U8MINOR=$(echo ${U8VERSION} | cut -d'.' -f2)
 U8RELEASE=$(echo ${U8VERSION} | cut -d'.' -f3)
 U8PATCHLEVEL=$(echo ${U8PATCHVERSION} | cut -d'-' -f2)
@@ -626,7 +625,8 @@ AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
 AC_OUTPUT([makefile etc/libu8.pc etc/getbuildopt
-           dist/libu8-2.7.spec dist/alpine/APKBUILD],
-          [chmod a+x etc/getbuildopt])
+           dist/libu8-2.7.spec dist/alpine/APKBUILD
+	   scripts/u8_install_shared],
+          [chmod a+x etc/getbuildopt scripts/u8_install_shared])
 
 

@@ -7991,7 +7991,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files makefile etc/libu8.pc etc/getbuildopt dist/libu8-2.7.spec dist/alpine/APKBUILD"
+ac_config_files="$ac_config_files makefile etc/libu8.pc etc/getbuildopt dist/libu8-2.7.spec dist/alpine/APKBUILD scripts/u8_install_shared"
 
 ac_config_commands="$ac_config_commands default"
 
@@ -8697,6 +8697,7 @@ do
     "etc/getbuildopt") CONFIG_FILES="$CONFIG_FILES etc/getbuildopt" ;;
     "dist/libu8-2.7.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-2.7.spec" ;;
     "dist/alpine/APKBUILD") CONFIG_FILES="$CONFIG_FILES dist/alpine/APKBUILD" ;;
+    "scripts/u8_install_shared") CONFIG_FILES="$CONFIG_FILES scripts/u8_install_shared" ;;
     "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
@@ -9253,7 +9254,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
 
 
   case $ac_file$ac_mode in
-    "default":C) chmod a+x etc/getbuildopt ;;
+    "default":C) chmod a+x etc/getbuildopt scripts/u8_install_shared ;;
 
   esac
 done # for ac_tag

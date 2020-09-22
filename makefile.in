@@ -492,7 +492,8 @@ install-bin: install-shared install-static install-exe
 install-scripts: $(BININSTALLDIR)/u8_xsubst \
 	$(BININSTALLDIR)/u8_gitpatchcount $(BININSTALLDIR)/u8_gitbranch \
 	$(BININSTALLDIR)/u8_gitversion $(BININSTALLDIR)/u8_gitcommit \
-	$(BININSTALLDIR)/u8_aptversion $(BININSTALLDIR)/u8_debchangelog 
+	$(BININSTALLDIR)/u8_aptversion $(BININSTALLDIR)/u8_debchangelog \
+	$(BININSTALLDIR)/u8_install_shared
 install-stripped:
 	make LIBSOURCE=lib/stripped LIBSOURCE=exe/stripped install-bin
 install-extras:  install-encodings @INSTALLI18N@ install-doc
