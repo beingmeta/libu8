@@ -471,7 +471,7 @@ U8_EXPORT
 */
 u8_string u8_gets_x(u8_byte *buf,int len,
                     struct U8_INPUT *f,u8_string eos,
-                    int *sizep)
+                    ssize_t *sizep)
 {
   const u8_byte *found=NULL, *start=f->u8_read, *end=NULL;
   int size, ec=-1;

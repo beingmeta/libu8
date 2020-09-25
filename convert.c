@@ -621,7 +621,7 @@ U8_EXPORT
 unsigned char *u8_localize
   (struct U8_TEXT_ENCODING *e,
    const u8_byte **scanner,const u8_byte *end,
-   int escape_char,int crlf,u8_byte *buf,int *size_loc)
+   int escape_char,int crlf,u8_byte *buf,ssize_t *size_loc)
 {
   struct U8_MB_MAP *inv; int outsize;
   unsigned char *write, *write_limit;
@@ -771,7 +771,7 @@ U8_EXPORT
      Returns: a character string
   Converts a quoted_printable string into bytes and deposits its length
   in a size pointer. */
-char *u8_read_quoted_printable(const char *from,const char *to,int *sizep)
+char *u8_read_quoted_printable(const char *from,const char *to,ssize_t *sizep)
 {
   const char *read=from;
   char *result=u8_malloc(to-from+1), *write=result;
@@ -823,7 +823,7 @@ U8_EXPORT
      Returns: a character string
   Converts a base64 string into bytes and deposits its length
   in a size pointer. */
-unsigned char *u8_read_base64(const char *from,const char *to,int *sizep)
+unsigned char *u8_read_base64(const char *from,const char *to,ssize_t *sizep)
 {
   const char *read=from;
   char *result=u8_malloc(to-from+1), *write=result;
@@ -856,7 +856,7 @@ U8_EXPORT
      Returns: an ASCII character string (malloc'd)
   Converts the data into a hex base16 representation,
    returning the representation as a NUL-terminated string.  */
-unsigned char *u8_read_base16(const char *data,int len_arg,int *result_len)
+unsigned char *u8_read_base16(const char *data,int len_arg,ssize_t *result_len)
 {
   unsigned int len=((len_arg<0) ? (strlen(data)) : (len_arg));
   if (len==0) {
@@ -898,7 +898,7 @@ U8_EXPORT
   Converts the data into a base64 representation, returning the representation
    as a NUL-terminated string and storing the length (without the NUL) in
    the provided result length pointer.  */
-char *u8_write_base64(const unsigned char *data,int len,int *result_len)
+char *u8_write_base64(const unsigned char *data,int len,ssize_t *result_len)
 {
   unsigned int sixbit;
   const unsigned char *scan=data, *limit=data+len;
@@ -954,7 +954,7 @@ static void convert_mime_header_text
   const unsigned char *rawdata, *rawend, *scan;
   unsigned char enc_code=chend[1];
   u8_encoding encoding;
-  int startlen=out->u8_write-out->u8_outbuf, raw_bytes;
+  ssize_t startlen=out->u8_write-out->u8_outbuf, raw_bytes;
   if ((chend-chstart)>=64) encoding=NULL;
   else if (strchr("QqBb",enc_code)==NULL) encoding=NULL;
   else {

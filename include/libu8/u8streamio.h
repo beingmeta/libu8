@@ -510,7 +510,7 @@ U8_EXPORT int _u8_getn(u8_byte *ptr,int n,struct U8_INPUT *f);
       provided buffer was to small to contain the requested data.
 **/
 U8_EXPORT u8_string u8_gets_x
-  (u8_byte *buf,int len,struct U8_INPUT *f,u8_string eos,int *sizep);
+  (u8_byte *buf,int len,struct U8_INPUT *f,u8_string eos,ssize_t *sizep);
 
 /** Puts the character @a c back into the input stream @a f.
     This can be used by parsing algorithms which get a character, look

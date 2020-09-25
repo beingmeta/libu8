@@ -277,7 +277,7 @@ U8_EXPORT void u8_close_xinput(struct U8_XINPUT *f)
 static int flush_xoutput(struct U8_XOUTPUT *xf)
 {
   unsigned char *buf=xf->u8_xbuf;
-  int buflen=xf->u8_xbuflim;
+  ssize_t buflen=xf->u8_xbuflim;
   while (xf->u8_write>xf->u8_outbuf) {
     /* Pick the region to change */
     const u8_byte *scan=xf->u8_outbuf, *scan_end=xf->u8_write;

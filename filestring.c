@@ -34,10 +34,10 @@
 u8_condition u8_IrregularFile=_("does not resolve to a regular file");
 u8_condition u8_CantOpenFile=_("Can't open file for reading");
 
-U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
+U8_EXPORT unsigned char *u8_filedata(u8_string filename,ssize_t *n_bytes)
 {
   u8_string abspath=u8_localpath(filename);
-  unsigned int size, to_read, bytes_read=0;
+  size_t size, to_read, bytes_read=0;
   unsigned char *data;
   struct stat info;
   int rv = stat(abspath,&info);
@@ -76,7 +76,7 @@ U8_EXPORT unsigned char *u8_filedata(u8_string filename,int *n_bytes)
 U8_EXPORT u8_string u8_filestring(u8_string filename,u8_string encname)
 {
   struct U8_TEXT_ENCODING *enc=NULL;
-  u8_byte *buf; int n_bytes;
+  u8_byte *buf; ssize_t n_bytes;
   buf=u8_filedata(filename,&n_bytes);
   if ((buf==NULL) || (n_bytes<0)) return NULL;
   buf[n_bytes]='\0';

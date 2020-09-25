@@ -20,7 +20,7 @@ int main(int argc,char **argv)
     struct U8_TEXT_ENCODING *out_enc=u8_get_encoding(argv[2]);
     unsigned char *inbuf=malloc(1024), *writer, *outbuf;
     const unsigned char *reader;
-    int bytes_read=0, out_size;
+    ssize_t bytes_read=0, out_size;
     struct U8_OUTPUT stream;
     FILE *in, *out;
     if (argc > 3) in=fopen(argv[3],"r"); else in=stdin;

@@ -168,7 +168,7 @@ U8_EXPORT u8_string u8_make_string
 U8_EXPORT unsigned char *u8_localize
   (struct U8_TEXT_ENCODING *enc,
    const u8_byte **scan,const u8_byte *end,
-   int escape_char,int crlf,u8_byte *buf,int *sizep);
+   int escape_char,int crlf,u8_byte *buf,ssize_t *sizep);
 
 /** Converts a range of UTF-8 text into an external representation based on @a enc.
     Returns a NUL-terminated string generated from the UTF-8 representation
@@ -204,7 +204,7 @@ U8_EXPORT u8_string u8_mime_convert(const char *start,const char *end);
     @returns a pointer to an array of bytes
  **/
 U8_EXPORT unsigned char *u8_read_base64(const char *start,const char *end,
-					int *sizep);
+					ssize_t *sizep);
 
 /** Converts a byte vector into a BASE64 ASCII representation.
     Returns an array of characters encoding the sequence of @a len bytes
@@ -214,7 +214,7 @@ U8_EXPORT unsigned char *u8_read_base64(const char *start,const char *end,
     @param sizep a pointer to an int where the length of the result is stored
     @returns a pointer to an ASCII character string
  **/
-U8_EXPORT char *u8_write_base64(const unsigned char *data,int len,int *sizep);
+U8_EXPORT char *u8_write_base64(const unsigned char *data,int len,ssize_t *sizep);
 
 /** Converts a quoted printable ASCII representation into an array of bytes.
     Returns an array of bytes based on the base64 encoding between
@@ -225,7 +225,7 @@ U8_EXPORT char *u8_write_base64(const unsigned char *data,int len,int *sizep);
     @returns a pointer to an array of bytes
  **/
 U8_EXPORT char *u8_read_quoted_printable(const char *start,const char *end,
-					 int *sizep);
+					 ssize_t *sizep);
 
 /** Converts a hexademical ASCII representation into an array of bytes.
     Returns an array of bytes based on the hexadecmial encoding of
@@ -236,7 +236,7 @@ U8_EXPORT char *u8_read_quoted_printable(const char *start,const char *end,
     @param sizep a pointer to an int.
     @returns a pointer to an array of bytes
  **/
-U8_EXPORT unsigned char *u8_read_base16(const char *start,int len,int *sizep);
+U8_EXPORT unsigned char *u8_read_base16(const char *start,int len,ssize_t *sizep);
 
 /** Converts a byte vector into a BASE64 (hexadecimal) ASCII representation.
     Returns a NUL-terminated array of characters encoding the sequence

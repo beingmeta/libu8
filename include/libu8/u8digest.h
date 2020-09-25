@@ -93,7 +93,7 @@ U8_EXPORT unsigned char *u8_sha512
 U8_EXPORT unsigned char *u8_hmac_sha1
   (const unsigned char *key,int key_len,
    const unsigned char *data,int data_len,
-   unsigned char *result,int *result_len);
+   unsigned char *result,ssize_t *result_len);
 
 /** Returns a signed HMAC-SHA256 signature (32 bytes) of a data buffer
     @param key         a pointer to a key buffer
@@ -110,7 +110,7 @@ U8_EXPORT unsigned char *u8_hmac_sha1
 U8_EXPORT unsigned char *u8_hmac_sha256
   (const unsigned char *key,int key_len,
    const unsigned char *data,int data_len,
-   unsigned char *result,int *result_len);
+   unsigned char *result,ssize_t *result_len);
 
 
 /** Returns a signed HMAC-SHA384 signature (48 bytes) of a data buffer
@@ -128,7 +128,7 @@ U8_EXPORT unsigned char *u8_hmac_sha256
 U8_EXPORT unsigned char *u8_hmac_sha384
   (const unsigned char *key,int key_len,
    const unsigned char *data,int data_len,
-   unsigned char *result,int *result_len);
+   unsigned char *result,ssize_t *result_len);
 
 /** Returns a signed HMAC-SHA512 signature (64 bytes) of a data buffer
     @param key         a pointer to a key buffer
@@ -145,7 +145,7 @@ U8_EXPORT unsigned char *u8_hmac_sha384
 U8_EXPORT unsigned char *u8_hmac_sha512
   (const unsigned char *key,int key_len,
    const unsigned char *data,int data_len,
-   unsigned char *result,int *result_len);
+   unsigned char *result,ssize_t *result_len);
 
 
 /* Computes the CRC32 code for a buffer.

@@ -27,6 +27,6 @@
 U8_EXPORT u8_condition u8_CantOpenFile;
 
 U8_EXPORT u8_string u8_filestring(u8_string path,u8_string encname);
-U8_EXPORT unsigned char *u8_filedata(u8_string path,int *size);
+U8_EXPORT unsigned char *u8_filedata(u8_string path,ssize_t *size);
 
 #endif
