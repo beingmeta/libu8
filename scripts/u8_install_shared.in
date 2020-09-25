@@ -16,7 +16,7 @@ while [ "${VERSION}" != "${LAST_VERSION}" ]; do
     if [ "@shared_suffix@" = "dylib" ]; then
 	NEW_NAME=${BASE}.${VERSION}.@shared_suffix@;
     else
-	NEW_NAME=${BASE}.@shared_suffix@;.${VERSION}
+	NEW_NAME=${BASE}.@shared_suffix@..${VERSION}
     fi;
     ln -sf ${INSTALL_NAME} ${DIR}/${NEW_NAME};
     INSTALL_NAME=${NEW_NAME};
