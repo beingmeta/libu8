@@ -556,11 +556,19 @@ void *u8_dynamic_load(u8_string name)
   void *module=dlopen(modname,RTLD_NOW|RTLD_GLOBAL);
 #if U8_DARWIN_TARGET
   if ( (module == NULL) && (*modname != '/') && (*modname != '@') ) {
-    ssize_t need_len = 16+strlen(name);
+    ssize_t need_len = strlen(name)+32;
     u8_byte buf[need_len];
-    strcpy(buf,"@loadpath/");
+    strcpy(buf,"@executable_path/");
     strcat(buf,name);
-    module = dlopen(modname,RTLD_NOW|RTLD_GLOBAL);}
+    module = dlopen(buf,RTLD_NOW|RTLD_GLOBAL);
+    if (module == NULL) {
+      strcpy(buf,"@loader_path/");
+      strcat(buf,name);
+      module = dlopen(buf,RTLD_NOW|RTLD_GLOBAL);}
+    if (module == NULL) {
+      strcpy(buf,"@rpath/");
+      strcat(buf,name);
+      module = dlopen(buf,RTLD_NOW|RTLD_GLOBAL);}}
 #endif
   if (module==NULL) 
     u8_seterr(FailedDLopen,"u8_dynamic_load",u8_fromlibc((char *)dlerror()));

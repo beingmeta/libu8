@@ -3074,6 +3074,19 @@ case $target_os in
 esac
 
 cat >>confdefs.h <<_ACEOF
+#define U8_HOST_CPU "$host_cpu"
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define U8_HOST_VENDOR "$host_vendor"
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define U8_HOST_OS "$host_os"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
 #define U8_TARGET_CPU "$target_cpu"
 _ACEOF
 

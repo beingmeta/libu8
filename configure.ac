@@ -107,6 +107,10 @@ case $target_os in
    ;;
 esac  
 
+AC_DEFINE_UNQUOTED(U8_HOST_CPU,"$host_cpu")
+AC_DEFINE_UNQUOTED(U8_HOST_VENDOR,"$host_vendor")
+AC_DEFINE_UNQUOTED(U8_HOST_OS,"$host_os")
+
 AC_DEFINE_UNQUOTED(U8_TARGET_CPU,"$target_cpu")
 AC_DEFINE_UNQUOTED(U8_TARGET_VENDOR,"$target_vendor")
 AC_DEFINE_UNQUOTED(U8_TARGET_OS,"$target_os")

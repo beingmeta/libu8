@@ -22,10 +22,15 @@
 #undef ssize_t
 #undef mode_t
 
-/* TARGET info */
+/* TARGET build info */
 #undef U8_TARGET_CPU
 #undef U8_TARGET_VENDOR
 #undef U8_TARGET_OS
+
+/* HOST build info */
+#undef U8_HOST_CPU
+#undef U8_HOST_VENDOR
+#undef U8_HOST_OS
 
 /* Predicates */
 #undef U8_LINUX_TARGET
