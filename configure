@@ -2834,7 +2834,6 @@ CLEAN="rm -f"
 U8PATCHVERSION=$(if test -f REVISION; then cat REVISION; else cat etc/base_version; fi)
 U8VERSION=$(echo ${U8PATCHVERSION} | cut -d'-' -f1)
 U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
-U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
 U8MINOR=$(echo ${U8VERSION} | cut -d'.' -f2)
 U8RELEASE=$(echo ${U8VERSION} | cut -d'.' -f3)
 U8PATCHLEVEL=$(echo ${U8PATCHVERSION} | cut -d'-' -f2)
@@ -3048,6 +3047,10 @@ case $target_os in
    MKSTATIC="${MKSTATIC} --build-id";
    $as_echo "#define U8_RUSAGE_PROCFS_PATCH 1" >>confdefs.h
 
+   $as_echo "#define U8_LINUX_TARGET 1" >>confdefs.h
+
+   $as_echo "#define U8_UNIX_TARGET 1" >>confdefs.h
+
    ;;
   darwin*)
 #   MKSTATIC="/usr/bin/libtool -static ";
@@ -3061,8 +3064,27 @@ case $target_os in
 
    $as_echo "#define CHECK_DANGLING_ERRNOS 1" >>confdefs.h
 
+   $as_echo "#define U8_DARWIN_TARGET 1" >>confdefs.h
+
+   $as_echo "#define U8_BSD_TARGET 1" >>confdefs.h
+
+   $as_echo "#define U8_UNIX_TARGET 1" >>confdefs.h
+
    ;;
 esac
+
+cat >>confdefs.h <<_ACEOF
+#define U8_TARGET_CPU "$target_cpu"
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define U8_TARGET_VENDOR "$target_vendor"
+_ACEOF
+
+cat >>confdefs.h <<_ACEOF
+#define U8_TARGET_OS "$target_os"
+_ACEOF
+
 
 if test $prefix == "/usr"; then
    default_config_dir=/etc/kno;

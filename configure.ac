@@ -88,6 +88,8 @@ case $target_os in
   linux*)
    MKSTATIC="${MKSTATIC} --build-id";
    AC_DEFINE(U8_RUSAGE_PROCFS_PATCH,1)
+   AC_DEFINE(U8_LINUX_TARGET,1)
+   AC_DEFINE(U8_UNIX_TARGET,1)
    ;;
   darwin*)
 #   MKSTATIC="/usr/bin/libtool -static ";
@@ -99,8 +101,15 @@ case $target_os in
    CFLAGS="-D_DARWIN_C_SOURCE $CFLAGS"
    AC_DEFINE(DESTRUCTIVE_POLL,1)
    AC_DEFINE(CHECK_DANGLING_ERRNOS,1)
+   AC_DEFINE(U8_DARWIN_TARGET,1)
+   AC_DEFINE(U8_BSD_TARGET,1)
+   AC_DEFINE(U8_UNIX_TARGET,1)
    ;;
 esac  
+
+AC_DEFINE_UNQUOTED(U8_TARGET_CPU,"$target_cpu")
+AC_DEFINE_UNQUOTED(U8_TARGET_VENDOR,"$target_vendor")
+AC_DEFINE_UNQUOTED(U8_TARGET_OS,"$target_os")
 
 if test $prefix == "/usr"; then
    default_config_dir=/etc/kno;

@@ -13,7 +13,7 @@
 #undef U8_MINOR_VERSION
 #undef U8_RELEASE_VERSION
 
-/* Define if you don't have off_t */
+/* Allow overrides */
 #undef off_t
 #undef gid_t
 #undef uid_t
@@ -22,10 +22,21 @@
 #undef ssize_t
 #undef mode_t
 
+/* TARGET info */
+#undef U8_TARGET_CPU
+#undef U8_TARGET_VENDOR
+#undef U8_TARGET_OS
+
+/* Predicates */
+#undef U8_LINUX_TARGET
+#undef U8_DARWIN_TARGET
+#undef U8_BSD_TARGET
+#undef U8_UNIX_TARGET
+
 /* Define if you have the <pthread.h> header file.  */
 #undef HAVE_PTHREAD_H
 
-/* Define if you have the <pthread.h> header file.  */
+/* Define if you have the <dlfcn.h> header file.  */
 #undef HAVE_DLFCN_H
 
 /* Define if you have the <malloc.h> header file.  */
