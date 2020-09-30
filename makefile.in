@@ -923,12 +923,12 @@ staging/alpine/libu8-@U8VERSION@.tar.gz: REVISION FULL_REVISION staging/alpine
 dist/alpine.setup: dist/alpine/APKBUILD include/libu8/revision.h makefile
 	make staging/alpine/libu8-@U8VERSION@.tar.gz staging/alpine/APKBUILD && \
 	if test ! -d ${APK_ARCH_DIR}; then mkdir -p ${APK_ARCH_DIR}; fi && \
-	( cd staging/alpine; abuild -P ${APKREPO} clean cleancache cleanpkg && abuild checksum ) && \
+	( cd staging/alpine; abuild -P ${APKREPO} clean cleancache cleanpkg && abuild -P ${APKREPO} checksum ) && \
 	touch $@
 
 ALPINE_PKGS=libu8 libu8-dev libu8-doc libu8-static
 
-dist/alpine.build: dist/alpine.setup
+dist/alpine.done: dist/alpine.setup
 	cd staging/alpine; abuild -P ${APKREPO};
 
 dist/alpine.install:
