@@ -437,7 +437,6 @@ U8_EXPORT void u8_init_stack()
 	   u8_assumed_stacksize);
     stacksize=u8_assumed_stacksize;}
   u8_set_stack_size(stacksize);
-  u8_set_stack_size(stacksize);
 }
 #else
 U8_EXPORT void u8_init_stack()
