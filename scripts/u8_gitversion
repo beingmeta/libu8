@@ -1,7 +1,7 @@
 #!/bin/sh
 REV_FILE=$1
 if [ ! -f ${REV_FILE} ]; then
-    echo "Usage: u8_gitversion *releasefile* [w/commits]";
+    echo "Usage: u8_gitversion *releasefile*";
     exit 2;
 fi;
 BASE_VERSION=$(cat ${REV_FILE})
