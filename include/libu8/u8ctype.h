@@ -38,6 +38,8 @@
 #define U8_SEPARATOR 12
 #define U8_OTHER 13
 
+#include <ctype.h>
+
 U8_EXPORT int u8_charinfo_size;
 U8_EXPORT const unsigned char *u8_charinfo;
 U8_EXPORT const short *u8_chardata;
