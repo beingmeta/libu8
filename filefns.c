@@ -722,21 +722,21 @@ U8_EXPORT int u8_mkdir(u8_string name,mode_t mode)
 {
   if (u8_directoryp(name)) {
     if (mode>=0) {
-      char *localized = u8_tolibc(name);
+      char *localized = u8_localpath(name);
       int rv = chmod(localized,mode);
-      u8_free(localized);
-      if (rv<0) u8_graberrno("u8_mkdir/chmod",u8_strdup(name));
+      if (rv<0) {
+        u8_graberrno("u8_mkdir/chmod",localized);}
+      else u8_free(localized);
       return rv;}
     return 0;}
   else {
     mode_t use_mode = (mode<0) ? (u8_default_dir_mode) : (mode|S_IFDIR);
     const char *localized=u8_localpath(name);
     int retval=mkdir(localized,use_mode);
-    u8_free(localized);
     if (retval<0) {
-      u8_graberrno("u8_mkdir",u8_strdup(name));
-      return retval;}
-    else return 1;}
+      u8_graberrno("u8_mkdir",localized);}
+    else u8_free(localized);
+    if (retval<0) return -1; else return 1;}
 }
 
 static int mkdirs(u8_string dirname,mode_t mode)
