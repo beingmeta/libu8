@@ -229,7 +229,7 @@ static char hexdigits[16]="0123456789ABCDEF";
 int main(int argc,char *argv[])
 {
   if (argc<2) {
-    fprintf(stderr,"Usage: fileinfo 'filename' [root]\n");
+    fprintf(stderr,"Usage: u8_fileinfo 'filename' [source_root]\n");
     exit(1);}
   else {
     char *filename=argv[1], *root=((argc<3)?(NULL):(argv[2]));
