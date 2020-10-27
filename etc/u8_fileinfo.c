@@ -266,7 +266,10 @@ int main(int argc,char *argv[])
       abspath[name_len]='\0';
       abs_len=name_len;}
     else {
-      char *cwd=getcwd(NULL,1024);
+      char buf[1024];
+      char *cwd=getcwd(NULL,0);
+      if (cwd == NULL)
+	cwd = getcwd(buf,sizeof(buf));
       int cwd_len=strlen(cwd), name_len=strlen(filename);
       if (!(cwd)) {
 	fprintf(stderr,"GETCWD error %s\n",strerror(errno));
