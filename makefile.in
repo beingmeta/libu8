@@ -23,8 +23,8 @@ datarootdir	= @datarootdir@
 datadir		= @datadir@
 LOCALEDIR	= $(DESTDIR)@localedir@
 MANDIR		= $(DESTDIR)@mandir@
-LIBSOURCE	= @LIBSOURCE@
-EXESOURCE	= @EXESOURCE@
+LIBSOURCE	= lib
+EXESOURCE	= exe
 LIBINSTALLDIR	= $(DESTDIR)@libdir@
 BININSTALLDIR	= $(DESTDIR)@bindir@
 ENCDIR		= $(DESTDIR)@prefix@/share/libu8/encodings
@@ -241,11 +241,11 @@ tests/%: tests/%.c
 tests/dynamic/%: tests/%.c
 	@echo "# (libu8)" CC_DYNAMIC_TEST $@ $<
 	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8
-exe/%: %.c
+exe/%: %.c lib/libu8.so.@U8VERSION@
 	@echo "# (libu8)" CC_EXE $@ $<
 	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) $(EXEFLAGS) \
 		-o $@ $< -lu8
-exe/%.static: %.c
+exe/%.static: %.c lib/libu8.a
 	@echo "# (libu8)" CC_EXE $@ $<
 	@$(CC) $(CFLAGS) -g3 -O0 -L./lib $(LDFLAGS) $(EXEFLAGS) \
 		 -o $@ $< lib/libu8.a ${LIBS}

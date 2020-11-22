@@ -195,6 +195,10 @@ int main(int argc,char *argv[])
                arg);
         usage();
         exit(1);}
+      else if (strcasecmp(arg,"+service")==0) {
+        run_as_daemon = 1;
+        restart_on_exit = 1;
+        restart_on_error = 1;}
       else if (strcasecmp(arg,"+daemon")==0)
         run_as_daemon = 1;
       else if (strcasecmp(arg,"+exec")==0)
