@@ -69,7 +69,7 @@ void usage()
 
 static u8_string procpath(u8_string job_id,u8_string suffix)
 {
-  if ( (strchr(job_id,'/')) || (strchr(job_id,'.')) )
+  if (strchr(job_id,'/'))
     return u8_string_append(job_id,".",suffix,NULL);
   else {
     u8_string name = u8_string_append(job_id,".",suffix,NULL);
