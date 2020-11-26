@@ -241,7 +241,7 @@ tests/%: tests/%.c
 tests/dynamic/%: tests/%.c
 	@echo "# (libu8)" CC_DYNAMIC_TEST $@ $<
 	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8
-exe/%: %.c lib/libu8.so.@U8VERSION@
+exe/%: %.c lib/libu8.@shared_suffix@
 	@echo "# (libu8)" CC_EXE $@ $<
 	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) $(EXEFLAGS) \
 		-o $@ $< -lu8
