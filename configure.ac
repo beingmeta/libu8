@@ -344,6 +344,13 @@ AC_PATH_PROG(XGETTEXT,xgettext)
 AC_PATH_PROG(MSGMERGE,msgmerge)
 AC_PATH_PROG(MSGFMT,msgfmt)
 
+ALPINE_CRYPTO_LIB=libressl2.7-libcrypto
+AC_SUBST(ALPINE_CRYPTO_LIB)
+AC_CHECK_PROGS(APK,"apk","na")
+if test ! -z "${APK}"; then
+   ALPINE_CRYPTO_LIB=$(${APK} search libressl | grep crypto | cut -d- -f1,2);
+fi;
+
 if test $etags = "na"; then
    TAGS_TARGET="NOTAGS"
 fi

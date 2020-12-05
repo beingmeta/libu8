@@ -8,6 +8,6 @@ abi=@U8_MAJOR@.@U8_MINOR@
 
 Name: libu8
 Description: The libu8 utf-8 and compatability library
-Version: @VERSION@
+Version: @U8VERSION@
 Libs: -L${libdir} -lu8
 Cflags: -I${includedir}

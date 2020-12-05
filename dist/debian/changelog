@@ -1,3 +1,9 @@
+libu8 (2.8.2-13) stable; urgency=medium
+
+  * Separate out dev scripts
+
+ -- Ken Haase <kh@beingmeta.com>  Mon, 20 Jul 2020 11:46:02 -0400
+
 libu8 (2.8.1-13) stable; urgency=medium
 
   * New minor version number with new versioning system

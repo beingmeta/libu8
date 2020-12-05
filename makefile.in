@@ -484,12 +484,13 @@ $(LIBU8IO_OBJECTS) $(LIBU8STDIO_OBJECTS) $(LIBU8SYSLOG_OBJECTS): \
 
 install: install-core install-docs install-static install-dev
 install-core: install-shared install-exe install-scripts install-encodings @INSTALLI18N@
-install-dev: install-headers install-pkgconfig
+install-dev: install-headers install-pkgconfig install-dev-scripts
 install-shared: @install_shared@
 install-doc: @INSTALLDOCS@
 install-libs: install-static install-shared
 install-bin: install-shared install-static install-exe
-install-scripts: $(BININSTALLDIR)/u8_xsubst \
+install-scripts: $(BININSTALLDIR)/u8_xsubst
+install-dev-scripts: $(BININSTALLDIR)/u8_xsubst \
 	$(BININSTALLDIR)/u8_gitpatchcount $(BININSTALLDIR)/u8_gitbranch \
 	$(BININSTALLDIR)/u8_gitversion $(BININSTALLDIR)/u8_gitcommit \
 	$(BININSTALLDIR)/u8_aptversion $(BININSTALLDIR)/u8_debchangelog \
