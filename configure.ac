@@ -346,7 +346,7 @@ AC_PATH_PROG(MSGFMT,msgfmt)
 
 ALPINE_CRYPTO_LIB=libressl2.7-libcrypto
 AC_SUBST(ALPINE_CRYPTO_LIB)
-AC_CHECK_PROGS(APK,"apk","na")
+AC_CHECK_PROGS(APK,"apk","")
 if test ! -z "${APK}"; then
    ALPINE_CRYPTO_LIB=$(${APK} search libressl | grep crypto | cut -d- -f1,2);
 fi;
