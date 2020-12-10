@@ -757,8 +757,10 @@ rpms: dist/rpms.done
 .PHONY: rpms debian debs
 
 install-debian install-debian debinstall installdeb: dist/debs.installed
+# We install twice because sometimes, when a file is moved from one package into another,
+#  it works, while still failing for more serious reasons
 dist/debs.installed: dist/debs.done
-	$(SUDO) dpkg -i dist/*.deb && touch $@
+	@( $(SUDO) dpkg -i dist/*.deb || $(SUDO) dpkg -i dist/*.deb ) && touch $@
 .PHONY: install-debian install-debian debinstall installdeb
 
 install-rpms rpminstall installrpms: dist/rpms.installed
