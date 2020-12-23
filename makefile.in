@@ -169,13 +169,6 @@ showbuildmode showmode showbuild: buildmode
 # Versioning
 
 REVISION:
-	if test -d .git; then 				\
-	  scripts/u8_gitversion etc/base_version > $@;	\
-	elif test -f $@; then 				\
-	  touch REVISION;				\
-	else cp etc/base_version $@; 			\
-	fi;
-FULL_REVISION:
 	if test -d .git; then 					\
 	  scripts/u8_gitversion etc/base_version full > $@;	\
 	elif test -f $@; then 					\
@@ -183,11 +176,11 @@ FULL_REVISION:
 	else cp etc/base_version $@; 				\
 	fi;
 
-include/libu8/revision.h: REVISION FULL_REVISION
-	@REVISION=$$(cat REVISION);		\
-	 FULL_REVISION=$$(cat FULL_REVISION);	\
-	 echo "#define LIBU8_REVISION \"libu8-$$REVISION\"" > $@; 		\
-	 echo "#define LIBU8_FULL_REVISION \"libu8-$$FULL_REVISION\"" >> $@;
+include/libu8/revision.h: FULL_REVISION
+	@VERSION=$$(cat etc/base_version);		\
+	 REVISION=$$(cat REVISION);	\
+	 echo "#define LIBU8_REVISION \"libu8-$$VERSION\"" > $@; 		\
+	 echo "#define LIBU8_FULL_REVISION \"libu8-$$REVISION\"" >> $@;
 
 # configure/autoconf stuff
 
@@ -408,7 +401,7 @@ libu8.org: docs/doxygen.done
 # Clean/rebuild/reconfig targets
 
 clean: 
-	@$(CLEAN) REVISION FULL_REVISION
+	@$(CLEAN) REVISION
 	@$(CLEAN) *.o *.a *@suffix@.so *.dylib *@suffix@.so.* etc/fileinfo
 	@$(CLEAN) lib/*.o lib/*.a lib/*@suffix@.so lib/*.dylib lib/*@suffix@.so.* 
 	@echo "# (libu8)" "Cleaned up libraries"
@@ -777,21 +770,21 @@ cleandist cleanrpms cleandeb rpmclean debclean:
 
 # Making a source tarball
 
-dist/libu8.tar: REVISION FULL_REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
+dist/libu8.tar: REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
 	@git archive -o dist/libu8.tar HEAD
-	@tar -rf dist/libu8.tar REVISION FULL_REVISION
+	@tar -rf dist/libu8.tar REVISION
 	@cd dist; ln -s libu8.tar source.tar
 dist/source.tar: libu8.tar
 	@cd dist; ln -s libu8.tar source.tar
 
-staging/libu8: REVISION FULL_REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
+staging/libu8: REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS) makefile makefile.in
 	@git archive --prefix=libu8/ -o staging/libu8.tar HEAD
 	@cd staging; tar -xf libu8.tar; rm libu8.tar;
-	@cp REVISION FULL_REVISION staging/libu8
+	@cp REVISION staging/libu8
 
 # Creating staging areas from GIT
 
-staging/libu8_@U8VERSION@: REVISION FULL_REVISION
+staging/libu8_@U8VERSION@: REVISION
 	make staging/libu8;
 	cd staging; mv libu8/dist/debian libu8/debian;
 	scripts/u8_debchangelog libu8 ${CODENAME} \
@@ -854,7 +847,7 @@ dist/rpms.zip: dist/rpms.done
 
 # Rules for debian building
 
-dist/debs.built: REVISION FULL_REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+dist/debs.built: REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	make staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.tar.gz && \
 	(cd staging/libu8_@U8VERSION@; \
 	  dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
@@ -910,10 +903,10 @@ staging/alpine:
 staging/alpine/APKBUILD: dist/alpine/APKBUILD staging/alpine
 	cp dist/alpine/APKBUILD staging/alpine
 
-staging/alpine/libu8-@U8VERSION@.tar.gz: REVISION FULL_REVISION staging/alpine
+staging/alpine/libu8-@U8VERSION@.tar.gz: REVISION staging/alpine
 	git archive --prefix=libu8/ -o staging/alpine/libu8-@U8VERSION@.tar HEAD
 	cd staging/alpine; tar -xf libu8-@U8VERSION@.tar;
-	cp REVISION FULL_REVISION staging/alpine/libu8;
+	cp REVISION staging/alpine/libu8;
 	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
 	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
 
