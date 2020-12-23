@@ -139,9 +139,13 @@
 #endif
 
 #if HAVE_BUILTIN_EXPECT
+#define U8_USUALLY(x) (__builtin_expect(x,1))
+#define U8_RARELY(x) (__builtin_expect(x,0))
 #define U8_EXPECT_TRUE(x) (__builtin_expect(x,1))
 #define U8_EXPECT_FALSE(x) (__builtin_expect(x,0))
 #else
+#define U8_RARELY(x) (x)
+#define U8_RARELY(x) (x)
 #define U8_EXPECT_TRUE(x) (x)
 #define U8_EXPECT_FALSE(x) (x)
 #endif

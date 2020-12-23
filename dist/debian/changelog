@@ -1,3 +1,9 @@
+libu8 (2.8.7-14) unstable; urgency=medium
+
+  * Version bump
+
+ -- Ken Haase <kh@beingmeta.com>  Fri, 18 Dec 2020 20:21:28 +0000
+
 libu8 (2.8.2-13) stable; urgency=medium
 
   * Separate out dev scripts
