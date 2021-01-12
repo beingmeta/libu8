@@ -176,7 +176,7 @@ REVISION:
 	else cp etc/base_version $@; 				\
 	fi;
 
-include/libu8/revision.h: FULL_REVISION
+include/libu8/revision.h: REVISION
 	@VERSION=$$(cat etc/base_version);		\
 	 REVISION=$$(cat REVISION);	\
 	 echo "#define LIBU8_REVISION \"libu8-$$VERSION\"" > $@; 		\
