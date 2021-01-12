@@ -21,6 +21,7 @@ else
     STATUS="-${STATUS}";
 fi;
 if [ -z "${BRANCH}" ] || \
+   [ ${BRANCH} = "main" ] || \
    [ ${BRANCH} = "trunk" ] || \
    [ ${BRANCH} = "master" ] || \
    [ ${BRANCH} = "current" ] || \
