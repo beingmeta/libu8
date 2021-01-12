@@ -1,0 +1,166 @@
+[comment]: # ( -*- Mode: markdown; -*- )
+u8run(1) -- Job/daemon runner from libu8
+=========================================
+
+## SYNOPSIS
+
+`u8run` [+daemon|+foreground] 
+
+## DESCRIPTION
+
+This command launches the Kno console/terminal program, a
+read-eval-print loop which allows you to evaluate expressions and see
+their values.
+
+The arguments to `knoc` are either filenames or *config* entries
+of the form `**setting**=*name*`.  The files are loaded and the config
+entries processed in order of appearance and config entries may
+specify multiple values for a setting.
+
+When normally started, `knoc` uses the **editline** library to
+provide simple command line editing and history functions. This can be
+suppressed by the environment variables `NO_EDITLINE` or
+`INSIDE_EMACS`.
+
+Editline maintains a per-session input history of its own which can be
+used in history commands. Knoc itself maintains a *value history*
+which allows previously displayed objects or sub-objects to be
+referenced in new commands. See [History references].
+
+Some config entries may generate useful side-effects defined by either
+the Kno core or modules loaded by the core. The config system and
+standard options are described [kno_config](here). Some of the most
+useful built-in config settings are:
+
+* `DOTLOAD=yes|no`
+  disables the loading of the `~/.knoconfig` file on startup; this can
+  also be specified by setting the environment variable `KNO_SKIP_DOTLOAD` to
+  anything but the empty string;
+
+* `ENVCONFIG=yes|no`
+  disables configuration information from the shell environment;
+
+* `CONFIG=*config files*;...`:
+  loads configuration information from *config files* on startup; this is
+  done after command line configs are processed;
+
+* `LOADPATH=*path*`:
+  specifies a search path for modules, as a colon
+  separated list of patterns where the '%' character is replaced by
+  the module name. For example `/opt/mods/%/module.scm:/opt/mods/%:`
+  causes the system to look for a module `foo/x` in
+  `/opt/mods/foo/x/module.scm` and `/opt/mods/foo/x.scm`. Paths can be
+  relative to the current directory by starting with '.' and can also
+  include ~home directory references.
+
+* `LOGLEVEL=*level*`:
+  specifies the default loglevel for notifications
+  where level is either a positive integer or symbolic name (like
+  `NOTICE` or `DEBUG` or `INFO`).
+
+* `LOADMOD=*module name*;...`:
+  loads the Kno modules *modnames* during startup, making them
+  available in the default environment. This is done after the
+  `CONFIG` specifications are all processed;
+
+* `LOADFILE=*paths*;...`: loads the files *paths* during startup. This
+  happens *after* the `LOADMOD` configs are processed.
+
+* `INIT=*expr*`: evaluates *expr* in the default environment; this
+  happens after the `LOADFILE` configs are processed.
+
+
+## DIAGNOSTICS
+
+Returns 0 when exiting normally, 1 otherwise. It also displays a short
+preamble on starting and reports its time and memory usage on exit.
+
+## FILES
+
+On startup, `knoc` normally reads an `.knoconfig` file from the user's
+home directory (if it exists). It can include `MODULES` or `LOADFILE`
+declarations. The loading of the `.knoconfig` file can be suppressed
+via the environment variable `KNO_SKIP_DOTLOAD` or the config variable
+`DOTLOAD`.
+
+## Value history
+
+`knoc` has a simple history mechanism which assigns identifiers to
+some displayed objects. By default, this is done for all non-trivial
+return results (excluding short strings, small numbers, etc). Other
+code may also add objects to the history, making those objects easily
+accessible through the console.
+
+The general form of a history reference is `#**num**` or
+`#**num**.*selector*`. For example, a function might return five long
+strings (elided here for clarity):
+
+````console
+{ ;; #27
+  "long string 1..." ;; #27.0
+  "long string 2..." ;; #27.1
+  "long string 3..." ;; #27.2
+  "long string 4..." ;; #27.3
+  "long string 5..." ;; #27.4
+  } ;; #27
+````
+
+where subsequent expressions can use history references, e.g.:
+
+````console
+#|kno>| (length #27.0)
+#|=>| 2049
+#|kno>| (choice-size #27)
+#|=>| 5
+````
+
+When output elision is on, items don't need to be actually displayed
+to be accessible with history references, for example, a large choice
+might be displayed:
+
+````console
+{ ;; #28
+  "long string 1..." ;; #28.0
+  "long string 2..." ;; #28.1
+  "long string 3..." ;; #28.2
+  "long string 4..." ;; #28.3
+  "long string 5..." ;; #28.4
+  ;;; 251/256 more items
+  } ;; #28
+````
+
+displays the first five of 256 choice items, but any of the items can be
+referred to in history references, e.g.
+````console
+#|kno>| (length #27.128)
+#|=>| 1024
+````
+
+When mapping objects (slotmaps, OIDs, etc) are displayed, they follow
+a similar convention except the selector is a slotid/key rather than a
+number. For example:
+````console
+;; #29
+\#[name "longidstring...." ;; #29.name
+   description "longerdescription string"] ;; #29.description
+   ````
+
+shows an object whose values can be referred to as `#29.name` or
+`#29.description`.
+
+## ENVIRONMENT
+
+As with most Kno programs, config variables can be set through
+environment variables prefixed with `KNO_`, so `KNO_LOGLEVEL` will set
+the default loglevel. This can be disabled by the config setting
+`ENVCONFIG=no` or by setting the environment variable
+`KNO_DISABLE_ENVCONFIG` to anything but the empty string.
+
+# AUTHOR
+
+Ken Haase <kh@beingmeta.com>
+
+## SEE ALSO
+
+knox(1), kno_config(8)
+

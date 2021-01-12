@@ -176,7 +176,7 @@ REVISION:
 	else cp etc/base_version $@; 				\
 	fi;
 
-include/libu8/revision.h: FULL_REVISION
+include/libu8/revision.h: REVISION
 	@VERSION=$$(cat etc/base_version);		\
 	 REVISION=$$(cat REVISION);	\
 	 echo "#define LIBU8_REVISION \"libu8-$$VERSION\"" > $@; 		\
@@ -386,18 +386,6 @@ lib/libu8syslog@suffix@.so.@U8VERSION@: $(LIBU8SYSLOG_OBJECTS)
 lib/libu8syslog.dylib: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dylib
 lib/libu8syslog.dll: $(LIBU8SYSLOG_OBJECTS) lib/libu8.dll
 
-# Documentation targets
-
-docs: docs/doxygen.done
-
-docs/doxygen.done: $(LIBU8_HEADERS) docs/doxygen.cfg
-	@$(DOXYGEN) docs/doxygen.cfg > docs/doxygen.log \
-	 && touch docs/doxygen.done
-	@echo "# (libu8)" DOXYGEN headers
-
-libu8.org: docs/doxygen.done
-	aws s3 cp --recursive docs/html/ s3://www.libu8.org/docs/
-
 # Clean/rebuild/reconfig targets
 
 clean: 
@@ -504,21 +492,7 @@ install-pkgconfig: $(DESTDIR)@PKGCONFIG_DIR@
 $(DESTDIR)@PKGCONFIG_DIR@:
 	$(SUDO) $(INSTALL) -d $(DESTDIR)@PKGCONFIG_DIR@
 
-install-docs: docs/doxygen.done
-	@echo "# (libu8)" "Writing man pages"
-	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3
-	@if test -z "$(SUDO)"; then 									\
-	  for manpage in docs/man/man3/*.3; do 								\
-	   if test -f "$${manpage}"; then 								\
-	     $(GZINSTALL) $${manpage} > $(MANDIR)/man3/$$(basename $$manpage).gz; 			\
-	   fi; 												\
-	 done; 												\
-	else for manpage in docs/man/man3/*.3; do 							\
-	  if test -f "$${manpage}"; then 								\
-	    ${SUDO} sh -c "$(GZINSTALL) $${manpage} > $(MANDIR)/man3/$$(basename $$manpage).gz";	\
-	   fi; 												\
-	 done; 												\
-	fi;
+# Installing documentation
 
 install-static: $(LIBINSTALLDIR)/libu8.a \
 		$(LIBINSTALLDIR)/libu8io.a \
@@ -742,6 +716,40 @@ install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
 
 $(DESTDIR)@prefix@/share/libu8/encodings:
 	$(SUDO) $(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
+
+# Documentation
+
+docs: docs/doxygen.done docs/ronn.done
+
+install-docs: install-manpages
+
+docs/doxygen.done: $(LIBU8_HEADERS) docs/doxygen.cfg
+	@$(DOXYGEN) docs/doxygen.cfg > docs/doxygen.log \
+	 && touch docs/doxygen.done
+	@echo "# (libu8)" DOXYGEN headers
+
+docs/ronn.done: docs/ronn/u8run.1.ronn
+	(cd docs; make) && touch $@
+
+libu8.org: docs/doxygen.done
+	aws s3 cp --recursive docs/html/ s3://www.libu8.org/docs/
+
+install-manpages: docs/doxygen.done docs/ronn.done
+	@echo "# (libu8)" "Writing man pages from doxygen"
+	@$(SUDO) $(INSTALL) -d $(MANDIR);
+	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
+	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
+	for manpage in docs/man/man3/*.3; do 								\
+	  if test -f "$${manpage}"; then 								\
+	    ${SUDO} sh -c "$(GZINSTALL) $${manpage} > $(MANDIR)/man3/$$(basename $$manpage).gz";	\
+	   fi; 												\
+	 done; 												\
+	for manpage in docs/man/*.1; do 								\
+	  if test -f "$${manpage}"; then 								\
+	    ${SUDO} sh -c "$(GZINSTALL) $${manpage} > $(MANDIR)/man1/$$(basename $$manpage).gz";	\
+	   fi; 												\
+	 done; 												\
+
 
 # Packaging targets
 
