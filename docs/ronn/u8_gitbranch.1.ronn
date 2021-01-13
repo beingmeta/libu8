@@ -1,0 +1,20 @@
+[comment]: # ( -*- Mode: markdown; -*- )
+u8_gitbranch(1) -- Job/daemon runner from libu8
+=========================================
+
+## SYNOPSIS
+
+`u8_gitbranch`
+
+## DESCRIPTION
+
+Returns the current git branch if it can be determined, returning `main` otherwise.
+
+# AUTHOR
+
+Ken Haase <kh@beingmeta.com>
+
+## SEE ALSO
+
+knox(1), kno_config(8)
+

@@ -1,0 +1,37 @@
+[comment]: # ( -*- Mode: markdown; -*- )
+u8_debchangelog(1) -- Job/daemon runner from libu8
+=========================================
+
+## SYNOPSIS
+
+`u8_debchangelog` *package* *distname* *branch* *version* [*status*] [*urgency*] [*gitid*]
+
+## DESCRIPTION
+
+Reads a Debian changelog file from the standard input and prefixes it
+with a synthesized entry based on the arguments. *package* is the
+package name while *distname* is the codename for the targed
+distribution (for example, 'bionic'). *branch* is included in the
+package version identifier unless it is `main`, `trunk`, `master`,
+`current`, or `,default`. The *status*, if it is either `stable`, or
+`default` is elided.
+
+The body of the changelog entry consists of text which includes a GIT
+identifier and labelled versions of the specified arguments.
+
+## ENVIRONMENT
+
+As with most Kno programs, config variables can be set through
+environment variables prefixed with `KNO_`, so `KNO_LOGLEVEL` will set
+the default loglevel. This can be disabled by the config setting
+`ENVCONFIG=no` or by setting the environment variable
+`KNO_DISABLE_ENVCONFIG` to anything but the empty string.
+
+# AUTHOR
+
+Ken Haase <kh@beingmeta.com>
+
+## SEE ALSO
+
+knox(1), kno_config(8)
+

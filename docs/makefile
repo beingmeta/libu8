@@ -1,7 +1,7 @@
 RONN_MANUAL       = libu8
 RONN_ORGANIZATION = beingmeta.com
 
-PAGES=u8run.1
+PAGES=u8run.1 u8_xsbust.1 u8_gitversion.1 u8_gitpatchcount.1 u8_debchangelog.1 u8_aptversion.1 u8_gitbranch.1 u8_gitcommit.1 u8_install_shared.1
 
 man/%: ronn/%.ronn
 	ronn --roff < $< > $@

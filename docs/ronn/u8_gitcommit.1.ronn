@@ -1,0 +1,17 @@
+[comment]: # ( -*- Mode: markdown; -*- )
+u8_gitcommit(1) -- Job/daemon runner from libu8
+=========================================
+
+## SYNOPSIS
+
+`u8_gitcommit` [*file*]
+
+## DESCRIPTION
+
+Displays the latest commit for the current workiing copy or, if *file*
+is provided, the latest commit modifying *file*.
+
+# AUTHOR
+
+Ken Haase <kh@beingmeta.com>
+

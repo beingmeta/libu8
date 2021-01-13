@@ -1,0 +1,26 @@
+[comment]: # ( -*- Mode: markdown; -*- )
+u8_install_shared(1) -- Job/daemon runner from libu8
+=========================================
+
+## SYNOPSIS
+
+`u8_install_shared` *library file* *destination* *version* [*installer*]
+
+## DESCRIPTION
+
+This installs a shared library under *version* in *destination* with
+symlinks to files under prefixes of *version*.
+
+If *installer* is specified, it is the installation program to use,
+defaulting to `install`.
+
+# EXAMPLES
+
+```
+u8_install_shared handy.so /opt/local/lib 2.3.9
+```
+
+Installs the file `/opt/local/lib/handy.so.2.3.9` and create symlinks to it from:
+* `/opt/local/lib/handy.so.2.3`
+* `/opt/local/lib/handy.so.2`
+* `/opt/local/lib/handy.so`

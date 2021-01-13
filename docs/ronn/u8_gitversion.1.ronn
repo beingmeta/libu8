@@ -1,0 +1,22 @@
+[comment]: # ( -*- Mode: markdown; -*- )
+u8_gitversion(1) -- Job/daemon runner from libu8
+=========================================
+
+## SYNOPSIS
+
+`u8_gitversion` *version file* [full]
+
+## DESCRIPTION
+
+Returns a compound version number based on the contents of *version
+file* and the history of the current working copy. The compound
+version number generally has the form:
+```
+  *baseversion*-*patchcount*
+```
+where *baseversion* is the content of *version file* and *patchcount* is the number
+of commits since *version file* was committed.
+
+If a second argument is provided, the version specification explicitly
+includes the latest commit id and the commit id associated with
+*version file*.

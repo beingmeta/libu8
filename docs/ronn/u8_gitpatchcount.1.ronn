@@ -1,0 +1,15 @@
+[comment]: # ( -*- Mode: markdown; -*- )
+u8_gitpatchcount(1) -- Job/daemon runner from libu8
+=========================================
+
+## SYNOPSIS
+
+`u8_gitpatchcount` *file*
+
+## DESCRIPTION
+
+Displays the number of commits since *file* was last changed.
+
+# AUTHOR
+
+Ken Haase <kh@beingmeta.com>

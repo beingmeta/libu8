@@ -2,8 +2,9 @@
 REV_FILE=$1
 if [ ! -d .git ] || ! which git > /dev/null; then
     echo "-1"; exit; fi;
-COMMIT=$(git log -n 1 --no-decorate ${REV_FILE} | head -1 | cut -d' ' -f2)
-PATCHLEVEL=$(git rev-list --count ${COMMIT}..HEAD)
+CUR_COMMIT=$(git log -n 1 --no-decorate | head -1 | cut -d' ' -f2)
+BASE_COMMIT=$(git log -n 1 --no-decorate ${REV_FILE} | head -1 | cut -d' ' -f2)
+N_COMMITS=$(git rev-list --count ${BASE_COMMIT}..HEAD)
 if [ -z "${N_COMMITS}" ]; then
     echo 0;
 else

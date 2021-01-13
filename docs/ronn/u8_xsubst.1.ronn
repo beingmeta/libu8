@@ -1,0 +1,14 @@
+[comment]: # ( -*- Mode: markdown; -*- )
+u8_xsubst(1) -- Job/daemon runner from libu8
+=========================================
+
+## SYNOPSIS
+
+`u8_xsubst` *file* [*string* *replacement*]...
+
+## DESCRIPTION
+
+Does simple string replacment in *file*, replacing each occurrence of
+*string* with *replacement* and then doing the same with the next
+*string*/*replacement* pair.
+
