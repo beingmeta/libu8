@@ -1,8 +1,8 @@
 #!/bin/sh
 PKGNAME=${1:-libu8};
 CODENAME=${2:-debian};
-BRANCH=$3;
-VERSION=$4;
+VERSION=$3;
+BRANCH=${4:-current};
 STATUS=${5:-stable};
 URGENCY=${6:-medium};
 GITID=$7

@@ -4,7 +4,7 @@ u8_install_shared(1) -- Job/daemon runner from libu8
 
 ## SYNOPSIS
 
-`u8_install_shared` *library file* *destination* *version* [*installer*]
+`u8_install_shared` <library file> <destination> <version> [<installer>]
 
 ## DESCRIPTION
 

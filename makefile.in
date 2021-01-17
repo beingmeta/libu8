@@ -395,7 +395,7 @@ clean:
 	@echo "# (libu8)" "Cleaned up libraries"
 	@$(CLEAN) exe/u8run exe/u8run.static
 	@echo "# (libu8)" "Cleaned up exes"
-	@$(CLEAN) docs/man/man3/* docs/rtf/* docs/latex/* docs/doxygen.done
+	@$(CLEAN) docs/man/man3/* docs/man/man1/* docs/rtf/* docs/latex/* docs/doxygen.done
 	@for dir in docs/html docs/html/search; do				\
 	  $(CLEAN) $${dir}/*.html $${dir}/*.png $${dir}/*.js $${dir}/*.css; done
 	@echo "# (libu8)" "Cleaned up docs"
@@ -796,7 +796,7 @@ staging/libu8_@U8VERSION@: REVISION
 	make staging/libu8;
 	cd staging; mv libu8/dist/debian libu8/debian;
 	scripts/u8_debchangelog libu8 ${CODENAME} \
-		${REL_BRANCH} ${APTVERSION} ${REL_STATUS} ${REL_PRIORITY} \
+		${APTVERSION} ${REL_BRANCH} ${REL_STATUS} ${REL_PRIORITY} \
 			< dist/debian/changelog \
 			> staging/libu8/debian/changelog;
 	rm -rf staging/libu8_@U8VERSION@;

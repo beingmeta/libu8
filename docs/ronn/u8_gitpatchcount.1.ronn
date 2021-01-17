@@ -4,7 +4,7 @@ u8_gitpatchcount(1) -- Job/daemon runner from libu8
 
 ## SYNOPSIS
 
-`u8_gitpatchcount` *file*
+`u8_gitpatchcount` <file>
 
 ## DESCRIPTION
 

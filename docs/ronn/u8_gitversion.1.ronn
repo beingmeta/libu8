@@ -4,7 +4,7 @@ u8_gitversion(1) -- Job/daemon runner from libu8
 
 ## SYNOPSIS
 
-`u8_gitversion` *version file* [full]
+`u8_gitversion` <version_file> [full]
 
 ## DESCRIPTION
 

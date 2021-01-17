@@ -4,7 +4,7 @@ u8_debchangelog(1) -- Job/daemon runner from libu8
 
 ## SYNOPSIS
 
-`u8_debchangelog` *package* *distname* *branch* *version* [*status*] [*urgency*] [*gitid*]
+`u8_debchangelog` <package> <distname> <version> [<branch>=current] [<status>=stable] [<urgency>=medium] [<gitid>]
 
 ## DESCRIPTION
 

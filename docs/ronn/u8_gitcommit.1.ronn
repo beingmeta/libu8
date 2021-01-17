@@ -4,7 +4,7 @@ u8_gitcommit(1) -- Job/daemon runner from libu8
 
 ## SYNOPSIS
 
-`u8_gitcommit` [*file*]
+`u8_gitcommit` [<file>]
 
 ## DESCRIPTION
 
