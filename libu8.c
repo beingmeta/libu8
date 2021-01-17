@@ -461,7 +461,11 @@ U8_EXPORT
 **/
 long long u8_getenv_int(u8_string var,long long dflt)
 {
-  if (var == NULL) return u8_reterr("NullEnvVar","u8_getenv_int",NULL);
+  if (var == NULL)  {
+    u8_log(LOGERR,_("NullEnvVar"),
+           _("Name passed to u8_getenv_int is NULL, using default %lld"),
+           dflt);
+    return dflt;}
   u8_string value = u8_getenv(var), end=NULL;
   if ( (value == NULL) || (*value == '\0') ) {
     if (value) u8_free(value);
@@ -480,7 +484,11 @@ U8_EXPORT
 **/
 double u8_getenv_float(u8_string var,double dflt)
 {
-  if (var == NULL) return u8_reterr("NullEnvVar","u8_getenv_float",NULL);
+  if (var == NULL)  {
+    u8_log(LOGERR,_("NullEnvVar"),
+           _("Name passed to u8_getenv_float is NULL, using default %f"),
+           dflt);
+    return dflt;}
   u8_string value = u8_getenv(var), end=NULL;
   if ( (value == NULL) || (*value == '\0') )
     return dflt;

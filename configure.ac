@@ -63,6 +63,7 @@ archflags=""
 definefileinfo=""
 versionsh=""
 doxygen=""
+ronn=ronn
 default_buildopts_dir="\$prefix/etc/beingmeta/opts"
 
 if test -z "${U8PATCHLEVEL}"; then
@@ -165,6 +166,7 @@ AC_SUBST(INSTALLI18N)
 AC_SUBST(GITDESCRIBE)
 AC_SUBST(GITBRANCH)
 AC_SUBST(doxygen)
+AC_SUBST(ronn)
 AC_SUBST(DOCS)
 AC_SUBST(INSTALLDOCS)
 
@@ -337,6 +339,7 @@ AC_CHECK_PROGS(doxygen,"doxygen","na")
 AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","rpm","na")
 AC_CHECK_PROGS(rpm,"lsb-rpm","rpm","na")
 AC_CHECK_PROG(CREATEREPO,createrepo,,echo No createrepo for )
+AC_CHECK_PROGS(ronn,"ronn","ronn2.7")
 
 AC_CHECK_PROGS(GZIP,"gzip","na")
 
@@ -644,7 +647,7 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT([makefile etc/libu8.pc etc/getbuildopt
+AC_OUTPUT([makefile docs/makefile etc/libu8.pc etc/getbuildopt
            dist/libu8-2.7.spec dist/alpine/APKBUILD
 	   scripts/u8_install_shared],
           [chmod a+x etc/getbuildopt scripts/u8_install_shared])

@@ -4,15 +4,57 @@ u8run(1) -- Job/daemon runner from libu8
 
 ## SYNOPSIS
 
-`u8run` [+launch-opt|env=val|@jobid]* *program* [*args...*]
+`u8run` [+mode|@jobid|env=val]* *program* [*args...*]
 
 ## DESCRIPTION
 
-Executes *program* with *args* in various configurations.
+Executes *program* with *args* in various configurations, running
+*program* tiself as a child of a _manager process_ which may restart
+the program if needed.
 
-*launch-opt*s can include `+daemon`, `+restart`, `+restart=onerr`, or `+restart=onexit`.
+*+mode*s can be `+daemon`, `+restart`, `+restart=onerr`, or
+ `+restart=onexit`. `+daemon` starts u8run as a free running daemon
+ process. `+restart` indicates that `program` should be restarted if
+ it ends, while `+restart=*cond*` indicates that restart should happen
+ only on *cond*.
 
 `@*jobid*` specifies a jobid which may be used to generate state and log files.
+
+Individual `env=val` entries set environment variables for the running
+job.  Each entry sets two variables: `U8*env*`and `*env*`.
+
+Some variable settings effect the behavior of `u8run` itself:
+* `RUNDIR` specifies the directory where state files (e.g. `*jobid*.pid` or
+  `*jobid*.ppid`, etc) are written;
+* `LOGDIR` specifies the directory where log files are written, by default
+  `*jobid*.log` and `*jobid*.err` for stdout and stderr rexpectively. By default,
+  `LOGDIR` is the same as `RUNDIR`.
+* `STOPFILE` is a control file (relative to 'RUNDIR') which signals
+  that the job should stop at the first "good" opportunity; the default value
+  of this file is `*jobid*.stop`.
+* `DONEFILE` is a control file (relative to 'RUNDIR') which signals
+  that the job is completed; the default value of this file is
+  `*jobid*.done`.
+* `LOGFILE` is the file used to record the standard output of the job;
+  the default file is `*logdir*/*jobid*.log`.
+* `ERRFILE` is the file used to record the standard error output of the job;
+   the default file is `*logdir*/*jobid*.err`.
+* `RESTART` specifies when the job should be restarted; valid values
+  are *never*, *error*, *exit*, *always*. When no value is specified,
+  *always* is used. Restarting is subject to the absence of the *stopfile* and
+  the *donefile*.
+
+Restarting can be controlled more precisely:
+* `WAIT` indicates how long the manager waits before restarting the process.
+* `FASTFAIL` indicates 
+* `MAXWAIT`
+
+`u8run` can also specify the user, group, and umask under which the
+job will run. These are specified via:
+* `'RUNUSER` sets the user, this is only available if the initial
+  `u8run` user is privileged `root`'
+* `'RUNGROUP` sets the default group for the process
+* `UMASK` specifies the flags used for created files
 
 ## DIAGNOSTICS
 

@@ -45,6 +45,7 @@ static int umask_value = -1;
 static u8_string pid_file = NULL;
 static u8_string ppid_file = NULL;
 static u8_string stop_file = NULL;
+static u8_string done_file = NULL;
 static pid_t dependent = -1;
 
 static int run_as_daemon = 0;
@@ -57,7 +58,7 @@ void usage()
   fprintf(stderr,"u8run [+opt|env=val|@jobid]* exename [args..]\n");
   fprintf(stderr,"  [opt]\t+daemon +restart\n");
   fprintf(stderr,"  [opt]\t+restart=onerr +restart=onexit\n");
-  fprintf(stderr,"  [env]\tJOBID=jobid RUNDIR=dir STOPFILE=filename\n");
+  fprintf(stderr,"  [env]\tJOBID=jobid RUNDIR=dir STOPFILE=filename DONEFILE=filename\n");
   fprintf(stderr,"  [env]\tU8LOGFILE|LOGFILE=file U8ERRFILE|ERRFILE=file\n");
   fprintf(stderr,"  [env]\tLOGDIR=dir LOGLEVEL=n\n");
   fprintf(stderr,"  [env]\tRESTART=never|error|exit|always\n");
@@ -156,6 +157,43 @@ static int kill_existing(u8_string filename,pid_t pid,double wait)
   else return 0;
 }
 
+static u8_string xgetenv(u8_string primary,u8_string backup)
+{
+  u8_string result = u8_getenv(primary);
+  if (result) return result;
+  else return u8_getenv(backup);
+}
+
+static long long xgetenv_int(u8_string primary,u8_string backup,long long dflt)
+{
+  u8_string value = u8_getenv(primary), end = NULL;
+  if (value == NULL) value =  u8_getenv(backup);
+  if (value == NULL) return dflt;
+  else if ( (value == NULL) || (*value == '\0') ) {
+    if (value) u8_free(value);
+    return dflt;}
+  long long intval = strtoll(value,(char **)&end,10);
+  if (end == value) intval = dflt;
+  u8_free(value);
+  return intval;
+}
+
+double xgetenv_float(u8_string var,u8_string backup,double dflt)
+{
+  if (var == NULL) return u8_reterr("NullEnvVar","u8_getenv_float",NULL);
+  u8_string value = u8_getenv(var), end=NULL;
+  if (value == NULL) value = u8_getenv(backup);
+
+  if ( (value == NULL) || (*value == '\0') ) {
+    u8_free(value);
+    return dflt;}
+  double floval = strtod(value,(char **)&end);
+  if ( end == value )
+    floval = dflt;
+  u8_free(value);
+  return floval;
+}
+
 static int n_cycles=0, doexit=0, paused=0, restart=0;
 static double last_launch = -1, fast_fail = 3, fail_start=-1;
 static double restart_wait=0, error_wait=1.0, max_wait=120, backoff=10;
@@ -176,7 +214,7 @@ int main(int argc,char *argv[])
   u8_log_show_elapsed=1;
   u8_log_show_appid=1;
 
-  run_dir = u8_getenv("RUNDIR");
+  run_dir = xgetenv("U8RUNDIR","RUNDIR");
 
   if (argc<2) {
     usage();
@@ -228,10 +266,18 @@ int main(int argc,char *argv[])
                arg);
         usage();
         exit(1);}
-      char varname[name_len+1];
+      char varname[name_len+5];
+      /* Write the U8 version */
+      strcpy(varname,"U8");
+      strncat(varname,arg,name_len);
+      varname[name_len+2]='\0';
+      setenv(varname,eqpos+1,1);
+      /* Write the direct version */
       strncpy(varname,arg,name_len);
       varname[name_len]='\0';
       setenv(varname,eqpos+1,1);
+
+      /* Handle some special cases here */
       if (strcasecmp(varname,"rundir")==0) {
         if (run_dir) u8_free(run_dir);
         run_dir = u8_strdup(eqpos+1);}
@@ -255,7 +301,7 @@ int main(int argc,char *argv[])
     u8_free(path);}
 
   if (run_dir == NULL) {
-    run_dir = u8_getenv("RUNDIR");
+    run_dir = xgetenv("U8RUNDIR","RUNDIR");
     if (run_dir == NULL) run_dir = u8_getcwd();}
 
   if ( (! (u8_directoryp(run_dir)) ) ||
@@ -264,8 +310,7 @@ int main(int argc,char *argv[])
            "The designated run_dir %s was not a writable directory",
            run_dir);
     exit(1);}
-  log_dir = u8_getenv("U8LOGDIR");
-  if (!(log_dir)) log_dir = u8_getenv("LOGDIR");
+  log_dir = xgetenv("U8LOGDIR","LOGDIR");
   if ( (!(log_dir)) && (run_as_daemon) )
     log_dir = u8_strdup(run_dir);
 
@@ -274,35 +319,24 @@ int main(int argc,char *argv[])
     setenv("RUNBASE",runbase,0);
     u8_free(runbase);}
 
-  if (err_file) {}
-  else if (getenv("U8ERRFILE"))
-    err_file=u8_getenv("U8ERRFILE");
-  else if (getenv("ERRFILE"))
-    err_file=u8_getenv("ERRFILE");
-  else {}
+  if (err_file == NULL) err_file=xgetenv("U8ERRFILE","ERRFILE");
 
-  if (log_file) {}
-  else if (getenv("U8LOGFILE"))
-    log_file=u8_getenv("U8LOGFILE");
-  else if (getenv("LOGFILE"))
-    log_file=u8_getenv("LOGFILE");
-  else if ( (run_as_daemon) || (log_dir) )
-    log_file = logpath(job_id,"log");
-  else {}
+  if (log_file == NULL) log_file = xgetenv("U8LOGFILE","LOGFILE");
 
-  if (getenv("LOGLEVEL")) u8_loglevel=u8_getenv_int("LOGLEVEL",5);
-  if (getenv("FASTFAIL")) fast_fail=u8_getenv_float("FASTFAIL",fast_fail);
-  if (getenv("WAIT"))     restart_wait=u8_getenv_float("WAIT",1);
-  if (getenv("BACKOFF"))  backoff=u8_getenv_float("BACKOFF",backoff);
-  if (getenv("MAXWAIT"))  max_wait=u8_getenv_float("MAXWAIT",max_wait);
-  if (getenv("PIDWAIT"))  pid_wait=u8_getenv_float("PIDWAIT",pid_wait);
-  if (getenv("PIDMINWAIT"))  pid_min_wait=u8_getenv_float("PIDMINWAIT",2.0);
+  u8_loglevel = xgetenv_int("U8LOGLEVEL","LOGLEVEL",5);
+  fast_fail = xgetenv_float("U8FASTFAIL","FASTFAIL",fast_fail);
+  restart_wait = xgetenv_float("U8WAIT","WAIT",1);
+  backoff = xgetenv_float("U8BACKOFF","BACKOFF",backoff);
+  max_wait = xgetenv_float("U8MAXWAIT","MAXWAIT",max_wait);
+  pid_wait = xgetenv_float("U8PIDWAIT","PIDWAIT",pid_wait);
+  pid_min_wait = xgetenv_float("U8PIDMINWAIT","PIDMINWAIT",2.0);
 
-  if (getenv("PIDFILE"))  pid_file=u8_getenv("PIDFILE");
-  if (getenv("PPIDFILE"))  ppid_file=u8_getenv("PPIDFILE");
-  if (getenv("STOPFILE"))  stop_file=u8_getenv("STOPFILE");
+  pid_file = xgetenv("U8PIDFILE","PIDFILE");
+  ppid_file = xgetenv("U8PPIDFILE","PPIDFILE");
+  stop_file = xgetenv("U8STOPFILE","STOPFILE");
+  done_file = xgetenv("U8DONEFILE","DONEFILE");
 
-  char *restart_val = getenv("RESTART");
+  u8_string restart_val = xgetenv("U8RESTART","RESTART");
   if (restart_val==NULL) {}
   else if ( (strcasecmp(restart_val,"never")==0) ||
             (strcasecmp(restart_val,"no")==0) ) {
@@ -367,13 +401,18 @@ int main(int argc,char *argv[])
   if (pid_file == NULL) pid_file = procpath(job_id,"pid");
   if (ppid_file == NULL) ppid_file = procpath(job_id,"ppid");
   if (stop_file == NULL) stop_file = procpath(job_id,"stop");
+  if (done_file == NULL) done_file = procpath(job_id,"done");
+  if (u8_file_existsp(done_file)) {
+    u8_log(LOG_WARN,"DoneFile","Exiting for done file %s",done_file);
+    exit(0);}
   if (u8_file_existsp(stop_file)) {
     u8_log(LOG_WARN,"StopFile","Removing existing stop file %s",stop_file);
     int rv = u8_removefile(stop_file);
-    if (rv<0)
+    if (rv<0) {
       u8_log(LOG_CRIT,"StopFile","Couldn't remove existing stop file %s",
              stop_file);
-    exit(1);}
+      exit(1);}
+    exit(0);}
 
   if (u8_file_existsp(ppid_file)) {
     pid_t live = read_pid(ppid_file);
@@ -685,6 +724,10 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args)
 	     "Exiting u8run because child returned status=13");
       exit(1);}
     else if (doexit) {
+      /* If someone has set doexit, just terminate the child and exit */
+      if (! exited) pid = kill_child(job_id,pid,pid_file);
+      exit(0);}
+    else if (u8_file_existsp(done_file)) {
       /* If someone has set doexit, just terminate the child and exit */
       if (! exited) pid = kill_child(job_id,pid,pid_file);
       exit(0);}
