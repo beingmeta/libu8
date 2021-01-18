@@ -30,6 +30,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
+#include <limits.h>
 
 #if HAVE_STRING_H
 #include <string.h>
@@ -798,8 +799,8 @@ U8_EXPORT u8_string u8_strstrs(u8_string haystack,u8_string needles[],int order)
 /* Portable ITOA for use in signal handling */
 
 U8_EXPORT char *itoa_helper(unsigned long long int num,char *buf,
-			    int base,const char *digits,
-			    unsigned long long int mult)
+                            int base,const char *digits,
+                            unsigned long long int mult)
 {
   char *write=buf;
   if (num==0) {
@@ -807,7 +808,7 @@ U8_EXPORT char *itoa_helper(unsigned long long int num,char *buf,
     return buf;}
   unsigned long long int reduce=num;
   int started=0; while (mult>0) {
-    int weight=reduce/mult;
+    int weight=(reduce/mult)%base;
     if (started) *write++=digits[weight];
     else if (weight) {
       *write++=digits[weight];
@@ -824,25 +825,25 @@ U8_EXPORT char *u8_itoa10(long long int num,char outbuf[32])
   char *write=outbuf;
   if (num<0) {*write++='-'; num=-num;}
   return itoa_helper(num,write,10,"0123456789",
-		     1000000000000000000LL);
+                     10000000000000000000ULL);
 }
 
 U8_EXPORT char *u8_uitoa10(unsigned long long int num,char outbuf[32])
 {
   return itoa_helper(num,outbuf,10,"0123456789",
-		     1000000000000000000LL);
+                     10000000000000000000ULL);
 }
 
 U8_EXPORT char *u8_uitoa8(unsigned long long int num,char outbuf[32])
 {
   return itoa_helper(num,outbuf,8,"01234567",
-		     01000000000000000000000LL);
+                     01000000000000000000000ULL);
 }
 
 U8_EXPORT char *u8_uitoa16(unsigned long long int num,char outbuf[32])
 {
   return itoa_helper(num,outbuf,16,"0123456789ABCDEF",
-		     0x1000000000000000LL);
+                     0x1000000000000000ULL);
 }
 
 /* Initialization function (just records source file info) */
