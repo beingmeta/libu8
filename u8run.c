@@ -311,8 +311,7 @@ int main(int argc,char *argv[])
            run_dir);
     exit(1);}
   log_dir = xgetenv("U8LOGDIR","LOGDIR");
-  if ( (!(log_dir)) && (run_as_daemon) )
-    log_dir = u8_strdup(run_dir);
+  if (!(log_dir)) log_dir = u8_strdup(run_dir);
 
   {/* Compute runbase (run_dir/job_id) */
     u8_string runbase = u8_mkpath(run_dir,job_id);
@@ -353,51 +352,79 @@ int main(int argc,char *argv[])
     usage();
     exit(0);}
 
+  if (log_file == NULL) log_file=u8_mkstring("%s.log",job_id);
+
+  int log_fd = -1;
+
   /* Now that we're past the usage checks, redirect output if
      requested. */
   if (log_file == NULL) {
     /* Just use existing stdout and stderr */}
   else if ( ( (log_file[0] == '.') || (log_file[0] == '-') ) &&
-            (log_file[1]==0) ) {}
+            (log_file[1]==0) ) {
+    /* Just use current stdout/err */ }
   else if (log_file) {
-    int fd = open(log_file,O_WRONLY|O_APPEND|O_CREAT,0664);
-    if (fd<0) {
+    if ( (*log_file) != '/' ) {
+      u8_string abspath = (log_dir) ? (u8_mkpath(log_dir,log_file)) :
+        (u8_abspath(log_file,NULL));
+      u8_free(log_file);
+      log_file = abspath;}
+    log_fd = open(log_file,O_WRONLY|O_APPEND|O_CREAT,0664);
+    if (log_fd<0) {
       int eno = errno; errno=0;
       fprintf(stderr,"Error opening log_file %s: %s (%d)\n",
               log_file,u8_strerror(eno),eno);
       exit(1);}
     else {
-      int rv = dup2(fd,STDOUT_FILENO);
+      int rv = dup2(log_fd,STDOUT_FILENO);
       if (rv<0) {
         int eno = errno; errno=0;
         fprintf(stderr,"Error redirecting stdout to %s: %s (%d)\n",
                 log_file,u8_strerror(eno),eno);
-        close(fd);
+        close(log_fd);
+        exit(1);}}}
+  if ( (err_file == NULL) && (log_fd>=0) ) {
+    int rv = dup2(log_fd,STDERR_FILENO);
+    if (rv<0) {
+      int eno = errno; errno=0;
+      fprintf(stderr,"Error redirecting stderr to %s: %s (%d)\n",
+              log_file,u8_strerror(eno),eno);}}
+  else if (err_file == NULL) {
+    /* Leave stderr alone */ }
+  else if (strcmp(err_file,".")==0) {
+    /* Leave stderr alone */ }
+  else if (strcmp(err_file,"-")==0) {
+    /* Leave stderr alone */ }
+  else {
+    if ( (*err_file) != '/' ) {
+      u8_string abspath = (log_dir) ? (u8_mkpath(log_dir,err_file)) :
+        (u8_abspath(err_file,NULL));
+      u8_free(err_file);
+      err_file = abspath;}
+    if ( (log_file) && (strcmp(err_file,log_file)==0) ) {
+      int rv = dup2(log_fd,STDERR_FILENO);
+      if (rv<0) {
+        int eno = errno; errno=0;
+        fprintf(stderr,"Error redirecting stderr to %s: %s (%d)\n",
+                log_file,u8_strerror(eno),eno);
+        close(log_fd);
+        exit(1);}}
+    else {
+      int err_fd = open(err_file,O_WRONLY|O_APPEND|O_CREAT,0664);
+      if (err_fd<0) {
+        int eno = errno; errno=0;
+        fprintf(stderr,"Error opening err_file %s: %s (%d)\n",
+                err_file,u8_strerror(eno),eno);
         exit(1);}
-      else if (err_file) {
-        int err_fd = open(err_file,O_WRONLY|O_APPEND|O_CREAT,0664);
-        if (fd<0) {
-          int eno = errno; errno=0;
-          fprintf(stderr,"Error opening err_file %s: %s (%d)\n",
-                  err_file,u8_strerror(eno),eno);
-          exit(1);}
-        int rv = dup2(err_fd,STDERR_FILENO);
-        if (rv<0) {
-          int eno = errno; errno=0;
-          fprintf(stderr,"Error redirecting stderr to %s: %s (%d)\n",
-                  err_file,u8_strerror(eno),eno);
-          close(fd);
-          exit(1);}}
-      else {
-        int rv = dup2(fd,STDERR_FILENO);
-        if (rv<0) {
-          int eno = errno; errno=0;
-          fprintf(stderr,"Error redirecting stderr to %s: %s (%d)\n",
-                  log_file,u8_strerror(eno),eno);
-          close(fd);
-          exit(1);}}}}
-  else NO_ELSE;
-
+      int rv = dup2(err_fd,STDERR_FILENO);
+      if (rv<0) {
+        int eno = errno; errno=0;
+        fprintf(stderr,"Error redirecting stderr to %s: %s (%d)\n",
+                err_file,u8_strerror(eno),eno);
+        close(err_fd);
+        if (log_fd>0) close(log_fd);
+        exit(1);}}}
+  
   if (pid_file == NULL) pid_file = procpath(job_id,"pid");
   if (ppid_file == NULL) ppid_file = procpath(job_id,"ppid");
   if (stop_file == NULL) stop_file = procpath(job_id,"stop");
