@@ -107,7 +107,10 @@ long long u8_millitime()
   struct timeval now;
   if (gettimeofday(&now,NULL) < 0)
     return -1;
-  else return now.tv_sec*1000+(now.tv_usec/1000);
+  else {
+    long long secs = now.tv_sec;
+    secs=(secs*1000)+(now.tv_usec/1000);
+    return secs;}
 #elif HAVE_FTIME
     struct timeb now;
 #if WIN32
