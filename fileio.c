@@ -27,24 +27,21 @@
 #include <sys/stat.h>
 #endif
 
-#if WIN32
-#include <io.h>
-#include <sys/locking.h>
+#if USE_FLOCK
+#include <sys/file.h>
 U8_EXPORT int u8_lock_fd(int fd,int for_write)
 {
-#if 0
-  return _locking(fd,_LK_LOCK,0);
-#endif
-  return 1;
+  int rv = flock(fd, LOCK_EX);
+  if (rv<0) u8_graberr(errno,"u8_lock_fd",NULL);
+  return rv;
 }
 U8_EXPORT int u8_unlock_fd(int fd)
 {
-#if 0
-  return _locking(fd,_LK_UNLCK,0);
-#endif
-  return 1;
+  int rv = flock(fd, LOCK_UN);
+  if (rv<0) u8_graberr(errno,"u8_unlock_fd",NULL);
+  return rv;
 }
-#elif FD_WITH_FILE_LOCKING
+#elif USE_F_SETLK
 U8_EXPORT int u8_lock_fd(int fd,int for_write)
 {
   struct flock lock_data;
@@ -65,6 +62,23 @@ U8_EXPORT int u8_unlock_fd(int fd)
   retval=fcntl(fd,F_SETLK,&lock_data);
   errno=0;
   return retval;
+}
+#elif WIN32
+#include <io.h>
+#include <sys/locking.h>
+U8_EXPORT int u8_lock_fd(int fd,int for_write)
+{
+#if 0
+  return _locking(fd,_LK_LOCK,0);
+#endif
+  return 1;
+}
+U8_EXPORT int u8_unlock_fd(int fd)
+{
+#if 0
+  return _locking(fd,_LK_UNLCK,0);
+#endif
+  return 1;
 }
 #else
 U8_EXPORT int u8_lock_fd(int fd,int for_write)
@@ -121,7 +135,12 @@ U8_EXPORT FILE *u8_fopen_locked(u8_string path,char *mode)
     perror("fopen"); errno=0; u8_free(lpath);
     return NULL;}
   else {
-    int fd=fileno(f); u8_lock_fd(fd,for_write); u8_free(lpath);
+    int fd=fileno(f);
+    int rv = u8_lock_fd(fd,for_write);
+    u8_free(lpath);
+    if (rv<0) {
+      fclose(f);
+      return NULL;}
     return f;}
 }
 
@@ -151,19 +170,31 @@ U8_EXPORT int u8_fclose(FILE *f)
   return retval;
 }
 
-U8_EXPORT int u8_open_fd(u8_string path,int flags,mode_t mode)
+U8_EXPORT int u8_open_file(u8_string path,int flags,mode_t mode,int lock_flags)
 {
   char *lpath=u8_localpath(path);
   int fd=open(lpath,flags,mode);
+  int for_write = ((flags)&(O_WRONLY|O_RDWR));
   u8_free(lpath);
-  if (fd<0) u8_graberr(errno,"u8_open_fd",u8_strdup(path));
+  if (fd<0) u8_graberr(errno,"u8_open_locked_file/open",u8_strdup(path));
+  if (lock_flags>0) {
+    int rv = u8_lock_fd(fd,for_write);
+    if (rv<0) {
+      u8_graberr(errno,"u8_open_locked_file/lock",u8_strdup(path));
+      close(fd);
+      return -1;}}
   return fd;
 }
+U8_EXPORT int u8_open_fd(u8_string path,int flags,mode_t mode)
+{
+  return u8_open_file(path,flags,mode,0);
+}
 
-U8_EXPORT int u8_close_fd(int fd)
+U8_EXPORT int u8_close_file(int fd)
 {
   return close(fd);
 }
+U8_EXPORT int u8_close_fd(int fd) { return u8_close_file(fd); }
 
 /* Utility functions */
 

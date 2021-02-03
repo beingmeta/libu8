@@ -458,7 +458,7 @@ fi
 AC_CHECK_FUNCS(isatty fstat)
 AC_CHECK_FUNCS(clock_gettime)
 AC_CHECK_FUNCS(strdup strerror_r)
-AC_CHECK_FUNCS(access flock fseeko)
+AC_CHECK_FUNCS(access flock fcntl fseeko)
 AC_CHECK_FUNCS(chown chmod setuid getuid geteuid utime)
 AC_CHECK_FUNCS(getpwnam getpwnam_r getpwgid getpwgid_r)
 AC_CHECK_FUNCS(setgid getgid getegid getgroups)
@@ -649,7 +649,7 @@ AC_CHECK_FUNCS(uuid_generate_time)
 
 AC_OUTPUT([makefile docs/makefile etc/libu8.pc etc/getbuildopt
            dist/libu8-2.7.spec dist/alpine/APKBUILD
-	   scripts/u8_install_shared],
-          [chmod a+x etc/getbuildopt scripts/u8_install_shared])
+	   scripts/u8_install_shared scripts/u8_gzinstall],
+          [chmod a+x etc/getbuildopt scripts/u8_install_shared scripts/u8_gzinstall])
 
 

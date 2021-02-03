@@ -183,6 +183,9 @@
 /* Define if you have the flock function.  */
 #undef HAVE_FLOCK
 
+/* Define if you have the lockf function.  */
+#undef HAVE_LOCKF
+
 /* Define if you have the symlink function.  */
 #undef HAVE_SYMLINK
 

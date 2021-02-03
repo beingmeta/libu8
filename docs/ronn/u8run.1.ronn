@@ -4,26 +4,41 @@ u8run(1) -- Job/daemon runner from libu8
 
 ## SYNOPSIS
 
-`u8run` [@<jobid>] [+<mode>] [<env>=<val>]* <program> [<args>...]
+`u8run` [@<jobid>] [+<mode>]... [<env>=<val>]... <program> [<args>...]
 
 ## DESCRIPTION
 
-Executes *program* with *args* in various configurations, running
-*program* tiself as a child of a _manager process_ which may restart
-the program if needed.
+Executes *program* with *args* in various managed configurations,
+running *program* tiself as a child of a _manager process_ which may
+restart the program if needed.
 
-*+mode*s can be `+daemon`, `+restart`, `+restart=onerr`, or
- `+restart=onexit`. `+daemon` starts u8run as a free running daemon
- process. `+restart` indicates that `program` should be restarted if
- it ends, while `+restart=*cond*` indicates that restart should happen
- only on *cond*.
+*@jobid* specifies a jobid which may be used to generate various
+state and log filenames. If none is provided, one is generated from
+the name of *program* and its args.
 
-`@*jobid*` specifies a jobid which may be used to generate state and log files.
+*+mode* specifies how the program is run and potentially restarted,
+including `+daemon`, `+service`, `+chain`, etc.  Note that restarting
+may be inhibited by various control files, such as `*jobid*.stop`.
+The implemented modes are listed in detail below.
 
-Individual `env=val` entries set environment variables for the running
-job.  Each entry sets two variables: `U8*env*`and `*env*`.
+Individual *env=val* entries set environment variables for the running
+job.  Each entry sets two variables: `U8`*env* and simply *env*.
 
-Some variable settings effect the behavior of `u8run` itself:
+Some *env=val* entries also effect `u8run` itself, including
+`LOGFILE`, `JOBDIR`, `RUNGROUP`, etc.
+
+### Launch modes
+
+* `+daemon`: starts u8run as a free running daemon process which will survive
+  the termination of the shell where `u8run` was called.
+* `+chain` or `+restart=onexit`: causes the program to be restarted whenever it exits normally.
+* `+insane` or `+restart=onerr`: causes the program to be restarted if it exits abnormally
+  but not if it exits normally
+* `+restart`: causes the program to restart if it exits either normally or abnormally.
+* `+services`: combines `+daemon` and `+restart`.
+
+### Variables/Options
+
 * `RUNDIR` specifies the directory where state files (e.g. `*jobid*.pid` or
   `*jobid*.ppid`, etc) are written;
 * `LOGDIR` specifies the directory where log files are written, by default
@@ -44,17 +59,19 @@ Some variable settings effect the behavior of `u8run` itself:
   *always* is used. Restarting is subject to the absence of the *stopfile* and
   the *donefile*.
 
-Restarting can be controlled more precisely:
-* `WAIT` indicates how long the manager waits before restarting the process.
-* `FASTFAIL` indicates 
-* `MAXWAIT`
-
 `u8run` can also specify the user, group, and umask under which the
 job will run. These are specified via:
+
 * `'RUNUSER` sets the user, this is only available if the initial
   `u8run` user is privileged `root`'
 * `'RUNGROUP` sets the default group for the process
 * `UMASK` specifies the flags used for created files
+
+Restarting can be controlled more precisely:
+
+* `WAIT` indicates how long the manager waits before restarting the process.
+* `FASTFAIL` indicates 
+* `MAXWAIT`
 
 ## DIAGNOSTICS
 
@@ -62,6 +79,20 @@ Returns 0 when exiting normally, 1 otherwise. It also displays a short
 preamble on starting and reports its time and memory usage on exit.
 
 ## FILES
+
+The files *job*`.pid` and *job*`.ppid` contain the PIDs of the
+executing *program* and its manager respectively.
+
+The files *jobid*`.stop` and *jobid*`.done` cause `u8run` to exit
+rather than restarting `program`. Their existence does not actually
+terminate `program` which happens separately. *jobid*`.stop` files
+will be removed automatically when `u8run` is invoked again, but 
+*jobid*`.done` files must be removed manually.
+
+When specified, `JOBDIR` determines where state files (such as `.pid`
+files) are located. It defaults to the current working directory. Log
+files are also written to this location unless `LOGDIR` is specified
+separately.
 
 ## Value history
 

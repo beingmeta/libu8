@@ -56,7 +56,7 @@ static int restart_on_exit = 0;
 void usage()
 {
   fprintf(stderr,"u8run [+opt|env=val|@jobid]* exename [args..]\n");
-  fprintf(stderr,"  [opt]\t+daemon +restart\n");
+  fprintf(stderr,"  [opt]\t+daemon +service +chain +insane +restart\n");
   fprintf(stderr,"  [opt]\t+restart=onerr +restart=onexit\n");
   fprintf(stderr,"  [env]\tJOBID=jobid RUNDIR=dir STOPFILE=filename DONEFILE=filename\n");
   fprintf(stderr,"  [env]\tU8LOGFILE|LOGFILE=file U8ERRFILE|ERRFILE=file\n");
@@ -241,8 +241,11 @@ int main(int argc,char *argv[])
         run_as_daemon = 1;
       else if (strcasecmp(arg,"+exec")==0)
         run_without_fork = 1;
-      else if ( (strcasecmp(arg,"+persist")==0) ||
-                (strcasecmp(arg,"+restart")==0) ){
+      else if (strcasecmp(arg,"+insane")==0)
+        restart_on_error = 1;
+      else if (strcasecmp(arg,"+chain")==0)
+        restart_on_exit = 1;
+      else if ( (strcasecmp(arg,"+restart")==0) ) {
         restart_on_exit = 1;
         restart_on_error = 1;}
       else if (strcasecmp(arg,"+restart=onerr")==0)

@@ -26,6 +26,14 @@
 #include <stdio.h>
 #include <time.h>
 
+#if HAVE_FCNTL && defined(F_SETLK)
+#define U8_USE_F_SETLK
+#elif HAVE_FLOCK
+#define U8_USE_FLOCK
+#elif HAVE_LOCKF
+#define U8_USE_LOCKF
+#endif
+
 /** Opens a file using STDIO while ensuring unique access.
     This uses fcntl() locking if available.  This also converts
      its utf-8 argument to the local character set.
@@ -65,19 +73,27 @@ U8_EXPORT int u8_lock_fd(int fd,int for_writing);
 **/
 U8_EXPORT int u8_unlock_fd(int fd);
 
-/** Opens a file descriptor.
-    This converts the utf-8 pathname to the local encoding.
+/** Opens a file descriptor
+    This converts the utf-8 *path* to the local encoding.
+    If *lock* is &gt; 0, *path* is locked using u8_lock_fd
+    (which generally uses `F_SETLK` with `fcntl`).
     @param path a utf-8 pathname string
     @param flags passed to open()
     @param mode passed to open()
+    @param lock flags describing whether to lock the underlying file
     @returns a new file descriptor (int) or -1 on error
  **/
+U8_EXPORT int u8_open_file(u8_string path,int flags,mode_t mode,int lock);
+
+/* Deprecated */
 U8_EXPORT int u8_open_fd(u8_string path,int flags,mode_t mode);
 
 /** Closes a file descriptor.
     @param fd a valid file descriptor
     @returns -1 on error
  **/
+U8_EXPORT int u8_close_file(int fd);
+/* Deprecated */
 U8_EXPORT int u8_close_fd(int fd);
 
 /** Checks if a file descriptor is blocking or not
