@@ -338,7 +338,7 @@ u8_encoding u8_load_encoding(u8_string name,u8_string filename)
   else return load_unicode_consortium_encoding(name,f);
 }
 
-static struct U8_TEXT_ENCODING *try_to_load_encoding(u8_string name)
+static struct U8_TEXT_ENCODING *try_to_load_encoding(u8_string name,int warn)
 {
   struct U8_TEXT_ENCODING *e=NULL;
   char *envpath=getenv("U8_ENCODINGS");
@@ -348,9 +348,11 @@ static struct U8_TEXT_ENCODING *try_to_load_encoding(u8_string name)
     strcpy(path,envpath); strcat(path,"/"); strcat(path,std);
     if (u8_file_existsp(path)) {
       e=u8_load_encoding(name,path);
-      if (e == NULL)
-        fprintf(stderr,"The file '%s' failed to provide the encoding %s\n",
-                path,name);
+      if (e == NULL) {
+        if (warn)
+          u8_log(LOG_ERR,"BadEncodingFile",
+                 "The file '%s' failed to provide the encoding %s\n",
+                 path,name);}
       else add_alias(e,name);
       u8_free(path);}}
   if (e) {u8_free(std); return e;}
@@ -359,18 +361,19 @@ static struct U8_TEXT_ENCODING *try_to_load_encoding(u8_string name)
     strcpy(path,U8_ENCODINGS_DIR); strcat(path,"/"); strcat(path,std);
     if (u8_file_existsp(path)) {
       e=u8_load_encoding(name,path);
-      if (e == NULL)
-        fprintf(stderr,"The file '%s' failed to provide the encoding %s\n",
-                path,name);
+      if (e == NULL) {
+        if (warn)
+          u8_log(LOG_ERR,"BadEncodingFile",
+                 "The file '%s' failed to provide the encoding %s\n",
+                 path,name);}
       else add_alias(e,name);}
     u8_free(path); u8_free(std);
     if (e) return e;
     else if (u8_file_existsp(name))
       e=u8_load_encoding(name,name);
-    if (e) return e;
-    else {
-      fprintf(stderr,"Can't locate encoding %s\n",name);
-      return e;}}
+    if ( (e == NULL) && (warn) )
+      u8_log(LOG_ERR,"UnknownEncoding","Can't locate encoding %s\n",name);
+    return e;}
 }
 
 U8_EXPORT
@@ -387,7 +390,7 @@ struct U8_TEXT_ENCODING *u8_get_encoding(u8_string name)
   else {
     struct U8_TEXT_ENCODING *encoding=lookup_encoding_name(name);
     if (encoding) return encoding;
-    else return try_to_load_encoding(name);}
+    else return try_to_load_encoding(name,0);}
 }
 
 static struct U8_TEXT_ENCODING *default_encoding=NULL;
