@@ -17,7 +17,7 @@ state and log filenames. If none is provided, one is generated from
 the name of *program* and its args.
 
 *+mode* specifies how the program is run and potentially restarted,
-including `+daemon`, `+service`, `+chain`, etc.  Note that restarting
+including `+launch`, `+service`, `+chain`, etc.  Note that restarting
 may be inhibited by various control files, such as `*jobid*.stop`.
 The implemented modes are listed in detail below.
 
@@ -29,12 +29,12 @@ Some *env=val* entries also effect `u8run` itself, including
 
 ### Launch modes
 
-* `+daemon`: starts u8run as a free running daemon process which will survive
+* `+launch` or `+daemon`: starts u8run as a free running daemon process which will survive
   the termination of the shell where `u8run` was called.
 * `+chain` or `+restart=onexit`: causes the program to be restarted whenever it exits normally.
 * `+insane` or `+restart=onerr`: causes the program to be restarted if it exits abnormally
   but not if it exits normally
-* `+restart`: causes the program to restart if it exits either normally or abnormally.
+* `+restart`: causes the program to restart if it *either* exits either normally or abnormally.
 * `+services`: combines `+daemon` and `+restart`.
 
 ### Variables/Options
@@ -109,6 +109,3 @@ the default loglevel. This can be disabled by the config setting
 Ken Haase <kh@beingmeta.com>
 
 ## SEE ALSO
-
-knox(1), kno_config(8)
-
