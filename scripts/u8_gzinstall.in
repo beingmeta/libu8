@@ -1,0 +1,10 @@
+#!/bin/sh
+SRC=$1
+DEST=$2
+if [ -z "@GZIP@" ]; then
+   cp ${SRC} ${DEST}
+if [ -d "${DEST}" ]; then
+   @GZIP@ -cf ${SRC} > ${DEST}/$(basename ${SRC}).gz
+else
+   @GZIP@ -cf ${SRC} > ${DEST}
+fi

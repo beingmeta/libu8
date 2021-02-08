@@ -37,7 +37,6 @@ GZIP            = @GZIP@
 CLEAN		= @CLEAN@
 SUDO		= @SUDO@
 INSTALL		= @INSTALL@
-GZINSTALL	= $(GZIP) -cf 
 RANLIB		= @RANLIB@
 MKSTATIC	= @MKSTATIC@ -o 
 DOXYGEN		= @doxygen@
@@ -396,7 +395,9 @@ clean:
 	@echo "# (libu8)" "Cleaned up libraries"
 	@$(CLEAN) exe/u8run exe/u8run.static
 	@echo "# (libu8)" "Cleaned up exes"
-	@$(CLEAN) docs/man/man3/* docs/man/man1/* docs/rtf/* docs/latex/* docs/doxygen.done
+	@$(CLEAN) docs/*.done
+	@$(CLEAN) docs/man/man3/* docs/man/man1/* docs/rtf/* docs/latex/* 
+	@$(CLEAN) docs/man/*.[1234567]
 	@for dir in docs/html docs/html/search; do				\
 	  $(CLEAN) $${dir}/*.html $${dir}/*.png $${dir}/*.js $${dir}/*.css; done
 	@echo "# (libu8)" "Cleaned up docs"
@@ -465,8 +466,8 @@ $(LIBU8IO_OBJECTS) $(LIBU8STDIO_OBJECTS) $(LIBU8SYSLOG_OBJECTS): \
 # Installation targets
 
 install: install-core install-docs install-static install-dev
-install-core: install-shared install-exe install-scripts install-encodings @INSTALLI18N@
-install-dev: install-headers install-pkgconfig install-dev-scripts
+install-core: install-shared install-exe install-scripts install-encodings install-core-manpages @INSTALLI18N@
+install-dev: install-headers install-pkgconfig install-dev-manpages install-dev-scripts
 install-shared: @install_shared@
 install-doc: @INSTALLDOCS@
 install-libs: install-static install-shared
@@ -476,7 +477,7 @@ install-dev-scripts: $(BININSTALLDIR)/u8_xsubst \
 	$(BININSTALLDIR)/u8_gitpatchcount $(BININSTALLDIR)/u8_gitbranch \
 	$(BININSTALLDIR)/u8_gitversion $(BININSTALLDIR)/u8_gitcommit \
 	$(BININSTALLDIR)/u8_aptversion $(BININSTALLDIR)/u8_debchangelog \
-	$(BININSTALLDIR)/u8_install_shared
+	$(BININSTALLDIR)/u8_install_shared $(BININSTALLDIR)/u8_gzinstall
 install-stripped:
 	make LIBSOURCE=lib/stripped LIBSOURCE=exe/stripped install-bin
 install-extras:  install-encodings @INSTALLI18N@ install-doc
@@ -722,35 +723,54 @@ $(DESTDIR)@prefix@/share/libu8/encodings:
 
 docs: docs/doxygen.done docs/ronn.done
 
-install-docs: install-manpages
+install-docs:
 
 docs/doxygen.done: $(LIBU8_HEADERS) docs/doxygen.cfg
 	@$(DOXYGEN) docs/doxygen.cfg > docs/doxygen.log \
 	 && touch docs/doxygen.done
-	@echo "# (libu8)" DOXYGEN headers
+	@echo "# (libu8)" DOXYGEN man pages
 
-docs/ronn.done: docs/ronn/u8run.1.ronn
-	(cd docs; make) && touch $@
+docs/ronn.done: docs/ronn/*.ronn
+	(cd docs; make manpages htmlpages htmlfrags) && touch $@
+	@echo "# (libu8)" Authored man pages
 
 libu8.org: docs/doxygen.done
 	aws s3 cp --recursive docs/html/ s3://www.libu8.org/docs/
 
-install-manpages: docs/doxygen.done docs/ronn.done
+install-core-manpages: docs/ronn.done
+	@$(SUDO) $(INSTALL) -d $(MANDIR);
+	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
+	for manpage in docs/man/*.1; do 								\
+	  if test -f "$${manpage}"; then 								\
+	    ${SUDO} ${INSTALL} $${manpage} $(MANDIR)/man1/$$(basename $$manpage);			\
+	   fi; 												\
+	 done; 												\
+
+install-dev-manpages: docs/doxygen.done docs/ronn.done
+	@echo "# (libu8)" "Writing man pages from doxygen"
+	@$(SUDO) $(INSTALL) -d $(MANDIR);
+	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
+	for manpage in docs/man/man3/*.3; do 								\
+	  if test -f "$${manpage}"; then 								\
+	    ${SUDO} ${INSTALL} $${manpage} $(MANDIR)/man3/$$(basename $$manpage);			\
+	   fi; 												\
+	 done; 												\
+
+install-manpages.gz: docs/doxygen.done docs/ronn.done
 	@echo "# (libu8)" "Writing man pages from doxygen"
 	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
 	for manpage in docs/man/man3/*.3; do 								\
 	  if test -f "$${manpage}"; then 								\
-	    ${SUDO} sh -c "$(GZINSTALL) $${manpage} > $(MANDIR)/man3/$$(basename $$manpage).gz";	\
+	    ${SUDO} ./scripts/u8_gzinstall $${manpage} $(MANDIR)/man3/$$(basename $$manpage);		\
 	   fi; 												\
 	 done; 												\
 	for manpage in docs/man/*.1; do 								\
 	  if test -f "$${manpage}"; then 								\
-	    ${SUDO} sh -c "$(GZINSTALL) $${manpage} > $(MANDIR)/man1/$$(basename $$manpage).gz";	\
+	    ${SUDO} ./scripts/u8_gzinstall $${manpage} $(MANDIR)/man1/$$(basename $$manpage);		\
 	   fi; 												\
 	 done; 												\
-
 
 # Packaging targets
 
