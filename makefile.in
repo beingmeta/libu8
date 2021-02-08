@@ -42,6 +42,7 @@ RANLIB		= @RANLIB@
 MKSTATIC	= @MKSTATIC@ -o 
 DOXYGEN		= @doxygen@
 CODENAME	= @CODENAME@
+APT_INCOMING    = dev.beingmeta.com:/srv/repo/kno/apt/incoming/@CODENAME@/
 MKSO		= $(CC) $(CFLAGS) $(XCFLAGS) -shared -L./lib \
 		  $(LDFLAGS) $(XLDFLAGS) $(LIBS)
 #MACLIBTOOL	  = libtool -dynamic -single_module $(LDFLAGS) $(LIBS)
@@ -757,12 +758,7 @@ debian deb debs: dist/debs.done
 rpms: dist/rpms.done 
 .PHONY: rpms debian debs
 
-install-debian install-debian debinstall installdeb: dist/debs.installed
-# We install twice because sometimes, when a file is moved from one package into another,
-#  it works, while still failing for more serious reasons
-dist/debs.installed: dist/debs.done
-	@( $(SUDO) dpkg -i dist/*.deb || $(SUDO) dpkg -i dist/*.deb ) && touch $@
-.PHONY: install-debian install-debian debinstall installdeb
+# RPMs
 
 install-rpms rpminstall installrpms: dist/rpms.installed
 dist/rpms.installed: dist/rpms.done
@@ -871,8 +867,21 @@ dist/debs.signed: dist/debs.built
 dist/debs.done: @DEB_BUILD_TARGET@
 	@touch dist/debs.done
 
-install-debian install-debs: dist/debs.done
-	$(SUDO)dpkg -i dist/libu8*_@U8VERSION@*.deb
+install-debian install-debian debinstall installdeb: dist/debs.installed
+
+# We install twice because sometimes, when a file is moved from one package into another,
+#  it works, while still failing for more serious reasons
+dist/debs.installed: dist/debs.done
+	@$(SUDO) dpkg -i dist/libu8*@U8VERSION@*.deb && touch $@
+install-debian install-debs debinstall installdebs: dist/debs.installed
+
+dist/debs.uploaded: dist/debs.done
+	@cd dist; grep "^ [0-9a-f]* [0-9]* [^ ]*\$$" libu8_@U8VERSION@*.changes | cut -d' ' -f 4 - | xargs -L 1 -I_file_ scp _file_ ${APT_INCOMING} && \
+	  scp libu8_@U8VERSION@*.changes ${APT_INCOMING} && \
+	  touch debs.uploaded
+update-apt apt-upload: dist/debs.uploaded
+
+.PHONY: install-debian install-debian debinstall installdeb update-apt
 
 debfresh freshdeb:
 	@make debclean
