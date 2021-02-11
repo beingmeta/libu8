@@ -1,5 +1,5 @@
 [comment]: # ( -*- Mode: markdown; -*- )
-u8_debchangelog(1) -- Job/daemon runner from libu8
+u8_debchangelog(1) -- Generate custom changelog debian packaging
 =========================================
 
 ## SYNOPSIS

@@ -41,7 +41,7 @@ RANLIB		= @RANLIB@
 MKSTATIC	= @MKSTATIC@ -o 
 DOXYGEN		= @doxygen@
 CODENAME	= @CODENAME@
-APT_INCOMING    = dev.beingmeta.com:/srv/repo/kno/apt/incoming/@CODENAME@/
+APT_INCOMING    = dev.beingmeta.com:/srv/repo/@REPONAME@/apt/incoming/@CODENAME@/
 MKSO		= $(CC) $(CFLAGS) $(XCFLAGS) -shared -L./lib \
 		  $(LDFLAGS) $(XLDFLAGS) $(LIBS)
 #MACLIBTOOL	  = libtool -dynamic -single_module $(LDFLAGS) $(LIBS)
@@ -477,7 +477,8 @@ install-dev-scripts: $(BININSTALLDIR)/u8_xsubst \
 	$(BININSTALLDIR)/u8_gitpatchcount $(BININSTALLDIR)/u8_gitbranch \
 	$(BININSTALLDIR)/u8_gitversion $(BININSTALLDIR)/u8_gitcommit \
 	$(BININSTALLDIR)/u8_aptversion $(BININSTALLDIR)/u8_debchangelog \
-	$(BININSTALLDIR)/u8_install_shared $(BININSTALLDIR)/u8_gzinstall
+	$(BININSTALLDIR)/u8_install_shared $(BININSTALLDIR)/u8_gzinstall \
+	$(BININSTALLDIR)/u8_dupload
 install-stripped:
 	make LIBSOURCE=lib/stripped LIBSOURCE=exe/stripped install-bin
 install-extras:  install-encodings @INSTALLI18N@ install-doc
@@ -896,9 +897,7 @@ dist/debs.installed: dist/debs.done
 install-debian install-debs debinstall installdebs: dist/debs.installed
 
 dist/debs.uploaded: dist/debs.done
-	@cd dist; grep "^ [0-9a-f]* [0-9]* [^ ]*\$$" libu8_@U8VERSION@*.changes | cut -d' ' -f 4 - | xargs -L 1 -I_file_ scp _file_ ${APT_INCOMING} && \
-	  scp libu8_@U8VERSION@*.changes ${APT_INCOMING} && \
-	  touch debs.uploaded
+	@./scripts/u8_dupload dist/libu8_@U8VERSION@*.changes ${APT_INCOMING} && touch debs.uploaded
 update-apt apt-upload: dist/debs.uploaded
 
 .PHONY: install-debian install-debian debinstall installdeb update-apt

@@ -186,19 +186,19 @@ AC_SUBST(RPMFLAGS)
 AC_SUBST(GPG)
 AC_SUBST(GPGID)
 AC_SUBST(GITBRANCH)
+AC_SUBST(REPONAME)
 AC_SUBST(CODENAME)
 
 if test -z "${GITBRANCH}"; then
    GITBRANCH=`scripts/u8_gitbranch`;
 fi;
+if test -z "${GITBRANCH}" || test "${GITBRANCH}" = "main"; then
+   REPONAME="kno";
+else
+   REPONAME="kno_${GITBRANCH}";
+fi;
 
 AC_PATH_PROG(CLANG,clang,none)
-
-AC_ARG_WITH(codename,--with-codename for distribution,with_codename=$withval,with_codename=$CODENAME)
-CODENAME=$with_codename
-
-AC_ARG_WITH(buildopts,--with-buildopts-dir location used by getbuildopt,,with_buildopts_dir=$default_buildopts_dir)
-buildopts_dir=$with_buildopts_dir
 
 AC_ARG_WITH(sanitize,--with-sanitize[=address*|memory|thread],with_sanitize=$withval,with_sanitize="none")
 
@@ -265,6 +265,15 @@ if test "x$prefix" != "x/usr"; then
   CPPFLAGS="$CPPFLAGS -I$prefix/include"
   LDFLAGS="$LDFLAGS -L$prefix/lib"
 fi
+
+AC_ARG_WITH(reponame,--with-reponame for distribution,with_reponame=$withval,with_reponame=$REPONAME)
+REPONAME=$with_reponame;
+
+AC_ARG_WITH(codename,--with-codename for distribution,with_codename=$withval,with_codename=$CODENAME)
+CODENAME=$with_codename
+
+AC_ARG_WITH(buildopts,--with-buildopts-dir location used by getbuildopt,,with_buildopts_dir=$default_buildopts_dir)
+buildopts_dir=$with_buildopts_dir
 
 AC_ARG_WITH(optlib,--with-optlib Use optional library directory,,with_optlib="none")
 if test $with_optlib != "none"; then

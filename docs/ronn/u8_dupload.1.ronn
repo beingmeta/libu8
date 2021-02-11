@@ -1,0 +1,28 @@
+[comment]: # ( -*- Mode: markdown; -*- )
+u8_dupload(1) -- Uploads built debian packages
+=========================================
+
+## SYNOPSIS
+
+`u8_dupload` <changes> <dest> [done]
+
+## DESCRIPTION
+
+Reads a Debian .changes and copies it and its constituent references
+to *dest* using `scp`. If *done* is provided and is a directory, the
+files are moved to *done* when the copy succeeds.
+
+## ENVIRONMENT
+
+* `U8_DUPLOAD_COPY_FLAGS` are additional flags to pass to `scp`.
+* `U8_DUPLOAD_USER` is used as a `-l` option to `scp`.
+* `U8_DUPLOAD_KEY` is used as a `-i` option to `scp`.
+
+# AUTHOR
+
+Ken Haase <kh@beingmeta.com>
+
+## SEE ALSO
+
+knox(1), kno_config(8)
+

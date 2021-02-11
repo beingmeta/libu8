@@ -7,5 +7,6 @@ usr/bin/u8_gitpatchcount
 usr/bin/u8_gitbranch
 usr/bin/u8_gitcommit
 usr/bin/u8_debchangelog
+usr/bin/u8_dupload
 usr/bin/u8_aptversion
 usr/bin/u8_gzinstall

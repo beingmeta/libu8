@@ -1,0 +1,41 @@
+#!/bin/sh
+usage() {
+    echo "u8_dupload dpkg.changes dest.incoming [done]";
+    echo "  Copies a changes file and its elements to dest.incoming using scp";
+    echo "  If specified, files are moved into done when finished";
+}
+CHANGES=$1
+DEST=$2
+DONE=$3
+
+if [ -z "${DEST}" ]; then DEST=${U8_DUPLOAD_DEST}; fi
+if [ -z "${CHANGES}" ] || [ -z "${DEST}" ]; then
+    usage;
+    exit;
+fi;
+if [ ! -z "${DONE}" ] && [ ! -d "${DONE}" ]; then
+   usage;
+   echo "No directory ${DONE}";
+   exit;
+fi;
+COPY_FLAGS=
+if [ ! -z "${U8_DUPLOAD_COPY_FLAGS}" ]; then
+    COPY_FLAGS="${COPY_FLAGS} ${U8_DUPLOAD_COPY_FLAGS}";
+fi;
+if [ ! -z "${U8_DUPLOAD_USER}" ]; then
+    COPY_FLAGS="${COPY_FLAGS} -l ${U8_DUPLOAD_USER}"
+fi;
+if [ ! -z "${U8_DUPLOAD_KEY}" ]; then
+    COPY_FLAGS="${COPY_FLAGS} -i ${U8_DUPLOAD_KEY}"
+fi;
+USEDIR=$(dirname ${CHANGES})
+RELNAME=$(basename ${CHANGES})
+cd ${USEDIR}
+SUCCESS=
+grep "^ [0-9a-f]* [0-9]* [^ ]*\$" ${RELNAME} | cut -d' ' -f 4 - | xargs -L 1 -I_file_ scp ${COPY_FLAGS} _file_ ${DEST} && \
+	  scp  ${COPY_FLAGS} ${RELNAME} ${DEST} && \
+	  SUCCESS=ok
+if [ ! -z "${SUCCESS}" ] && [ ! -z "${DONE}" ]; then
+    grep "^ [0-9a-f]* [0-9]* [^ ]*\$$" ${RELNAME} | cut -d' ' -f 4 - | xargs -L 1 -I_file_ mv _file_ ${DONE} && \
+	mv ${RELNAME} ${DONE};
+fi;

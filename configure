@@ -652,6 +652,7 @@ CFLAGS
 CC
 CLANG
 CODENAME
+REPONAME
 GPGID
 GPG
 RPMFLAGS
@@ -760,9 +761,10 @@ SHELL'
 ac_subst_files=''
 ac_user_opts='
 enable_option_checking
+with_sanitize
+with_reponame
 with_codename
 with_buildopts
-with_sanitize
 with_optlib
 with_optdir
 with_rpath
@@ -1432,9 +1434,10 @@ Optional Features:
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
+--with-sanitize=address*|memory|thread
+--with-reponame for distribution
 --with-codename for distribution
 --with-buildopts-dir location used by getbuildopt
---with-sanitize=address*|memory|thread
 --with-optlib Use optional library directory
 --with-optdir Use optional header/lib
 --with-rpath dir
@@ -3187,8 +3190,14 @@ fi
 
 
 
+
 if test -z "${GITBRANCH}"; then
    GITBRANCH=`scripts/u8_gitbranch`;
+fi;
+if test -z "${GITBRANCH}" || test "${GITBRANCH}" = "main"; then
+   REPONAME="kno";
+else
+   REPONAME="kno_${GITBRANCH}";
 fi;
 
 # Extract the first word of "clang", so it can be a program name with args.
@@ -3232,26 +3241,6 @@ $as_echo "no" >&6; }
 fi
 
 
-
-
-# Check whether --with-codename was given.
-if test "${with_codename+set}" = set; then :
-  withval=$with_codename; with_codename=$withval
-else
-  with_codename=$CODENAME
-fi
-
-CODENAME=$with_codename
-
-
-# Check whether --with-buildopts was given.
-if test "${with_buildopts+set}" = set; then :
-  withval=$with_buildopts;
-else
-  with_buildopts_dir=$default_buildopts_dir
-fi
-
-buildopts_dir=$with_buildopts_dir
 
 
 # Check whether --with-sanitize was given.
@@ -4577,6 +4566,36 @@ if test "x$prefix" != "x/usr"; then
   CPPFLAGS="$CPPFLAGS -I$prefix/include"
   LDFLAGS="$LDFLAGS -L$prefix/lib"
 fi
+
+
+# Check whether --with-reponame was given.
+if test "${with_reponame+set}" = set; then :
+  withval=$with_reponame; with_reponame=$withval
+else
+  with_reponame=$REPONAME
+fi
+
+REPONAME=$with_reponame;
+
+
+# Check whether --with-codename was given.
+if test "${with_codename+set}" = set; then :
+  withval=$with_codename; with_codename=$withval
+else
+  with_codename=$CODENAME
+fi
+
+CODENAME=$with_codename
+
+
+# Check whether --with-buildopts was given.
+if test "${with_buildopts+set}" = set; then :
+  withval=$with_buildopts;
+else
+  with_buildopts_dir=$default_buildopts_dir
+fi
+
+buildopts_dir=$with_buildopts_dir
 
 
 # Check whether --with-optlib was given.
