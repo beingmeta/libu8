@@ -24,16 +24,12 @@
 
 /* Direct syslog call */
 
-U8_EXPORT void u8_use_syslog(int flag)
-{
-}
-
 U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
 {
   u8_byte buf[512];
   unsigned int epriority = (priority < 0) ? (-priority) : (priority);
   u8_string context = u8_log_context;
-  if (u8_logging_initialized==0) u8_initialize_logging();
+  if (u8_logger_initialized==0) u8_init_logger();
   if (priority > u8_loglevel)
     return 0;
   else NO_ELSE;
@@ -65,6 +61,13 @@ U8_EXPORT int syslog_logger(int priority,u8_condition c,u8_string message)
   return 1;
 }
 
+U8_EXPORT void u8_use_syslog(int flag)
+{
+  if (flag)
+    u8_set_logfn(syslog_logger);
+  else u8_set_logfn(NULL);
+}
+
 U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
 {
   struct U8_OUTPUT out; va_list args;
@@ -90,7 +93,7 @@ static void raisefn(u8_condition ex,u8_context cxt,u8_string details)
   else if (cxt)
     u8_printf(&out,"Aborting due to %m@%s",ex,cxt);
   else u8_printf(&out,"Aborting due to %m",ex);
-  if (u8_logging_initialized==0) u8_initialize_logging();
+  if (u8_logger_initialized==0) u8_init_logger();
   syslog(LOG_ALERT,"%s",out.u8_outbuf);
   exit(1);
 }

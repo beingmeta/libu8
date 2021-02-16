@@ -63,9 +63,9 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
   if ((u8_logindent)&&(u8_logindent[0])&&(strchr(msg,'\n')))
     indented=u8_indent_text(msg,u8_logindent);
   if (!(indented)) indented=msg;
+  if (u8_logger_initialized==0) u8_init_logger();
 #if HAVE_SYSLOG
   if ((priority>=0) && (priority<=u8_syslog_loglevel)) {
-    if (u8_logging_initialized==0) u8_initialize_logging();
     syslog(priority,"%s",indented);}
   else NO_ELSE;
 #endif

@@ -741,7 +741,7 @@ libu8.org: docs/doxygen.done
 install-core-manpages: docs/ronn.done
 	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
-	for manpage in docs/man/*.1; do 								\
+	@for manpage in docs/man/*.1; do 								\
 	  if test -f "$${manpage}"; then 								\
 	    ${SUDO} ${INSTALL} $${manpage} $(MANDIR)/man1/$$(basename $$manpage);			\
 	   fi; 												\
@@ -751,7 +751,7 @@ install-dev-manpages: docs/doxygen.done docs/ronn.done
 	@echo "# (libu8)" "Writing man pages from doxygen"
 	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
-	for manpage in docs/man/man3/*.3; do 								\
+	@for manpage in docs/man/man3/*.3; do 								\
 	  if test -f "$${manpage}"; then 								\
 	    ${SUDO} ${INSTALL} $${manpage} $(MANDIR)/man3/$$(basename $$manpage);			\
 	   fi; 												\
@@ -762,12 +762,12 @@ install-manpages.gz: docs/doxygen.done docs/ronn.done
 	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
-	for manpage in docs/man/man3/*.3; do 								\
+	@for manpage in docs/man/man3/*.3; do 								\
 	  if test -f "$${manpage}"; then 								\
 	    ${SUDO} ./scripts/u8_gzinstall $${manpage} $(MANDIR)/man3/$$(basename $$manpage);		\
 	   fi; 												\
 	 done; 												\
-	for manpage in docs/man/*.1; do 								\
+	 for manpage in docs/man/*.1; do 								\
 	  if test -f "$${manpage}"; then 								\
 	    ${SUDO} ./scripts/u8_gzinstall $${manpage} $(MANDIR)/man1/$$(basename $$manpage);		\
 	   fi; 												\

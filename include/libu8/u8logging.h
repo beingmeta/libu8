@@ -155,7 +155,7 @@ U8_EXPORT u8_logtestfn u8_logbreakp;
 
 /* This is the overall log level and messages with with priorities
    above this should not produced output. */
-U8_EXPORT int u8_loglevel, u8_logging_initialized;
+U8_EXPORT int u8_loglevel, u8_logger_initialized;
 #define U8_DEFAULT_LOGLEVEL LOG_NOTICE
 
 /* When logging to stdio, these dtermine which errors go to
@@ -177,7 +177,6 @@ U8_EXPORT u8_string u8_loglevels[];
 U8_EXPORT int u8_log_show_date, u8_log_show_elapsed, u8_log_show_appid;
 U8_EXPORT int u8_log_show_procinfo, u8_log_show_threadinfo;
 /* Whether or not syslog has been initialized. */
-U8_EXPORT int u8_logging_initialized;
 
 U8_EXPORT u8_string u8_logprefix, u8_logsuffix, u8_logindent;
 
@@ -297,6 +296,12 @@ U8_EXPORT void u8_use_syslog(int flag);
    @returns void
 */
 U8_EXPORT void u8_log_break(int loglevel,u8_condition c);
+
+/** Returns a numeric loglevel from a string argument
+   @param spec a string specifying either an integer or a named loglevel
+   @returns an int loglevel > 0
+**/
+U8_EXPORT int u8_get_loglevel(u8_string spec);
 
 /* Getting the logger context */
 

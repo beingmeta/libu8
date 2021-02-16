@@ -337,6 +337,15 @@ int main(int argc,char *argv[])
   stop_file = xgetenv("U8STOPFILE","STOPFILE");
   done_file = xgetenv("U8DONEFILE","DONEFILE");
 
+  u8_setenv("U8_JOBID",job_id,1);
+  u8_byte loglevel_tmp[64];
+  u8_setenv("U8_LOGLEVEL",u8_bprintf(loglevel_tmp,"%d",u8_loglevel),1);
+  if (stop_file) u8_setenv("U8_STOPFILE",stop_file,1);
+  if (done_file) u8_setenv("U8_DONEFILE",done_file,1);
+  if (run_dir)   u8_setenv("U8_RUNDIR",run_dir,1);
+  if (log_dir)   u8_setenv("U8_LOGDIR",log_dir,1);
+  if (log_file)  u8_setenv("U8_LOGFILE",log_file,1);
+
   u8_string restart_val = xgetenv("U8RESTART","RESTART");
   if (restart_val==NULL) {}
   else if ( (strcasecmp(restart_val,"never")==0) ||

@@ -195,6 +195,7 @@ U8_EXPORT void u8_identify_application(u8_string newid)
 
 U8_EXPORT u8_string u8_appid()
 {
+  if (appid == NULL) appid = u8_getenv("U8_JOBID");
   return appid;
 }
 
@@ -1057,7 +1058,7 @@ U8_EXPORT void u8_free_list(u8_memlist lst)
 
 /* Initialization */
 
-U8_EXPORT void u8_initialize_logging(void);
+U8_EXPORT void u8_initialize_logging_c(void);
 U8_EXPORT void u8_initialize_threading(void);
 
 U8_EXPORT int u8_initialize()
@@ -1081,7 +1082,7 @@ U8_EXPORT int u8_initialize()
 
   u8_init_streamio_c();
   u8_init_contour_c();
-  u8_initialize_logging();
+  u8_initialize_logging_c();
   u8_init_ctype_c();
   u8_init_stringfns_c();
   u8_init_bytebuf_c();

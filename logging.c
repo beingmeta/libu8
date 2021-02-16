@@ -17,6 +17,8 @@
 #include "libu8/libu8.h"
 #include "libu8/u8elapsed.h"
 
+#include <ctype.h>
+
 #ifndef _FILEINFO
 #define _FILEINFO __FILE__
 #endif
@@ -89,6 +91,43 @@ U8_EXPORT int u8_default_logger(int loglevel,u8_condition c,u8_string message);
 static u8_log_callback logger=NULL;
 static void *logger_data=NULL;
 
+#define strmatch(s,v) (strcasecmp(s,v)==0)
+
+U8_EXPORT int u8_get_loglevel(u8_string spec)
+{
+  if (spec == NULL) return -1;
+  else if (isdigit(spec[0]))
+    return strtol(spec,NULL,10);
+  else if (strncasecmp(spec,"log_",4)==0)
+    spec=spec+4;
+  else NO_ELSE;
+  if ( (strmatch(spec,"swamp")) || (strmatch(spec,"deluge")) ||
+       (strmatch(spec,"verydetailed")) )
+    return 9;
+  else if ( (strmatch(spec,"details")) || (strmatch(spec,"detail")) ||
+            (strmatch(spec,"detailed")) )
+    return 8;
+  else if ( (strmatch(spec,"dbg")) || (strmatch(spec,"debug")) )
+    return 7;
+  else if ( (strmatch(spec,"info")) || (strmatch(spec,"status")) ||
+            (strmatch(spec,"information")) )
+    return 6;
+  else if ( (strmatch(spec,"notice")) || (strmatch(spec,"notify")) )
+    return 5;
+  else if ( (strmatch(spec,"warning")) || (strmatch(spec,"warn")) )
+    return 4;
+  else if ( (strmatch(spec,"error")) || (strmatch(spec,"err")) )
+    return 3;
+  else if ( (strmatch(spec,"critical")) || (strmatch(spec,"crit")) ||
+            (strmatch(spec,"danger")) )
+    return 2;
+  else if  ( (strmatch(spec,"alert")) || (strmatch(spec,"attention")) )
+    return 1;
+  else if  ( (strmatch(spec,"panic")) || (strmatch(spec,"emerg")) ||
+             (strmatch(spec,"emergency")) )
+    return 0;
+}
+
 #if U8_WITH_STDIO
 static void do_output(FILE *out,u8_string prefix,
 		      u8_string level,u8_condition c,
@@ -133,7 +172,7 @@ U8_EXPORT int u8_default_logger(int priority,u8_condition c,u8_string message)
     fflush(stdout);
     return 1;}
   if (epriority<=u8_stderr_loglevel)
-    do_output(stdout,prefix,level,c,indented);
+    do_output(stderr,prefix,level,c,indented);
   if ((indented)&&(indented!=message)) u8_free(indented);
   return 0;
 }
@@ -254,42 +293,42 @@ U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen)
   return buf;
 }
 
-/* Using syslog if it's there */
+static u8_mutex logger_init_lock;
+int u8_logger_initialized=0;
 
-#if HAVE_SYSLOG
-static u8_mutex logging_init_lock;
+static int logging_c_initialized=0;
 
-int u8_logging_initialized=0;
-
-U8_EXPORT void u8_initialize_logging()
+U8_EXPORT void u8_initialize_logging_c()
 {
-  u8_string app;
-
-  u8_lock_mutex(&logging_init_lock);
-
-  if (u8_logging_initialized) {
-    u8_unlock_mutex(&logging_init_lock);
-    return;}
-
-  app=u8_appid();
-  openlog(app,LOG_PID|LOG_CONS|LOG_NDELAY|LOG_PERROR,LOG_DAEMON);
-
+  if (logging_c_initialized>0) return;
+  else logging_c_initialized=1;
+  u8_init_mutex(&logger_init_lock);
 #if ((U8_THREADS_ENABLED) && (U8_USE_TLS))
   u8_new_threadkey(&u8_log_context_key,NULL);
 #endif
 
-  u8_logging_initialized=1;
-  u8_unlock_mutex(&logging_init_lock);
+  if (getenv("U8_LOGLEVEL")) {
+    u8_string spec = u8_getenv("U8_LOGLEVEL");
+    int loglevel = u8_get_loglevel(spec);
+    if (loglevel>0) u8_loglevel = loglevel;}
+
   u8_register_source_file(_FILEINFO);
 }
-#else
-U8_EXPORT void u8_initialize_logging()
+
+U8_EXPORT void u8_init_logger()
 {
-  if (u8_logging_initialized) return;
-  u8_logging_initialized=1;
-  u8_register_source_file(_FILEINFO);
-}
+  u8_lock_mutex(&logger_init_lock);
+  if (u8_logger_initialized) {
+    u8_unlock_mutex(&logger_init_lock);
+    return;}
+  else u8_logger_initialized=1;
+
+#if HAVE_SYSLOG
+  u8_string app=u8_appid();
+  openlog(app,LOG_PID|LOG_CONS|LOG_NDELAY|LOG_PERROR,LOG_DAEMON);
 #endif
+  u8_unlock_mutex(&logger_init_lock);
+}
 
 /* Emacs local variables
    ;;;  Local variables: ***

@@ -190,7 +190,10 @@ u8_int4 u8_hashptrval(void *ptr,int n_bits)
 /** Initializes logging
     @returns void
 **/
-U8_EXPORT void u8_initialize_logging(void);
+U8_EXPORT void u8_init_logger(void);
+
+U8_EXPORT int u8_logger_initialized, u8_using_syslog;
+#define U8_INIT_LOGGER() if (u8_logger_initialized>0) u8_init_logger();
 
 U8_EXPORT time_t u8_start_tick;
 
