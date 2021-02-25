@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_U8SOURCEFILES_H
@@ -21,9 +22,9 @@
 
 /** struct U8_SOURCE_FILE_RECORDS
 
-    records source file information for an application.  Source file
+    records source file information for an application.	 Source file
     initializations can call `u8_register_source_file` to register a
-    particular source file for use in diagnosis and debugging.  The
+    particular source file for use in diagnosis and debugging.	The
     argument can be provided by pre-processor macros file _FILE_ or
     other constructions. The best practice is to use a string which
     contains additional identifying information such as an SHA1 hash

@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_U8LOGGING_H
@@ -19,42 +20,42 @@
 
 /** \file u8logging.h
     These functions provide various ways of logging program events.
- **/
+**/
 
 #if HAVE_SYSLOG
 #include <syslog.h>
 #endif
 
 #ifndef LOG_EMERG
-#define LOG_EMERG       0       /* system is unusable */
+#define LOG_EMERG	0	/* system is unusable */
 #endif
 
 #ifndef LOG_ALERT
-#define LOG_ALERT       1       /* action must be taken immediately */
+#define LOG_ALERT	1	/* action must be taken immediately */
 #endif
 
 #ifndef LOG_CRIT
-#define LOG_CRIT        2       /* critical conditions */
+#define LOG_CRIT	2	/* critical conditions */
 #endif
 
 #ifndef LOG_ERR
-#define LOG_ERR         3       /* error conditions */
+#define LOG_ERR		3	/* error conditions */
 #endif
 
 #ifndef LOG_WARNING
-#define LOG_WARNING     4       /* warning conditions */
+#define LOG_WARNING	4	/* warning conditions */
 #endif
 
 #ifndef LOG_NOTICE
-#define LOG_NOTICE      5       /* normal but significant condition */
+#define LOG_NOTICE	5	/* normal but significant condition */
 #endif
 
 #ifndef LOG_INFO
-#define LOG_INFO        6       /* informational */
+#define LOG_INFO	6	/* informational */
 #endif
 
 #ifndef LOG_DEBUG
-#define LOG_DEBUG       7       /* debug-level messages */
+#define LOG_DEBUG	7	/* debug-level messages */
 #endif
 
 /* Our own little additions */
@@ -188,102 +189,102 @@ typedef int (*u8_log_callback)(int loglevel,u8_condition condition,
 U8_EXPORT void u8_bind_logfn(u8_logfn f);
 
 /** Possibly generates a log message for an (optional) condition.
-     Whether and where this produces output depends on how the
-      program is linked and configured.
-   @param priority an (int [-1,7]) priority level
-   @param c a string describing the condition (possibly NULL)
-   @param message the content of the message to be emmited
-   @returns 1 if the call actually produced output somewhere
+    Whether and where this produces output depends on how the
+    program is linked and configured.
+    @param priority an (int [-1,7]) priority level
+    @param c a string describing the condition (possibly NULL)
+    @param message the content of the message to be emmited
+    @returns 1 if the call actually produced output somewhere
 **/
 U8_EXPORT int u8_logger(int priority,u8_condition c,u8_string message);
 
 /** Possibly formats a log message for an (optional) condition.
-     Whether and where this produces output depends on how the
-      program is linked and configured.
-   @param priority an (int [-1,7]) priority level
-   @param c a string describing the condition (possibly NULL)
-   @param format_string a utf-8 printf-like format string
-   @param ... arguments for the format string
-   @returns 1 if the call actually produced output somewhere
+    Whether and where this produces output depends on how the
+    program is linked and configured.
+    @param priority an (int [-1,7]) priority level
+    @param c a string describing the condition (possibly NULL)
+    @param format_string a utf-8 printf-like format string
+    @param ... arguments for the format string
+    @returns 1 if the call actually produced output somewhere
 **/
 U8_EXPORT int u8_log(int priority,u8_condition c,u8_string format_string,...);
 U8_EXPORT int u8_message(u8_string format_string,...);
 
-/** Possibly formats a log message for an (optional) condition.  This
-     macro uses u8_log so the destination of any output will depend on
-     how the program is linked and configured. This macro uses the CPP
-     definition of U8_LOGLEVEL to determine whether to call
-     u8_log(). To specify a log level setting in a C file, define
-     U8_LOGLEVEL to an expression to be used as the current loglevel.
-   @param priority an (int [-1,7]) priority level
-   @param condition a string describing the condition (possibly NULL)
-   @param format_string a utf-8 printf-like format string
-   @param ... arguments for the format string
-   @returns 1 if the call actually produced output somewhere
+/** Possibly formats a log message for an (optional) condition.	 This
+    macro uses u8_log so the destination of any output will depend on
+    how the program is linked and configured. This macro uses the CPP
+    definition of U8_LOGLEVEL to determine whether to call
+    u8_log(). To specify a log level setting in a C file, define
+    U8_LOGLEVEL to an expression to be used as the current loglevel.
+    @param priority an (int [-1,7]) priority level
+    @param condition a string describing the condition (possibly NULL)
+    @param format_string a utf-8 printf-like format string
+    @param ... arguments for the format string
+    @returns 1 if the call actually produced output somewhere
 **/
-#define u8_logf(priority,condition,format_string,...) \
-  ( ( (priority) <= U8_LOGLEVEL ) ? \
+#define u8_logf(priority,condition,format_string,...)		   \
+  ( ( (priority) <= U8_LOGLEVEL ) ?				   \
     (u8_log(-(priority),condition,format_string, ##__VA_ARGS__)) : \
     (0) )
 
 /** A macro which expands int a loglevel defaulting to u8_loglevel.
-   @param level an integer describing a loglevel or -1
-   @returns the loglevel to use, which is u8_loglevel if the argument is <= 0
+    @param level an integer describing a loglevel or -1
+    @returns the loglevel to use, which is u8_loglevel if the argument is <= 0
 **/
 #define u8_getloglevel(level) ( ( (level) > 0) ? (level) : (u8_loglevel) )
-#define u8_merge_loglevels(local,module) \
+#define u8_merge_loglevels(local,module)				\
   ( ( (local) > 0) ? (local) : (module > 0) ? (module) : (u8_loglevel) )
 
 /** Sets the function used for log messages
-   @param logfn
-   @returns the previous logfn
+    @param logfn
+    @returns the previous logfn
 **/
 U8_EXPORT u8_logfn u8_set_logfn(u8_logfn logfn);
 
 /** Sets the function and data arg used for log messages
-   @param logfn a function for handling log messages
-   @param logdata void * data pointr to pass the *logfn*
-   @returns the previous logger
+    @param logfn a function for handling log messages
+    @param logdata void * data pointr to pass the *logfn*
+    @returns the previous logger
 **/
 U8_EXPORT u8_log_callback u8_set_logger(u8_log_callback logfn,void* logdata);
 
 /** Sets the prefix and suffix string for non-syslog log messages
-   @param prefix
-   @param suffix
-   @returns void
+    @param prefix
+    @param suffix
+    @returns void
 **/
 U8_EXPORT void u8_set_logixes(u8_string prefix, u8_string suffix);
 
 /** Sets the indentation string for log messages
-   @param indent a string to be used as the indentation for log messages
-   @returns void
+    @param indent a string to be used as the indentation for log messages
+    @returns void
 **/
 U8_EXPORT void u8_set_logindent(u8_string indent);
 
 /** Generates a message prefix into the given buffer,
-     with output including process information controlled
-     by the various u8_log_show variables.
+    with output including process information controlled
+    by the various u8_log_show variables.
     If buflen doesn't allow all the information to be shown,
-     some information may be removed.
-   @param buf a byte buffer in which to compose the prefix
-   @param buflen the number of bytes in the buffer
-   @returns a pointer to the buffer it was given, filled
-      with context information and null terminated.
+    some information may be removed.
+    @param buf a byte buffer in which to compose the prefix
+    @param buflen the number of bytes in the buffer
+    @returns a pointer to the buffer it was given, filled
+    with context information and null terminated.
 **/
 U8_EXPORT u8_string u8_message_prefix(u8_byte *buf,int buflen);
 
 /** Formats and outputs a string using syslog and the given priority level.
-     This does its output if u8_loglevel is greater than 0.
-   @param priority an (int) priority level passed to syslog
-   @param format_string a utf-8 printf-like format string
-   @param ... arguments for the format string
-   @returns void
+    This does its output if u8_loglevel is greater than 0.
+    @param priority an (int) priority level passed to syslog
+    @param format_string a utf-8 printf-like format string
+    @param ... arguments for the format string
+    @returns void
 **/
 U8_EXPORT void u8_syslog(int priority,u8_string format_string,...);
 
 /** Control whether syslog is used together with stdio output.
-     If flag is 1, syslog is used for notifications and warnings, together
-      with the stderr.
+    If flag is 1, syslog is used for notifications and warnings, together
+    with the stderr.
     @param flag int
 **/
 U8_EXPORT void u8_use_syslog(int flag);
@@ -298,8 +299,8 @@ U8_EXPORT void u8_use_syslog(int flag);
 U8_EXPORT void u8_log_break(int loglevel,u8_condition c);
 
 /** Returns a numeric loglevel from a string argument
-   @param spec a string specifying either an integer or a named loglevel
-   @returns an int loglevel > 0
+    @param spec a string specifying either an integer or a named loglevel
+    @returns an int loglevel > 0
 **/
 U8_EXPORT int u8_get_loglevel(u8_string spec);
 
@@ -308,7 +309,7 @@ U8_EXPORT int u8_get_loglevel(u8_string spec);
 #if (U8_USE_TLS)
 U8_EXPORT u8_tld_key u8_log_context_key;
 #define u8_log_context ((u8_string)(u8_tld_get(u8_log_context_key)))
-#define u8_set_log_context(cxt) \
+#define u8_set_log_context(cxt)			\
   u8_tld_set(u8_log_context_key,((void *)cxt))
 #elif (U8_USE__THREAD)
 U8_EXPORT __thread u8_string u8_log_context;

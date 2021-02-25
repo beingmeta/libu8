@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_U8SUBSCRIBE_H
@@ -25,7 +26,7 @@ typedef struct U8_SUBSCRIPTION {
   time_t mtime; /* the modification of the time when last processes */
   /* function to call when the subscription needs to be renewed. */
   int (*callback)(u8_string,void *);
- /* the subscription data passed to the callback function */
+  /* the subscription data passed to the callback function */
   void *callback_data;
   /* the next node in the subscription table */
   struct U8_SUBSCRIPTION *next;}
@@ -44,15 +45,15 @@ typedef struct U8_SUBSCRIPTION *u8_subscription;
     @returns a pointer to a U8_SUBSCRIPTION struct
 **/
 U8_EXPORT u8_subscription u8_subscribe
-  (u8_string filename,int (*fn)(u8_string,void *),void *data);
+(u8_string filename,int (*fn)(u8_string,void *),void *data);
 
 /** Calls a function on a file if it has changed.
     Renews a subscription created by u8_subscribe, calling
     the associated function if the corresponding file has
     changed.
     Returns -1 if the modification time can't be determined,
-     0 if the file hasn't changed, and the return value
-     of the subscription function otherwise.
+    0 if the file hasn't changed, and the return value
+    of the subscription function otherwise.
     @param s a u8_subscription
     @returns int
 **/

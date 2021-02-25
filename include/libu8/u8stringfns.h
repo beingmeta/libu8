@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_U8STRINGFNS_H
@@ -20,8 +21,8 @@
 /** \file u8stringfns.h
     These functions provide utilities over UTF-8 strings.
     Many of these work generically over NUL-terminated strings
-     but some are particular to UTF-8.
- **/
+    but some are particular to UTF-8.
+**/
 
 U8_EXPORT u8_condition u8_NullString;
 U8_EXPORT u8_condition u8_UnexpectedEOD, u8_BadUNGETC, u8_NoZeroStreams;
@@ -45,14 +46,14 @@ U8_EXPORT void u8_utf8_warning(u8_condition message,
 /** Returns an uppercase version of a UTF-8 string.
     @param string a UTF-8 string
     @returns a UTF-8 string with all lowercase characters
-      converted to uppercase.
+    converted to uppercase.
 **/
 U8_EXPORT u8_string u8_upcase(u8_string string);
 
 /** Returns a lowercase version of a UTF-8 string.
     @param string a UTF-8 string
     @returns a UTF-8 string with all uppercase characters
-      converted to lowercase.
+    converted to lowercase.
 **/
 U8_EXPORT u8_string u8_downcase(u8_string string);
 
@@ -96,10 +97,10 @@ U8_EXPORT u8_string u8_strchrs(u8_string haystack,u8_string needles,int order);
 /** Searches for a character in a string
     @param string a UTF-8 string
     @param ch a char
-    @param n which match to return, use n<0 to match from the end, 
-           n=0 is the same as n=1
+    @param n which match to return, use n<0 to match from the end,
+    n=0 is the same as n=1
     @returns a substring of 'string' or NULL
-    
+
 **/
 U8_EXPORT u8_string u8_strchr(u8_string string,int ch,int n);
 
@@ -111,7 +112,7 @@ U8_EXPORT u8_string u8_strchr(u8_string string,int ch,int n);
 
     This returns a place in 'string' where any of the strings in
     'strings' occurs; order determines which match is returned (when
-    there are several).  If order is 0, priority is based on the order
+    there are several).	 If order is 0, priority is based on the order
     of the strings in 'strings', otherwise, priority is based on the
     earliest match occurs in the searched 'string'.
 
@@ -150,7 +151,7 @@ U8_EXPORT u8_string u8_strcasebasestr(u8_string haystack,u8_string needle);
     @param haystack a UTF-8 string
     @param needle a string
     @param direction indicates which match to return, use n<0 to match
-           from the end, n=0 is the same as n=1
+    from the end, n=0 is the same as n=1
     @returns a substring of 'string' or NULL
 
 **/
@@ -174,7 +175,7 @@ U8_EXPORT char *u8_itoa10(long long int n,char buf[32]);
    @param val the signed integer value to write to the buffer
    @param buf a character buffer to place the representation
    @param buflen the size of the character buffer
- */
+*/
 U8_EXPORT char *u8_write_long_long(long long l,char *buf,size_t buflen);
 
 /** Generates a base-ten representation of a long long int
@@ -207,7 +208,7 @@ U8_EXPORT char *u8_uitoa16(unsigned long long int n,char buf[32]);
 /** Returns a decomposed version of a UTF-8 string.
     @param string a UTF-8 string
     @returns a UTF-8 string with all composed characters
-      broken down
+    broken down
 **/
 U8_EXPORT u8_string u8_decompose(u8_string string);
 
@@ -225,7 +226,7 @@ U8_EXPORT u8_string u8_string_append(u8_string first_string,...);
     this does not do any UTF-8 normalization.
 **/
 U8_EXPORT u8_string u8_string_subst
-   (u8_string input,u8_string key,u8_string replace);
+(u8_string input,u8_string key,u8_string replace);
 
 /** Extracts and copies a substring of a UTF-8 string.
     @param start a pointer into a UTF-8 string
@@ -238,14 +239,14 @@ U8_EXPORT u8_string u8_slice(const u8_byte *start,const u8_byte *end);
     This counts the number of unicode codepoints, so combining
     characters are counted as separate characters.
     This assumes that the string is NUL terminated; to count characters
-     given a particular end pointer use u8_strlen_x()
+    given a particular end pointer use u8_strlen_x()
     @param string a UTF-8 string
     @returns the number of characters (codepoints) in the string
 **/
 U8_EXPORT size_t u8_strlen(u8_string string);
 
 /** Returns the number of bytes in a UTF-8 string.  This is just
-     an alias for the C library function strlen();
+    an alias for the C library function strlen();
     @param string a UTF-8 string
     @returns the number of bytes in the string
 **/
@@ -318,7 +319,7 @@ U8_EXPORT u8_string u8_convert_crlfs(u8_string s);
     @param input an original string, possibly with newlines
     @param indent the indent string
     @returns a copy of the original string with the indent string
-      inserted before every '\n'
+    inserted before every '\n'
 **/
 U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent);
 
@@ -335,10 +336,10 @@ U8_EXPORT char *u8_grab_bytes(u8_string s,int n,char *buf);
     char.
 
     @param dest a pointer to character buffer of at least *size* bytes
-    @param src  a pointer to a valid UTF-8 string
+    @param src	a pointer to a valid UTF-8 string
     @param n a number of bytes to copy
-    @returns the buffer *dest* populated with a valid null-terminated 
-      UTF-8 string copied from *src*
+    @returns the buffer *dest* populated with a valid null-terminated
+    UTF-8 string copied from *src*
 **/
 U8_EXPORT u8_buf u8_strncpy(u8_buf dest,u8_string src,size_t n);
 

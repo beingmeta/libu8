@@ -1,24 +1,25 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 /** \file u8ctype.h
     These functions and macros interrogate and transform unicode points.
     They include standard character predicates (u8_isspace, u8_ispunct, etc)
-     as well as function/macros for changing case and converting to and from
-     XML character entities.
- **/
+    as well as function/macros for changing case and converting to and from
+    XML character entities.
+**/
 
 #ifndef LIBU8_CTYPE_H
 #define LIBU8_CTYPE_H 1
@@ -45,16 +46,16 @@ U8_EXPORT const unsigned char *u8_charinfo;
 U8_EXPORT const short *u8_chardata;
 
 /** struct U8_DECOMPOSITION
-     indicates a mapping between a single Unicode codepoint
-     and an equivalent Unicode sequence.
+    indicates a mapping between a single Unicode codepoint
+    and an equivalent Unicode sequence.
 **/
 typedef struct U8_DECOMPOSITION {
   int code; u8_string decomp;} U8_DECOMPOSITION;
 typedef struct U8_DECOMPOSITION *u8_decomposition;
 
 /** struct U8_CHARINFO_TABLE
-     is used to store additional character info not provided
-     by the statically defined tables.
+    is used to store additional character info not provided
+    by the statically defined tables.
 **/
 U8_EXPORT const struct U8_CHARINFO_TABLE {
   unsigned int code_start, code_end;
@@ -67,11 +68,11 @@ U8_EXPORT int u8_lookup_chardata(int c);
 U8_EXPORT u8_string u8_decompose_char(unsigned int ch);
 U8_EXPORT int u8_base_char(unsigned int ch);
 
-#define u8_getcharinfo(c) \
-  ((c<u8_charinfo_size) ? \
+#define u8_getcharinfo(c)					\
+  ((c<u8_charinfo_size) ?					\
    ((c%2) ? (u8_charinfo[c/2]&0xF) : ((u8_charinfo[c/2])>>4)) : \
-    (u8_lookup_charinfo(c)))
-#define u8_getchardata(c) \
+   (u8_lookup_charinfo(c)))
+#define u8_getchardata(c)						\
   ((c<u8_charinfo_size) ? (u8_chardata[c]) : (u8_lookup_chardata(c)))
 
 /** Returns 1 if its argument is an alphabetic unicode point. **/
@@ -79,8 +80,8 @@ U8_EXPORT int u8_base_char(unsigned int ch);
 /** Returns 1 if its argument is a lower-case alphabetic unicode point. **/
 #define u8_islower(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_LOWER_LETTER))
 /** Returns 1 if its argument is an upper-case alphabetic unicode point. **/
-#define u8_isupper(c) \
-  ((c>=0) && \
+#define u8_isupper(c)				\
+  ((c>=0) &&					\
    (((u8_getcharinfo(c)) == U8_UPPER_LETTER) || \
     ((u8_getcharinfo(c)) == U8_TITLE_LETTER)))
 /** Returns 1 if its argument is modifier unicode point. **/
@@ -88,31 +89,31 @@ U8_EXPORT int u8_base_char(unsigned int ch);
 /** Returns 1 if its argument is numeric digit unicode point. **/
 #define u8_isdigit(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_NUMBER))
 /** Returns 1 if its argument is a punctuation character. **/
-#define u8_ispunct(c)                                \
-  ((c>=0) &&                                         \
+#define u8_ispunct(c)				     \
+  ((c>=0) &&					     \
    (((u8_getcharinfo(c)) == U8_GLUE_PUNCTUATION)  || \
     ((u8_getcharinfo(c)) == U8_BREAK_PUNCTUATION) || \
-    ((u8_getcharinfo(c)) == U8_SYMBOL)            || \
+    ((u8_getcharinfo(c)) == U8_SYMBOL)		  || \
     ((u8_getcharinfo(c)) == U8_MARK)))
 /** Returns 1 if its argument is a printing character (letter,digit,punct) **/
-#define u8_isprint(c)                                \
-  ((c>=0) &&                                         \
-   ((u8_isalpha(c))                               || \
-    (u8_isdigit(c))                               || \
+#define u8_isprint(c)				     \
+  ((c>=0) &&					     \
+   ((u8_isalpha(c))				  || \
+    (u8_isdigit(c))				  || \
     ((u8_getcharinfo(c)) == U8_GLUE_PUNCTUATION)  || \
     ((u8_getcharinfo(c)) == U8_BREAK_PUNCTUATION) || \
-    ((u8_getcharinfo(c)) == U8_SYMBOL) ||            \
+    ((u8_getcharinfo(c)) == U8_SYMBOL) ||	     \
     ((u8_getcharinfo(c)) == U8_MARK)))
 /** Returns 1 if its argument is whitespace unicode point. **/
 #define u8_isspace(c) ((c>=0) && ((u8_getcharinfo(c)) == U8_SEPARATOR))
 /** Returns 1 if its argument is horizontal whitespace unicode point. **/
-#define u8_ishspace(c)                            \
-  ((c>=0) &&                                      \
+#define u8_ishspace(c)				    \
+  ((c>=0) &&					    \
    ((c==' ')||(c=='\t')||(c==0x1680)||(c==0x180e)|| \
     ((c>=0x2000)&&(c<0x200b))))
 /** Returns 1 if its argument is horizontal whitespace unicode point. **/
-#define u8_isvspace(c)                            \
-  ((c>=0) &&                                      \
+#define u8_isvspace(c)				  \
+  ((c>=0) &&					  \
    ((c=='\n')||(c=='\r')||(c==0x0c)||(c==0x0b)||  \
     (c==0x1C)||(c==0x1D)||(c==0x1E)||(c==0x1F)||  \
     (c==0x85)||(c==0x2029)))
@@ -126,15 +127,15 @@ U8_EXPORT int u8_base_char(unsigned int ch);
 #define u8_isodigit(c) ((c>=0) && ((c<128) && (isdigit(c)) && (c<'8')))
 
 /* Returns 1 if its argument is a combining code point */
-#define u8_iscombining(c) \
-  ( ((c>-0x300) && (c<=0x036f))  ||		\
+#define u8_iscombining(c)			\
+  ( ((c>-0x300) && (c<=0x036f))	 ||		\
     ((c>=0x1AB0) && (c<=0x1AFF)) ||		\
-    ((c>=0x1DC0) && (c<=)x1DFF)  ||		\
+    ((c>=0x1DC0) && (c<=)x1DFF)	 ||		\
     ((c>=0X20D0) && (c<=0x20FF)) ||		\
     ((c>=0xFE20) && (c<=0xFE2F)) )
 
 
-typedef unsigned int _uint;
+  typedef unsigned int _uint;
 
 /** Returns a non-lowercase version of a unicode code point.  **/
 #define u8_toupper(c)		\
@@ -176,12 +177,12 @@ U8_EXPORT u8_string u8_code2entity(int code);
 
 /** Parses a unicode entity name from a string, recording the endpoint.
     This is handed a pointer to a UTF-8 string (@a entity) just
-      after the entity escape character ampersand ('&').
+    after the entity escape character ampersand ('&').
     It parses an entity name, returning the
-     corresponding code and storing the end of the entity (after the
-     trailing semicolon (';')) in @a endp.  If @a endp is NULL,
-     the end result is not stored.  If the string does not point to
-     a valid entity reference, -1 is returned.
+    corresponding code and storing the end of the entity (after the
+    trailing semicolon (';')) in @a endp.  If @a endp is NULL,
+    the end result is not stored.  If the string does not point to
+    a valid entity reference, -1 is returned.
     @param entity a pointer into a UTF-8 string
     @param endp a pointer to a location to store the end of the entity
     @returns a unicode code point
@@ -191,11 +192,11 @@ U8_EXPORT int u8_parse_entity(const u8_byte *entity,u8_string *endp);
 /** Parses a unicode entity name from a string, recording the endpoint.
     This version sets an error when an entity cannot be processed.
     This is handed a pointer to a UTF-8 string (@a entity) just
-      after the entity escape character ampersand ('&').
+    after the entity escape character ampersand ('&').
     It parses an entity name, returning the
-     corresponding code and storing the end of the entity (after the
-     trailing semicolon (';')) in @a endp.  If @a endp is NULL,
-     the end result is not stored.
+    corresponding code and storing the end of the entity (after the
+    trailing semicolon (';')) in @a endp.  If @a endp is NULL,
+    the end result is not stored.
     @param entity a pointer into a UTF-8 string
     @param endp a pointer to a location to store the end of the entity
     @returns a unicode code point

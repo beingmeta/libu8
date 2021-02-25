@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_U8TIMESTRINGS_H
@@ -32,8 +33,8 @@ U8_EXPORT time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xt);
     @param xt a pointer to a U8_XTIME structure.
     @returns void
 
-This takes xtime pointer and outputs an ISO8601 representation of it,
-obeying the precision of the XTIME structure
+    This takes xtime pointer and outputs an ISO8601 representation of it,
+    obeying the precision of the XTIME structure
 **/
 U8_EXPORT void u8_xtime_to_iso8601(struct U8_OUTPUT *ss,struct U8_XTIME *xt);
 
@@ -43,11 +44,11 @@ U8_EXPORT void u8_xtime_to_iso8601(struct U8_OUTPUT *ss,struct U8_XTIME *xt);
     @param flags an int ORing together various display options
     @returns void
 
-The flags arg provides display options, which can be ORd together:
-  U8_ISO8601_BASIC:   use the more compact BASIC format)
-  U8_ISO8601_NOZONE:  don't show the timezone information
-  U8_ISO8601_NOMSECS: don't show milli/micro/nano seconds
-  U8_ISO8601_UTC:     display time as UTC
+    The flags arg provides display options, which can be ORd together:
+    U8_ISO8601_BASIC:	use the more compact BASIC format)
+    U8_ISO8601_NOZONE:	don't show the timezone information
+    U8_ISO8601_NOMSECS: don't show milli/micro/nano seconds
+    U8_ISO8601_UTC:	display time as UTC
 **/
 U8_EXPORT void u8_xtime_to_iso8601_x(struct U8_OUTPUT *ss,struct U8_XTIME *xt,int flags);
 
@@ -79,7 +80,7 @@ U8_EXPORT void u8_xtime_to_rfc822_x(struct U8_OUTPUT *ss,struct U8_XTIME *xt,int
     unambigous timezone codes.
     @param s a UTF-8 character string
     @param dflt an integer value used as a default if a valid offset
-             cannot be determined
+    cannot be determined
     @returns an int representing seconds offset from GMT
 **/
 U8_EXPORT int u8_parse_tzspec(u8_string s,int dflt);

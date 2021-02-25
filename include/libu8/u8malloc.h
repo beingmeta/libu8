@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_U8MALLOC_H
@@ -97,7 +98,7 @@ U8_INLINE_FCN void _u8_free(void *ptr)
 #define u8_alloc_n(n,t) ((t *)(u8_malloc_n(n,sizeof(t))))
 #define u8_realloc_n(ptr,n,t) ((t *)(u8_realloc(ptr,sizeof(t)*(n))))
 
-#define u8_malloc_struct(sname) \
+#define u8_malloc_struct(sname)				\
   ((struct sname *)(u8_zmalloc(sizeof(struct sname))))
 #define u8_malloc_array(n,t) ((t *)(u8_malloc(n*sizeof(t))))
 
@@ -107,11 +108,11 @@ U8_EXPORT void u8_raise(u8_condition,u8_context,u8_string);
 
 /** Allocates and zero-clears a block of memory.
     This raises the condition u8_MallocFailed (using u8_raise) if
-     it fails. The caller argument 
-   @param n_bytes the number of bytes to allocate
-   @param caller a u8_context (static) string identifying 
-      the caller for use if the allocation fails
-   @returns void *
+    it fails. The caller argument
+    @param n_bytes the number of bytes to allocate
+    @param caller a u8_context (static) string identifying
+    the caller for use if the allocation fails
+    @returns void *
 **/
 static U8_MALLOCFN U8_MAYBE_UNUSED
 void *u8_alloc_throw(size_t n_bytes,u8_context caller)
@@ -127,35 +128,35 @@ void *u8_alloc_throw(size_t n_bytes,u8_context caller)
 #define u8_zalloc(typename) u8_zmalloc(sizeof(typename))
 #define u8_zalloc_n(n,typename) u8_zmalloc_n(n,sizeof(typename))
 
-#define u8_zalloc_for(caller,typename) \
+#define u8_zalloc_for(caller,typename)		\
   u8_zalloc_bytes(sizeof(typename),caller)
-#define u8_zalloc_n_for(caller,n,typename) \
+#define u8_zalloc_n_for(caller,n,typename)		\
   u8_zalloc_bytes(((n)*(sizeof(typename))),caller)
 
-#define u8_zalloc_struct(sname) \
+#define u8_zalloc_struct(sname)						\
   ((struct sname *)(u8_zalloc_bytes(sizeof(struct sname),NULL)))
-#define u8_zalloc_struct_for(sname,caller) \
+#define u8_zalloc_struct_for(sname,caller)				\
   ((struct sname *)(u8_zalloc_bytes(sizeof(struct sname),(caller))))
 
 #define u8_zalloc_array(n,t)			\
   ((t *)(u8_zalloc_bytes((n*sizeof(t)),NULL)))
-#define u8_zalloc_array_for(n,t,caller)		\
+#define u8_zalloc_array_for(n,t,caller)			\
   ((t *)(u8_zalloc_bytes((n*sizeof(t)),caller)))
 
 /** Reallocates a block of memory, zero clearing any new parts
-   @param ptr a previously allocated (with malloc) block of memory
-   @param sz the number of bytes to allocate
-   @param osz the previous number of bytes, needed to know how much
-     to zero out
-   @returns void *
+    @param ptr a previously allocated (with malloc) block of memory
+    @param sz the number of bytes to allocate
+    @param osz the previous number of bytes, needed to know how much
+    to zero out
+    @returns void *
 **/
 U8_EXPORT void *u8_zrealloc(void *ptr,size_t sz,size_t osz);
 
 /** Copies a block of memory into a larger block, zero clearing any new parts
-   @param ptr an existing block of memory
-   @param sz the number of bytes to allocate
-   @param osz the number of bytes currently allocated at the location
-   @returns void *
+    @param ptr an existing block of memory
+    @param sz the number of bytes to allocate
+    @param osz the number of bytes currently allocated at the location
+    @returns void *
 **/
 U8_EXPORT void *u8_extalloc(void *ptr,size_t sz,size_t osz);
 

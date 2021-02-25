@@ -1,22 +1,23 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 /** \file u8contour.h
     These declarations and macros support dynamic execution contexts
-     for use in exception handling, memory de/allocation, etc.
- **/
+    for use in exception handling, memory de/allocation, etc.
+**/
 
 #ifndef LIBU8_U8CONTOUR_H
 #define LIBU8_U8CONTOUR_H 1
@@ -50,24 +51,24 @@ U8_EXPORT u8_condition u8_BadDynamicContour;
 #define U8_CONTOUR_BLOCKS_MALLOCD ((U8_CONTOUR_LABEL_MALLOCD)<<1)
 
 /* A contour is a dynamic context used for a variety of purposes
-     including exception handling, non-local exits, memory de/allocation,
-     debugging, etc.
+   including exception handling, non-local exits, memory de/allocation,
+   debugging, etc.
 
    All contours have the same initial set of fields defined by libu8.
    These fields are defined in the macro U8_CONTOUR_FIELDS for inclusion
-     in other contour structs.
+   in other contour structs.
 
    These include a label (u8_string, possibly NULL), flags (an unsigned int),
-     a jumpbuffer (for setjmp/longjmp), and a pointer to the containing
-     context, and information for cleanup.  The low 8 bits of the flags
-     specify the contour type (see above) which provides a name and a
-     pop function.  In addition, the default contour contains two queues
-     for locks and blocks (mutexes and malloc'd memory), each of which
-     has a length and a max.
+   a jumpbuffer (for setjmp/longjmp), and a pointer to the containing
+   context, and information for cleanup.  The low 8 bits of the flags
+   specify the contour type (see above) which provides a name and a
+   pop function.  In addition, the default contour contains two queues
+   for locks and blocks (mutexes and malloc'd memory), each of which
+   has a length and a max.
 */
 
 /* Maybe this should also have a queue of cleanup functions */
-#define U8_CONTOUR_FIELDS \
+#define U8_CONTOUR_FIELDS				     \
   const unsigned char *u8c_label;			     \
   unsigned int u8c_flags;				     \
   int u8c_depth;					     \
@@ -76,8 +77,8 @@ U8_EXPORT u8_condition u8_BadDynamicContour;
   union {						     \
     u8_exception exception;				     \
     u8_context context;} u8c_exinfo;			     \
-  u8_byte u8c_exdetails[256];                                \
-  struct U8_CONTOUR *u8c_outer_contour;                      \
+  u8_byte u8c_exdetails[256];				     \
+  struct U8_CONTOUR *u8c_outer_contour;			     \
   u8_contour_popfn u8c_popfn;				     \
   void *u8c_popdata
 
@@ -116,12 +117,12 @@ U8_EXPORT u8_contour u8_dynamic_contour;
 
 static U8_MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
 
-#define U8_WITHIN_CONTOUR \
+#define U8_WITHIN_CONTOUR				\
   u8_contour u8_static_contour=u8_dynamic_contour;
 
 /* Macros for creating dynamic contours */
 
-#define U8_WITH_CONTOUR(label,flags)                            \
+#define U8_WITH_CONTOUR(label,flags)				\
   struct U8_CONTOUR _u8_contour_struct = { 0 };			\
   struct U8_CONTOUR *_u8_contour=&_u8_contour_struct;		\
   U8_INIT_CONTOUR(_u8_contour,label,flags,NULL,NULL);		\
@@ -135,7 +136,7 @@ static U8_MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
   u8_push_contour(&(_u8_contour_struct));
 #define U8_UNWIND_PROTECT U8_WITH_CONTOUR
 
-#define U8_ON_EXCEPTION } else {             \
+#define U8_ON_EXCEPTION } else {					\
   if (_u8_contour->u8c_condition != NULL) {				\
     if ( (_u8_contour->u8c_flags) & (U8_CONTOUR_EXCEPTIONAL) )		\
       u8_expush(_u8_contour->u8c_exinfo.exception);			\
@@ -146,31 +147,31 @@ static U8_MAYBE_UNUSED const struct U8_CONTOUR *u8_static_contour=NULL;
 		    (NULL)));						\
     _u8_contour->u8c_condition=NULL;}					\
   else {}
-#define U8_END_EXCEPTION                                         \
+#define U8_END_EXCEPTION			\
   } u8_pop_contour(&_u8_contour_struct);
 
 #define U8_ON_UNWIND }							\
     if (_u8_contour->u8c_condition != NULL) {				\
-    if ( (_u8_contour->u8c_flags) & (U8_CONTOUR_EXCEPTIONAL) )		\
-      u8_expush(_u8_contour->u8c_exinfo.exception);			\
-    else u8_seterr(_u8_contour->u8c_condition,				\
-		   _u8_contour->u8c_exinfo.context,			\
-		   ((_u8_contour->u8c_exdetails[0]) ?			\
-		    (u8_strdup(_u8_contour->u8c_exdetails)) :		\
-		    (NULL)));						\
-    _u8_contour->u8c_condition=NULL;}
+      if ( (_u8_contour->u8c_flags) & (U8_CONTOUR_EXCEPTIONAL) )	\
+	u8_expush(_u8_contour->u8c_exinfo.exception);			\
+      else u8_seterr(_u8_contour->u8c_condition,			\
+		     _u8_contour->u8c_exinfo.context,			\
+		     ((_u8_contour->u8c_exdetails[0]) ?			\
+		      (u8_strdup(_u8_contour->u8c_exdetails)) :		\
+		      (NULL)));						\
+      _u8_contour->u8c_condition=NULL;}
 #define U8_END_UNWIND				\
   u8_pop_contour(&_u8_contour_struct);
 
-#define U8_CLEAR_CONTOUR()                             \
+#define U8_CLEAR_CONTOUR()				\
   _u8_contour->u8c_flags&=(~(U8_CONTOUR_EXCEPTIONAL));
 
-#define U8_LEAVE_CONTOUR() \
+#define U8_LEAVE_CONTOUR()			\
   u8_pop_contour(&_u8_contour_struct)
 /* Use this when returning from a block which creates a countour. */
 #define u8_return(x) ((u8_pop_contour(&_u8_contour_struct)),(x))
 /* Use this when returning a malloc'd block from within. */
-#define u8_return_block(x) \
+#define u8_return_block(x)						\
   ((u8_contour_release(x)),(u8_pop_contour(&_u8_contour_struct)),(x))
 
 /* Pushing and popping contours */
@@ -232,7 +233,7 @@ static void u8_throw_contour(u8_contour contour)
 #define u8_throw_contour(ctr) _u8_throw_contour(ctr)
 #endif
 
-#define u8_return_from(result,contour) \
+#define u8_return_from(result,contour)		\
   return ((u8_pop_contour(contour)),result)
 
 #endif /* LIBU8_U8CONTOUR_H */

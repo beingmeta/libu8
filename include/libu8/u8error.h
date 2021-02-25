@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_U8ERROR_H
@@ -32,7 +33,7 @@ U8_EXPORT u8_condition u8_MissingErrno;
     u8_log(LOG_WARN,u8_UnexpectedErrno,				\
 	   "At %s:%d (%s) errno=%d (%s)",			\
 	   __FILE__,__LINE__,__FUNCTION__,			\
-           errno,u8_strerror(errno));				\
+	   errno,u8_strerror(errno));				\
     if (u8_debug_errno > 1) _u8_dbg(u8_strerror(errno));	\
     errno=0;}							\
   else errno=0;
@@ -51,25 +52,25 @@ int _u8_dbg(u8_string s);
 
 /** Signals an error with particular details.
     This currently exits, though it may be expanded to an exception
-     throwing architecture in the near future.
-   @param cond a utf-8 condition string (u8_condition)
-   @param cxt a utf-8 context string (a const string)
-   @param details a utf-8 string detailing the error, or NULL
-   @returns void (shouldn't)
+    throwing architecture in the near future.
+    @param cond a utf-8 condition string (u8_condition)
+    @param cxt a utf-8 context string (a const string)
+    @param details a utf-8 string detailing the error, or NULL
+    @returns void (shouldn't)
 **/
 U8_EXPORT void u8_raise(u8_condition cond,u8_context cxt,u8_string details);
 
 /** Signals an error described by an existing exception object.
-   @param ex a pointer to a u8_exception object
-   @returns void (shouldn't)
+    @param ex a pointer to a u8_exception object
+    @returns void (shouldn't)
 **/
 U8_EXPORT void u8_raise_exception(u8_exception ex);
 
 /** Sets the function used when an error is raised.
-   @param h is a function on a condition, a context, and a utf-8 string
-   @returns void (shouldn't)
+    @param h is a function on a condition, a context, and a utf-8 string
+    @returns void (shouldn't)
 **/
 U8_EXPORT void u8_set_error_handler
-  (void (*h)(u8_condition,u8_context,u8_string));
+(void (*h)(u8_condition,u8_context,u8_string));
 
 #endif

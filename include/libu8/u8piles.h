@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_U8PILES_H
@@ -20,7 +21,7 @@
 /* Piles */
 
 /** struct U8_PILE
-   is a growable vector of void* pointers
+    is a growable vector of void* pointers
 **/
 typedef struct U8_PILE {
   void **u8_elts;
@@ -30,10 +31,10 @@ typedef struct U8_PILE *u8_pile;
 
 U8_EXPORT int _u8_grow_pile(u8_pile p,int delta);
 
-#define U8_INIT_PILE(p,len) \
+#define U8_INIT_PILE(p,len)		       \
   p->u8_len=0; p->u8_max=len; p->u8_mallocd=1; \
   p->u8_elts=u8_malloc(sizeof(void *)*len)
-#define U8_INIT_STATIC_PILE(p,vec,len)          \
+#define U8_INIT_STATIC_PILE(p,vec,len)			\
   p->u8_len=0; p->u8_max=len; p->u8_elts=(void **)vec
 
 #define u8_pile_add(p,e)				\

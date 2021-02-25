@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_THREADING_H
@@ -30,10 +31,10 @@ U8_EXPORT int u8_rwlock_rdlock_dbg(pthread_rwlock_t *rwlock);
 U8_EXPORT int u8_rwlock_unlock_dbg(pthread_rwlock_t *rwlock);
 
 typedef enum {
-  u8_dbg_lock_req, u8_dbg_lock, u8_dbg_unlock,
-  u8_dbg_read_req, u8_dbg_write_req,
-  u8_dbg_rdlock, u8_dbg_wrlock,
-  u8_dbg_rwunlock }
+	      u8_dbg_lock_req, u8_dbg_lock, u8_dbg_unlock,
+	      u8_dbg_read_req, u8_dbg_write_req,
+	      u8_dbg_rdlock, u8_dbg_wrlock,
+	      u8_dbg_rwunlock }
   u8_lockop;
 typedef int (*u8_mutex_fn)(pthread_mutex_t *,u8_lockop,double);
 typedef int (*u8_rwlock_fn)(pthread_rwlock_t *,u8_lockop,double);
@@ -84,7 +85,7 @@ U8_EXPORT int _u8_init_recursive_mutex(u8_mutex *);
 /* Read/write locks are replaced with simple mutexes if
    not available natively. */
 #if HAVE_PTHREAD_RWLOCK_INIT
-typedef pthread_rwlock_t u8_rwlock;
+  typedef pthread_rwlock_t u8_rwlock;
 #define u8_init_rwlock(x) pthread_rwlock_init(x,0)
 #define u8_destroy_rwlock(x) pthread_rwlock_destroy(x)
 
@@ -104,7 +105,7 @@ typedef pthread_rwlock_t u8_rwlock;
 
 #else /* HAVE_PTHREAD_RWLOCK_INIT */
 
-typedef pthread_mutex_t u8_rwlock;
+    typedef pthread_mutex_t u8_rwlock;
 #define u8_init_rwlock(x) pthread_mutex_init(x,0)
 #define u8_destroy_rwlock(x) pthread_mutex_destroy(x)
 
@@ -128,7 +129,7 @@ typedef pthread_mutex_t u8_rwlock;
 #define U8_THREADS_ENABLED 1
 #define U8_MUTEX_DECL(var) HANDLE var
 #define U8_RWLOCK_DECL(var) HANDLE var
-typedef HANDLE pthread_mutex_t;
+      typedef HANDLE pthread_mutex_t;
 typedef HANDLE u8_mutex;
 typedef HANDLE pthread_cond_t;
 typedef HANDLE u8_condvar;
@@ -141,29 +142,29 @@ typedef HANDLE u8_rwlock;
 #define pthread_mutex_destroy(_mloc) CloseHandle((*(_mloc)))
 
 #define pthread_cond_init(_cloc,attr) (*(_cloc))=CreateEvent(NULL,FALSE,FALSE,NULL)
-#define pthread_cond_signal(_x)  (SetEvent((*(_x))))
+#define pthread_cond_signal(_x)	 (SetEvent((*(_x))))
 #define pthread_cond_wait(_c,_m)  (ReleaseMutex(*(_m)),(WaitForSingleObject((*(_c)),INFINITE)))
 
 #define pthread_join(_thread,_ignored) WaitForSingleObject(_thread,INFINITE)
 
-typedef HANDLE pthread_t;
+  typedef HANDLE pthread_t;
 
 static DWORD _thread_tmp;
 
-#define pthread_create(ptid,ignored,fcn,arg) \
-   (*(ptid))=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)fcn,arg,0,&_thread_tmp)
+#define pthread_create(ptid,ignored,fcn,arg)				\
+  (*(ptid))=CreateThread(NULL,0,(LPTHREAD_START_ROUTINE)fcn,arg,0,&_thread_tmp)
 
 typedef DWORD u8_tld_key;
 #define u8_new_threadkey(lvalue,ignored) (*(lvalue))=TlsAlloc();
 #define u8_tld_get(key) TlsGetValue(key)
 #define u8_tld_set(key,v) TlsSetValue(key,v)
 
-#define u8_init_mutex(_mloc) \
-   (*(_mloc))=CreateMutex(NULL,FALSE,NULL)
-#define u8_init_recursive_mutex(_mloc) \
-   (*(_mloc))=CreateMutex(NULL,FALSE,NULL)
-#define u8_init_rwlock(_mloc) \
-   (*(_mloc))=CreateMutex(NULL,FALSE,NULL)
+#define u8_init_mutex(_mloc)			\
+  (*(_mloc))=CreateMutex(NULL,FALSE,NULL)
+#define u8_init_recursive_mutex(_mloc)		\
+  (*(_mloc))=CreateMutex(NULL,FALSE,NULL)
+#define u8_init_rwlock(_mloc)			\
+  (*(_mloc))=CreateMutex(NULL,FALSE,NULL)
 #define u8_destroy_mutex(x) pthread_mutex_destroy(x)
 #define u8_destroy_rwlock(x) pthread_mutex_destroy(x)
 #define u8_lock_mutex(x) pthread_mutex_lock((x))
@@ -189,12 +190,12 @@ typedef DWORD u8_tld_key;
 #endif
 
 #if ((U8_THREADS_ENABLED) && ((U8_USE_TLS) || (!(HAVE_THREAD_STORAGE_CLASS))))
-U8_EXPORT u8_tld_key u8_stack_base_key;
+  U8_EXPORT u8_tld_key u8_stack_base_key;
 U8_EXPORT u8_tld_key u8_stack_size_key;
 #define u8_stack_base (u8_tld_get(u8_stack_base_key))
 #define u8_stack_size ((ssize_t)(u8_tld_get(u8_stack_size_key)))
-#define U8_SET_STACK_BASE()	  \
-  volatile int _stack_base=17*42; \
+#define U8_SET_STACK_BASE()				\
+  volatile int _stack_base=17*42;			\
   u8_tld_set(u8_stack_base_key,(void *)&_stack_base)
 static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 {
@@ -208,8 +209,8 @@ static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 #elif ((U8_THREADS_ENABLED) && (HAVE_THREAD_STORAGE_CLASS))
 U8_EXPORT __thread void *u8_stack_base;
 U8_EXPORT __thread ssize_t u8_stack_size;
-#define U8_SET_STACK_BASE()	  \
-  volatile int _stack_base=17; \
+#define U8_SET_STACK_BASE()			\
+  volatile int _stack_base=17;			\
   u8_stack_base=(void *)&_stack_base
 static U8_MAYBE_UNUSED ssize_t u8_stack_depth()
 {
@@ -287,7 +288,7 @@ U8_EXPORT int u8_run_threadinits(void);
 U8_EXPORT int u8_n_threadinits;
 U8_EXPORT int u8_n_threadexitfns;
 
-#define u8_threadcheck() \
+#define u8_threadcheck()					\
   if (u8_getinitlevel()<u8_n_threadinits) u8_run_threadinits()
 
 #if (U8_USE__THREAD)

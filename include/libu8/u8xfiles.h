@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 #ifndef LIBU8_XFILES_H
@@ -38,7 +39,7 @@ typedef struct U8_XFILE *u8_xfile;
 
 /** struct U8_XINPUT
     is the extension of U8_INPUT which deals with stream-based conversion
-    from other character sets.  It's logic reads chunks of input from a POSIX
+    from other character sets.	It's logic reads chunks of input from a POSIX
     file descriptor and then converts their content into a UTF-8
     representation in the head of the structure, where generic functions
     (on U8_INPUT) can operate on it.  In addition to the U8_INPUT fields,
@@ -49,7 +50,7 @@ typedef struct U8_XFILE *u8_xfile;
     into Unicode code points; if this field is '&,' conversion automatically
     interprets entity escape sequences.
     The xbuf, xbuflen, and xbuflim fields describe the buffer used to store
-    data read from the file descriptor.  xbuf is a pointer to the buffer,
+    data read from the file descriptor.	 xbuf is a pointer to the buffer,
     xbuflen is the number of valid data bytes, and xbuflim is the number
     of writable bytes in the buffer (it's allocated size).  **/
 typedef struct U8_XINPUT {
@@ -64,9 +65,9 @@ typedef struct U8_XINPUT *u8_xinput;
 
 /** struct U8_XOUTPUT
     is the extension of U8_OUTPUT which deals with stream-based conversion
-    into other character sets.  It's logic converts written UTF-8 data into
+    into other character sets.	It's logic converts written UTF-8 data into
     a local character set and writes that data to an external POSIX file
-    descriptor.  In addition to the U8_INPUT fields, the fd field contains
+    descriptor.	 In addition to the U8_INPUT fields, the fd field contains
     the POSIX file descriptor used for input, the encoding field points to a
     U8_TEXT_ENCODING structure, and the field escape indicates whether to
     automatically convert unrepresentable code points into an external
@@ -85,7 +86,7 @@ typedef struct U8_XOUTPUT {
 #if U8_THREADS_ENABLED
   u8_mutex u8_lock;
 #endif
-  } U8_XOUTPUT;
+} U8_XOUTPUT;
 typedef struct U8_XOUTPUT *u8_xoutput;
 
 /* Creates an input XFILE given a file descriptor and an encoding
@@ -133,7 +134,7 @@ U8_EXPORT int u8_xinput_setbuf(struct U8_XINPUT *xi,int bufsiz);
    @returns a pointer to a U8_XINPUT structure
 */
 U8_EXPORT struct U8_XINPUT *u8_open_input_file
-  (u8_string filename,u8_encoding enc,int flags,int perm);
+(u8_string filename,u8_encoding enc,int flags,int perm);
 
 /* Opens an output XFILE given a filename
    @param filename a filename (utf8-encoded)
@@ -143,7 +144,7 @@ U8_EXPORT struct U8_XINPUT *u8_open_input_file
    @returns a pointer to a U8_XOUTPUT structure
 */
 U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
-  (u8_string filename,u8_encoding enc,int flags,int perm);
+(u8_string filename,u8_encoding enc,int flags,int perm);
 
 U8_EXPORT off_t u8_getpos(struct U8_STREAM *);
 U8_EXPORT off_t u8_setpos(struct U8_STREAM *,off_t off);
@@ -163,16 +164,16 @@ U8_EXPORT void u8_close_xinput(struct U8_XINPUT *xo);
 U8_EXPORT void u8_flush_xoutput(struct U8_XOUTPUT *f);
 
 /* Fills the buffer for an XFILE, reading input from the
-    XFILE's file descriptor and converting it according to
-    the XFILE's encoding.
+   XFILE's file descriptor and converting it according to
+   the XFILE's encoding.
    @param xf an XFILE struct
    @returns the number of bytes converted
 */
 U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf);
 
 /** struct U8_OPEN_XFILES
-     is a linked list of open xfiles used to ensure that
-     buffers are flushed when the process ends normally.
+    is a linked list of open xfiles used to ensure that
+    buffers are flushed when the process ends normally.
 **/
 typedef struct U8_OPEN_XFILES {
   struct U8_XFILE *xfile;

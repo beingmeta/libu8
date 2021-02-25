@@ -1,16 +1,17 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
+   Copyright (C) 2020-2021 beingmeta, LLC
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
    warranties of merchantability or fitness for any particular
    purpose.
 
-    Use, modification, and redistribution of this program is permitted
-    under any of the licenses found in the the 'licenses' directory
-    accompanying this distribution, including the GNU General Public License
-    (GPL) Version 2 or the GNU Lesser General Public License.
+   Use, modification, and redistribution of this program is permitted
+   under any of the licenses found in the the 'licenses' directory
+   accompanying this distribution, including the GNU General Public License
+   (GPL) Version 2 or the GNU Lesser General Public License.
 */
 
 /*! \mainpage Welcome to libu8
@@ -39,7 +40,7 @@
  *
  * extensible and customizable logging functions (using `u8_printf`);
  *
- * wrappers for time-related functions allowing fine-grained times 
+ * wrappers for time-related functions allowing fine-grained times
  *  and specification of arbitrary time zones;
  *
  * an exception handling library using `setjmp`/`longjmp` with
@@ -73,7 +74,7 @@
 
 /** \file libu8.h
     These functions provide miscellaneous functionality.
- **/
+**/
 
 #include "libu8/revision.h"
 #include "libu8/config.h"
@@ -128,14 +129,14 @@ int u8_initialize(void) U8_LIBINIT_FN;
 
 U8_EXPORT
 /** Initializes UTF-8 io functions, including character set
-     conversion and stream I/O.
+    conversion and stream I/O.
     @returns void
 **/
 int u8_initialize_io(void) U8_LIBINIT_FN;
 
 U8_EXPORT
 /** Initializes UTF-8 miscellaneous functions, including time keeping,
-     file access, network access, and server functions.
+    file access, network access, and server functions.
     @returns void
 **/
 int u8_initialize_fns(void) U8_LIBINIT_FN;
@@ -162,9 +163,9 @@ void u8_initialize_u8syslog(void) U8_LIBINIT_FN;
 **/
 U8_EXPORT void *u8_dynamic_load(u8_string filename);
 
-/** Looks up a symbol (string) in a dynamic module loaded with 
+/** Looks up a symbol (string) in a dynamic module loaded with
     u8_dynamic_load (or search for the symbol)
-    @param symname a symbol name as a utf-8 string 
+    @param symname a symbol name as a utf-8 string
     @param module a void * pointer returned by u8_dynamic_load (or NULL)
     @returns void
 **/
@@ -178,10 +179,10 @@ U8_EXPORT void *u8_dynamic_symbol(u8_string symname,void *module);
 
 U8_INLINE U8_MAYBE_UNUSED
 /* Computes a hash value from a pointer
-   @param ptr    a memory pointer
+   @param ptr	 a memory pointer
    @param n_bits a bit width for the result (<32)
- */
-u8_int4 u8_hashptrval(void *ptr,int n_bits) 
+*/
+u8_int4 u8_hashptrval(void *ptr,int n_bits)
 {
   u8_wideint intrep = (u8_wideint) ptr;
   return (intrep * FD_PTRHASH_CONSTANT) >> (64 - n_bits);
