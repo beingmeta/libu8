@@ -154,7 +154,8 @@ int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
       unsigned char buf[PRINTF_CHUNK_SIZE], *string=buf;
       if ((code == 'd') || (code == 'i') ||
 	  (code == 'u') || (code == 'o') ||
-	  (code == 'x')) {
+          (code == 'x')) {
+        /* various kinds of integers */
 	if (strstr(cmd,"ll")) {
 	  long long i=va_arg(*args,long long);
 	  sprintf(buf,cmd,i);}
@@ -164,10 +165,15 @@ int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
 	else {
 	  int i=va_arg(*args,int);
 	  sprintf(buf,cmd,i);}}
+      else if (code == 'p') {
+        void *ptr = va_arg(*args,void *);
+        sprintf(buf,"0x%llx",((unsigned long long)ptr));}
       else if ((code == 'f') || (code == 'g') || (code == 'e')) {
+        /* various kinds of floats */
 	double f=va_arg(*args,double);
 	sprintf(buf,cmd,f);}
       else if ((code == 's')||(code == 'm')) {
+        /* strings and messages */
 	char *prefix=NULL;
 	char *arg=va_arg(*args,char *); string=arg;
 	/* A - modifer on s indicates that the string arg should be
@@ -185,29 +191,32 @@ int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
 	/* The m conversion is like s but passes its argument through the
 	   message catalog. */
 	if ((arg)&&(code=='m'))
-	  arg=(u8_byte *)getmessage(arg);
-	if ((string) && (strchr(cmd,'#'))) {
+          /* 'm' indicates a message to be 'translated,' typically using gettext */
+          arg=(u8_byte *)getmessage(arg);
+        if ((string) && (strchr(cmd,'#'))) {
+          /* '#' indicates a string which isn't UTF-8. This isn't always
+             used consistently. */
 	  string=(u8_byte *)u8_fromlibc(string);
 	  if (to_free) u8_free(to_free);
 	  to_free=string;}
-	if (arg==NULL) {
-	  if ((prefix)||(strchr(cmd,'?')))
-	    string="";
-	  else string="(null)";}
-	else if (strchr(cmd,'l')) {
-	  string=(u8_byte *)u8_downcase(string);
-	  if (to_free) u8_free(to_free);
-	  to_free=string;}
-	else if (strchr(cmd,'u')) {
-	  string=(u8_byte *)u8_upcase(string);
-	  if (to_free) u8_free(to_free);
+        if (arg==NULL) {
+          if ((prefix)||(strchr(cmd,'?')))
+            string="";
+          else string="(null)";}
+        else if (strchr(cmd,'l')) {
+          string=(u8_byte *)u8_downcase(string);
+          if (to_free) u8_free(to_free);
+          to_free=string;}
+        else if (strchr(cmd,'u')) {
+          string=(u8_byte *)u8_upcase(string);
+          if (to_free) u8_free(to_free);
 	  to_free=string;}
 	else NO_ELSE;
 	if ((arg)&&(prefix)) {
 	  string=(u8_byte *)u8_string_append(prefix,string,NULL);
 	  if (to_free) u8_free(to_free);
 	  to_free=string;}}
-      else if (code == 'v') {
+      else if (code == 'v') { /* This is for vectors of scalars */
 	unsigned char *start=va_arg(*args,unsigned char *);
 	unsigned char *scan=start, *limit;
 	ssize_t len=
@@ -221,6 +230,7 @@ int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
 	  u8_puts(s,buf);}
 	string=NULL;}
       else if (code == 'c') {
+        /* This is for unicode character codepoints */
 	unsigned int codepoint = va_arg(*args,int);
 	u8_putc(s,codepoint); string = NULL; }
       else if ((code<128) && (u8_printf_handlers[(int)code]))
@@ -300,6 +310,7 @@ U8_EXPORT void u8_init_printf_c()
 {
   /* These are all really no-ops, but they help with parsing. */
   u8_printf_handlers['s']=default_printf_handler;
+  u8_printf_handlers['p']=default_printf_handler;
   u8_printf_handlers['m']=default_printf_handler;
   u8_printf_handlers['d']=default_printf_handler;
   u8_printf_handlers['u']=default_printf_handler;
