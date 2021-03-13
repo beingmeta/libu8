@@ -9,7 +9,7 @@ u8_gitversion(1) -- Job/daemon runner from libu8
 ## DESCRIPTION
 
 Returns a compound version number based on the contents of *version
-file* and the history of the current working copy. The compound
+file* and the git history of the version file. The compound
 version number generally has the form:
 ```
   *baseversion*-*patchcount*
@@ -17,6 +17,12 @@ version number generally has the form:
 where *baseversion* is the content of *version file* and *patchcount* is the number
 of commits since *version file* was committed.
 
-If a second argument is provided, the version specification explicitly
-includes the latest commit id and the commit id associated with
-*version file*.
+If a second argument is provided:
+* `full` includes any non-standard branch information and both
+  the latest commit id and the commit id associated with
+  *version file*.
+* `branch` includes any non-standard branch information and both
+  the latest commit id and the commit id associated with
+  *version file*.
+  * *branchname* includes the branch name if it isn't *branchname*.
+  
