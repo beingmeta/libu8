@@ -25,10 +25,18 @@ if [ $# -eq 1 ]; then
        [ ${BRANCH_NAME} = "current" ]; then
 	echo ${BASE_VERSION}-${N_COMMITS};
     else
-	echo ${BASE_VERSION-${N_COMMITS}}-${BRANCH_NAME};
+	echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
     fi;
-else
+elif [ $2 = "full" ]; then
     if [ ! -z "${CUR_COMMIT}" ]; then CUR_COMMIT="-${CUR_COMMIT}"; fi;
     if [ ! -z "${BASE_COMMIT}" ]; then BASE_COMMIT="-${BASE_COMMIT}"; fi;
-    echo ${BASE_VERSION}-${N_COMMITS}-${BRANCH_NAME}${CUR_COMMIT}${BASE_COMMIT};
+    echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS}${CUR_COMMIT}${BASE_COMMIT};
+elif [ $2 = "branch" ]; then
+    echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
+elif [ $2 = "nobranch" ]; then
+    echo ${BASE_VERSION}-${N_COMMITS};
+elif [ $2 = "${BRANCH_NAME}" ]; then
+    echo ${BASE_VERSION}-${N_COMMITS}
+else
+    echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
 fi;
