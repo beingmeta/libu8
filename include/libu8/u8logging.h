@@ -139,6 +139,26 @@
 #define U8_LOG_DELUGE LOG_DELUGE
 #define U8_LOGDELUGE LOG_DELUGE
 
+#define U8_MSG_WARNING (-(U8_LOG_WARNING))
+#define U8_MSG_WARN (-(U8_LOG_WARN))
+#define U8_MSG_NOTICE (-(U8_LOG_NOTICE))
+#define U8_MSG_NOTIFY (-(U8_LOG_NOTIFY))
+#define U8_MSG_NOTIFY (-(U8_LOG_NOTIFY))
+#define U8_MSG_ERR (-(U8_LOG_ERR))
+#define U8_MSG_ERROR (-(U8_LOG_ERROR))
+#define U8_MSG_CRIT (-(U8_LOG_CRIT))
+#define U8_MSG_CRITICAL (-(U8_LOG_CRITICAL))
+#define U8_MSG_EMERG (-(U8_LOG_EMERG))
+#define U8_MSG_EMERGENCY (-(U8_LOG_EMERGENCY))
+#define U8_MSG_PANIC (-(U8_LOG_PANIC))
+#define U8_MSG_DEBUG (-(U8_LOG_DEBUG))
+#define U8_MSG_DBG (-(U8_LOG_DBG))
+#define U8_MSG_DETAIL (-(U8_LOG_DETAIL))
+#define U8_MSG_DETAILS (-(U8_LOG_DETAILS))
+#define U8_MSG_DETAILED (-(U8_LOG_DETAILED))
+#define U8_MSG_GLUT (-(U8_LOG_GLUT))
+#define U8_MSG_DELUGE (-(U8_LOG_DELUGE))
+
 typedef int (*u8_logtestfn)(int loglevel,u8_condition c);
 
 U8_EXPORT u8_logtestfn u8_logbreakp;
