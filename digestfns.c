@@ -43,17 +43,7 @@
 #include <CommonCrypto/CommonHMAC.h>
 #endif
 
-#if HAVE_COMMONCRYPTO_COMMONDIGEST_H
-/* Digests a string and returns the result */
-U8_EXPORT unsigned char *u8_md5
-  (const unsigned char *data,int len,unsigned char *result)
-{
-  if (len<0) len=strlen(data);
-  return CC_MD5(data,len,((result==NULL) ?
-			  (u8_malloc(CC_MD5_DIGEST_LENGTH)) :
-			  (result)));
-}
-#elif HAVE_OPENSSL_MD5_H
+#if HAVE_OPENSSL_MD5_H
 /* Digests a string and returns the result */
 U8_EXPORT unsigned char *u8_md5
    (const unsigned char *data,int len,unsigned char *result)
