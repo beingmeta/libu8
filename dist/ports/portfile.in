@@ -1,0 +1,21 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+
+name                libu8
+version             ##U8PATCHVERSION##
+categories          net sysutils
+platforms           darwin
+license             GPL-2+
+maintainers         ken.haase@beingmeta.com
+description         utility/compatability library for i18n, net, file, crypto, etc
+long_description    libu8 provides a variety of OS-related services and functions
+homepage            https://www.libu8.org/
+master_sites        https://github.com/beingmeta/libu8
+
+checksums           sha256  ##TAR_SHA256##
+                    size    ##TARSIZE##
+
+depends_lib         openssl
+
+configure.args      --without-sudo
