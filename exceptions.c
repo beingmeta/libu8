@@ -118,6 +118,7 @@ U8_EXPORT u8_exception u8_push_exception
     newex=u8_new_exception(c,cxt,details,xdata,freefn);
     newex->u8x_prev=current;}
   else newex=u8_new_exception(c,cxt,details,xdata,freefn);
+  u8_set_exception(newex);
   return newex;
 }
 
@@ -431,7 +432,7 @@ U8_EXPORT void u8_pause(u8_condition c)
 
 U8_EXPORT void u8_debug_wait(u8_exception ex,int global)
 {
-  U8_PAUSABLE; /* Wait for any global bause to finish */
+  U8_PAUSEPOINT(); /* Wait for any global pauses to finish */
   u8_condition cond = ex->u8x_cond;
   if (global) u8_paused=ex->u8x_cond;
   u8_context caller = ex->u8x_context;

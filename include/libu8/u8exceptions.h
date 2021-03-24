@@ -320,7 +320,7 @@ U8_EXPORT void u8_debug_wait(u8_exception ex,int global);
 
 U8_EXPORT void u8_pause_loop(void);
 
-#define U8_PAUSABLE if (u8_paused) u8_pause_loop(); else {}
+#define U8_PAUSEPOINT() if (u8_paused) u8_pause_loop(); else {}
 
 U8_EXPORT int u8_raise_debug;
 
