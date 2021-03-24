@@ -177,7 +177,7 @@ REVISION:
 	else cp etc/base_version $@; 				\
 	fi;
 
-include/libu8/revision.h: REVISION
+include/libu8/revision.h: REVISION etc/base_version
 	@VERSION=$$(cat etc/base_version);		\
 	 REVISION=$$(cat REVISION);	\
 	 echo "#define LIBU8_REVISION \"libu8-$$VERSION\"" > $@; 		\
@@ -187,7 +187,7 @@ include/libu8/revision.h: REVISION
 
 # If the generated makefile is the same as the current makefile,
 # revert it (especially it's date) to avoid needless rebuilds.
-makefile: makefile.in config.status
+makefile: makefile.in etc/base_version config.status
 	@mv makefile makefile.tmp
 	@./config.status
 	@if diff makefile makefile.tmp 2>&1 > /dev/null; then 	\
