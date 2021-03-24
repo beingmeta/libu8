@@ -50,9 +50,10 @@ typedef ssize_t u8_charoff;
 #define U8OPT(string,after)					\
   ((string)?(string):(U8SNUL)),((string)?(after):(U8SNUL))
 
-#define U8OPTSTR(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8SNUL))),(U8IF(s,a))
+typedef const unsigned char *u8_condition;
+typedef const unsigned char *u8_context;
 
-  /* strdup */
+/* strdup */
 
 #if HAVE_STRDUP
 #define u8_strdup(x) (((x)==NULL)?((u8_buf)NULL):((u8_buf)strdup(x)))
@@ -63,7 +64,7 @@ typedef ssize_t u8_charoff;
 #define u8dup(x) ((U8_EXPECT_FALSE(x==NULL))?(NULL):(u8_strdup(x)))
 #define u8s(x) ((U8_EXPECT_FALSE(x==NULL))?(NULL):(u8_strdup(x)))
 
-  U8_EXPORT u8_buf _u8_strdup(u8_string);
+U8_EXPORT u8_buf _u8_strdup(u8_string);
 U8_EXPORT u8_buf u8_strndup(u8_string,int);
 
 /* Comparison */
@@ -89,6 +90,9 @@ U8_EXPORT int u8_config_utf8warn(int flag);
     If the flag is negative, the current value is returned
 **/
 U8_EXPORT int u8_config_utf8err(int flag);
+
+/* This is at the bottom because it confuses the emacs indenter */
+#define U8OPTSTR(b,s,a) (U8IF(s,b)),(U8ALT(s,(U8SNUL))),(U8IF(s,a))
 
 #endif
 

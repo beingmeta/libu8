@@ -23,10 +23,14 @@
     libu8 and programs built on it.
 **/
 
-typedef const unsigned char *u8_condition;
-typedef const unsigned char *u8_context;
-
 typedef void (*u8_exception_xdata_freefn)(void *);
+
+U8_EXPORT u8_condition u8_paused;
+U8_EXPORT double u8_pause_began;
+
+#ifndef U8_PAUSE_INTERVAL
+#define U8_PAUSE_INTERVAL 1
+#endif
 
 U8_EXPORT u8_condition u8_strerror(int num);
 
@@ -56,15 +60,14 @@ typedef struct U8_EXCEPTION *u8_exception;
 #if (U8_USE_TLS)
 U8_EXPORT u8_tld_key u8_current_exception_key;
 #define u8_current_exception ((u8_exception)(u8_tld_get(u8_current_exception_key)))
-#define u8_set_current_exception(ex)					\
-  ((u8_exception)(u8_tld_set(u8_current_exception_key,((void *)ex)),ex))
 #elif (U8_USE__THREAD)
 U8_EXPORT __thread u8_exception u8_current_exception;
-#define u8_set_current_exception(ex) u8_current_exception=ex
 #else
 U8_EXPORT u8_exception u8_current_exception;
-#define u8_set_current_exception(ex) u8_current_exception=ex
 #endif
+
+#define u8_set_current_exception u8_set_exception
+
 
 /** Creates a new exception
     Returns  a new exception exception, but *doesn't* push it
@@ -252,6 +255,12 @@ U8_EXPORT void u8_graberr(int num,u8_context cxt,u8_string details);
 
 /* Legacy functions */
 
+/** Sets the current exception object
+    @param ex an exception object
+    @returns void
+**/
+U8_EXPORT void u8_set_exception(u8_exception ex);
+
 /** Sets the current error state.
     The condition and context are constant strings, but the details
     string should be mallocd.
@@ -291,6 +300,41 @@ U8_EXPORT u8_condition u8_MallocFailed;
 U8_EXPORT u8_condition u8_NullArg;
 U8_EXPORT u8_condition u8_UnexpectedErrno;
 U8_EXPORT u8_condition u8_NotImplemented;
+
+/* Pausing for intervention (e.g. debugger) */
+
+/** Declares a pause state and loops until it is cleared
+    If another pause state is currently active, this waits for it to
+    finish.
+    @param condition a condition (a const string) for the pause state
+    @returns void
+**/
+U8_EXPORT void u8_pause(u8_condition condition);
+
+/** Enters an infinite loop waiting for some kind of debugger to
+    attach. If `global` is 1, this also enters a pause state which may
+    effect other running threads.
+    @returns void
+**/
+U8_EXPORT void u8_debug_wait(u8_exception ex,int global);
+
+U8_EXPORT void u8_pause_loop(void);
+
+#define U8_PAUSABLE if (u8_paused) u8_pause_loop(); else {}
+
+U8_EXPORT int u8_raise_debug;
+
+U8_EXPORT int u8_global_exception_debug;
+
+#if (U8_USE_TLS)
+U8_EXPORT u8_tld_key u8_local_exception_debug_key;
+#elif (U8_USE__THREAD)
+U8_EXPORT __thread int u8_local_exception_debug;
+#else
+U8_EXPORT int u8_local_exception_debug;
+#endif
+
+/* Useful macros */
 
 #define u8err(rv,condition,context,details)		\
   ( (u8_seterr(condition,context,details)) , (rv) )

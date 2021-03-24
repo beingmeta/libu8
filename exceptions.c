@@ -34,6 +34,17 @@ u8_condition u8_MissingErrno=_("Missing ERRNO");
 static u8_condition UnknownError=_("Unknown error");
 static u8_condition EmptyExceptionStack=_("Attempt to pop an empty exception stack");
 
+int u8_global_exception_debug = 0;
+
+#if (U8_USE_TLS)
+u8_tld_key u8_local_exception_debug_key;
+#elif (U8_USE__THREAD)
+__thread int u8_local_exception_debug=0;
+#else
+u8_local_exception_debug=0;
+#endif
+
+
 #if (U8_USE_TLS)
 u8_tld_key u8_current_exception_key;
 #elif (U8_USE__THREAD)
@@ -77,6 +88,20 @@ U8_EXPORT u8_exception u8_new_exception
   return newex;
 }
 
+U8_EXPORT void u8_set_exception(u8_exception newex)
+{
+  if (u8_local_exception_debug)
+    u8_debug_wait(newex,0);
+  else if (u8_global_exception_debug)
+    u8_debug_wait(newex,1);
+  else NO_ELSE;
+#if (U8_USE_TLS)
+  u8_tld_set(u8_current_exception_key,newex);
+#else
+  u8_current_exception=newex;
+#endif
+}
+
 U8_EXPORT u8_exception u8_push_exception
   (u8_condition c,u8_context cxt,u8_string details,
    void *xdata,void (*freefn)(void *))
@@ -93,11 +118,6 @@ U8_EXPORT u8_exception u8_push_exception
     newex=u8_new_exception(c,cxt,details,xdata,freefn);
     newex->u8x_prev=current;}
   else newex=u8_new_exception(c,cxt,details,xdata,freefn);
-#if (U8_USE_TLS)
-  u8_tld_set(u8_current_exception_key,newex);
-#else
-  u8_current_exception=newex;
-#endif
   return newex;
 }
 
@@ -105,22 +125,18 @@ U8_EXPORT u8_exception u8_expush(u8_exception newex)
 {
   struct U8_EXCEPTION *current=u8_current_exception;
   if (newex == NULL)
-    return u8_push_exception("NULLException","u8_expush",NULL,NULL,NULL);
+    newex = u8_push_exception("NULLException","u8_expush",NULL,NULL,NULL);
   else if ( (newex->u8x_prev != NULL) && (newex->u8x_prev != current) ) {
+    // This should probably raise an error rather than somehow either be
+    // close to a no-op or corrupt the exception stack.
     return u8_push_exception(newex->u8x_cond,
                              newex->u8x_context,
                              newex->u8x_details,
                              newex->u8x_xdata,
                              newex->u8x_free_xdata);}
-  else {
-    newex->u8x_prev=current; /* Just in case */
-#if (U8_USE_TLS)
-    u8_tld_set(u8_current_exception_key,newex);
-#else
-    u8_current_exception=newex;
-#endif
-    return newex;
-  }
+  newex->u8x_prev=current;
+  u8_set_exception(newex);
+  return newex;
 }
 
 U8_EXPORT u8_exception u8_free_exception(u8_exception ex,int full)
@@ -381,6 +397,52 @@ U8_EXPORT void u8_graberr(int num,u8_context cxt,u8_string details)
 {
   if (num<0) {num=errno; errno=0;}
   u8_push_exception(u8_strerror(num),cxt,details,NULL,NULL);
+}
+
+/* Pausing */
+
+u8_condition u8_paused=NULL;
+double u8_pause_began=-1;
+
+U8_EXPORT void u8_pause_loop()
+{
+  u8_log(LOGCRIT,"Paused","Due to %s, pausing thread %lld in process %lld",
+         u8_paused,u8_threadid(),(long long)getpid());
+  while (u8_paused) {
+    sleep(U8_PAUSE_INTERVAL);}
+}
+
+U8_EXPORT void u8_pause(u8_condition c)
+{
+  if (c == NULL) {
+    if (u8_paused) {
+      u8_log(LOGCRIT,"Unpause",
+             "Clearing pause condition %s in p/tid %lld/%lld",
+             u8_paused,(long long)getpid(),u8_threadid());
+      u8_paused=NULL;}
+    return;}
+  while (u8_paused) {
+    sleep(U8_PAUSE_INTERVAL);}
+  u8_paused=c;
+  while (u8_paused) {
+  waiting:
+    sleep(U8_PAUSE_INTERVAL);}
+}
+
+U8_EXPORT void u8_debug_wait(u8_exception ex,int global)
+{
+  U8_PAUSABLE; /* Wait for any global bause to finish */
+  u8_condition cond = ex->u8x_cond;
+  if (global) u8_paused=ex->u8x_cond;
+  u8_context caller = ex->u8x_context;
+  u8_string details = ex->u8x_details;
+  int looping = 1;
+  u8_log(LOGCRIT,"DebugWait",
+         "For %s <%s> (%s), attach to p/tid %lld/%lld",
+         cond,caller,details,(long long)getpid(),u8_threadid());
+  while (looping) {
+  waiting:
+    sleep(U8_PAUSE_INTERVAL);}
 }
 
 /* Initialization */

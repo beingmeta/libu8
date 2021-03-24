@@ -617,6 +617,8 @@ void *u8_dynamic_symbol(u8_string name,void *module)
 
 /* Raising errors */
 
+int u8_raise_debug = 0;
+
 U8_EXPORT void u8_raise(u8_condition cond,u8_context cxt,u8_string details)
 {
   u8_contour c=u8_dynamic_contour;
@@ -642,6 +644,13 @@ U8_EXPORT void u8_raise(u8_condition cond,u8_context cxt,u8_string details)
 
     }
 
+    if (u8_raise_debug) {
+      struct U8_EXCEPTION ex = { 0 };
+      ex.u8x_cond = cond;
+      ex.u8x_context = cxt;
+      ex.u8x_details = details;
+      u8_debug_wait(&ex,1);}
+
     /* Calling u8_log isn't signal safe, but we're calling exit()
        anyway, so it might not be so bad :) */
     if ((cxt)&&(details))
@@ -657,6 +666,12 @@ U8_EXPORT void u8_raise(u8_condition cond,u8_context cxt,u8_string details)
     c->u8c_condition=cond; c->u8c_exinfo.context=cxt;
     if (details) {
       strncpy(c->u8c_exdetails,details,sizeof(c->u8c_exdetails)-1);}
+    if (u8_raise_debug) {
+      struct U8_EXCEPTION ex = { 0 };
+      ex.u8x_cond = cond;
+      ex.u8x_context = cxt;
+      ex.u8x_details = details;
+      u8_debug_wait(&ex,1);}
     u8_throw_contour(c);}
 }
 
@@ -676,18 +691,19 @@ U8_EXPORT void u8_raise_exception(u8_exception ex)
       errout("Unhandled exception (no context) ");
       errout(ex->u8x_cond);
       if (ex->u8x_context) {
-        errout(" (");
+        errout(" <");
         errout(ex->u8x_context);
-        errout(")");}
+        errout(">");}
       if (ex->u8x_details) {
-        errout(": ");
+        errout(" (");
         errout(ex->u8x_details);
-        errout("\n");}
+        errout(")\n");}
 
 #undef errout
-
       fsync(STDERR_FILENO);
       fsync(STDOUT_FILENO);}
+
+    if (u8_raise_debug) u8_debug_wait(ex,1);
 
     /* Calling u8_log isn't signal safe, but we're calling exit()
        anyway, so it might not be so bad :) */
@@ -704,6 +720,7 @@ U8_EXPORT void u8_raise_exception(u8_exception ex)
     c->u8c_condition = ex->u8x_cond;
     c->u8c_exinfo.exception = ex;
     c->u8c_flags|=U8_CONTOUR_EXCEPTIONAL;
+    if (u8_raise_debug) u8_debug_wait(ex,1);
     u8_throw_contour(c);}
 }
 
@@ -1067,6 +1084,8 @@ U8_EXPORT int u8_initialize()
   if (u8_initialized) return u8_initialized;
 
   init_timebase();
+
+  if (getenv("U8RAISEDEBUG")) u8_raise_debug=1;
 
   /* Temporarily here, remove with next minor release */
   u8_BadUTF8byte = u8_BadUTF8Start;
