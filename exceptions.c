@@ -454,6 +454,7 @@ U8_EXPORT void u8_init_exceptions_c()
 
 #if ((U8_THREADS_ENABLED) && (U8_USE_TLS))
   u8_new_threadkey(&u8_current_exception_key,NULL);
+  u8_new_threadkey(&u8_local_exception_debug_key,NULL);
 #endif
 
 #if ((U8_THREADS_ENABLED) && (!(HAVE_STRERROR_R)))

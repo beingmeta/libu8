@@ -127,6 +127,7 @@ U8_EXPORT int u8_get_loglevel(u8_string spec)
   else if  ( (strmatch(spec,"panic")) || (strmatch(spec,"emerg")) ||
              (strmatch(spec,"emergency")) )
     return 0;
+  else return -1;
 }
 
 #if U8_WITH_STDIO

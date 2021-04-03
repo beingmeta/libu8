@@ -328,6 +328,7 @@ U8_EXPORT int u8_global_exception_debug;
 
 #if (U8_USE_TLS)
 U8_EXPORT u8_tld_key u8_local_exception_debug_key;
+#define u8_local_exception_debug ((u8_exception)(u8_tld_get(u8_local_exception_debug_key)))
 #elif (U8_USE__THREAD)
 U8_EXPORT __thread int u8_local_exception_debug;
 #else
