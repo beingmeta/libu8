@@ -740,7 +740,6 @@ static void *event_loop(void *thread_arg)
          so we try to read/write another chunk. */
       ssize_t delta;
       if (cl->off<cl->len) { /* We're not done */
-        
         if (cl->writing>0)
           delta=write(cl->socket,cl->buf+cl->off,cl->len-cl->off);
         else delta=read(cl->socket,cl->buf+cl->off,cl->len-cl->off);
@@ -762,7 +761,6 @@ static void *event_loop(void *thread_arg)
         if (cl->writing>0)
           server->sockets[cl->clientid].events=((short)(POLLOUT_EVENTS));
         else server->sockets[cl->clientid].events=((short)(POLLIN_EVENTS));
-        
         cl->active=0; sthread->u8st_client=-1; cl->threadnum=-1;
         if (server->xclientfn) server->xclientfn(cl);
         continue;}
@@ -1881,6 +1879,7 @@ u8_string u8_server_status(struct U8_SERVER *server,u8_byte *buf,int buflen)
   struct U8_OUTPUT out;
   if (buf) {U8_INIT_FIXED_OUTPUT(&out,buflen,buf);}
   else {U8_INIT_STATIC_OUTPUT(out,256);}
+  out.u8_streaminfo |= U8_HUMAN_OUTPUT;
   u8_lock_mutex(&(server->lock));
   u8_printf
     (&out,
@@ -1902,6 +1901,7 @@ u8_string u8_server_status_raw(struct U8_SERVER *server,u8_byte *buf,int buflen)
   struct U8_OUTPUT out;
   if (buf) {U8_INIT_FIXED_OUTPUT(&out,buflen,buf);}
   else {U8_INIT_STATIC_OUTPUT(out,256);}
+  out.u8_streaminfo |= U8_HUMAN_OUTPUT;
   u8_lock_mutex(&(server->lock));
   u8_printf
     (&out,"%s\t%d\%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",

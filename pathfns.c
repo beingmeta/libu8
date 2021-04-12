@@ -176,8 +176,11 @@ U8_EXPORT u8_string u8_dirname(u8_string path)
       /* If the slash is at the end of the string,
          use the next one. */
       *dirend='\0'; dirend=strrchr(copy,'/');}
-    if (dirend) {dirend[1]='\0'; return copy;}
-    else return copy;}
+    if (dirend) {
+      dirend[1]='\0';
+      return copy;}
+    u8_free(copy);
+    return u8_strdup(".");}
   else return NULL;
 }
 

@@ -36,6 +36,8 @@
 #define PRINTF_CHUNK_SIZE 1234
 #endif
 
+int u8_printf_underscore_ints = -1;
+
 u8_condition u8_BadPrintFormat=_("u8_printf: Bad format code");
 
 #if ((U8_THREADS_ENABLED) && (HAVE_GETTEXT))
@@ -123,6 +125,31 @@ u8_string u8_getmessage(u8_string msg)
 #define getmessage(x) (x)
 #endif
 
+/* Output integers with separators */
+
+char *write_int_helper(unsigned long long int num,char *buf)
+{
+  int base = 10;
+  unsigned long long mult = 10000000000000000000ULL;
+  const char *digits="0123456789";
+  char *write=buf;
+  if (num==0) {
+    *write++='0'; *write++='\0';
+    return buf;}
+  unsigned long long int reduce=num;
+  int started=0; while (mult>0) {
+    int weight=(reduce/mult)%base;
+    if (started) *write++=digits[weight];
+    else if (weight) {
+      *write++=digits[weight];
+      started=1;}
+    else NO_ELSE;
+    reduce=reduce%mult;
+    mult=mult/base;}
+  *write++='\0';
+  return buf;
+}
+
 /* Extended printf */
 
 u8_printf_handler u8_printf_handlers[128];
@@ -150,6 +177,27 @@ int u8_do_printf(u8_output s,u8_string format_string,va_list *args)
     /* Read the final byte */
     cmd[i++]=code=*scan++; cmd[i]='\0'; n_directives++;
     if (code == '%') u8_putc(s,'%');
+    else if ( (code == 'd') &&
+              (u8_printf_underscore_ints!=0) &&
+              ( (u8_printf_underscore_ints>0) || (strchr(cmd,'_')) ) ) {
+      char buf[64];
+      long long intval;
+      if (strstr(cmd,"ll"))
+        intval = (long long) va_arg(*args,long long);
+      else if (strstr(cmd,"l"))
+        intval = (long long) va_arg(*args,long);
+      else intval = (long long) va_arg(*args,int);
+      int sign = (intval<0) ? (-1) : (0);
+      if (sign<0) intval=-intval;
+      u8_string digits = write_int_helper(intval,buf);
+      int place = strlen(digits);
+      u8_string scan = digits;
+      if (sign<0) u8_putc(s,'-');
+      while (*scan) {
+        if ( (scan>digits) && ((place%3)==0) ) u8_putc(s,'_');
+        u8_putc(s,*scan);
+        place--;
+        scan++;}}
     else {
       unsigned char buf[PRINTF_CHUNK_SIZE], *string=buf;
       if ((code == 'd') || (code == 'i') ||

@@ -47,6 +47,7 @@ static u8_string pid_file = NULL;
 static u8_string ppid_file = NULL;
 static u8_string stop_file = NULL;
 static u8_string done_file = NULL;
+static u8_string cmd_file = NULL;
 static pid_t dependent = -1;
 
 static int run_as_daemon = 0;
@@ -204,6 +205,15 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args);
 static pid_t dolaunch(char **launch_args);
 static void setup_signals(void);
 
+static int same_filep(u8_string path1,u8_string path2)
+{
+  u8_string rpath1 = u8_realpath(path1,NULL);
+  u8_string rpath2 = u8_realpath(path2,NULL);
+  int same = (strcmp(rpath1,rpath2)==0);
+  u8_free(rpath1); u8_free(rpath2);
+  return same;
+}
+
 int main(int argc,char *argv[])
 {
   int i = 1, n_args = 0;
@@ -337,7 +347,16 @@ int main(int argc,char *argv[])
   ppid_file = xgetenv("U8PPIDFILE","PPIDFILE");
   stop_file = xgetenv("U8STOPFILE","STOPFILE");
   done_file = xgetenv("U8DONEFILE","DONEFILE");
+  cmd_file = xgetenv("U8CMDFILE","CMDFILE");
 
+  /* Default values */
+  if (pid_file == NULL) pid_file = procpath(job_id,"pid");
+  if (cmd_file == NULL) pid_file = procpath(job_id,"cmd");
+  if (ppid_file == NULL) ppid_file = procpath(job_id,"ppid");
+  if (stop_file == NULL) stop_file = procpath(job_id,"stop");
+  if (done_file == NULL) done_file = procpath(job_id,"done");
+
+  /* Setenv for this process */
   u8_setenv("U8_JOBID",job_id,1);
   u8_byte loglevel_tmp[64];
   u8_setenv("U8_LOGLEVEL",u8_bprintf(loglevel_tmp,"%d",u8_loglevel),1);
@@ -346,6 +365,7 @@ int main(int argc,char *argv[])
   if (run_dir)   u8_setenv("U8_RUNDIR",run_dir,1);
   if (log_dir)   u8_setenv("U8_LOGDIR",log_dir,1);
   if (log_file)  u8_setenv("U8_LOGFILE",log_file,1);
+  if (cmd_file)  u8_setenv("U8_CMDFILE",log_file,1);
 
   u8_string restart_val = xgetenv("U8RESTART","RESTART");
   if (restart_val==NULL) {}
@@ -372,11 +392,14 @@ int main(int argc,char *argv[])
      requested. */
   if (log_file == NULL) {
     /* Just use existing stdout and stderr */}
-  else if ( ( (log_file[0] == '.') || (log_file[0] == '-') ) &&
-            (log_file[1]==0) ) {
-    /* Just use current stdout/err */ }
+  else if ( (log_file[0] == '\0') ||
+            ( ( (log_file[0] == '.') || (log_file[0] == '-') ) &&
+              (log_file[1] == '\0') ) ) {
+    /* Just use current stdout/err */
+    u8_free(log_file);
+    log_file = NULL;}
   else if (log_file) {
-    if ( (*log_file) != '/' ) {
+    if ( (log_file[0]) != '/' ) {
       u8_string abspath = (log_dir) ? (u8_mkpath(log_dir,log_file)) :
         (u8_abspath(log_file,NULL));
       u8_free(log_file);
@@ -403,12 +426,11 @@ int main(int argc,char *argv[])
               log_file,u8_strerror(eno),eno);}}
   else if (err_file == NULL) {
     /* Leave stderr alone */ }
-  else if (strcmp(err_file,".")==0) {
-    /* Leave stderr alone */ }
-  else if (strcmp(err_file,"-")==0) {
-    /* Leave stderr alone */ }
+  else if ( (strcmp(err_file,".")==0) || (strcmp(err_file,"-")==0) ) {
+    u8_free(err_file);
+    err_file = NULL;}
   else {
-    if ( (*err_file) != '/' ) {
+    if ( (err_file[0]) != '/' ) {
       u8_string abspath = (log_dir) ? (u8_mkpath(log_dir,err_file)) :
         (u8_abspath(err_file,NULL));
       u8_free(err_file);
@@ -437,10 +459,6 @@ int main(int argc,char *argv[])
         if (log_fd>0) close(log_fd);
         exit(1);}}}
   
-  if (pid_file == NULL) pid_file = procpath(job_id,"pid");
-  if (ppid_file == NULL) ppid_file = procpath(job_id,"ppid");
-  if (stop_file == NULL) stop_file = procpath(job_id,"stop");
-  if (done_file == NULL) done_file = procpath(job_id,"done");
   if (u8_file_existsp(done_file)) {
     u8_log(LOG_WARN,"DoneFile","Exiting for done file %s",done_file);
     exit(0);}
@@ -464,6 +482,7 @@ int main(int argc,char *argv[])
                ppid_file,live);
         exit(1);}}
     else u8_removefile(ppid_file);}
+
   if (u8_file_existsp(pid_file)) {
     pid_t live = read_pid(pid_file);
     if (live_pidp(live)) {
@@ -475,6 +494,28 @@ int main(int argc,char *argv[])
                ppid_file,live);
         exit(1);}}
     else u8_removefile(ppid_file);}
+
+  if (log_file) {
+    u8_string run_log_file = procpath(job_id,"log");
+    if ( ! ( (u8_file_existsp(run_log_file)) &&
+             (same_filep(log_file,run_log_file)) ) ) {
+      int rv = symlink(log_file,run_log_file);
+      if (rv) {
+        int saved_errno = errno; errno=0;
+        u8_log(LOGWARN,"u8run",
+               "Error (%s) linking log for job %s, '%s' ==>' %s'",
+               u8_strerror(saved_errno),job_id,log_file,run_log_file);}}}
+  if (err_file) {
+    u8_string run_err_file = procpath(job_id,"err");
+    if ( ! ( (u8_file_existsp(run_err_file)) &&
+             (same_filep(err_file,run_err_file)) ) ) {
+      int rv = symlink(err_file,run_err_file);
+      if (rv) {
+        int saved_errno = errno; errno=0;
+        u8_log(LOGWARN,"u8run",
+               "Error (%s) linking errlog for job %s, '%s' ==>' %s'",
+               u8_strerror(saved_errno),job_id,err_file,run_err_file);}}}
+
   if (run_as_daemon) {
     pid_t launched = fork();
     if (launched<0) {
@@ -547,6 +588,19 @@ static pid_t kill_child(u8_string job_id,pid_t pid,u8_string pid_file)
   return -1;
 }
 
+void write_cmd_file(char **launch_args)
+{
+  if (cmd_file) {
+    FILE *out = fopen(cmd_file,"w");
+    char **scan = launch_args;
+    while (*scan) {
+      char *arg = *scan;
+      fputs(arg,out); fputc(' ',out);
+      scan++;}
+    fputc('\n',out);
+    fclose(out);}
+}
+
 static pid_t dolaunch(char **launch_args)
 {
   if (u8_file_existsp(pid_file)) {
@@ -566,6 +620,7 @@ static pid_t dolaunch(char **launch_args)
   if (umask_init) umask_value = parse_umask(umask_init);
   double now = u8_elapsed_time();
   last_launch = u8_elapsed_time();
+  write_cmd_file(launch_args);
   pid_t pid = (run_without_fork) ? (0) : (fork());
   if (pid == 0) {
     if (umask_value>=0) umask(umask_value);
@@ -745,13 +800,13 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args)
     int exited = (wait_rv == pid) && (kill(pid,0) < 0);
     double now = u8_elapsed_time();
 
-    u8_log(LOGNOTICE,"u8run/INT",
+    u8_log(LOGWARN,"u8run/INT",
 	   "Job %s:%lld signalled with rv=%d, do_exit=%d, paused=%d, "
 	   "exited=%d, restart=%d, started=%f now=%f",
 	   job_id,pid,wait_rv,doexit,paused,exited,restart,started,now);
 
     if (exited)
-      u8_log(LOGNOTICE,"u8run","Job %s:%lld exited %s with status %d",
+      u8_log(LOGWARN,"u8run","Job %s:%lld exited %s with status %d",
 	     job_id,pid,
 	     (WIFSIGNALED(status)) ? ("on signal") : ("normally"),
 	     WEXITSTATUS(status));

@@ -63,10 +63,11 @@ typedef struct U8_XTIME {
   unsigned char u8_wday, u8_yday, u8_wnum;
   /* Absolute time values */
   time_t u8_tick;    /**< integral number of seconds past the POSIX epoch **/
-  int u8_nsecs;	     /**< number of nanoseconds beyond the last seconds tick **/
+  int u8_nsecs;	     /**< number of nanoseconds beyond the time in u8_tick **/
   u8_tmprec u8_prec; /**< the precision of this timestamp **/
   /** The offset of this time from GMT **/
-  short u8_tzoff, u8_dstoff;} U8_XTIME;
+  short u8_tzoff, u8_dstoff;
+  struct U8_XPTR u8_xtime_data;} U8_XTIME;
 typedef struct U8_XTIME *u8_xtime;
 
 #define u8_dbltime(tm)					\

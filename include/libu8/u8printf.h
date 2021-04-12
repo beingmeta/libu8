@@ -28,6 +28,8 @@
 
 #include <stdarg.h>
 
+U8_EXPORT int u8_printf_underscore_ints;
+
 /* PRINTF */
 
 /** Outputs formatted data to a libu8 stream.

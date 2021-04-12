@@ -63,55 +63,71 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 #define U8_STREAM_MALLOCD     0x01
 /** This bit describes whether the stream is an output or input stream.	 **/
 #define U8_OUTPUT_STREAM      0x02
-/** This bit describes whether the stream can grow to accomodate more input
-    or output. **/
-#define U8_FIXED_STREAM	      0x04
 /** This bit describes whether the stream is responsible for freeing its
     buffer when closed.	 **/
-#define U8_STREAM_OWNS_BUF    0x08
+#define U8_STREAM_OWNS_BUF    0x04
+/** This bit describes whether the stream can grow to accomodate more input
+    or output. **/
+#define U8_FIXED_STREAM	      0x08
+/** This bit describes whether the stream has overflowed its fixed length  **/
+#define U8_STREAM_OVERFLOW    0x10
+/** This bit specifies if the streams buffer is 'constant' (won't change) **/
+#define U8_CONST_STREAM	      0x20
+/** This bit indicates that the stream is 'interactive' **/
+#define U8_STREAM_TTY	      0x40
+#define U8_INPUT_TTY	      U8_STREAM_TTY
+#define U8_OUTPUT_TTY	      U8_STREAM_TTY
+
 /* These bits are for streams which are XFILES */
+
 /** This bit describes whether an XFILE stream is responsible for freeing its
     translation buffer when closed.  **/
-#define U8_STREAM_OWNS_XBUF   0x10
+#define U8_STREAM_OWNS_XBUF   0x100
 /** This bit describes whether an XFILE stream is responsible for closing
     its socket/file descriptor when closed.  **/
-#define U8_STREAM_OWNS_SOCKET 0x20
+#define U8_STREAM_OWNS_SOCKET 0x200
 /** This bit describes whether seeks are possible on an XFILE's underlying
     socket/file descriptor.  **/
-#define U8_STREAM_CAN_SEEK    0x40
+#define U8_STREAM_CAN_SEEK    0x400
 /** This bit describes whether the XFILE should do CRLF translation.
     This is mostly neccessary for dealing with DOS/Windows, and causes
     newlines (0x) to turn into the sequence (0x0x). **/
-#define U8_STREAM_CRLFS	      0x80
-/** This bit describes a verbosity level for the stream.  This may be
-    consulted by I/O routines to determine detail or decoration. **/
-#define U8_STREAM_TACITURN     0x100
-/** This bit describes whether the stream should emit warnings for invalid
-    UTF-8 bytes or sequences. **/
-#define U8_STREAM_UTF8WARN   0x200
-/** This bit describes whether the stream generate errors and stop on UTF-8
-    errors. **/
-#define U8_STREAM_UTF8ERR   0x400
-/** This bit describes whether the stream should try to fix UTF-8
-    errors. (Not yet implemented.) **/
-#define U8_STREAM_UTF8FIX   0x800
-/** This bit describes whether the stream is fixed length and
-    has overflowed.  **/
-#define U8_STREAM_OVERFLOW  0x1000
+#define U8_STREAM_CRLFS	      0x800
+
+/* These are bits which customize I/O handling/intent */
+
+/** Whether to emit warnings for utf-8 errors **/
+#define U8_INPUT_UTF8WARN     0x10000
+#define U8_STREAM_UTF8WARN    U8_INPUT_UTF8WARN
+/** Whether to generate hard errors for utf-8 errors **/
+#define U8_INPUT_UTF8ERR     0x20000
+#define U8_STREAM_UTF8ERR     U8_INPUT_UTF8ERR
+
+/** Whether or not the stream should not be verbose. **/
+#define U8_OUTPUT_TACITURN    0x10000
+#define U8_STREAM_TACITURN    U8_OUTPUT_TACITURN
 /** This bit indicates that the stream should be verbose. **/
-#define U8_STREAM_VERBOSE   0x2000
-/** This bit indicates that the stream is talking to a user (i.e. a tty). **/
-#define U8_STREAM_TTY	    0x4000
+#define U8_OUTPUT_VERBOSE     0x20000
+#define U8_STREAM_VERBOSE     U8_OUTPUT_VERBOSE
+/** This bit indicates that the stream is intended for humans to read **/
+#define U8_HUMAN_OUTPUT       0x40000
+#define U8_HUMANE_OUTPUT      U8_HUMAN_OUTPUT
+#define U8_OUTPUT_HUMANE      U8_HUMAN_OUTPUT
+#define U8_STREAM_HUMANE      U8_HUMAN_OUTPUT
 
 #define U8_SUB_STREAM_MASK					\
-  ( U8_STREAM_TACITURN | U8_STREAM_VERBOSE | U8_STREAM_TTY )
+  ( U8_STREAM_TACITURN | U8_STREAM_VERBOSE | U8_STREAM_HUMANE | U8_STREAM_TTY )
 
 #define U8_STREAM_NEXT_FLAG 0x10000
+
+#define U8_IO_STREAM_FLAGS 0xFF000000
+#define U8_IO_STREAM_FLAGS 0xFF000000
 
 #define U8_STREAM_FIELDS		      \
   int u8_bufsz; unsigned int u8_streaminfo;   \
   u8_byte *u8_strbuf, *u8_strptr, *u8_strlim; \
-  void *u8_cfn; void *u8_xfn
+  void *u8_cfn; void *u8_xfn;		      \
+  u8_string u8_typetag; void *u8_typedata
 
 /** struct U8_STREAM is an abstract structural type which is extended
     by U8_INPUT and U8_OUTPUT.	The general layout of a stream structure is
@@ -131,14 +147,18 @@ U8_EXPORT
 */
 ssize_t u8_grow_stream(struct U8_STREAM *stream,ssize_t delta);
 
-#define U8_OUTPUT_FIELDS		       \
+#define U8_OUTPUT_FIELDS				       \
   /* Size of the buffer, and bits. */			       \
   int u8_bufsz, u8_streaminfo;				       \
   /* The buffer, where we are in it, and where it runs out. */ \
   u8_byte *u8_outbuf, *u8_write, *u8_outlim;		       \
   /* How we get more space */				       \
   int (*u8_closefn)(struct U8_OUTPUT *);		       \
-  int (*u8_flushfn)(struct U8_OUTPUT *);
+  int (*u8_flushfn)(struct U8_OUTPUT *);		       \
+  /* Type identifier */					       \
+  u8_string u8_typetag;					       \
+  /* Type data */					       \
+  void *u8_typedata
 
 /** struct U8_OUTPUT is a structural type which provides for UTF-8 output.
     This structure is subclassed by other structures which share its initial
@@ -159,6 +179,9 @@ typedef struct U8_OUTPUT *u8_output;
 typedef int (*u8_flushfn)(struct U8_OUTPUT *f);
 typedef int (*u8_output_closefn)(struct U8_OUTPUT *f);
 
+#define u8_outbuf_max(s) ((s)->u8_maxlen)
+#define u8_outbuf_len(s) (((s)->u8_write)-((s)->u8_outbuf))
+#define u8_outbuf_bytes(s) ((s)->u8_outbuf)
 #define u8_outbuf_written(s) (((s)->u8_write)-((s)->u8_outbuf))
 #define u8_outbuf_space(s) (((s)->u8_outlim)-((s)->u8_write))
 
@@ -166,7 +189,19 @@ typedef int (*u8_output_closefn)(struct U8_OUTPUT *f);
 U8_EXPORT int u8_close(U8_STREAM *stream);
 
 U8_EXPORT int _u8_close_soutput(u8_output o);
+
+/* u8_close_output:
+     Arguments: out an output stream
+     Returns: closes the stream, attempting to flush any available buffered data
+*/
 U8_EXPORT int u8_close_output(u8_output o);
+
+/* u8_reset_output:
+     Arguments: out an output stream
+     Returns: ssize_t, the number of bytes available in the reset stream
+ Discards the buffered output on the stream
+*/
+U8_EXPORT ssize_t u8_reset_output(u8_output out);
 
 /** Allocates and opens an output string with an initial size.
     @param initial_size the initial space allocated for the stream
@@ -379,15 +414,20 @@ ssize_t u8_grow_output_stream(struct U8_OUTPUT *outstream,ssize_t to_size);
 
 /* Input streams */
 
-#define U8_INPUT_FIELDS						  \
-  /* How big the buffer is, and other info. */			  \
-  int u8_bufsz, u8_streaminfo;					  \
-  /* The buffer, the read point, and the end of valid data */	  \
-  u8_byte *u8_inbuf, *u8_read, *u8_inlim;			  \
-  /* The function we call to close the stream. */		  \
-  int (*u8_closefn)(struct U8_INPUT *);				  \
-  /* The function to get more data */				  \
-  int (*u8_fillfn)(struct U8_INPUT *)
+#define U8_INPUT_FIELDS						\
+  /* How big the buffer is, and other info. */			\
+  int u8_bufsz, u8_streaminfo;					\
+  /* The buffer, the read point, and the end of valid data */	\
+  u8_byte *u8_inbuf, *u8_read, *u8_inlim;			\
+  /* The function we call to close the stream. */		\
+  int (*u8_closefn)(struct U8_INPUT *);				\
+  /* The function to get more data */				\
+  int (*u8_fillfn)(struct U8_INPUT *);				\
+  /* Type identifier */						\
+  u8_string u8_typetag;						\
+  /* Type data */						\
+  void *u8_typedata
+
 
 /** struct U8_INPUT
     is a structure used for stream-based UTF-8 input. This structure is

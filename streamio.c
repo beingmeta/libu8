@@ -619,8 +619,8 @@ U8_EXPORT
 /* u8_open_output_string:
      Arguments: a size
      Returns: an input stream
+  This mallocs and initializes an input stream to read from a particular string.
 
-This mallocs and initializes an input stream to read from a particular string.
 */
 U8_OUTPUT *u8_open_output_string(int initial_size)
 {
@@ -641,6 +641,19 @@ int u8_close_output(u8_output out)
 {
   if (out->u8_closefn) return out->u8_closefn(out);
   else return 0;
+}
+
+U8_EXPORT
+/* u8_reset_output:
+     Arguments: an output stream
+     Returns: the number of bytes available in the reset stream
+ Discards the buffered output on the stream
+*/
+ssize_t u8_reset_output(u8_output out)
+{
+  out->u8_write = out->u8_outbuf;
+  out->u8_outbuf[0]='\0';
+  return out->u8_bufsz;
 }
 
 U8_EXPORT void u8_flush(struct U8_OUTPUT *f)

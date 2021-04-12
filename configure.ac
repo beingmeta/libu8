@@ -1,4 +1,5 @@
-AC_INIT(include/libu8/libu8.h)
+AC_INIT
+AC_CONFIG_SRCDIR([include/libu8/libu8.h])
 AC_PREFIX_PROGRAM(autoconf)
 #m4_include([etc/ax_check_link_flags.m4])
 m4_include([etc/ax_pthread.m4])
@@ -81,7 +82,7 @@ fi
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
 
 AC_CONFIG_AUX_DIR(etc)
-AC_CONFIG_HEADER(include/libu8/u8source.h include/libu8/config.h)
+AC_CONFIG_HEADERS([include/libu8/u8source.h include/libu8/config.h])
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
@@ -250,11 +251,11 @@ fi
 
 AC_DEFINE_UNQUOTED(U8_SANITIZE,"$with_sanitize")
 
-AC_PROG_CC([cc gcc])
+AC_PROG_CC([${CC} cc gcc])
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_INSTALL
 AC_PROG_RANLIB
-AC_AIX
+AC_USE_SYSTEM_EXTENSIONS
 
 AC_DEFINE_UNQUOTED(U8_VERSION,"$U8VERSION")
 AC_DEFINE_UNQUOTED(U8_MAJOR_VERSION,$U8MAJOR)
@@ -407,7 +408,6 @@ dnl else
 dnl  echo using default libdir ${libdir};
 dnl fi
 
-AC_HEADER_STDC
 AC_HEADER_STAT
 
 AC_CHECK_HEADERS(strings.h netdb.h sys/types.h sys/mman.h)
@@ -424,7 +424,6 @@ AC_CHECK_FUNCS(posix_fadvise posix_madvise posix_fallocate)
 
 AC_CHECK_HEADERS(stdatomic.h)
 
-AC_HEADER_STDC
 AC_HEADER_STAT
 
 if test "x$with_asan" = "xyes"; then
@@ -433,7 +432,8 @@ fi
 
 # Time support
 AC_CHECK_HEADERS(time.h sys/time.h sys/types.h)
-AC_HEADER_TIME
+AC_CHECK_HEADERS_ONCE([sys/time.h])
+
 AC_STRUCT_TM
 AC_STRUCT_TIMEZONE
 AC_EGREP_HEADER(tm_gmtoff,time.h,AC_DEFINE(HAVE_TM_GMTOFF,1),AC_DEFINE(HAVE_TM_GMTOFF,0))
@@ -544,11 +544,11 @@ dnl ***********************************
 dnl *** Checks for working __thread ***
 dnl ***********************************
 AC_MSG_CHECKING(for working __thread)
-AC_TRY_COMPILE([
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
             #include <pthread.h>
             __thread int i;
 	    static int res1, res2;
-	],[
+	]], [[
 	     void thread_main (void *arg)
 	     {
 		i = arg;
@@ -567,11 +567,10 @@ AC_TRY_COMPILE([
 		pthread_join (t2, NULL);
 		return !(res1 + res2 == 2);
 		}
-	    ], [
+	    ]])],[
 		tls_default=no
 		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_THREAD_STORAGE_CLASS)],
-	       [tls_default=yes
+		AC_DEFINE(HAVE_THREAD_STORAGE_CLASS)],[tls_default=yes
 		AC_MSG_RESULT(no)])
 
 dnl This forces the use of the threadlocal storage functions from the pthreads
@@ -615,28 +614,25 @@ dnl ***********************************
 dnl *** Checks for working constructor attributes ***
 dnl ***********************************
 AC_MSG_CHECKING(for working __constructor_attributes)
-AC_TRY_COMPILE([],[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
              int tmpinit(void) __attribute__ ((constructor));
 
-	    ], [
+	    ]])],[
 		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_CONSTRUCTOR_ATTRIBUTES)],
-	       [AC_MSG_RESULT(no)])
+		AC_DEFINE(HAVE_CONSTRUCTOR_ATTRIBUTES)],[AC_MSG_RESULT(no)])
 
 dnl ***********************************
 dnl *** Checks for working __builtin_expect ***
 dnl ***********************************
 AC_MSG_CHECKING(for working __builtin_expect)
-AC_TRY_COMPILE([],[
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
 	     int main (int argc,char *argv[]) {
                 if (__builtin_expect((argc>2),1)) return 0;
                 else return 1;
 		}
-	    ], [
+	    ]])],[
 		AC_MSG_RESULT(yes)
-		AC_DEFINE(HAVE_BUILTIN_EXPECT)],
-	       [AC_MSG_RESULT(no)],
-	       [AC_MSG_RESULT(assume no)])
+		AC_DEFINE(HAVE_BUILTIN_EXPECT)],[AC_MSG_RESULT(no)])
 
 # OS X crypto
 AC_CHECK_HEADERS(CommonCrypto/CommonDigest.h CommonCrypto/CommonHMAC.h)
@@ -658,9 +654,10 @@ AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
-AC_OUTPUT([makefile docs/makefile etc/libu8.pc etc/getbuildopt
+AC_CONFIG_FILES([makefile docs/makefile etc/libu8.pc etc/getbuildopt
            dist/libu8-2.7.spec dist/alpine/APKBUILD
-	   scripts/u8_install_shared scripts/u8_gzinstall],
-          [chmod a+x etc/getbuildopt scripts/u8_install_shared scripts/u8_gzinstall])
+	   scripts/u8_install_shared scripts/u8_gzinstall])
+AC_CONFIG_COMMANDS([default],[chmod a+x etc/getbuildopt scripts/u8_install_shared scripts/u8_gzinstall],[])
+AC_OUTPUT
 
 

@@ -21,14 +21,12 @@
 U8_EXPORT u8_condition u8_nopos, u8_nowrite, u8_no_read;
 
 #define U8_DEFAULT_XFILE_BUFSIZE 10000
-#define U8_XFILE_SEEKS 2
-#define U8_XFILE_LOCKED 4
 
 /** struct U8_XFILE
     is an abstract generalization of the U8_XINPUT and U8_XOUTPUT structs which
     provide stream-based conversion to and from other character sets. **/
 typedef struct U8_XFILE {
-  U8_INPUT_FIELDS;
+  U8_STREAM_FIELDS;
   int u8_xfd; struct U8_TEXT_ENCODING *u8_xencoding; int u8_xescape;
   unsigned char *u8_xbuf; int u8_xbuflive, u8_xbuflim;
 #if U8_THREADS_ENABLED

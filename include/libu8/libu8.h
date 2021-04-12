@@ -121,6 +121,8 @@
 
 #include "u8sourcefiles.h"
 
+#include "u8xptr.h"
+
 U8_EXPORT
 /** Initializes the core UTF-8 functions (from libu8.h)
     @returns void
@@ -156,6 +158,18 @@ U8_EXPORT
 void u8_initialize_u8syslog(void) U8_LIBINIT_FN;
 
 /* Miscellaneous */
+
+/** Frees an xptr
+    @param xptr a pointer to an xptr struct
+    @returns void
+    Note that this does not free the struct itself
+    (which might be embedded in another struct), but only
+    the pointer value, which it also zeros after calling the
+    freefn.
+    This is also not threadsafe, though it does clear the ptrval
+     when called
+**/
+U8_EXPORT void u8_free_xptr(struct U8_XPTR *xptr);
 
 /** Dynamically loads a named file into the running image.
     @param filename a utf-8 pathname

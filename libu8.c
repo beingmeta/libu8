@@ -33,12 +33,10 @@
 #include <unistd.h>
 #endif
 
-#if TIME_WITH_SYS_TIME
+#if HAVE_TIME_H
 #include <time.h>
-#include <sys/time.h>
-#elif HAVE_TIME_H
-#include <time.h>
-#elif HAVE_SYS_TIME_H
+#endif
+#if HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif
 
@@ -550,6 +548,15 @@ int u8_unsetenv(u8_string envvar)
 #else
   return u8_reterr(u8_NotImplemented,"u8_unsetenv",u8_strdup(envvar));
 #endif
+}
+
+/* Freeing u8_xptrs */
+
+U8_EXPORT void u8_free_xptr(struct U8_XPTR *xptr)
+{
+  if ( (xptr->u8x_ptrval) && (xptr->u8x_freefn) ) {
+    void *ptrval = xptr->u8x_ptrval; xptr->u8x_ptrval=NULL;
+    xptr->u8x_freefn(ptrval);}
 }
 
 /* Dynamic loading */

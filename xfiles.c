@@ -109,9 +109,15 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
                   /* These are the bytes still to be converted in xbuf */
                   xf->u8_xbuf+xf->u8_xbuflive,
                   xf->u8_xbuflim-xf->u8_xbuflive);
+  while ( (bytes_read<0) && (errno == EINTR) ) {
+    errno=0;
+    bytes_read=read(xf->u8_xfd,
+                    /* These are the bytes still to be converted in xbuf */
+                    xf->u8_xbuf+xf->u8_xbuflive,
+                    xf->u8_xbuflim-xf->u8_xbuflive);}
   /* If you had trouble or didn't get any data, return zero or the error code. */
-  if (bytes_read<=0) {
-    return bytes_read;}
+  if (bytes_read<=0)
+    return bytes_read;
   /* Update the buflen to reflect what we read from the socket */
   xf->u8_xbuflive=xf->u8_xbuflive+bytes_read;
   /* Do the conversion.  First we set up _reader_ and _limit_ to scan
@@ -368,7 +374,7 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
   char *fname=u8_tolibc(realname);
   int fd, open_errno = 0;
   if (flags<=0)
-    flags=flags|O_WRONLY|O_TRUNC|O_CREAT;
+    flags=O_WRONLY|O_TRUNC|O_CREAT;
   if (!((flags&O_WRONLY) || (flags&O_RDWR)))
     flags=flags|O_WRONLY;
   if (perm<=0) perm=XFILE_OPEN_PERMS;
