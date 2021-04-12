@@ -166,7 +166,19 @@ typedef int (*u8_output_closefn)(struct U8_OUTPUT *f);
 U8_EXPORT int u8_close(U8_STREAM *stream);
 
 U8_EXPORT int _u8_close_soutput(u8_output o);
+
+/* u8_close_output:
+     Arguments: out an output stream
+     Returns: closes the stream, attempting to flush any available buffered data
+*/
 U8_EXPORT int u8_close_output(u8_output o);
+
+/* u8_reset_output:
+     Arguments: out an output stream
+     Returns: ssize_t, the number of bytes available in the reset stream
+ Discards the buffered output on the stream
+*/
+U8_EXPORT ssize_t u8_reset_output(u8_output out);
 
 /** Allocates and opens an output string with an initial size.
     @param initial_size the initial space allocated for the stream
