@@ -102,11 +102,16 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 #define U8_STREAM_VERBOSE   0x2000
 /** This bit indicates that the stream is talking to a user (i.e. a tty). **/
 #define U8_STREAM_TTY	    0x4000
+/** This bit specifies if the streams buffer is 'constant' (can't change or grow) **/
+#define U8_CONST_STREAM	    0x8000
 
 #define U8_SUB_STREAM_MASK					\
   ( U8_STREAM_TACITURN | U8_STREAM_VERBOSE | U8_STREAM_TTY )
 
 #define U8_STREAM_NEXT_FLAG 0x10000
+
+#define U8_IO_STREAM_FLAGS 0xFF000000
+#define U8_IO_STREAM_FLAGS 0xFF000000
 
 #define U8_STREAM_FIELDS		      \
   int u8_bufsz; unsigned int u8_streaminfo;   \
@@ -159,6 +164,9 @@ typedef struct U8_OUTPUT *u8_output;
 typedef int (*u8_flushfn)(struct U8_OUTPUT *f);
 typedef int (*u8_output_closefn)(struct U8_OUTPUT *f);
 
+#define u8_outbuf_max(s) ((s)->u8_maxlen)
+#define u8_outbuf_len(s) (((s)->u8_write)-((s)->u8_outbuf))
+#define u8_outbuf_bytes(s) ((s)->u8_outbuf)
 #define u8_outbuf_written(s) (((s)->u8_write)-((s)->u8_outbuf))
 #define u8_outbuf_space(s) (((s)->u8_outlim)-((s)->u8_write))
 
@@ -166,7 +174,19 @@ typedef int (*u8_output_closefn)(struct U8_OUTPUT *f);
 U8_EXPORT int u8_close(U8_STREAM *stream);
 
 U8_EXPORT int _u8_close_soutput(u8_output o);
+
+/* u8_close_output:
+     Arguments: out an output stream
+     Returns: closes the stream, attempting to flush any available buffered data
+*/
 U8_EXPORT int u8_close_output(u8_output o);
+
+/* u8_reset_output:
+     Arguments: out an output stream
+     Returns: ssize_t, the number of bytes available in the reset stream
+ Discards the buffered output on the stream
+*/
+U8_EXPORT ssize_t u8_reset_output(u8_output out);
 
 /** Allocates and opens an output string with an initial size.
     @param initial_size the initial space allocated for the stream

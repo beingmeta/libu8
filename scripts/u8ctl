@@ -1,0 +1,86 @@
+#!/bin/sh
+find_control_file ( ) {
+    local arg=$1
+    local suffix=${2:-.pid}
+    local base=$(basename $arg ${suffix})
+    local ctl_file=${base}.${suffix}
+    if [ -f ${arg} ]; then
+	echo ${arg};
+    elif [ -f ${arg}.${suffix} ]; then
+	echo ${arg}.${suffix};
+    elif [ -f ${ctl_file} ]; then
+	echo ${pid_file};
+    else for dir in "${U8_RUNDIR}" "${U8RUNDIR}" ${U8RUNDIRS}; do
+	     if [ -f ${dir}/${ctl_file} ]; then
+		 echo ${dir}/${ctl_file};
+		 return;
+	     fi;
+	 done;
+    fi;
+}
+getabspath ( ) {
+    local path=$1
+    case ${path} in
+	/*) echo ${path}; ;;
+	*)  echo $(pwd)/${path}; ;;
+    esac;
+}
+
+
+spec=$1
+ctl_file=
+for suffix in .pid .ppid .cmd .log; do
+    if [ ! -z "${ctl_file}" ]; then break; fi;
+    ctl_file=$(find_control_file ${spec} ${suffix});
+done;
+if [ -z "${ctl_file}" ]; then
+    echo "Couldn't locate control files for '${spec}";
+    exit;
+fi;
+ctl_base=${ctl_file/.[a-z]*/}
+case ${ctl_base} in
+    /*)
+	ctl_path=${ctl_base};
+	;;
+    *)
+	ctl_path=$(pwd)${ctl_base};
+	;;
+esac;
+cmd=${2:-default}
+case ${cmd} in
+    default|all)
+	for path in ${ctl_base}*; do
+	    if [ ! -z "${path}" ] && [ -f "${path}" ]; then
+		echo "  ${path}=$(cat ${path})";
+	    fi;
+	done;
+	;;
+    tail)
+	if [ -f ${ctl_base}.log ]; then
+	    tail ${ctl_base}.log;
+	else echo "The log for '${spec}' is not available"; fi;
+	;;
+    watch|monitor)
+	if [ -f ${ctl_base}.log ]; then
+	    tail -f ${ctl_base}.log;
+	else echo "The log for '${spec}' is not available"; fi;
+	;;
+    logfile)
+	if [ -L ${ctl_base}.log ]; then
+	    linktext=$(readlink ${ctl_path}.log);
+	    echo $(getabspath ${linktext});
+	elif [ -f ${ctl_base}.log ]; then
+	    echo $(getabspath ${ctl_path}.log);
+	else echo "The command for '${spec}' is not available"; fi;
+	;;
+    command)
+	if [ -f ${ctl_base}.${cmd} ]; then
+	    cat ${ctl_base}.${cmd};
+	else echo "The command for '${spec}' is not available"; fi;
+	;;
+    *)
+	if [ -f ${ctl_base}.${cmd} ]; then
+	    cat ${ctl_base}.${cmd};
+	else echo "The command '${cmd}' wasn't recognized"; fi;
+	;;
+esac
