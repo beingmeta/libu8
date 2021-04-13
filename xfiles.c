@@ -368,7 +368,7 @@ U8_EXPORT struct U8_XOUTPUT *u8_open_output_file
   char *fname=u8_tolibc(realname);
   int fd, open_errno = 0;
   if (flags<=0)
-    flags=flags|O_WRONLY|O_TRUNC|O_CREAT;
+    flags=O_WRONLY|O_TRUNC|O_CREAT;
   if (!((flags&O_WRONLY) || (flags&O_RDWR)))
     flags=flags|O_WRONLY;
   if (perm<=0) perm=XFILE_OPEN_PERMS;
