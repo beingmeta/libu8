@@ -1,0 +1,15 @@
+#!/bin/sh
+find_pid_file ( ) {
+    local arg=$1
+    if [ -f ${arg} ]; then
+	echo ${arg};
+    elif [ -f ${arg}.pid ]; then
+	echo ${arg};
+    else 
+	stripped=$(arg/[.]*$/}
+	if [ -f ${stripped}.pid ]; then
+	    echo ${stripped}.pid;
+	fi;
+    fi;
+}
+	    
