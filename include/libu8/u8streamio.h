@@ -159,6 +159,9 @@ typedef struct U8_OUTPUT *u8_output;
 typedef int (*u8_flushfn)(struct U8_OUTPUT *f);
 typedef int (*u8_output_closefn)(struct U8_OUTPUT *f);
 
+#define u8_outbuf_max(s) ((s)->u8_maxlen)
+#define u8_outbuf_len(s) (((s)->u8_write)-((s)->u8_outbuf))
+#define u8_outbuf_bytes(s) ((s)->u8_outbuf)
 #define u8_outbuf_written(s) (((s)->u8_write)-((s)->u8_outbuf))
 #define u8_outbuf_space(s) (((s)->u8_outlim)-((s)->u8_write))
 
