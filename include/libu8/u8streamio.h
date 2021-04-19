@@ -102,11 +102,16 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 #define U8_STREAM_VERBOSE   0x2000
 /** This bit indicates that the stream is talking to a user (i.e. a tty). **/
 #define U8_STREAM_TTY	    0x4000
+/** This bit specifies if the streams buffer is 'constant' (can't change or grow) **/
+#define U8_CONST_STREAM	    0x8000
 
 #define U8_SUB_STREAM_MASK					\
   ( U8_STREAM_TACITURN | U8_STREAM_VERBOSE | U8_STREAM_TTY )
 
 #define U8_STREAM_NEXT_FLAG 0x10000
+
+#define U8_IO_STREAM_FLAGS 0xFF000000
+#define U8_IO_STREAM_FLAGS 0xFF000000
 
 #define U8_STREAM_FIELDS		      \
   int u8_bufsz; unsigned int u8_streaminfo;   \
