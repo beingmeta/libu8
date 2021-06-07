@@ -1,4 +1,8 @@
 #!/bin/sh
+if [ ! -d .git ]; then
+    echo default;
+    exit;
+fi
 branch_name=$(git symbolic-ref -q HEAD)
 branch_name=${branch_name##refs/heads/}
 echo ${branch_name:-main}

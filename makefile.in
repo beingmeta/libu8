@@ -115,7 +115,7 @@ STATIC_TEST_LIBS=lib/libu8.a
 SHARED_TEST_LIBS=lib/libu8.@shared_suffix@ lib/libu8io.@shared_suffix@ \
 		lib/libu8stdio.@shared_suffix@
 
-ALL=@TAGS_TARGET@ libs exe @I18N@ tests @DOCS@
+ALL=@TAGS_TARGET@ libs exe @I18N@ tests alldocs
 
 update: buildmode
 	@make TAGS
@@ -467,10 +467,9 @@ $(LIBU8IO_OBJECTS) $(LIBU8STDIO_OBJECTS) $(LIBU8SYSLOG_OBJECTS): \
 # Installation targets
 
 install: install-core install-docs install-static install-dev
-install-core: install-shared install-exe install-scripts install-encodings install-core-manpages @INSTALLI18N@
-install-dev: install-headers install-pkgconfig install-dev-manpages install-dev-scripts
+install-core: install-shared install-exe install-scripts install-encodings @INSTALLI18N@
+install-dev: install-headers install-pkgconfig install-dev-scripts
 install-shared: @install_shared@
-install-doc: @INSTALLDOCS@
 install-libs: install-static install-shared
 install-bin: install-shared install-static install-exe
 install-scripts: $(BININSTALLDIR)/u8_xsubst $(BININSTALLDIR)/u8ctl
@@ -723,9 +722,10 @@ $(DESTDIR)@prefix@/share/libu8/encodings:
 
 # Documentation
 
-docs: docs/doxygen.done docs/ronn.done
+alldocs: @DOCTARGETS@
 
-install-docs:
+install-docs: alldocs
+	make @DOCINSTALL@
 
 docs/doxygen.done: $(LIBU8_HEADERS) docs/doxygen.cfg
 	@$(DOXYGEN) docs/doxygen.cfg > docs/doxygen.log \
@@ -739,7 +739,7 @@ docs/ronn.done: docs/ronn/*.ronn
 libu8.org: docs/doxygen.done
 	aws s3 cp --recursive docs/html/ s3://www.libu8.org/docs/
 
-install-core-manpages: docs/ronn.done
+install-core-manpages: alldocs
 	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
 	@for manpage in docs/man/*.1; do 								\
@@ -748,7 +748,7 @@ install-core-manpages: docs/ronn.done
 	   fi; 												\
 	 done; 												\
 
-install-dev-manpages: docs/doxygen.done docs/ronn.done
+install-dev-manpages: alldocs
 	@echo "# (libu8)" "Writing man pages from doxygen"
 	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
@@ -758,19 +758,23 @@ install-dev-manpages: docs/doxygen.done docs/ronn.done
 	   fi; 												\
 	 done; 												\
 
-install-manpages.gz: docs/doxygen.done docs/ronn.done
+install-core-manpages.gz: alldocs
 	@echo "# (libu8)" "Writing man pages from doxygen"
 	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
+	 for manpage in docs/man/*.1; do 								\
+	  if test -f "$${manpage}"; then 								\
+	    ${SUDO} ./scripts/u8_gzinstall $${manpage} $(MANDIR)/man1/$$(basename $$manpage);		\
+	   fi; 												\
+	 done; 												\
+
+install-dev-manpages.gz: alldocs
+	@echo "# (libu8)" "Writing man pages from doxygen"
+	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
 	@for manpage in docs/man/man3/*.3; do 								\
 	  if test -f "$${manpage}"; then 								\
 	    ${SUDO} ./scripts/u8_gzinstall $${manpage} $(MANDIR)/man3/$$(basename $$manpage);		\
-	   fi; 												\
-	 done; 												\
-	 for manpage in docs/man/*.1; do 								\
-	  if test -f "$${manpage}"; then 								\
-	    ${SUDO} ./scripts/u8_gzinstall $${manpage} $(MANDIR)/man1/$$(basename $$manpage);		\
 	   fi; 												\
 	 done; 												\
 
@@ -838,7 +842,6 @@ staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	@tar -czvf $@ -C staging libu8-@U8VERSION@
 
 dist/rpms.ready: staging/libu8-@U8VERSION@ \
-	staging/libu8_@U8VERSION@.orig.tar.gz \
 	staging/libu8-@U8VERSION@.tar.gz
 	@@buildrpm@ $(RPMFLAGS)  			\
 	   --define="_rpmdir $(RPMDIR)"			\
@@ -859,7 +862,7 @@ dist/rpms.done: dist/rpms.ready
 	@ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
 
-rpmupdate update-rpms freshrpms: cleanrpms
+rpmupdate update-rpms freshrpms rpmfresh: cleanrpms
 	@rm -f dist/rpms.done dist/rpms.ready
 	@make dist/rpms.done RPMDIR=$(RPMDIR) GPGID=$(GPGID:-default)
 
@@ -869,7 +872,7 @@ dist/rpms.zip: dist/rpms.done
 		$(RPMDIR)/libu8*-@U8VERSION@-*.src.rpm \
 		$(RPMDIR)/*/libu8-@U8VERSION@-*.rpm
 
-.PHONY: rpms rpmupdate update-rpms freshrpms
+.PHONY: rpms rpmupdate update-rpms freshrpms rpmfresh
 
 # Rules for debian building
 
@@ -947,7 +950,7 @@ staging/alpine/libu8-@U8VERSION@.tar.gz: REVISION staging/alpine
 	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
 	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
 
-dist/alpine.setup: dist/alpine/APKBUILD include/libu8/revision.h makefile
+dist/alpine.setup: staging/alpine/APKBUILD include/libu8/revision.h makefile
 	make staging/alpine/libu8-@U8VERSION@.tar.gz staging/alpine/APKBUILD && \
 	if test ! -d ${APK_ARCH_DIR}; then mkdir -p ${APK_ARCH_DIR}; fi && \
 	( cd staging/alpine; abuild -P ${APKREPO} clean cleancache cleanpkg && abuild -P ${APKREPO} checksum ) && \
@@ -961,9 +964,12 @@ dist/alpine.done: dist/alpine.setup
 dist/alpine.installed:
 	cd staging/alpine; apk add --repository=${APKREPO}/staging ${ALPINE_PKGS}
 
-alpine: 
+alpine:
 	@echo APKREPO=${APKREPO}
 	make dist/alpine.done
+
+alpine-clean clean-alpine:
+	rm -rf staging/alpine;
 
 .PHONY: alpine
 

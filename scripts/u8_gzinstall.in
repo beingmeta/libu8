@@ -1,10 +1,20 @@
 #!/bin/sh
 SRC=$1
 DEST=$2
+echo "Installing SRC=${SRC} to DEST=${DEST}";
 if [ -z "@GZIP@" ]; then
-   cp ${SRC} ${DEST}
-if [ -d "${DEST}" ]; then
-   @GZIP@ -cf ${SRC} > ${DEST}/$(basename ${SRC}).gz
+    echo "No GZIP"
+    cp ${SRC} ${DEST};
+elif [ "${SRC/%.gz//}" != "${SRC}" ]; then
+    echo "Already zipped"
+    cp ${SRC} ${DEST};     
+elif [ -d "${DEST}" ]; then
+   echo "GZIP to directory"
+   @GZIP@ -cf ${SRC} > ${DEST}/$(basename ${SRC}).gz;
+elif [ "${DEST/%.gz//}" != "${DEST}" ]; then
+   echo "GZIP to file (already .gz)"
+   @GZIP@ -cf ${SRC} > ${DEST}.gz;
 else
-   @GZIP@ -cf ${SRC} > ${DEST}
+   echo "GZIP to file + .gz"
+   @GZIP@ -cf ${SRC} > ${DEST}.gz;
 fi

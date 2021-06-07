@@ -35,8 +35,8 @@ SUDO=""
 GITDESCRIBE=""
 GITBRANCH=""
 TAGS_TARGET="TAGS"
-DOCS="docs"
-INSTALLDOCS="install-docs"
+DOCTARGETS=""
+DOCINSTALL=""
 BUILDRPM="lsbrpmbuild"
 RPMDIR=${RPMDIR:-dist}
 RPMFLAGS=${RPMFLAGS:-}
@@ -85,6 +85,14 @@ AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADERS([include/libu8/u8source.h include/libu8/config.h])
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
+
+uname -a > /tmp/unameout
+if grep -i "alpine" /tmp/unameout; then
+   DOCINSTALL="${DOCINSTALL} install-core-manpages.gz install-dev-manpages.gz";
+else
+   DOCINSTALL="${DOCINSTALL} install-core-manpages install-dev-manpages";
+fi
+rm /tmp/unameout
 
 case $target_os in
   linux*)
@@ -169,8 +177,8 @@ AC_SUBST(GITDESCRIBE)
 AC_SUBST(GITBRANCH)
 AC_SUBST(doxygen)
 AC_SUBST(ronn)
-AC_SUBST(DOCS)
-AC_SUBST(INSTALLDOCS)
+AC_SUBST(DOCTARGETS)
+AC_SUBST(DOCINSTALL)
 
 AC_SUBST(rpath)
 AC_SUBST(RPATHFLAGS)
@@ -354,6 +362,24 @@ AC_CHECK_PROG(CREATEREPO,createrepo,,echo No createrepo for )
 AC_CHECK_PROGS(ronn,"ronn","ronn2.7")
 
 AC_CHECK_PROGS(GZIP,"gzip","na")
+AC_CHECK_PROGS(ZIP,"zip","zip")
+
+if test $etags = "na"; then
+   TAGS_TARGET="NOTAGS"
+fi
+
+if test ! -z "$doxygen"; then
+   DOCTARGETS="${DOCTARGETS} docs/doxygen.done"
+fi
+if test ! -z "$ronn"; then
+   DOCTARGETS="${DOCTARGETS} docs/ronn.done"
+fi
+
+if test $target = "i686-pc-mingw32"; then
+   shared_suffix="dll"
+   install_shared="install-dll"
+   LIBS="$LIBS -lwsock32"
+fi
 
 AC_PATH_PROG(XGETTEXT,xgettext)
 AC_PATH_PROG(MSGMERGE,msgmerge)
@@ -365,20 +391,6 @@ AC_CHECK_PROGS(APK,"apk","")
 if test ! -z "${APK}"; then
    ALPINE_CRYPTO_LIB=$(${APK} search libressl | grep crypto | cut -d- -f1,2);
 fi;
-
-if test $etags = "na"; then
-   TAGS_TARGET="NOTAGS"
-fi
-if test "x$doxygen" = "xna"; then
-   DOCS=""
-   INSTALLDOCS=""
-fi
-
-if test $target = "i686-pc-mingw32"; then
-   shared_suffix="dll"
-   install_shared="install-dll"
-   LIBS="$LIBS -lwsock32"
-fi
 
 AC_DEFINE(FD_WORDS_ARE_ALIGNED,1)
 AC_TYPE_UID_T
@@ -655,7 +667,7 @@ AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
 AC_CONFIG_FILES([makefile docs/makefile etc/libu8.pc etc/getbuildopt
-           dist/libu8-2.7.spec dist/alpine/APKBUILD
+           dist/libu8-2.7.spec dist/libu8-3.0.spec dist/alpine/APKBUILD
 	   scripts/u8_install_shared scripts/u8_gzinstall])
 AC_CONFIG_COMMANDS([default],[chmod a+x etc/getbuildopt scripts/u8_install_shared scripts/u8_gzinstall],[])
 AC_OUTPUT

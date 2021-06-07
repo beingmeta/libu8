@@ -32,7 +32,7 @@ typedef struct U8_XPTR {
   void (*u8x_freefn)(void *);
   void *u8x_ptrval;} *u8_xptr;
 
-void (*u8_xptr_freefn)(struct U8_XPTR *);
+typedef void (*u8_xptr_freefn)(struct U8_XPTR *);
 
 
 #endif /* LIBU8_U8XPTR_H */
