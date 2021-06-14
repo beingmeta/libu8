@@ -9232,7 +9232,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
 
 
   case $ac_file$ac_mode in
-    "default":C) chmod a+x etc/getbuildopt scripts/u8_install_shared scripts/u8_gzinstall scripts/u8_zipup ;;
+    "default":C) chmod a+x etc/getbuildopt scripts/u8_install_shared scripts/u8_gzinstall ;;
 
   esac
 done # for ac_tag
