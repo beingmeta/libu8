@@ -4,12 +4,18 @@ find_control_file ( ) {
     local suffix=${2:-.pid}
     local base=$(basename $arg ${suffix})
     local ctl_file=${base}.${suffix}
-    if [ -f ${arg} ]; then
+    if [ -f _/${arg} ]; then
+	echo _/${arg};
+    elif [ -f _/${arg}.${suffix} ]; then
+	echo _/${arg}.${suffix};
+    elif [ -f _/${ctl_file} ]; then
+	echo _/${ctl_file};
+    elif [ -f ${arg} ]; then
 	echo ${arg};
     elif [ -f ${arg}.${suffix} ]; then
 	echo ${arg}.${suffix};
     elif [ -f ${ctl_file} ]; then
-	echo ${pid_file};
+	echo ${ctl_file};
     else for dir in "${U8_RUNDIR}" "${U8RUNDIR}" ${U8RUNDIRS}; do
 	     if [ -f ${dir}/${ctl_file} ]; then
 		 echo ${dir}/${ctl_file};
@@ -43,7 +49,7 @@ case ${ctl_base} in
 	ctl_path=${ctl_base};
 	;;
     *)
-	ctl_path=$(pwd)${ctl_base};
+	ctl_path=$(pwd)/${ctl_base};
 	;;
 esac;
 cmd=${2:-default}

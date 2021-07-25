@@ -315,7 +315,10 @@ int main(int argc,char *argv[])
 
   if (run_dir == NULL) {
     run_dir = xgetenv("U8RUNDIR","RUNDIR");
-    if (run_dir == NULL) run_dir = u8_getcwd();}
+    if (run_dir == NULL) {
+      if ( (u8_directoryp("_")) && (u8_file_writablep("_")) )
+        run_dir = u8_abspath("_",NULL);
+      else run_dir = u8_getcwd();}}
 
   if ( (! (u8_directoryp(run_dir)) ) ||
        (! (u8_file_writablep(run_dir)) ) ) {
