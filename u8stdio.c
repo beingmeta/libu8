@@ -70,28 +70,26 @@ static int stdio_logger(int priority,u8_condition c,u8_string msg)
     syslog(priority,"%s",indented);}
   else NO_ELSE;
 #endif
-  if (priority<0) {
-    do_output(stdout,prefix,level,c,indented);
-    fflush(stdout);
-    if ((indented)&&(msg!=indented)) u8_free(indented);
-    return 1;}
-  else if (priority>u8_loglevel) {
+  if (epriority>u8_loglevel) {
     if ((indented)&&(msg!=indented)) u8_free(indented);
     return 0;}
   if (stdoutISstderr<0) u8_check_stdio();
   if (stdoutISstderr) {
-    if ((priority <= u8_stderr_loglevel) ||
-	(priority <= u8_stdout_loglevel)) {
+    if (epriority <= u8_stderr_loglevel) {
       do_output(stderr,prefix,level,c,indented);
       if ((indented)&&(msg!=indented)) u8_free(indented);
       return 1;}
+    else if (epriority <= u8_stdout_loglevel) {
+        do_output(stdout,prefix,level,c,indented);
+        if ((indented)&&(msg!=indented)) u8_free(indented);
+        return 1;}
     else {
       if ((indented)&&(msg!=indented)) u8_free(indented);
       return 0;}}
-  if (priority <= u8_stderr_loglevel) {
+  if (epriority <= u8_stderr_loglevel) {
     do_output(stderr,prefix,level,c,indented);
     output=1;}
-  if (priority <= u8_stdout_loglevel) {
+  if (epriority <= u8_stdout_loglevel) {
     do_output(stdout,prefix,level,c,indented);
     fflush(stdout);
     output=1;}

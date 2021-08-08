@@ -106,6 +106,9 @@
 #define LOGF_DELUGE   (-(LOG_DELUGE))
 #define LOGF_GLUT     (-(LOG_GLUT))
 
+#define U8_LOG_NEVER (-1)
+#define U8_NEVER_LOG (-1)
+
 /* With U8 prefixes, just in case */
 #define U8_LOG_WARNING LOG_WARNING
 #define U8_LOG_WARN LOG_WARNING
@@ -189,8 +192,8 @@ U8_EXPORT int u8_loglevel, u8_logger_initialized;
    unless the overall loglevel is lower than debug.
 */
 U8_EXPORT int u8_stdout_loglevel, u8_stderr_loglevel, u8_syslog_loglevel;
-#define U8_DEFAULT_STDOUT_LOGLEVEL LOG_DEBUG
-#define U8_DEFAULT_STDERR_LOGLEVEL LOG_ERROR
+#define U8_DEFAULT_STDOUT_LOGLEVEL U8_LOG_NEVER
+#define U8_DEFAULT_STDERR_LOGLEVEL LOG_WARN
 #define U8_DEFAULT_SYSLOG_LOGLEVEL LOG_CRIT
 
 U8_EXPORT u8_string u8_loglevels[];
