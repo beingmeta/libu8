@@ -154,7 +154,7 @@ U8_EXPORT int u8_default_logger(int priority,u8_condition c,u8_string message)
    while specifying a descriptive loglevel. In particular, if the log
    level is negative, it is always output using an effective loglevel
    which is the positive complement of the negative loglevel. */
-  unsigned int epriority = (priority < 0) ? (-priority) : (priority);
+  unsigned int rv = 0, epriority = (priority < 0) ? (-priority) : (priority);
   u8_string level = (epriority < U8_MAX_LOGLEVEL) ?
     (u8_loglevels[epriority]) :
     (NULL);
@@ -168,13 +168,10 @@ U8_EXPORT int u8_default_logger(int priority,u8_condition c,u8_string message)
   if ((u8_logindent)&&(u8_logindent[0])&&(strchr(message,'\n')))
     indented=u8_indent_text(message,u8_logindent);
   if (!(indented)) indented=message;
-  if ((priority<0)||(epriority<=u8_stdout_loglevel)) {
-    do_output(stdout,prefix,level,c,indented);
-    if ((indented)&&(indented!=message)) u8_free(indented);
-    fflush(stdout);
-    return 1;}
-  if (epriority<=u8_stderr_loglevel)
-    do_output(stderr,prefix,level,c,indented);
+  if ((priority<0)||(epriority<=u8_stderr_loglevel)) {
+    do_output(stderr,prefix,level,c,indented); rv=1;}
+  if (epriority<=u8_stdout_loglevel) {
+    do_output(stdout,prefix,level,c,indented); rv=1;}
   if ((indented)&&(indented!=message)) u8_free(indented);
   return 0;
 }
