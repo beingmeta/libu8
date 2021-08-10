@@ -63,8 +63,8 @@ have_constructor_attributes="yes"
 archflags=""
 definefileinfo=""
 versionsh=""
-doxygen=""
-ronn=ronn
+doxygen=$(which doxygen)
+ronn=$(which ronn || which ronn-2.7)
 default_buildopts_dir="\$prefix/etc/beingmeta/opts"
 
 if test -z "${U8PATCHLEVEL}"; then
@@ -355,11 +355,9 @@ fi
 
 AC_CHECK_PROGS(git,"git","na")
 AC_CHECK_PROGS(etags,"etags","na")
-AC_CHECK_PROGS(doxygen,"doxygen","na")
 AC_CHECK_PROGS(buildrpm,"lsb-rpmbuild","rpmbuild","lsb-rpm","rpm","na")
 AC_CHECK_PROGS(rpm,"lsb-rpm","rpm","na")
 AC_CHECK_PROG(CREATEREPO,createrepo,,echo No createrepo for )
-AC_CHECK_PROGS(ronn,"ronn","ronn2.7")
 
 AC_CHECK_PROGS(GZIP,"gzip","na")
 AC_CHECK_PROGS(ZIP,"zip","zip")
