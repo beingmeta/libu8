@@ -788,7 +788,7 @@ rpms: dist/rpms.done
 
 install-rpms rpminstall installrpms: dist/rpms.installed
 dist/rpms.installed: dist/rpms.done
-	$(SUDO) rpm -Uvh dist/*.rpm && touch $@
+	$(SUDO) rpm -Uvh dist/*.rpm dist/@target_cpu@/*.rpm && touch $@
 
 cleandist cleanrpms cleandeb rpmclean debclean:
 	@rm -rf dist/rpms.done dist/rpms.ready
