@@ -92,7 +92,7 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
   const unsigned char *reader, *limit;
   u8_byte *start=(u8_byte *)xf->u8_inbuf, *cur=(u8_byte *)xf->u8_read;
   u8_byte *end=(u8_byte *)xf->u8_inlim;
-  int blocking=u8_get_blocking(xf->u8_xfd);
+  /* int blocking=u8_get_blocking(xf->u8_xfd); */
   if (cur>start) {
     /* First, if we've read anything at all, remove it, compressing the
        input buffer to make more space. */

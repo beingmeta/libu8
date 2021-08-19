@@ -155,7 +155,7 @@ U8_EXPORT ssize_t u8_physmem()
 #endif
 }
 
-static int avphysmem_warning=0;
+/* static int avphysmem_warning=0; */
 
 U8_EXPORT ssize_t u8_avphysmem()
 {
@@ -175,7 +175,7 @@ U8_EXPORT ssize_t u8_avphysmem()
 U8_EXPORT double u8_memload()
 {
 #if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE))&&(defined(_SC_PHYS_PAGES)))
-  ssize_t pagesize=sysconf(_SC_PAGESIZE);
+  /* ssize_t pagesize=sysconf(_SC_PAGESIZE); */
   ssize_t memuse=u8_memusage();
   ssize_t availmem=u8_avphysmem();
   if ((memuse<0)||(availmem<0)) {
@@ -191,7 +191,7 @@ U8_EXPORT double u8_memload()
 U8_EXPORT double u8_vmemload()
 {
 #if ((HAVE_SYSCONF)&&(defined(_SC_PAGESIZE))&&(defined(_SC_PHYS_PAGES)))
-  ssize_t pagesize=sysconf(_SC_PAGESIZE);
+  /* ssize_t pagesize=sysconf(_SC_PAGESIZE); */
   ssize_t vmemuse=u8_vmemusage();
   ssize_t availmem=u8_avphysmem();
   if ((vmemuse<0)||(availmem<0)) {

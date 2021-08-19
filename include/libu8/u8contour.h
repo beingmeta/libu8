@@ -198,7 +198,6 @@ static void u8_pop_contour(u8_contour contour)
 {
   u8_contour next, cur=u8_dynamic_contour;
 
-  int i, n; void **blocks;
   if (contour==NULL) contour=cur;
   else if (contour!=cur) {
     /* This could be rewritten to be a little safer.

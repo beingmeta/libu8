@@ -666,7 +666,8 @@ time_t u8_iso8601_to_xtime(u8_string s,struct U8_XTIME *xtp)
   if (n_elts == 7) {
     const char *start=s+pos[n_elts], *scan=start;
     int n_digits=0;
-    while (isdigit(*scan)) scan++; n_digits=scan-start;
+    while (isdigit(*scan)) scan++;
+    n_digits=scan-start;
     if (n_digits==9) {
       xtp->u8_nsecs=nsecs;
       xtp->u8_prec=u8_nanosecond;}

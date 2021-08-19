@@ -80,7 +80,7 @@ u8_charoff _u8_charoffset(u8_string s,u8_byteoff i)
 
 u8_buf u8_strncpy(u8_buf dest,u8_string src,size_t n)
 {
-  u8_string scan=src, lim=src+n, end;
+  u8_string scan=src, lim=src+n, end=src;
   while ((*scan) && (scan < lim)) {
     int c=u8_sgetc(&scan);
     // TODO: Handle combining characters
@@ -93,10 +93,9 @@ u8_buf u8_strncpy(u8_buf dest,u8_string src,size_t n)
 u8_buf _u8_strdup(u8_string s)
 {
   CHECK_NULL_STRING(s,"u8_strdup",NULL);
-  int len=strlen(s); int newlen=len+1;
-  newlen=(((newlen%4)==0)?(newlen):(((newlen/4)+1)*4));
-  u8_byte *nstring=u8_malloc(newlen);
-  strncpy(nstring,s,len); nstring[len]='\0';
+  ssize_t len=strlen(s);
+  u8_byte *nstring=u8_malloc(len+1);
+  strncpy(nstring,s,len+1);
   return (u8_buf)nstring;
 }
 u8_buf u8_strndup(u8_string s,int len)
@@ -549,7 +548,7 @@ U8_EXPORT u8_string u8_indent_text(u8_string input,u8_string indent)
     while ((scan=strchr(read,'\n'))) {
       int n_bytes=scan-read;
       strncpy(write,read,n_bytes); write=write+n_bytes; *write++='\n';
-      strncpy(write,indent,indent_len); write=write+indent_len;
+      strncpy(write,indent,indent_len+1); write=write+indent_len;
       read=scan+1;}
     strcpy(write,read);
     return (u8_string)output;}
@@ -644,7 +643,6 @@ static u8_string _u8_strchr(u8_string s,int needle,u8_string *end)
 U8_EXPORT u8_string u8_strchr(u8_string haystack,int needle,int n)
 {
   CHECK_NULL_STRING(haystack,"u8_strchr",NULL);
-  u8_string result=NULL;
   if (n==1) {
     return _u8_strchr(haystack,needle,NULL);}
   else if (n>=0) {
@@ -673,10 +671,9 @@ U8_EXPORT u8_string u8_strstr(u8_string haystack,u8_string needle,int n)
 {
   CHECK_NULL_STRING(haystack,"u8_strstr/haystack",NULL);
   CHECK_NULL_STRING(needle,"u8_strstr/needle",NULL);
-  u8_string result=NULL;
   size_t needle_len=strlen(needle);
   if (n>=0) {
-    const u8_byte *end=NULL, *last=NULL;
+    const u8_byte *last=NULL;
     const u8_byte *match=strstr(haystack,needle);
     while (match) {
       if (n==0) return match;
@@ -688,7 +685,7 @@ U8_EXPORT u8_string u8_strstr(u8_string haystack,u8_string needle,int n)
   /* There should be a good way to handle the n<0 case, but I can't
      come up with it now. */
   else if (n==-1) {
-    const u8_byte *last=NULL, *end=NULL;
+    const u8_byte *last=NULL;
     const u8_byte *match=strstr(haystack,needle);
     while (match) {
       last=match;

@@ -81,17 +81,6 @@ static u8_string procpath(u8_string job_id,u8_string suffix)
     return path;}
 }
 
-static u8_string logpath(u8_string job_id,u8_string suffix)
-{
-  if ( (strchr(job_id,'/')) || (strchr(job_id,'.')) )
-    return u8_string_append(job_id,".",suffix,NULL);
-  else {
-    u8_string name = u8_string_append(job_id,".",suffix,NULL);
-    u8_string path = u8_mkpath(log_dir,name);
-    u8_free(name);
-    return path;}
-}
-
 static void write_pid_file(u8_string);
 static void write_ppid_file(u8_string);
 static pid_t kill_child(u8_string job_id,pid_t pid,u8_string pid_file);
@@ -196,9 +185,9 @@ double xgetenv_float(u8_string var,u8_string backup,double dflt)
   return floval;
 }
 
-static int n_cycles=0, doexit=0, paused=0, restart=0;
+static int doexit=0, paused=0, restart=0;
 static double last_launch = -1, fast_fail = 3, fail_start=-1;
-static double restart_wait=0, error_wait=1.0, max_wait=120, backoff=10;
+static double restart_wait=0, max_wait=120, backoff=10;
 static double pid_wait=0, pid_min_wait=2.0;
 
 static void launch_loop(u8_string job_id,char **launch_args,int n_args);
@@ -621,7 +610,6 @@ static pid_t dolaunch(char **launch_args)
   if (user_spec) run_user   = u8_getuid(user_spec);
   if (group_spec) run_group = u8_getgid(group_spec);
   if (umask_init) umask_value = parse_umask(umask_init);
-  double now = u8_elapsed_time();
   last_launch = u8_elapsed_time();
   write_cmd_file(launch_args);
   pid_t pid = (run_without_fork) ? (0) : (fork());
@@ -686,24 +674,28 @@ static void log_signal(int signum,siginfo_t *info,void *stuff)
 
 static void siginfo_cont(int signum,siginfo_t *info,void *stuff)
 {
+  log_signal(signum,info,stuff);
   paused = 0;
   restart = 1;
 }
 
 static void siginfo_exit(int signum,siginfo_t *info,void *stuff)
 {
+  log_signal(signum,info,stuff);
   paused = 0;
   doexit = 1;
 }
 
 static void siginfo_hup(int signum,siginfo_t *info,void *stuff)
 {
+  log_signal(signum,info,stuff);
   paused = 0;
   restart = 1;
 }
 
 static void siginfo_pause(int signum,siginfo_t *info,void *stuff)
 {
+  log_signal(signum,info,stuff);
   paused = 1;
 }
 
@@ -741,6 +733,7 @@ static void exit_u8run()
   if (ppid_file) {
     u8_string filename = ppid_file;
     int rv = u8_removefile(filename);
+    if (rv<0) u8_log(LOGERR,"FileRemoveFailed","For %s",filename);
     ppid_file=NULL;
     u8_free(filename);}
 }
@@ -795,7 +788,6 @@ static void launch_loop(u8_string job_id,char **launch_args,int n_args)
 
   double started = u8_elapsed_time();
   pid_t pid = dolaunch(launch_args);
-  int n_cycles = 1;
 
   while (pid>0) {
     int status = 0;

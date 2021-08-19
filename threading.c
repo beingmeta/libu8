@@ -484,6 +484,10 @@ U8_EXPORT void u8_initialize_threading(void)
   if (threading_initialized) return;
   threading_initialized=time(NULL);
 
+  u8_stack_direction=get_stack_direction();
+  if (u8_stack_direction==0) 
+    u8_log(LOGCRIT,"NoStackDirection","Couldnt' determine stack direction");
+
   memset(&u8_default_mutex_attr,0,sizeof(u8_default_mutex_attr));
   memset(&u8_recursive_mutex_attr,0,sizeof(u8_recursive_mutex_attr));
 

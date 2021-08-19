@@ -173,7 +173,7 @@ U8_EXPORT int u8_default_logger(int priority,u8_condition c,u8_string message)
   if (epriority<=u8_stdout_loglevel) {
     do_output(stdout,prefix,level,c,indented); rv=1;}
   if ((indented)&&(indented!=message)) u8_free(indented);
-  return 0;
+  return rv;
 }
 #endif
 
@@ -247,6 +247,7 @@ U8_EXPORT void u8_log_break(int loglevel,u8_condition c)
 {
   int v=2;
   /* This is a good place to set a breakpoint */
+  v = v*2;
 }
 
 /* Figuring out the prefix for log messages */

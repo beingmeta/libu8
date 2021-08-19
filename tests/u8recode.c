@@ -11,7 +11,6 @@ U8_EXPORT void u8_init_convert_c(void);
 
 int main(int argc,char **argv)
 {
-  int retval=0;
   char *escape=getenv("U8ESCAPE");
   int escape_char=((escape) ? (escape[0]) : (0));
   u8_init_convert_c();
@@ -43,7 +42,11 @@ int main(int argc,char **argv)
     outbuf=u8_localize(out_enc,&reader,stream.u8_write,
 		       escape_char,0,
 		       NULL,&out_size);
-    retval=fwrite(outbuf,1,out_size,out);
-    if (argc>4) fclose(out);}
+    ssize_t retval=fwrite(outbuf,1,out_size,out);
+    int err = errno;
+    if (argc>4) fclose(out);
+    if (retval<0) {
+      u8_log(LOGERR,"WriteFailed","%s (%d)",u8_strerror(err),err);
+      return -1;}}
   return 0;
 }

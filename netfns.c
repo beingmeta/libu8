@@ -959,6 +959,7 @@ U8_EXPORT u8_string u8_sessionid()
 
 /** Dealing with timeouts **/
 
+#if 0
 #if WIN32
 static int set_noblock(int socket)
 {
@@ -995,6 +996,7 @@ static U8_MAYBE_UNUSED int reset_flags(int fd,int flags)
 {
   return fcntl(fd,F_SETFL,flags);
 }
+#endif
 #endif
 
 #if WIN32

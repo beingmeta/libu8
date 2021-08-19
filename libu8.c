@@ -343,7 +343,7 @@ U8_EXPORT char *u8_write_long_long(long long l,char *buf, size_t buflen)
 {
   char _buf[64]; 
   char *write=_buf, *read; size_t outlen=0;
-  long long scan=l, weight=scan/10;
+  long long scan=l;
   while (scan>0) {
     int weight=scan%10;
     if (outlen>=buflen) {
@@ -809,7 +809,7 @@ U8_EXPORT void *u8_big_alloc(ssize_t n)
   if (base == NULL) {
     unsigned char buf[32];
     u8_string size_string = u8_uitoa10(n,buf);
-    u8_graberrno("u8_big_alloc",u8_strdup(buf));
+    u8_graberrno("u8_big_alloc",u8_strdup(size_string));
     return NULL;}
   ssize_t *head = (ssize_t *) base;
   *head = -n;

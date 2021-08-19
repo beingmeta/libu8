@@ -114,7 +114,7 @@ static u8_string get_grname(u8_gid gid)
 }
 U8_EXPORT u8_string u8_groupname(u8_gid gid)
 {
-  return get_uname(gid);
+  return get_grname(gid);
 }
 U8_EXPORT u8_gid u8_getgid(u8_string name)
 {
@@ -303,6 +303,20 @@ U8_EXPORT int u8_file_readablep(u8_string filename)
   u8_free(lpath);
   return retval;
 }
+U8_EXPORT int u8_file_executablep(u8_string filename)
+{
+  char *lpath=u8_localpath(filename);
+  int retval=file_executablep(filename);
+  if (retval<0) {
+    if (errno) {
+      u8_log(LOG_WARN,"u8_file_executablep","Error for '%s' (%s)",
+             lpath,strerror(errno));
+      errno=0;}
+    else u8_log(LOG_WARN,"u8_file_executablep","Error for '%s'",lpath);
+    retval=0;}
+  u8_free(lpath);
+  return retval;
+}
 U8_EXPORT int u8_file_writablep(u8_string filename)
 {
   char *lpath=u8_localpath(filename);
@@ -337,7 +351,6 @@ U8_EXPORT int u8_file_regularp(u8_string filename)
     return 1;
   else return 0;
 }
-
 
 /* File info */
 

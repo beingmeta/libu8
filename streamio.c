@@ -474,8 +474,7 @@ u8_string u8_gets_x(u8_byte *buf,int len,
                     struct U8_INPUT *f,u8_string eos,
                     ssize_t *sizep)
 {
-  const u8_byte *found=NULL, *start=f->u8_read, *end=NULL;
-  int size, ec=-1;
+  const u8_byte *found=NULL, *start=f->u8_read;
   while (((found=strstr(start,eos))==NULL)||(found>f->u8_inlim)) {
     int start_pos=f->u8_inlim-f->u8_read, retval=0;
     /* Quit if we have length constraints which
@@ -487,7 +486,7 @@ u8_string u8_gets_x(u8_byte *buf,int len,
       return NULL;}
     start=f->u8_read+start_pos;}
   if (found) {
-    size=(found-f->u8_read);
+    ssize_t size=(found-f->u8_read);
     if (sizep) *sizep=size;
     /* No data, return NULL */
     if ((buf) && (size>=len)) return NULL;
