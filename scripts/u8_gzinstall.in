@@ -11,7 +11,7 @@ elif [ "${SRC/%.gz//}" != "${SRC}" ]; then
 elif [ -d "${DEST}" ]; then
    echo "GZIP to directory"
    @GZIP@ -cf ${SRC} > ${DEST}/$(basename ${SRC}).gz;
-elif [ "${DEST/%.gz//}" != "${DEST}" ]; then
+elif [ "${DEST#.gz}" != "${DEST}" ]; then
    echo "GZIP to file (already .gz)"
    @GZIP@ -cf ${SRC} > ${DEST}.gz;
 else
