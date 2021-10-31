@@ -1,12 +1,19 @@
 #!/bin/sh
 REV_FILE=$1
-if [ ! -f ${REV_FILE} ]; then
-    echo "Usage: u8_gitversion *releasefile*";
+FORMAT=$2
+if [ $# = 0 ] || [ -z ${REV_FILE} ] || [ ! -f ${REV_FILE} ]; then
+    echo 'Usage: u8_gitversion *releasefile*" [*format*]';
+    echo "  Generates a version ID based on *releasefile* with additional information from git,";
+    echo "    possibly including include the current branch, the last commit ID, ";
+    echo "    or the # of commits since *releasefile* was committed";
+    echo "  *format* can be 'full' for all information, 'nobranch' for just the # of commits,";
+    echo "    or 'branch' for both the branch and # of commits"
     exit 2;
 fi;
 BASE_VERSION=$(cat ${REV_FILE})
 if [ ! -d .git ] || ! which git > /dev/null; then
     echo "${BASE_VERSION}";
+    echo "Warning: No git executable" >2
     exit;
 fi;
 CUR_COMMIT=$(git log -n 1 --no-decorate | head -1 | cut -d' ' -f2)
@@ -18,7 +25,7 @@ if [ -z "${N_COMMITS}" ]; then N_COMMITS="0"; fi;
 if [ -z "${BRANCH_NAME}" ]; then
     BRANCH_NAME="-nobranch";
 fi;
-if [ $# -eq 1 ]; then
+if [ -z "${FORMAT}" ]; then
     if [ ${BRANCH_NAME} = "main" ] || 
        [ ${BRANCH_NAME} = "trunk" ] || 
        [ ${BRANCH_NAME} = "master" ] || 
@@ -27,16 +34,27 @@ if [ $# -eq 1 ]; then
     else
 	echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
     fi;
-elif [ $2 = "full" ]; then
+elif [ ${FORMAT} = "full" ]; then
     if [ ! -z "${CUR_COMMIT}" ]; then CUR_COMMIT="-${CUR_COMMIT}"; fi;
     if [ ! -z "${BASE_COMMIT}" ]; then BASE_COMMIT="-${BASE_COMMIT}"; fi;
     echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS}${CUR_COMMIT}${BASE_COMMIT};
-elif [ $2 = "branch" ]; then
+elif [ ${FORMAT} = "branch" ]; then
     echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
-elif [ $2 = "nobranch" ]; then
+elif [ ${FORMAT} = "nobranch" ]; then
     echo ${BASE_VERSION}-${N_COMMITS};
-elif [ $2 = "${BRANCH_NAME}" ]; then
-    echo ${BASE_VERSION}-${N_COMMITS}
-else
-    echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
+else case ${FORMAT} in
+	 branch=*)
+	     echo ${BASE_VERSION}-${FORMAT#branch=}-${N_COMMITS};
+	     ;;
+	 unless=*)
+	     if [ "${BRANCH_NAME}" = "${FORMAT#unless=}" ]; then
+		 echo ${BASE_VERSION}-${N_COMMITS};
+	     else
+		 echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
+	     fi;
+	     ;;
+	 *)
+	     echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};	 
+	     ;;
+     esac;
 fi;

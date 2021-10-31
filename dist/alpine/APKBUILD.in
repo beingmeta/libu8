@@ -56,5 +56,5 @@ static() {
 doc() {
         cd ${builddir}
 	#echo "@doc pwd=$(pwd) startdir=${startdir} srcdir=${srcdir} pkgdir=${pkgdir} builddir=${builddir} subpkgdir=${subpkgdir}"
-        make DESTDIR="${subpkgdir}" SUDO= install-core-manpages.gz install-dev-manpages.gz
+        make DESTDIR="${subpkgdir}" GZIPMAN=yes SUDO= install-core-manpages install-dev-manpages
 }

@@ -742,41 +742,31 @@ libu8.org: docs/doxygen.done
 install-core-manpages: alldocs
 	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
-	@for manpage in docs/man/*.1; do 								\
-	  if test -f "$${manpage}"; then 								\
-	    ${SUDO} ${INSTALL} $${manpage} $(MANDIR)/man1/$$(basename $$manpage);			\
-	   fi; 												\
-	 done; 												\
+	@for manpage in docs/man/*.1; do 				\
+	  if test -f "$${manpage}"; then				\
+	    base=$$(basename $${manpage});				\
+	    if [ ! -z "${GZIPMAN}" ] && [ ! -z ${GZIP} ]; then 		\
+	      ${GZIP} -fk $${manpage} && 				\
+		manpage=$${manpage}.gz && 				\
+		base=$${base}.gz; fi;					\
+	    (${SUDO} ${INSTALL} $${manpage} $(MANDIR)/man1/$${base});	\
+	   fi; 								\
+	 done;
 
 install-dev-manpages: alldocs
 	@echo "# (libu8)" "Writing man pages from doxygen"
 	@$(SUDO) $(INSTALL) -d $(MANDIR);
 	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
-	@for manpage in docs/man/man3/*.3; do 								\
-	  if test -f "$${manpage}"; then 								\
-	    ${SUDO} ${INSTALL} $${manpage} $(MANDIR)/man3/$$(basename $$manpage);			\
-	   fi; 												\
-	 done; 												\
-
-install-core-manpages.gz: alldocs
-	@echo "# (libu8)" "Writing man pages from doxygen"
-	@$(SUDO) $(INSTALL) -d $(MANDIR);
-	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
-	 for manpage in docs/man/*.1; do 								\
-	  if test -f "$${manpage}"; then 								\
-	    ${SUDO} ./scripts/u8_gzinstall $${manpage} $(MANDIR)/man1/$$(basename $$manpage);		\
-	   fi; 												\
-	 done; 												\
-
-install-dev-manpages.gz: alldocs
-	@echo "# (libu8)" "Writing man pages from doxygen"
-	@$(SUDO) $(INSTALL) -d $(MANDIR);
-	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
-	@for manpage in docs/man/man3/*.3; do 								\
-	  if test -f "$${manpage}"; then 								\
-	    ${SUDO} ./scripts/u8_gzinstall $${manpage} $(MANDIR)/man3/$$(basename $$manpage);		\
-	   fi; 												\
-	 done; 												\
+	@for manpage in docs/man/man3/*.3; do\
+	  if test -f "$${manpage}"; then 				\
+	    base=$$(basename $${manpage});				\
+	    if [ ! -z "${GZIPMAN}" ] && [ ! -z ${GZIP} ]; then 		\
+	      ${GZIP} -fk $${manpage} && 				\
+		manpage=$${manpage}.gz && 				\
+		base=$${base}.gz; fi;					\
+	    (${SUDO} ${INSTALL} $${manpage} $(MANDIR)/man3/$${base});	\
+	   fi; 								\
+	 done;
 
 # Packaging targets
 
