@@ -2,10 +2,17 @@
 usage() {
     echo "Usage: u8_xsubst <infile> <outfile> [<str> <replace>]...";
 }
-OUTPUT=$1
-shift;
+if [ $# -lt 2 ]; then
+    usage;
+    return;
+fi
 INPUT=$1
 shift;
+OUTPUT=$1
+shift;
+if [ "${OUTPUT}" = "inplace" ]; then
+    OUTPUT=${INPUT};
+fi
 cp $INPUT $OUTPUT.tmp;
 EDIT_ARGS=
 while [ $# -gt 1 ]; do
@@ -13,7 +20,7 @@ while [ $# -gt 1 ]; do
     EDIT_EXPR="s/@${find}@/${replace}/g"
     EDIT_ARGS="${EDIT_ARGS} -e ${EDIT_EXPR}";
     done;
-echo EDIT_ARGS=${EDIT_ARGS}
+#echo EDIT_ARGS=${EDIT_ARGS}
 if [ ! -z "${EDIT_ARGS}" ]; then
     sed -i ${EDIT_ARGS} ${OUTPUT}.tmp
 else
