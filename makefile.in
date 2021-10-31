@@ -770,7 +770,7 @@ install-dev-manpages: alldocs
 
 # Packaging targets
 
-debian deb debs: dist/debs.done
+debian deb debs: dist/debian.done
 rpms: dist/rpms.done 
 .PHONY: rpms debian debs
 
@@ -780,13 +780,14 @@ install-rpms rpminstall installrpms: dist/rpms.installed
 dist/rpms.installed: dist/rpms.done
 	$(SUDO) rpm -Uvh dist/*.rpm dist/@target_cpu@/*.rpm && touch $@
 
-cleandist cleanrpms cleandeb rpmclean debclean:
-	@rm -rf dist/rpms.done dist/rpms.ready
-	@rm -rf dist/debs.built dist/debs.signed dist/debs.done
-	@rm -f dist/*.deb dist/*.tar dist/*.gz dist/*.changes dist/*.dsc
-	@find dist -name "*.rpm" | xargs -r rm
-	@rm -rf staging/libu8*
-.PHONY: cleandist cleanrpms cleandeb rpmclean debclean
+pkgclean: 
+	rm -f dist/*.built dist/*.signed dist/*.done dist/*.ready dist/*.installed
+	rm -rf staging/libu8* staging/*.tar staging/*.gz dist/*.tar dist/*.gz
+	rm -f dist/*.deb dist/*.dsc dist/*.changes dist/*.buildinfo
+	find dist -name "*.rpm" -writable | xargs -r rm
+	rm -rf staging/alpine*
+cleandist cleanrpms cleandeb rpmclean debclean: pkgclean
+.PHONY: cleandist cleanrpms cleandeb rpmclean debclean pkgclean
 
 # Making a source tarball
 
@@ -831,26 +832,31 @@ staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	@make staging/libu8-@U8VERSION@
 	@tar -czvf $@ -C staging libu8-@U8VERSION@
 
-dist/rpms.ready: staging/libu8-@U8VERSION@ \
-	staging/libu8-@U8VERSION@.tar.gz
+dist/rpms.ready:
+	(make staging/libu8-@U8VERSION@.tar.gz) && touch $@
+
+dist/rpms.built: staging/libu8-@U8VERSION@ staging/libu8-@U8VERSION@.tar.gz
 	@@buildrpm@ $(RPMFLAGS)  			\
 	   --define="_rpmdir $(RPMDIR)"			\
 	   --define="_srcrpmdir $(RPMDIR)" 		\
 	   --nodeps -ta 				\
 	    staging/libu8-@U8VERSION@.tar.gz && 	\
 	touch dist/rpms.ready
-dist/rpms.done: dist/rpms.ready
-	@if (test "$(GPGID)" = "none" || test "$(GPGID)" = ""); then	\
-	    touch dist/rpms.done;					\
-	 else 							\
-	     echo "# (libu8) Enter passphrase for '$(GPGID)':";		\
-	     @rpm@ --addsign --define="_gpg_name $(GPGID)" 		\
+
+dist/rpms.signed: dist/rpms.built
+	echo "# (libu8) Enter passphrase for '$(GPGID)':";		\
+	@rpm@ --addsign --define="_gpg_name $(GPGID)" 		\
 		--define="__gpg_sign_cmd $(RPMGPG)" 			\
 		$(RPMDIR)/libu8-@U8VERSION@*.src.rpm 			\
-		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm; 			\
-	fi && touch dist/rpms.done;
-	@ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
 		$(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
+
+dist/rpms.done: dist/rpms.built
+	@(if (test "$(GPGID)" = "none" || test "$(GPGID)" = ""); then	\
+	    echo "Skipping RPM signing";			 	\
+	  else make dist/rpms.signed) && 				\
+	  @touch $@ && 							\
+	  ls -l $(RPMDIR)/libu8-@U8VERSION@-*.src.rpm 			\
+	        $(RPMDIR)/*/libu8*-@U8VERSION@-*.rpm;
 
 rpmupdate update-rpms freshrpms rpmfresh: cleanrpms
 	@rm -f dist/rpms.done dist/rpms.ready
@@ -866,33 +872,34 @@ dist/rpms.zip: dist/rpms.done
 
 # Rules for debian building
 
-dist/debs.built: REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+dist/debian.built: REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	make staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.tar.gz && \
 	(cd staging/libu8_@U8VERSION@; \
 	  dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
 	  mv staging/libu8_@U8VERSION@*.gz dist && 	\
 	  mv staging/libu8*_@U8VERSION@*.* dist && 	\
-	  touch dist/debs.built;
-dist/debs.signed: dist/debs.built
-	@(if test "${GPGID}" = "none" || test "${GPGID}" = ""; then 			\
-	    echo "Skipping GPG signing of debian packages";  				\
-	  else debsign -p${GPG} --re-sign -k${GPGID} dist/libu8_@U8VERSION@*.changes; fi) && \
-	  touch dist/debs.signed;
+	  touch dist/debian.built;
+dist/debian.signed: dist/debian.built
+	 debsign -p${GPG} --re-sign -k${GPGID} dist/libu8_@U8VERSION@*.changes; fi) && touch $@;
 
-dist/debs.done: @DEB_BUILD_TARGET@
-	@touch dist/debs.done
+dist/debian.done: dist/debian.built
+	@(if test "${GPGID}" = "none" || test "${GPGID}" = ""; then 	\
+	    echo "Skipping GPG signing of debian packages";  		\
+	  else make dist/debian.signed) && 				\
+	 touch $@ && 							\
+	ls dist/libu8*@U8VERSION@*;
 
-install-debian install-debian debinstall installdeb: dist/debs.installed
+install-debian install-debian debinstall installdeb: dist/debian.installed
 
 # We install twice because sometimes, when a file is moved from one package into another,
 #  it works, while still failing for more serious reasons
-dist/debs.installed: dist/debs.done
+dist/debian.installed: dist/debian.done
 	@$(SUDO) dpkg -i dist/libu8*@U8VERSION@*.deb && touch $@
-install-debian install-debs debinstall installdebs: dist/debs.installed
+install-debian install-debs debinstall installdebs: dist/debian.installed
 
-dist/debs.uploaded: dist/debs.done
+dist/debian.uploaded: dist/debian.done
 	@./scripts/u8_dupload dist/libu8_@U8VERSION@*.changes ${APT_INCOMING} && touch debs.uploaded
-update-apt apt-upload: dist/debs.uploaded
+update-apt apt-upload: dist/debian.uploaded
 
 .PHONY: install-debian install-debian debinstall installdeb update-apt
 
@@ -940,19 +947,25 @@ staging/alpine/libu8-@U8VERSION@.tar.gz: REVISION staging/alpine
 	cd staging/alpine; tar -czf libu8-@U8VERSION@.tar.gz libu8;
 	rm -rf staging/alpine/libu8 staging/alpine/libu8-@U8VERSION@.tar
 
-dist/alpine.setup: staging/alpine/APKBUILD include/libu8/revision.h makefile
+dist/alpine.ready: staging/alpine/APKBUILD include/libu8/revision.h makefile
 	make staging/alpine/libu8-@U8VERSION@.tar.gz staging/alpine/APKBUILD && \
 	if test ! -d ${APK_ARCH_DIR}; then mkdir -p ${APK_ARCH_DIR}; fi && \
-	( cd staging/alpine; abuild -P ${APKREPO} clean cleancache cleanpkg && abuild -P ${APKREPO} checksum ) && \
+	( cd staging/alpine; \
+	  abuild -P ${APKREPO} clean cleancache cleanpkg && \
+	  abuild -P ${APKREPO} checksum ) && \
 	touch $@
 
 ALPINE_PKGS=libu8 libu8-dev libu8-doc libu8-static
 
-dist/alpine.done: dist/alpine.setup
-	cd staging/alpine; abuild -P ${APKREPO};
+dist/alpine.done: dist/alpine.ready
+	(cd staging/alpine; abuild -P ${APKREPO}) && touch $@
 
 dist/alpine.installed:
-	cd staging/alpine; apk add --repository=${APKREPO}/staging ${ALPINE_PKGS}
+	(cd staging/alpine; \
+	  apk add --repository=${APKREPO}/staging \
+	 	  --force-overwrite \
+	      ${ALPINE_PKGS}) && \
+	 touch $@
 
 alpine:
 	@echo APKREPO=${APKREPO}

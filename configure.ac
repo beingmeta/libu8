@@ -43,7 +43,6 @@ RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
 PKGCONFIG_DIR=
-DEB_BUILD_TARGET=dist/debs.signed
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
@@ -86,13 +85,7 @@ AC_CONFIG_HEADERS([include/libu8/u8source.h include/libu8/config.h])
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
-uname -a > /tmp/unameout
-if grep -i "alpine" /tmp/unameout; then
-   DOCINSTALL="${DOCINSTALL} install-core-manpages.gz install-dev-manpages.gz";
-else
-   DOCINSTALL="${DOCINSTALL} install-core-manpages install-dev-manpages";
-fi
-rm /tmp/unameout
+DOCINSTALL="${DOCINSTALL} install-core-manpages install-dev-manpages";
 
 case $target_os in
   linux*)
@@ -147,7 +140,6 @@ AC_SUBST(U8VERSION)
 AC_SUBST(RPMVERSION)
 AC_SUBST(DEBVERSION)
 AC_SUBST(PKGCONFIG_DIR)
-AC_SUBST(DEB_BUILD_TARGET)
 AC_SUBST(MKSTATIC)
 AC_SUBST(SUDO)
 AC_SUBST(GZIP)
@@ -332,11 +324,6 @@ fi
 
 AC_ARG_ENABLE(maintainer-mode,--en[dis]able-maintainer-mode doesn't do anything)
 AC_ARG_ENABLE(dependency-tracking,--en[dis]able-dependency-tracking doesn't do anything)
-
-AC_ARG_ENABLE(debsign,--dis[en]able-debian package signing,,enable_debsign="yes")
-if test "$enable_debsign" == "no"; then
-   DEB_BUILD_TARGET=dist/debs.built;
-fi;
 
 AC_ARG_ENABLE(stripping,--enable-stripping strip libraries and executables before installing,,enable_stripping="no")
 if test "$enable_stripping" != "no"; then
