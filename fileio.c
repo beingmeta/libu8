@@ -306,7 +306,7 @@ U8_EXPORT int u8_renew_all()
 
 /* Init function */
 
-U8_EXPORT void u8_init_fileio_c()
+void init_fileio_c()
 {
 #if U8_THREADS_ENABLED
   u8_init_mutex(&subscription_lock);

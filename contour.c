@@ -46,7 +46,7 @@ U8_EXPORT void _u8_throw_contour(u8_contour contour)
 
 /* Initialization function (just records source file info) */
 
-U8_EXPORT void u8_init_contour_c()
+void init_contour_c()
 {
 #if (U8_USE_TLS)
   u8_new_threadkey(&u8_dynamic_contour_key,NULL);

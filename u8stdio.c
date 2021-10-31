@@ -167,13 +167,6 @@ U8_EXPORT void u8_stdoutISstderr(int flag)
   stdoutISstderr=flag;
 }
 
-static int use_syslog=0;
-
-U8_EXPORT void u8_use_syslog(int flag)
-{
-  use_syslog=flag;
-}
-
 /* u8_fprintf */
 
 /* STDIO output with three encodings */
@@ -235,30 +228,6 @@ U8_EXPORT void u8_fprintf(FILE *f,u8_string format_string,...)
   u8_fputs(out.u8_outbuf,f);
   u8_free(out.u8_outbuf);
 }
-
-#if HAVE_SYSLOG
-U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
-{
-  struct U8_OUTPUT out; va_list args;
-  U8_INIT_STATIC_OUTPUT(out,512);
-  va_start(args,format_string);
-  u8_do_printf(&out,format_string,&args);
-  va_end(args);
-  syslog(priority,"%s",out.u8_outbuf);
-  u8_free(out.u8_outbuf);
-}
-#else
-U8_EXPORT void u8_syslog(int priority,u8_string format_string,...)
-{
-  struct U8_OUTPUT out; va_list args;
-  U8_INIT_STATIC_OUTPUT(out,512);
-  va_start(args,format_string);
-  u8_do_printf(&out,format_string,&args);
-  va_end(args);
-  u8_fputs(out.u8_outbuf,stderr);
-  u8_free(out.u8_outbuf);
-}
-#endif
 
 /* Initialization functions */
 

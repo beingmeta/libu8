@@ -24,6 +24,9 @@
 #endif
 
 #include "libu8/u8stringfns.h"
+#include "libu8/u8streamio.h"
+#include "libu8/u8printf.h"
+#include "libu8/u8fileio.h"
 
 #if HAVE_DLFCN_H
 #include <dlfcn.h>
@@ -56,9 +59,12 @@
 #include <stdio.h>
 #include <errno.h>
 
-/* Temporarily here, remove with next minor release */
-U8_EXPORT u8_condition u8_BadUTF8byte;
-U8_EXPORT u8_condition u8_BadUTF8Continuation;
+#ifndef MAX_U8RUN_JOBID_LEN
+#define MAX_U8RUN_JOBID_LEN 512
+#endif
+#ifndef MAX_JOB_PREFIX_LEN
+#define MAX_U8RUN_PREFIX_LEN 512
+#endif
 
 /* Just in case */
 
@@ -75,15 +81,16 @@ void perror(const char *s);
 
 /* Component init functions */
 
-U8_EXPORT void u8_init_exceptions_c(void);
-U8_EXPORT void u8_init_printf_c(void);
-U8_EXPORT void u8_init_streamio_c(void);
-U8_EXPORT void u8_init_contour_c(void);
-U8_EXPORT void u8_init_ctype_c(void);
-U8_EXPORT void u8_init_stringfns_c(void);
-U8_EXPORT void u8_init_bytebuf_c(void);
-U8_EXPORT void u8_init_cityhash_c(void);
-U8_EXPORT void u8_init_atomic_c(void);
+void init_exceptions_c(void);
+void init_printf_c(void);
+void init_streamio_c(void);
+void init_contour_c(void);
+void init_ctype_c(void);
+void init_stringfns_c(void);
+void init_bytebuf_c(void);
+void init_cityhash_c(void);
+void init_atomic_c(void);
+void init_logging_c(void);
 
 /* U8 init vars */
 
@@ -93,11 +100,12 @@ int u8_debug_errno=0;
 
 int u8_utf8warn=1, u8_utf8err=0;
 
+u8_string u8_fullrevision=LIBU8_FULL_REVISION;
 u8_string u8_revision=LIBU8_REVISION;
 u8_string u8_version=U8_VERSION;
 int u8_major_version=U8_MAJOR_VERSION;
 int u8_minor_version=U8_MINOR_VERSION;
-int u8_release_version=U8_RELEASE_VERSION;
+int u8_release_version=1;
 
 time_t u8_start_tick = -1;
 
@@ -115,10 +123,6 @@ u8_condition u8_UnexpectedEOD=_("Unexpected EOD"),
   u8_BadUnicodeChar=_("Invalid Unicode Character"),
   u8_BadUNGETC=_("UNGETC error"),
   u8_NoZeroStreams=_("No zero-length string streams");
-
-/* Temporarily here, remove with next minor release */
-u8_condition u8_BadUTF8byte = NULL;
-u8_condition u8_BadUTF8Continuation = NULL;
 
 /* libc conversions */
 
@@ -204,6 +208,8 @@ U8_EXPORT int u8_default_appid(u8_string id)
   else appid=u8_strdup(id);
   return 1;
 }
+
+/* Configuring UTF-8 messaging */
 
 U8_EXPORT int u8_config_utf8warn(int flag)
 {
@@ -1086,6 +1092,8 @@ U8_EXPORT void u8_free_list(u8_memlist lst)
 U8_EXPORT void u8_initialize_logging_c(void);
 U8_EXPORT void u8_initialize_threading(void);
 
+void init_status_c(void);
+
 U8_EXPORT int u8_initialize()
 {
   if (u8_initialized) return u8_initialized;
@@ -1094,27 +1102,24 @@ U8_EXPORT int u8_initialize()
 
   if (getenv("U8RAISEDEBUG")) u8_raise_debug=1;
 
-  /* Temporarily here, remove with next minor release */
-  u8_BadUTF8byte = u8_BadUTF8Start;
-  u8_BadUTF8Continuation = u8_TruncatedUTF8;
-
   u8_initialize_threading();
 
   u8_init_mutex(&source_registry_lock);
 
   u8_register_source_file(_FILEINFO);
 
-  u8_init_printf_c(); /* Does something */
-  u8_init_exceptions_c();  /* Does something */
+  init_printf_c(); /* Does something */
+  init_exceptions_c();  /* Does something */
+  init_atomic_c();
 
-  u8_init_streamio_c();
-  u8_init_contour_c();
-  u8_initialize_logging_c();
-  u8_init_ctype_c();
-  u8_init_stringfns_c();
-  u8_init_bytebuf_c();
-  u8_init_cityhash_c();
-  u8_init_atomic_c();
+  init_streamio_c();
+  init_contour_c();
+  init_logging_c();
+  init_ctype_c();
+  init_stringfns_c();
+  init_status_c();
+  init_bytebuf_c();
+  init_cityhash_c();
 
   bindtextdomain("libu8msg",NULL);
   bindtextdomain_codeset("libu8msg","utf-8");

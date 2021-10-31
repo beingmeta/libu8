@@ -896,7 +896,7 @@ U8_EXPORT u8_int4 u8_crc32(u8_int4 crc, const void *buf, size_t size)
 
 /* Init for file module (just declare source) */
 
-U8_EXPORT void u8_init_digestfns_c()
+void init_digestfns_c()
 {
   u8_register_source_file(_FILEINFO);
 }

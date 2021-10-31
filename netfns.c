@@ -1206,7 +1206,7 @@ int u8_smtp(const char *mailhost,const char *maildomain,
 
 /* Initialization code */
 
-U8_EXPORT void u8_init_netfns_c()
+void init_netfns_c()
 {
 #if U8_THREADS_ENABLED
   u8_init_mutex(&connpools_lock);

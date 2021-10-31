@@ -23,21 +23,22 @@ BRANCH_NAME=$(git symbolic-ref -q HEAD)
 BRANCH_NAME=${BRANCH_NAME##refs/heads/}
 if [ -z "${N_COMMITS}" ]; then N_COMMITS="0"; fi;
 if [ -z "${BRANCH_NAME}" ]; then
-    BRANCH_NAME="-nobranch";
+    BRANCH_NAME="nobranch";
+    BRANCH_TEXT=""
+elif [ ${BRANCH_NAME} = "main" ] || 
+     [ ${BRANCH_NAME} = "trunk" ] || 
+     [ ${BRANCH_NAME} = "master" ] || 
+     [ ${BRANCH_NAME} = "pkgtest" ] || 
+     [ ${BRANCH_NAME} = "current" ]; then
+    BRANCH_TEXT="";
+else BRANCH_TEXT="-${BRANCH_NAME}";
 fi;
 if [ -z "${FORMAT}" ]; then
-    if [ ${BRANCH_NAME} = "main" ] || 
-       [ ${BRANCH_NAME} = "trunk" ] || 
-       [ ${BRANCH_NAME} = "master" ] || 
-       [ ${BRANCH_NAME} = "current" ]; then
-	echo ${BASE_VERSION}-${N_COMMITS};
-    else
-	echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
-    fi;
+    echo ${BASE_VERSION}${BRANCH_TEXT}-${N_COMMITS};
 elif [ ${FORMAT} = "full" ]; then
     if [ ! -z "${CUR_COMMIT}" ]; then CUR_COMMIT="-${CUR_COMMIT}"; fi;
     if [ ! -z "${BASE_COMMIT}" ]; then BASE_COMMIT="-${BASE_COMMIT}"; fi;
-    echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS}${CUR_COMMIT}${BASE_COMMIT};
+    echo ${BASE_VERSION}${BRANCH_TEXT}-${N_COMMITS}${CUR_COMMIT}${BASE_COMMIT};
 elif [ ${FORMAT} = "branch" ]; then
     echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
 elif [ ${FORMAT} = "nobranch" ]; then
@@ -54,7 +55,7 @@ else case ${FORMAT} in
 	     fi;
 	     ;;
 	 *)
-	     echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};	 
+	     echo ${BASE_VERSION}${BRANCH_TEXT}-${N_COMMITS};	 
 	     ;;
      esac;
 fi;

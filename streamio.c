@@ -826,7 +826,7 @@ U8_EXPORT void u8_reset_default_input(U8_INPUT *f)
 
 static int streamio_init_done=0;
 
-U8_EXPORT void u8_init_streamio_c()
+void init_streamio_c()
 {
   if (streamio_init_done) return;
   else streamio_init_done=1;

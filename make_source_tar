@@ -1,0 +1,14 @@
+#!/bin/sh
+U8BIN=${U8BIN:-scripts/}
+OUTPUT=${1:-../source.tar}
+PREFIX={$2:-libu8/}
+BRANCH=$3
+if [ ! -z "${BRANCH}" ]; then git checkout ${BRANCH}; fi
+git archive -o ${OUTPUT} HEAD;
+cat etc/base_version > BASE_VERSION
+${U8BIN}u8_gitversion etc/base_version > VERSION
+${U8BIN}u8_gitversion etc/base_version full > FULL_VERSION
+${U8BIN}u8_gitbranch > BRANCH
+cut -d '.' -f1 < etc/base_version > MAJOR_VERSION
+cut -d '.' -f2 < etc/base_version > MINOR_VERSION
+tar -rf ${OUTPUT} VERSION FULL_VERSION MAJOR_VERSION MINOR_VERSION BASE_VERSION

@@ -244,7 +244,7 @@ U8_EXPORT ssize_t u8_cryptic
   }
 }
 
-U8_EXPORT void u8_init_cryptofns_c()
+void init_cryptofns_c()
 {
   if (cryptofns_init) return;
 
@@ -400,7 +400,7 @@ static void add_cc_cipher(u8_string name,CCAlgorithm alg,CCOptions opts,
 	      n_ciphers,name);
 }
 
-U8_EXPORT void u8_init_cryptofns_c()
+void init_cryptofns_c()
 {
   if (cryptofns_init) return;
 
@@ -473,7 +473,7 @@ U8_EXPORT ssize_t u8_cryptic
   return u8err(-1,u8_NoCrypto,"u8_cryptic",NULL);
 }
 
-U8_EXPORT void u8_init_cryptofns_c()
+void init_cryptofns_c()
 {
   if (cryptofns_init) return;
   cryptofns_init=1;
@@ -529,11 +529,6 @@ U8_EXPORT unsigned char *u8_decrypt
   else *result_len=bytecount;
   return out.u8_buf;
 }
-U8_EXPORT void u8_init_cryptofns()
-{
-  u8_init_cryptofns_c();
-}
-
 
 /* Testing notes:
    openssl enc -e -a -aes128 -in sample -nosalt -out sample.aes128 -md md5 -p -k testing -iv 0

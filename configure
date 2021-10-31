@@ -694,14 +694,12 @@ EXEFLAGS
 GZIP
 SUDO
 MKSTATIC
-DEB_BUILD_TARGET
 PKGCONFIG_DIR
 DEBVERSION
 RPMVERSION
 U8VERSION
 U8PATCHVERSION
 U8PATCHLEVEL
-U8RELEASE
 U8MINOR
 U8MAJOR
 SHARED_LIBV
@@ -741,6 +739,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -775,7 +774,6 @@ with_encodings_dir
 with_arch
 enable_maintainer_mode
 enable_dependency_tracking
-enable_debsign
 enable_stripping
 enable_shared
 with_i18n
@@ -839,6 +837,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1091,6 +1090,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1228,7 +1236,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1381,6 +1389,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1415,7 +1424,6 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
 --endisable-maintainer-mode doesn't do anything
 --endisable-dependency-tracking doesn't do anything
---disenable-debian package signing
 --enable-stripping strip libraries and executables before installing
 --endisable-shared Build with/without shared libraries
 --en/disable-threads Enable multi-threading
@@ -2846,7 +2854,6 @@ U8PATCHVERSION=$(scripts/u8_gitversion etc/base_version)
 U8VERSION=$(echo ${U8PATCHVERSION} | cut -d'-' -f1)
 U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
 U8MINOR=$(echo ${U8VERSION} | cut -d'.' -f2)
-U8RELEASE=$(echo ${U8VERSION} | cut -d'.' -f3)
 U8PATCHLEVEL=$(echo ${U8PATCHVERSION} | cut -d'-' -f2)
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
@@ -2874,7 +2881,6 @@ RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
 PKGCONFIG_DIR=
-DEB_BUILD_TARGET=dist/debs.signed
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
@@ -2911,6 +2917,13 @@ if (test "$rpath_default" = "NONE") || (test "$rpath_default" = ""); then
 fi
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
+
+if  "${GPGID}" = "default" ; then
+   if  -f .gpgid ; then
+     GPGID=$(cat .gpgid);
+   else GPGID=FE1BC737F9F323D732AA26330620266BE5AFF294;
+   fi;
+fi;
 
 ac_aux_dir=
 for ac_dir in etc "$srcdir"/etc; do
@@ -3054,13 +3067,7 @@ test -n "$target_alias" &&
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
 
-uname -a > /tmp/unameout
-if grep -i "alpine" /tmp/unameout; then
-   DOCINSTALL="${DOCINSTALL} install-core-manpages.gz install-dev-manpages.gz";
-else
-   DOCINSTALL="${DOCINSTALL} install-core-manpages install-dev-manpages";
-fi
-rm /tmp/unameout
+DOCINSTALL="${DOCINSTALL} install-core-manpages install-dev-manpages";
 
 case $target_os in
   linux*)
@@ -3126,8 +3133,6 @@ else
    default_config_dir=$prefix/etc/kno;
    default_buildopts_dir=$prefix/etc/beingmeta/opts;
 fi
-
-
 
 
 
@@ -4558,10 +4563,6 @@ cat >>confdefs.h <<_ACEOF
 #define U8_MINOR_VERSION $U8MINOR
 _ACEOF
 
-cat >>confdefs.h <<_ACEOF
-#define U8_RELEASE_VERSION $U8RELEASE
-_ACEOF
-
 
 if test "x$prefix" != "x/usr"; then
   CFLAGS="$CFLAGS -I$prefix/include"
@@ -4701,17 +4702,6 @@ if test "${enable_dependency_tracking+set}" = set; then :
   enableval=$enable_dependency_tracking;
 fi
 
-
-# Check whether --enable-debsign was given.
-if test "${enable_debsign+set}" = set; then :
-  enableval=$enable_debsign;
-else
-  enable_debsign="yes"
-fi
-
-if test "$enable_debsign" == "no"; then
-   DEB_BUILD_TARGET=dist/debs.built;
-fi;
 
 # Check whether --enable-stripping was given.
 if test "${enable_stripping+set}" = set; then :
@@ -5880,7 +5870,7 @@ fi
 
 done
 
-for ac_func in getenv setenv unsetenv
+for ac_func in getenv setenv unsetenv execvpe
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

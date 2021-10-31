@@ -238,7 +238,7 @@ U8_EXPORT u8_string u8_rusage_string(struct rusage *r)
 
 /* Initialization function (just records source file info) */
 
-U8_EXPORT void u8_init_rusage_c()
+void init_rusage_c()
 {
   u8_register_source_file(_FILEINFO);
 }

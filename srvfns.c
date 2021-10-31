@@ -1984,7 +1984,7 @@ u8_string u8_list_clients(struct U8_OUTPUT *out,struct U8_SERVER *server)
 
 /* Initialize */
 
-U8_EXPORT void u8_init_srvfns_c()
+void init_srvfns_c()
 {
   u8_register_source_file(_FILEINFO);
 }

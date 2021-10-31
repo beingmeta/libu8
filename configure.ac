@@ -15,7 +15,6 @@ U8PATCHVERSION=$(scripts/u8_gitversion etc/base_version)
 U8VERSION=$(echo ${U8PATCHVERSION} | cut -d'-' -f1)
 U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
 U8MINOR=$(echo ${U8VERSION} | cut -d'.' -f2)
-U8RELEASE=$(echo ${U8VERSION} | cut -d'.' -f3)
 U8PATCHLEVEL=$(echo ${U8PATCHVERSION} | cut -d'-' -f2)
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
@@ -43,7 +42,6 @@ RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
 PKGCONFIG_DIR=
-DEB_BUILD_TARGET=dist/debs.signed
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
@@ -81,18 +79,19 @@ fi
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
 
+if [ "${GPGID}" = "default" ]; then
+   if [ -f .gpgid ]; then
+     GPGID=$(cat .gpgid);
+   else GPGID=FE1BC737F9F323D732AA26330620266BE5AFF294;
+   fi;
+fi;
+
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADERS([include/libu8/u8source.h include/libu8/config.h])
 AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
-uname -a > /tmp/unameout
-if grep -i "alpine" /tmp/unameout; then
-   DOCINSTALL="${DOCINSTALL} install-core-manpages.gz install-dev-manpages.gz";
-else
-   DOCINSTALL="${DOCINSTALL} install-core-manpages install-dev-manpages";
-fi
-rm /tmp/unameout
+DOCINSTALL="${DOCINSTALL} install-core-manpages install-dev-manpages";
 
 case $target_os in
   linux*)
@@ -140,14 +139,12 @@ AC_SUBST(SHARED_LIB)
 AC_SUBST(SHARED_LIBV)
 AC_SUBST(U8MAJOR)
 AC_SUBST(U8MINOR)
-AC_SUBST(U8RELEASE)
 AC_SUBST(U8PATCHLEVEL)
 AC_SUBST(U8PATCHVERSION)
 AC_SUBST(U8VERSION)
 AC_SUBST(RPMVERSION)
 AC_SUBST(DEBVERSION)
 AC_SUBST(PKGCONFIG_DIR)
-AC_SUBST(DEB_BUILD_TARGET)
 AC_SUBST(MKSTATIC)
 AC_SUBST(SUDO)
 AC_SUBST(GZIP)
@@ -268,7 +265,6 @@ AC_USE_SYSTEM_EXTENSIONS
 AC_DEFINE_UNQUOTED(U8_VERSION,"$U8VERSION")
 AC_DEFINE_UNQUOTED(U8_MAJOR_VERSION,$U8MAJOR)
 AC_DEFINE_UNQUOTED(U8_MINOR_VERSION,$U8MINOR)
-AC_DEFINE_UNQUOTED(U8_RELEASE_VERSION,$U8RELEASE)
 
 if test "x$prefix" != "x/usr"; then
   CFLAGS="$CFLAGS -I$prefix/include"
@@ -332,11 +328,6 @@ fi
 
 AC_ARG_ENABLE(maintainer-mode,--en[dis]able-maintainer-mode doesn't do anything)
 AC_ARG_ENABLE(dependency-tracking,--en[dis]able-dependency-tracking doesn't do anything)
-
-AC_ARG_ENABLE(debsign,--dis[en]able-debian package signing,,enable_debsign="yes")
-if test "$enable_debsign" == "no"; then
-   DEB_BUILD_TARGET=dist/debs.built;
-fi;
 
 AC_ARG_ENABLE(stripping,--enable-stripping strip libraries and executables before installing,,enable_stripping="no")
 if test "$enable_stripping" != "no"; then
@@ -427,7 +418,7 @@ AC_CHECK_HEADERS(netinet/in.h netinet/tcp.h)
 AC_CHECK_HEADERS(dirent.h sys/ndir.h sys/dir.h)
 AC_CHECK_HEADERS(sys/timeb.h utime.h dlfcn.h malloc.h sys/malloc.h malloc/malloc.h)
 AC_CHECK_HEADERS(sys/resource.h resource.h sys/syscall.h)
-AC_CHECK_FUNCS(getenv setenv unsetenv)
+AC_CHECK_FUNCS(getenv setenv unsetenv execvpe)
 AC_CHECK_FUNCS(getrusage mallinfo syscall mstats sysconf getpagesize)
 AC_CHECK_FUNCS(strchr strrchr strstr strrrstr)
 AC_CHECK_FUNCS(posix_fadvise posix_madvise posix_fallocate)
