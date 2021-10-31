@@ -43,7 +43,7 @@ if [ -z "${ctl_file}" ]; then
     echo "Couldn't locate control files for '${spec}";
     exit;
 fi;
-ctl_base=${ctl_file/.[a-z]*/}
+ctl_base=${ctl_file##.*/}
 case ${ctl_base} in
     /*)
 	ctl_path=${ctl_base};

@@ -155,7 +155,7 @@ U8_EXPORT ssize_t u8_physmem()
 #endif
 }
 
-/* static int avphysmem_warning=0; */
+static int avphysmem_warning=0;
 
 U8_EXPORT ssize_t u8_avphysmem()
 {
