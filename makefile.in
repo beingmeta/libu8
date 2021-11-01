@@ -880,12 +880,12 @@ dist/debian.built: REVISION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	  mv staging/libu8*_@U8VERSION@*.* dist && 	\
 	  touch dist/debian.built;
 dist/debian.signed: dist/debian.built
-	 debsign -p${GPG} --re-sign -k${GPGID} dist/libu8_@U8VERSION@*.changes; fi) && touch $@;
+	 debsign -p${GPG} --re-sign -k${GPGID} dist/libu8_@U8VERSION@*.changes && touch $@;
 
 dist/debian.done: dist/debian.built
 	@(if test "${GPGID}" = "none" || test "${GPGID}" = ""; then 	\
 	    echo "Skipping GPG signing of debian packages";  		\
-	  else make dist/debian.signed) && 				\
+	  else make dist/debian.signed; fi ) && 			\
 	 touch $@ && 							\
 	ls dist/libu8*@U8VERSION@*;
 
