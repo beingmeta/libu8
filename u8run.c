@@ -45,6 +45,7 @@ static int umask_value = -1;
 
 static u8_string pid_file = NULL;
 static u8_string ppid_file = NULL;
+static u8_string live_file = NULL;
 static u8_string stop_file = NULL;
 static u8_string done_file = NULL;
 static u8_string cmd_file = NULL;
@@ -54,6 +55,15 @@ static int run_as_daemon = 0;
 static int run_without_fork = 0;
 static int restart_on_error = 0;
 static int restart_on_exit = 0;
+
+#if ! HAVE_EXECVPE
+extern char *const *environ;
+static int execvpe(char *prog,char *const argv[],char *const envp[])
+{
+  environ = envp;
+  return execvp(prog,(char **)argv);
+}
+#endif
 
 void usage()
 {
@@ -148,11 +158,13 @@ static int kill_existing(u8_string filename,pid_t pid,double wait)
   else return 0;
 }
 
-static u8_string xgetenv(u8_string primary,u8_string backup)
+static u8_string xgetenv(u8_string primary,u8_string alternate,u8_string backup)
 {
   u8_string result = u8_getenv(primary);
   if (result) return result;
-  else return u8_getenv(backup);
+  result = u8_getenv(alternate);
+  if (result) return result;
+  return u8_getenv(backup);
 }
 
 static long long xgetenv_int(u8_string primary,u8_string backup,long long dflt)
@@ -335,16 +347,18 @@ int main(int argc,char *argv[])
   pid_wait = xgetenv_float("U8PIDWAIT","PIDWAIT",pid_wait);
   pid_min_wait = xgetenv_float("U8PIDMINWAIT","PIDMINWAIT",2.0);
 
-  pid_file = xgetenv("U8PIDFILE","PIDFILE");
-  ppid_file = xgetenv("U8PPIDFILE","PPIDFILE");
-  stop_file = xgetenv("U8STOPFILE","STOPFILE");
-  done_file = xgetenv("U8DONEFILE","DONEFILE");
-  cmd_file = xgetenv("U8CMDFILE","CMDFILE");
+  pid_file = xgetenv("U8_PIDFILE","U8PIDFILE","PIDFILE");
+  live_file = xgetenv("U8_LIVEFILE","U8LIVEFILE","LIVEFILE");
+  ppid_file = xgetenv("U8_PPIDFILE","U8PPIDFILE","PPIDFILE");
+  stop_file = xgetenv("U8_STOPFILE","U8STOPFILE","STOPFILE");
+  done_file = xgetenv("U8_DONEFILE","U8DONEFILE","DONEFILE");
+  cmd_file = xgetenv("U8_CMDFILE","U8CMDFILE","CMDFILE");
 
   /* Default values */
   if (pid_file == NULL) pid_file = procpath(job_id,"pid");
   if (cmd_file == NULL) pid_file = procpath(job_id,"cmd");
   if (ppid_file == NULL) ppid_file = procpath(job_id,"ppid");
+  if (live_file == NULL) live_file = procpath(job_id,"live");
   if (stop_file == NULL) stop_file = procpath(job_id,"stop");
   if (done_file == NULL) done_file = procpath(job_id,"done");
 
@@ -354,12 +368,13 @@ int main(int argc,char *argv[])
   u8_setenv("U8_LOGLEVEL",u8_bprintf(loglevel_tmp,"%d",u8_loglevel),1);
   if (stop_file) u8_setenv("U8_STOPFILE",stop_file,1);
   if (done_file) u8_setenv("U8_DONEFILE",done_file,1);
+  if (live_file) u8_setenv("U8_LIVEFILE",live_file,1);
   if (run_dir)   u8_setenv("U8_RUNDIR",run_dir,1);
   if (log_dir)   u8_setenv("U8_LOGDIR",log_dir,1);
   if (log_file)  u8_setenv("U8_LOGFILE",log_file,1);
   if (cmd_file)  u8_setenv("U8_CMDFILE",log_file,1);
 
-  u8_string restart_val = xgetenv("U8RESTART","RESTART");
+  u8_string restart_val = xgetenv("U8_RESTART","U8RESTART","RESTART");
   if (restart_val==NULL) {}
   else if ( (strcasecmp(restart_val,"never")==0) ||
             (strcasecmp(restart_val,"no")==0) ) {
@@ -478,14 +493,20 @@ int main(int argc,char *argv[])
   if (u8_file_existsp(pid_file)) {
     pid_t live = read_pid(pid_file);
     if (live_pidp(live)) {
-      if (u8_getenv("FORCE"))
+      if (u8_getenv("FORCE")) {
         kill_existing(pid_file,live,u8_getenv_float("KILLWAIT",15));
+        u8_removefile(live_file);
+        u8_removefile(pid_file);}
       else {
         u8_log(LOGCRIT,"ExistingPID",
                "The file %s already specifies is a live PID (%lld)",
                ppid_file,live);
         exit(1);}}
-    else u8_removefile(ppid_file);}
+    else {
+      u8_removefile(live_file);
+      u8_removefile(pid_file);}}
+
+  write_pid_file(pid_file);
 
   if (log_file) {
     u8_string run_log_file = procpath(job_id,"log");
@@ -522,20 +543,20 @@ int main(int argc,char *argv[])
          we'll create the PID file after we fork. */
       u8_log(LOG_NOTICE,"u8run/launch",
              "Forked (%lld) launch loop for %s (%s), waiting for %s",
-             (long long)launched,job_id,cmd,pid_file);
+             (long long)launched,job_id,cmd,live_file);
       double launch_start = u8_elapsed_time();
-      while (! (u8_file_existsp(pid_file)) ) {
+      while (! (u8_file_existsp(live_file)) ) {
         if ( (elapsed_since(launch_start)) >
              ( (pid_wait > 0) ? (pid_wait) : (pid_min_wait) ) )
           break;
         sleep(1);}
-      if (u8_file_existsp(pid_file))
+      if (u8_file_existsp(live_file))
         exit(0);
       else {
         /* Does this need to clean anything up? */
         u8_log(LOGCRIT,"AppLaunchFailed",
-               "Timed out waiting for PID file %s for job %s",
-               pid_file,job_id);
+               "Timed out waiting for LIVE file %s for job %s",
+               live_file,job_id);
         kill_child(job_id,launched,pid_file);
         exit(1);}}}
   setup_signals();
@@ -636,9 +657,7 @@ static pid_t dolaunch(char **launch_args)
                run_user,setuid_errno,u8_strerror(setuid_errno));
         exit(13);}
       else u8_log(LOG_NOTICE,"SetUID","Set UID to %d",run_user);}
-    if (pid_wait > 0) {
-      /* This means we expect the main procedure to populate the PID file */}
-    else write_pid_file(job_id);
+    write_pid_file(job_id);
     if (pid_file) setenv("PIDFILE",pid_file,1);
     return execvp(launch_args[0],launch_args);}
   else return pid;

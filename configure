@@ -5877,7 +5877,7 @@ fi
 
 done
 
-for ac_func in getenv setenv unsetenv
+for ac_func in getenv setenv unsetenv execvpe
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
