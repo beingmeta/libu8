@@ -694,7 +694,6 @@ EXEFLAGS
 GZIP
 SUDO
 MKSTATIC
-DEB_BUILD_TARGET
 PKGCONFIG_DIR
 DEBVERSION
 RPMVERSION
@@ -776,7 +775,6 @@ with_encodings_dir
 with_arch
 enable_maintainer_mode
 enable_dependency_tracking
-enable_debsign
 enable_stripping
 enable_shared
 with_i18n
@@ -1427,7 +1425,6 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
 --endisable-maintainer-mode doesn't do anything
 --endisable-dependency-tracking doesn't do anything
---disenable-debian package signing
 --enable-stripping strip libraries and executables before installing
 --endisable-shared Build with/without shared libraries
 --en/disable-threads Enable multi-threading
@@ -2886,7 +2883,6 @@ RPMFLAGS=${RPMFLAGS:-}
 GPG=`which gpg2 || which gpg || gpg`
 GPGID=${GPGID:-FE1BC737F9F323D732AA26330620266BE5AFF294}
 PKGCONFIG_DIR=
-DEB_BUILD_TARGET=dist/debs.signed
 doi18n="no"
 debugcflags=" -O0 -g3 -ggdb3 -fno-inline -fno-omit-frame-pointer "
 build_shared="shared-libs"
@@ -2923,6 +2919,13 @@ if (test "$rpath_default" = "NONE") || (test "$rpath_default" = ""); then
 fi
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
+
+if  "${GPGID}" = "default" ; then
+   if  -f .gpgid ; then
+     GPGID=$(cat .gpgid);
+   else GPGID=FE1BC737F9F323D732AA26330620266BE5AFF294;
+   fi;
+fi;
 
 ac_aux_dir=
 for ac_dir in etc "$srcdir"/etc; do
@@ -3132,7 +3135,6 @@ else
    default_config_dir=$prefix/etc/kno;
    default_buildopts_dir=$prefix/etc/beingmeta/opts;
 fi
-
 
 
 
@@ -4707,17 +4709,6 @@ if test "${enable_dependency_tracking+set}" = set; then :
   enableval=$enable_dependency_tracking;
 fi
 
-
-# Check whether --enable-debsign was given.
-if test "${enable_debsign+set}" = set; then :
-  enableval=$enable_debsign;
-else
-  enable_debsign="yes"
-fi
-
-if test "$enable_debsign" == "no"; then
-   DEB_BUILD_TARGET=dist/debs.built;
-fi;
 
 # Check whether --enable-stripping was given.
 if test "${enable_stripping+set}" = set; then :

@@ -80,6 +80,13 @@ fi
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
 
+if [ "${GPGID}" = "default" ]; then
+   if [ -f .gpgid ]; then
+     GPGID=$(cat .gpgid);
+   else GPGID=FE1BC737F9F323D732AA26330620266BE5AFF294;
+   fi;
+fi;
+
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADERS([include/libu8/u8source.h include/libu8/config.h])
 AC_CANONICAL_HOST
