@@ -104,10 +104,10 @@ U8_EXPORT ssize_t u8run_set_status(u8_string status)
 {
   struct U8_XTIME now;
   U8_FIXED_OUTPUT(buf,1024);
-  time_t tick = u8_now(&now); 
   u8_string appid = u8_appid();
+  time_t tick = u8_now(&now); 
   u8_printf(bufout,"%lld",(long long)getpid());
-  if (u8_appid) u8_printf(bufout," %s",appid);
+  if (appid) u8_printf(bufout," %s",appid);
   u8_xtime_to_iso8601(bufout,&now);
   if (status) u8_printf(bufout," %s",status);
   int fileno = use_status_file(0), err = 0;
@@ -130,7 +130,7 @@ U8_EXPORT ssize_t u8run_set_status(u8_string status)
   return -1;
 }
 
-int init_status_c()
+void init_status_c()
 {
   u8_register_source_file(_FILEINFO);
 
@@ -138,7 +138,7 @@ int init_status_c()
   
   u8_string jobid=u8_getenv("U8RUNJOBID");
   u8_string prefix=u8_getenv("U8RUNJOBPREFIX");
-  u8_string statfile=getenv("U8RUNSTATFILE");
+  u8_string statfile=getenv("U8RUNSTATUSFILE");
   if ( (jobid) || (prefix) || (statfile) )
     u8run_setup(jobid,prefix,statfile);
 }
