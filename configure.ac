@@ -656,7 +656,7 @@ AC_CHECK_LIB(uuid,uuid_generate_time)
 AC_CHECK_FUNCS(uuid_generate_time)
 
 AC_CONFIG_FILES([makefile docs/makefile etc/libu8.pc etc/getbuildopt
-           dist/libu8-2.7.spec dist/libu8-3.0.spec dist/alpine/APKBUILD
+           dist/libu8-2.7.spec dist/libu8.spec dist/alpine/APKBUILD
 	   scripts/u8_install_shared scripts/u8_gzinstall])
 AC_CONFIG_COMMANDS([default],[chmod a+x etc/getbuildopt scripts/u8_install_shared scripts/u8_gzinstall],[])
 AC_OUTPUT

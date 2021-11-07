@@ -7858,7 +7858,7 @@ fi
 done
 
 
-ac_config_files="$ac_config_files makefile docs/makefile etc/libu8.pc etc/getbuildopt dist/libu8-2.7.spec dist/libu8-3.0.spec dist/alpine/APKBUILD scripts/u8_install_shared scripts/u8_gzinstall"
+ac_config_files="$ac_config_files makefile docs/makefile etc/libu8.pc etc/getbuildopt dist/libu8-2.7.spec dist/libu8.spec dist/alpine/APKBUILD scripts/u8_install_shared scripts/u8_gzinstall"
 
 ac_config_commands="$ac_config_commands default"
 
@@ -8564,7 +8564,7 @@ do
     "etc/libu8.pc") CONFIG_FILES="$CONFIG_FILES etc/libu8.pc" ;;
     "etc/getbuildopt") CONFIG_FILES="$CONFIG_FILES etc/getbuildopt" ;;
     "dist/libu8-2.7.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-2.7.spec" ;;
-    "dist/libu8-3.0.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8-3.0.spec" ;;
+    "dist/libu8.spec") CONFIG_FILES="$CONFIG_FILES dist/libu8.spec" ;;
     "dist/alpine/APKBUILD") CONFIG_FILES="$CONFIG_FILES dist/alpine/APKBUILD" ;;
     "scripts/u8_install_shared") CONFIG_FILES="$CONFIG_FILES scripts/u8_install_shared" ;;
     "scripts/u8_gzinstall") CONFIG_FILES="$CONFIG_FILES scripts/u8_gzinstall" ;;
