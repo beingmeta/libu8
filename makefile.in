@@ -12,7 +12,7 @@ LDFLAGS         = @LDFLAGS@ $(EFENCE)
 EXEFLAGS        = @EXEFLAGS@
 LIBS            = @LIBS@ $(EFENCE) -lm
 DYLIB_FLAGS     = -compatibility_version @U8MAJOR@.@U8MINOR@ \
-	          -current_version @U8MAJOR@.@U8MINOR@.@U8RELEASE@
+	          -current_version @U8MAJOR@.@U8MINOR@
 INC	        = include/libu8
 BUILDMODE       := $(shell if test -f ./buildmode; then cat ./buildmode; else echo none; fi)
 U8VERSION       := $(shell cat ./etc/base_version)
@@ -64,7 +64,7 @@ REVISION_H = include/libu8/revision.h
 
 LIBU8_HEADERS=											\
 	${INC}/cityhash.h ${INC}/config.h ${INC}/libu8.h ${INC}/libu8io.h 			\
-	${INC}/u8appid.h ${INC}/u8appinfo.h ${INC}/u8bytebuf.h					\
+	${INC}/u8appid.h ${INC}/u8appinfo.h ${INC}/u8status.h ${INC}/u8bytebuf.h		\
 	${INC}/u8contour.h ${INC}/u8convert.h ${INC}/u8crypto.h ${INC}/u8ctype.h		\
 	${INC}/u8defines.h ${INC}/u8digest.h ${INC}/u8dirfns.h ${INC}/u8elapsed.h		\
 	${INC}/u8endian.h ${INC}/u8error.h ${INC}/u8exceptions.h				\
@@ -80,7 +80,7 @@ LIBU8_HEADERS=											\
 
 LIBU8_SOURCES=\
   libu8.c streamio.c printf.c atomic.c logging.c exceptions.c  ctype.c stringfns.c \
-  libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c cityhash.c \
+  libu8fns.c timefns.c netfns.c srvfns.c rusage.c contour.c cityhash.c status.c \
   digestfns.c cryptofns.c pathfns.c filefns.c fileio.c \
   libu8io.c xfiles.c convert.c filestring.c bytebuf.c \
   u8run.c \
@@ -89,7 +89,7 @@ LIBU8_SOURCES=\
 COMMON_HEADERS= $(LIBU8_HEADERS)
 
 LIBU8CORE_OBJECTS=libu8.o streamio.o threading.o stringfns.o \
-		  contour.o logging.o signals.o exceptions.o \
+		  contour.o logging.o signals.o exceptions.o status.o \
                   ctype.o printf.o atomic.o bytebuf.o cityhash.o
 LIBU8FNS_OBJECTS=libu8fns.o netfns.o srvfns.o \
 		 pathfns.o filefns.o fileio.o \
@@ -101,7 +101,7 @@ LIBU8STDIO_OBJECTS=u8stdio.o
 LIBU8SYSLOG_OBJECTS=u8syslog.o
 LIBU8_OBJECTS=$(LIBU8CORE_OBJECTS) $(LIBU8IO_OBJECTS) $(LIBU8FNS_OBJECTS) $(LIBU8SYSLOG_OBJECTS)
 TESTBIN=tests/u8recode tests/latin1u8 tests/u8xrecode tests/getentity \
-	tests/echosrv tests/xtimetest # tests/printftest
+	tests/echosrv tests/xtimetest tests/printftest
 DYTESTBIN=tests/dynamic/u8recode tests/dynamic/latin1u8 \
 	tests/dynamic/u8xrecode tests/dynamic/getentity \
 	tests/dynamic/echosrv tests/xtimetest
@@ -112,8 +112,7 @@ SHARED_LIBS=lib/libu8.@shared_suffix@ lib/libu8fns.@shared_suffix@ \
         lib/libu8io.@shared_suffix@ lib/libu8data.@shared_suffix@ \
         lib/libu8stdio.@shared_suffix@ lib/libu8syslog.@shared_suffix@
 STATIC_TEST_LIBS=lib/libu8.a
-SHARED_TEST_LIBS=lib/libu8.@shared_suffix@ lib/libu8io.@shared_suffix@ \
-		lib/libu8stdio.@shared_suffix@
+SHARED_TEST_LIBS=lib/libu8.@shared_suffix@
 
 ALL=@TAGS_TARGET@ libs exe @I18N@ tests alldocs
 
@@ -170,12 +169,12 @@ showbuildmode showmode showbuild: buildmode
 # Versioning
 
 REVISION:
-	if test -d .git; then 					\
+	@if test -d .git; then 					\
 	  scripts/u8_gitversion etc/base_version full > $@;	\
-	elif test -f $@; then 					\
+	 elif test -f $@; then 					\
 	  touch REVISION;					\
-	else cp etc/base_version $@; 				\
-	fi;
+	 else cp etc/base_version $@; 				\
+	 fi;
 
 include/libu8/revision.h: REVISION etc/base_version
 	@VERSION=$$(cat etc/base_version);		\
@@ -249,7 +248,7 @@ lib/%@suffix@.a:
 	@$(MKSTATIC) $@ $^
 lib/%@suffix@.so.@U8VERSION@:
 	@echo "# (libu8)" MKSO $@
-	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@.@U8RELEASE@` \
+	@$(MKSO) -Wl,-soname=`basename $(@F) .@U8MINOR@` \
 		 -L./lib -o $@ $^ $(LIBS) -lu8
 lib/%@suffix@.so: lib/%@suffix@.so.@U8VERSION@
 	@ln -sf $(<F) $@
@@ -337,6 +336,17 @@ NOTAGS:
 exe: @shared_exe@ @static_exe@
 static-exe: exe/u8run.static
 shared-exe: exe/u8run
+
+# Custom test rules
+
+tests/printftest: tests/printftest.c 
+	@echo "# (libu8)" CC_STATIC_TEST $@ $<
+	@$(CC) $(CFLAGS) $(LDFLAGS) -L./lib -o $@ $< \
+		${STATIC_TEST_LIBS} lib/libu8stdio.a ${LIBS}
+tests/dynamic/printftest: tests/printftest.c
+	@echo "# (libu8)" CC_DYNAMIC_TEST $@ $<
+	@$(CC) $(CFLAGS) -L./lib $(LDFLAGS) -o $@ $< -lu8 -lu8stdio
+
 
 libs: @build_shared@ @build_static@
 static-libs: ${STATIC_LIBS}
@@ -445,9 +455,10 @@ i18n: etc/intl/fr.gmo etc/intl/nl.gmo etc/intl/es.gmo
 
 # dependencies
 
-streamio.o printf.o atomic.o logging.o exceptions.o signals.o chardata.o stringfns.o convert.o libu8.o libu8io.o: \
+streamio.o printf.o atomic.o status.o logging.o exceptions.o signals.o chardata.o stringfns.o convert.o libu8.o libu8io.o: \
   $(COMMON_HEADERS) include/libu8/revision.h
 ctype.o: $(COMMON_HEADERS) entities.h
+status.o: $(COMMON_HEADERS) include/libu8/u8appid.h
 atomic.o: $(COMMON_HEADERS) include/libu8/u8atomic.h
 cityhash.o: $(COMMON_HEADERS) include/libu8/cityhash.h
 timefns.o: $(COMMON_HEADERS) include/libu8/u8timefns.h

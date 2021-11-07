@@ -244,7 +244,7 @@ u8_string u8_realpath(u8_string path,u8_string wd)
 
 /* Init function */
 
-U8_EXPORT void u8_init_pathfns_c()
+void init_pathfns_c()
 {
   u8_register_source_file(_FILEINFO);
 }

@@ -15,7 +15,6 @@ U8PATCHVERSION=$(scripts/u8_gitversion etc/base_version)
 U8VERSION=$(echo ${U8PATCHVERSION} | cut -d'-' -f1)
 U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
 U8MINOR=$(echo ${U8VERSION} | cut -d'.' -f2)
-U8RELEASE=$(echo ${U8VERSION} | cut -d'.' -f3)
 U8PATCHLEVEL=$(echo ${U8PATCHVERSION} | cut -d'-' -f2)
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
@@ -140,7 +139,6 @@ AC_SUBST(SHARED_LIB)
 AC_SUBST(SHARED_LIBV)
 AC_SUBST(U8MAJOR)
 AC_SUBST(U8MINOR)
-AC_SUBST(U8RELEASE)
 AC_SUBST(U8PATCHLEVEL)
 AC_SUBST(U8PATCHVERSION)
 AC_SUBST(U8VERSION)
@@ -267,7 +265,6 @@ AC_USE_SYSTEM_EXTENSIONS
 AC_DEFINE_UNQUOTED(U8_VERSION,"$U8VERSION")
 AC_DEFINE_UNQUOTED(U8_MAJOR_VERSION,$U8MAJOR)
 AC_DEFINE_UNQUOTED(U8_MINOR_VERSION,$U8MINOR)
-AC_DEFINE_UNQUOTED(U8_RELEASE_VERSION,$U8RELEASE)
 
 if test "x$prefix" != "x/usr"; then
   CFLAGS="$CFLAGS -I$prefix/include"
@@ -421,7 +418,7 @@ AC_CHECK_HEADERS(netinet/in.h netinet/tcp.h)
 AC_CHECK_HEADERS(dirent.h sys/ndir.h sys/dir.h)
 AC_CHECK_HEADERS(sys/timeb.h utime.h dlfcn.h malloc.h sys/malloc.h malloc/malloc.h)
 AC_CHECK_HEADERS(sys/resource.h resource.h sys/syscall.h)
-AC_CHECK_FUNCS(getenv setenv unsetenv)
+AC_CHECK_FUNCS(getenv setenv unsetenv execvpe)
 AC_CHECK_FUNCS(getrusage mallinfo syscall mstats sysconf getpagesize)
 AC_CHECK_FUNCS(strchr strrchr strstr strrrstr)
 AC_CHECK_FUNCS(posix_fadvise posix_madvise posix_fallocate)

@@ -354,7 +354,7 @@ static u8_string default_printf_handler
   return NULL;
 }
 
-U8_EXPORT void u8_init_printf_c()
+void init_printf_c()
 {
   /* These are all really no-ops, but they help with parsing. */
   u8_printf_handlers['s']=default_printf_handler;

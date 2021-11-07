@@ -448,7 +448,7 @@ U8_EXPORT void u8_debug_wait(u8_exception ex,int global)
 
 /* Initialization */
 
-U8_EXPORT void u8_init_exceptions_c()
+void init_exceptions_c()
 {
   int i=0; while (i<U8_ERRNO_MAP_SIZE) errno_map[i++]=NULL;
 

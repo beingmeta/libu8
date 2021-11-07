@@ -846,7 +846,7 @@ U8_EXPORT char *u8_uitoa16(unsigned long long int num,char outbuf[32])
 
 /* Initialization function (just records source file info) */
 
-U8_EXPORT void u8_init_stringfns_c()
+void init_stringfns_c()
 {
   u8_register_source_file(_FILEINFO);
 }

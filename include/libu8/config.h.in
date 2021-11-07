@@ -171,6 +171,9 @@
 /* Define if you have the strdup function.  */
 #undef HAVE_STRRSTR
 
+/* Define if you have the execvpe function */
+#undef HAVE_EXECVPE
+
 /* Define if you have the getenv function */
 #undef HAVE_GETENV
 

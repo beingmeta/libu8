@@ -1294,7 +1294,7 @@ U8_EXPORT time_t u8_sleep(double seconds)
 
 /* Initialization functions */
 
-U8_EXPORT void u8_init_timefns_c()
+void init_timefns_c()
 {
   u8_printf_handlers['t']=time_printf_handler;
 #if U8_THREADS_ENABLED

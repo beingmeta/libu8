@@ -300,7 +300,7 @@ int u8_logger_initialized=0;
 
 static int logging_c_initialized=0;
 
-U8_EXPORT void u8_initialize_logging_c()
+void init_logging_c()
 {
   if (logging_c_initialized>0) return;
   else logging_c_initialized=1;

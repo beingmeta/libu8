@@ -32,11 +32,13 @@ U8_EXPORT char *u8_procinfo(char *buf);
     @returns a utf-8 string
 **/
 U8_EXPORT u8_string u8_appid(void);
+
 /** Sets the UTF-8 string describing the current application.
     @param id a utf-8 string
     @returns void
 **/
 U8_EXPORT void u8_identify_application(u8_string id);
+
 /** Sets the UTF-8 string describing the current application, unless
     it has already been set.  This can be used to provide default appids
     while allowing programs to override the default.
@@ -49,8 +51,14 @@ U8_EXPORT int u8_default_appid(u8_string id);
 
 /* Version/revision information */
 
-U8_EXPORT u8_string u8_revision, u8_version;
+U8_EXPORT u8_string u8_full_revision, u8_revision, u8_version;
 U8_EXPORT int u8_major, u8_minor, u8_release;
+
+U8_EXPORT
+/** Returns the current libu8 revision string (derived from the GIT branch)
+    @returns a utf8 string
+**/
+u8_string u8_getfullrevision(void);
 
 U8_EXPORT
 /** Returns the current libu8 revision string (derived from the GIT branch)

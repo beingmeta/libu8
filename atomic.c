@@ -24,12 +24,12 @@
 #if U8_ATOMIC
 #include "libu8/u8atomic.h"
 
-U8_EXPORT void u8_init_atomic_c()
+void init_atomic_c()
 {
   u8_register_source_file(_FILEINFO);
 }
 #else
-U8_EXPORT void u8_init_atomic_c()
+void init_atomic_c()
 {
   u8_register_source_file(_FILEINFO);
 }
