@@ -894,22 +894,33 @@ dist/rpms.zip: dist/rpms.done
 
 # Rules for debian building
 
-status/debian.built: VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
-	make staging/libu8_@U8VERSION@ staging/libu8_@U8VERSION@.tar.gz && \
-	(cd staging/libu8_@U8VERSION@; \
-	  dpkg-buildpackage -b -us -uc -sa -rfakeroot) && \
-	  mv staging/libu8_${U8VERSION}*.gz dist && 	\
-	  mv staging/libu8*_${U8VERSION}*[.]* dist && 	\
-	  touch status/debian.built;
+status/debian.ready:  VERSION $(LIBU8_SOURCES) $(LIBU8_HEADERS)
+	./make_source_tar staging/libu8_${U8PATCHVERSION}.tar \
+		libu8_${U8PATCHVERSION} && 	\
+	(cd staging; tar xf libu8_${U8PATCHVERSION}.tar ) &&		\
+	(cd staging/libu8_${U8PATCHVERSION}; 				\
+	  cp -r dist/debian debian; 					\
+	  scripts/u8_debchangelog libu8 ${CODENAME} 			\
+		${PATCHVERSION} ${REL_BRANCH} ${REL_STATUS} ${REL_PRIORITY} \
+			< dist/debian/changelog > debian/changelog )
+
+status/debian.built: status/debian.ready
+	(cd staging/libu8_${U8PATCHVERSION}; 				\
+	  dpkg-buildpackage -b -us -uc -sa -rfakeroot) && 		\
+	(mv staging/libu8_${U8PATCHVERSION}.tar dist && 		\
+	 mv staging/libu8*_${U8PATCHVERSION}*[.]* dist) && 		\
+	touch status/debian.built;
 status/debian.signed: status/debian.built
-	 debsign -p${GPG} --re-sign -k${GPGID} dist/libu8_@U8VERSION@*.changes && touch $@;
+	 debsign -p${GPG} --re-sign -k${GPGID} \
+		dist/libu8_${U8PATCHVERSION}*.changes && \
+	 touch $@;
 
 status/debian.done: status/debian.built
 	@(if test "${GPGID}" = "none" || test "${GPGID}" = ""; then 	\
 	    echo "Skipping GPG signing of debian packages";  		\
 	  else make status/debian.signed; fi ) && 			\
 	 touch $@ && 							\
-	ls dist/libu8*@U8VERSION@*;
+	ls dist/libu8*${U8PATCHVERSION}*;
 
 install-debian install-debian debinstall installdeb: status/debian.installed
 
