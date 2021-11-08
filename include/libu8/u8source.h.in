@@ -29,7 +29,7 @@
 #undef _MINIX
 
 #include "libu8/config.h"
-#include "libu8/revision.h"
+#include "libu8/u8_version.h"
 
 #include <stdlib.h>
 #include <string.h>

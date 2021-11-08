@@ -11,11 +11,10 @@ shared_suffix="so"
 SHARED_LIB="libu8.so libu8stdio.so libu8fns.so libu8io.so libu8data.so"
 rpath_default=$exec_prefix
 CLEAN="rm -f"
-U8PATCHVERSION=$(scripts/u8_gitversion etc/base_version)
-U8VERSION=$(echo ${U8PATCHVERSION} | cut -d'-' -f1)
+U8VERSION=$(scripts/u8_gitversion etc/base_version)
 U8MAJOR=$(echo ${U8VERSION} | cut -d'.' -f1)
 U8MINOR=$(echo ${U8VERSION} | cut -d'.' -f2)
-U8PATCHLEVEL=$(echo ${U8PATCHVERSION} | cut -d'-' -f2)
+U8PATCHLEVEL=$(echo ${U8VERSION} | cut -d'.' -f3)
 mshared_suffix=so.${U8MAJOR}
 mmshared_suffix=so.${U8MAJOR}.${U8MINOR}
 vshared_suffix=so.${U8VERSION}
@@ -79,13 +78,6 @@ fi
 
 CFLAGS="-Wimplicit -fno-strict-aliasing -g $CFLAGS"
 
-if [ "${GPGID}" = "default" ]; then
-   if [ -f .gpgid ]; then
-     GPGID=$(cat .gpgid);
-   else GPGID=FE1BC737F9F323D732AA26330620266BE5AFF294;
-   fi;
-fi;
-
 AC_CONFIG_AUX_DIR(etc)
 AC_CONFIG_HEADERS([include/libu8/u8source.h include/libu8/config.h])
 AC_CANONICAL_HOST
@@ -140,7 +132,6 @@ AC_SUBST(SHARED_LIBV)
 AC_SUBST(U8MAJOR)
 AC_SUBST(U8MINOR)
 AC_SUBST(U8PATCHLEVEL)
-AC_SUBST(U8PATCHVERSION)
 AC_SUBST(U8VERSION)
 AC_SUBST(RPMVERSION)
 AC_SUBST(DEBVERSION)

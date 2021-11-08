@@ -76,7 +76,7 @@
     These functions provide miscellaneous functionality.
 **/
 
-#include "libu8/revision.h"
+#include "libu8/u8_version.h"
 #include "libu8/config.h"
 
 #include "u8defines.h"

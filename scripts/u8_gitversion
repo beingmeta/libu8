@@ -1,7 +1,7 @@
 #!/bin/sh
-REV_FILE=$1
+VERSION_FILE=$1
 FORMAT=$2
-if [ $# = 0 ] || [ -z ${REV_FILE} ] || [ ! -f ${REV_FILE} ]; then
+if [ $# = 0 ] || [ -z ${VERSION_FILE} ] || [ ! -f ${VERSION_FILE} ]; then
     echo 'Usage: u8_gitversion *releasefile*" [*format*]';
     echo "  Generates a version ID based on *releasefile* with additional information from git,";
     echo "    possibly including include the current branch, the last commit ID, ";
@@ -10,18 +10,23 @@ if [ $# = 0 ] || [ -z ${REV_FILE} ] || [ ! -f ${REV_FILE} ]; then
     echo "    or 'branch' for both the branch and # of commits"
     exit 2;
 fi;
-BASE_VERSION=$(cat ${REV_FILE})
+BASE_VERSION=$(cat ${VERSION_FILE})
 if [ ! -d .git ] || ! which git > /dev/null; then
     echo "${BASE_VERSION}";
     echo "Warning: No git executable" >2
     exit;
 fi;
 CUR_COMMIT=$(git log -n 1 --no-decorate | head -1 | cut -d' ' -f2)
-BASE_COMMIT=$(git log -n 1 --no-decorate ${REV_FILE} | head -1 | cut -d' ' -f2)
+BASE_COMMIT=$(git log -n 1 --no-decorate ${VERSION_FILE} | head -1 | cut -d' ' -f2)
 N_COMMITS=$(git rev-list --count ${BASE_COMMIT}..HEAD)
-BRANCH_NAME=$(git symbolic-ref -q HEAD)
-BRANCH_NAME=${BRANCH_NAME##refs/heads/}
-if [ -z "${N_COMMITS}" ]; then N_COMMITS="0"; fi;
+BRANCH_REF=$(git symbolic-ref -q HEAD)
+BRANCH_NAME=${BRANCH_REF##refs/heads/}
+if [ -z "${N_COMMITS}" ]; then
+    PATCHLEVEL=0;
+else
+    PATCHLEVEL=$((${N_COMMITS}+1));
+fi;
+VERSION=${BASE_VERSION}.${PATCHLEVEL}
 if [ -z "${BRANCH_NAME}" ]; then
     BRANCH_NAME="nobranch";
     BRANCH_TEXT=""
@@ -29,33 +34,39 @@ elif [ ${BRANCH_NAME} = "main" ] ||
      [ ${BRANCH_NAME} = "trunk" ] || 
      [ ${BRANCH_NAME} = "master" ] || 
      [ ${BRANCH_NAME} = "pkgtest" ] || 
+     [ ${BRANCH_NAME%-pkgtest} != ${BRANCH_NAME} ] || 
      [ ${BRANCH_NAME} = "current" ]; then
     BRANCH_TEXT="";
 else BRANCH_TEXT="-${BRANCH_NAME}";
 fi;
 if [ -z "${FORMAT}" ]; then
-    echo ${BASE_VERSION}${BRANCH_TEXT}-${N_COMMITS};
+    echo ${VERSION}${BRANCH_TEXT};
 elif [ ${FORMAT} = "full" ]; then
     if [ ! -z "${CUR_COMMIT}" ]; then CUR_COMMIT="-${CUR_COMMIT}"; fi;
     if [ ! -z "${BASE_COMMIT}" ]; then BASE_COMMIT="-${BASE_COMMIT}"; fi;
     echo ${BASE_VERSION}${BRANCH_TEXT}-${N_COMMITS}${CUR_COMMIT}${BASE_COMMIT};
+elif [ ${FORMAT} = "commit" ]; then
+    echo ${VERSION}-${BRANCH_NAME}-${CUR_COMMIT};
 elif [ ${FORMAT} = "branch" ]; then
-    echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
+    echo ${VERSION}-${BRANCH_NAME}
 elif [ ${FORMAT} = "nobranch" ]; then
-    echo ${BASE_VERSION}-${N_COMMITS};
+    echo ${VERSION}
 else case ${FORMAT} in
 	 branch=*)
-	     echo ${BASE_VERSION}-${FORMAT#branch=}-${N_COMMITS};
+	     echo ${VERSION}-${FORMAT#branch=};
+	     ;;
+	 suffix=*)
+	     echo ${VERSION}${FORMAT#suffix=};
 	     ;;
 	 unless=*)
 	     if [ "${BRANCH_NAME}" = "${FORMAT#unless=}" ]; then
-		 echo ${BASE_VERSION}-${N_COMMITS};
+		 echo ${VERSION};
 	     else
-		 echo ${BASE_VERSION}-${BRANCH_NAME}-${N_COMMITS};
+		 echo ${VERSION}-${BRANCH_NAME};
 	     fi;
 	     ;;
 	 *)
-	     echo ${BASE_VERSION}${BRANCH_TEXT}-${N_COMMITS};	 
+	     echo ${VERSION}${BRANCH_TEXT};	 
 	     ;;
      esac;
 fi;
