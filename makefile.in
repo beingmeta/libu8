@@ -170,7 +170,7 @@ showbuildmode showmode showbuild: buildmode
 
 REVISION:
 	@if test -d .git; then 					\
-	  scripts/u8_gitversion etc/base_version full > $@;	\
+	  scripts/u8_gitversion etc/base_version > $@;	\
 	 elif test -f $@; then 					\
 	  touch REVISION;					\
 	 else cp etc/base_version $@; 				\
