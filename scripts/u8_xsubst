@@ -1,19 +1,28 @@
 #!/bin/sh
 usage() {
-    echo "Usage: u8_xsubst <infile> <outfile> [<str> <replace>]...";
+    echo "Usage: u8_xsubst [-q] <infile> <outfile> [<str> <replace>]...";
 }
 if [ $# -lt 2 ]; then
     usage;
     return;
 fi
-INPUT=$1
-shift;
-OUTPUT=$1
-shift;
-if [ "${OUTPUT}" = "inplace" ]; then
+
+export INPUT=
+export OUTPUT=
+export QUIET=
+check_quiet() {
+    if [ "$1" = "-q" ] || [ "$1" = "--quiet" ]; then
+	QUIET=yes; shift;
+    fi;}
+
+check_quiet; INPUT=$1; shift;
+check_quiet; OUTPUT=$1; shift;
+
+if [ "${OUTPUT}" = "inplace" ] || [ "${OUTPUT}" = "-" ] || [ "${OUTPUT}" = "." ]; then
     OUTPUT=${INPUT};
 fi
 cp $INPUT $OUTPUT.tmp;
+
 EDIT_ARGS=
 while [ $# -gt 1 ]; do
     find=$1; replace=$2; shift; shift;
@@ -21,20 +30,26 @@ while [ $# -gt 1 ]; do
     EDIT_ARGS="${EDIT_ARGS} -e ${EDIT_EXPR}";
     done;
 #echo EDIT_ARGS=${EDIT_ARGS}
-if [ ! -z "${EDIT_ARGS}" ]; then
-    sed -i ${EDIT_ARGS} ${OUTPUT}.tmp
-else
-    echo "No substitutions on command line";
+if [ -z "${EDIT_ARGS}" ]; then
+    echo "No substitutions provided on command line" >&2;
+    usage;
     exit;
 fi;
+
+if ! sed -i ${EDIT_ARGS} ${OUTPUT}.tmp; then
+    echo "u8_xsubst: Error editing ${INPUT}";
+    echo "u8_xsubst_edits=${EDIT_ARGS}";
+    exit;
+fi;
+
 if [ ! -f ${OUTPUT} ]; then
-    echo ${OUTPUT} created;
     mv $OUTPUT.tmp $OUTPUT;
+    if [ -z "${QUIET}" ]; then echo "u8_xsubst: ${OUTPUT} created" >&2; fi
 elif diff ${OUTPUT} ${OUTPUT}.tmp > /dev/null; then
-    echo ${OUTPUT} unchanged;
+    if [ -z "${QUIET}" ]; then echo  "u8_xsubst: ${OUTPUT} unchanged" >&2; fi
     rm ${OUTPUT}.tmp;
 else
-    echo ${OUTPUT} updated;
     mv $OUTPUT.tmp $OUTPUT;
+    if [ -z "${QUIET}" ]; then echo "u8_xsubst: ${OUTPUT} edited" >&2; fi
 fi;
 

@@ -170,26 +170,30 @@ showbuildmode showmode showbuild: buildmode
 
 VERSION:
 	@if test -d .git; then 					\
-	  scripts/u8_gitversion etc/base_version full > $@;	\
+	  scripts/u8_gitversion etc/base_version > $@;	\
 	 elif test -f $@; then 					\
 	  touch VERSION;					\
 	 else echo $(cat etc/base_version).0 > $@; 				\
 	 fi;
 
 include/libu8/u8_version.h: VERSION etc/base_version makefile.in
-	@BASE_VERSION=$$(cat etc/base_version);					\
-	 VERSION=$$(cat VERSION);						\
-	 FULL_VERSION=$$(scripts/u8_gitversion etc/base_version full||cat $VERSION);	\
-	 MAJOR_VERSION=$$(echo $${VERSION} | cut - -d '.' -f 1);\
-	 MINOR_VERSION=$$(echo $${VERSION} | cut - -d '.' -f 2);\
-	 PATCHEVEL=$$(echo $${VERSION} | cut - -d '.' -f 3);\
-	 echo "#define U8_VERSION \"$$VERSION\"" > $@;				\
-	 echo "#define U8_MAJOR_VERSION $$MAJOR_VERSION" >> $@;			\
-	 echo "#define U8_MINOR_VERSION $$MINOR_VERSION" >> $@;			\
-	 echo "#define U8_PATCHLEVEL $$PATCHLEVEL" >> $@;			\
-	 echo "#define LIBU8_VERSION \"libu8-$$VERSION\"" >> $@;		\
-	 echo "#define LIBU8_BASE_VERSION \"libu8-$$BASE_VERSION\"" >> $@; 	\
-	 echo "#define LIBU8_FULL_VERSION \"libu8-$$FULL_VERSION\"" >> $@;
+	@BASE_VERSION=$$(cat etc/base_version);						\
+	 VERSION=$$(cat VERSION 2>/dev/null || scripts/u8_gitversion etc/base_version);	\
+	 GIT_VERSION=$$(cat FULL_VERSION 2>/dev/null || 				\
+			 scripts/u8_gitversion etc/base_version -full || 		\
+			 echo $$VERSION);						\
+	 MAJOR_VERSION=$$(echo $${VERSION} | cut - -d '.' -f 1);			\
+	 MINOR_VERSION=$$(echo $${VERSION} | cut - -d '.' -f 2);			\
+	 PATCHEVEL=$$(echo $${VERSION} | cut - -d '.' -f 3);				\
+	 BRANCH=$$(cat BRANCH 2>/dev/null || scripts/u8_gitbranch || echo none);	\
+	 echo "#define U8_VERSION \"$$VERSION\"" > $@;					\
+	 echo "#define U8_MAJOR_VERSION $$MAJOR_VERSION" >> $@;				\
+	 echo "#define U8_MINOR_VERSION $$MINOR_VERSION" >> $@;				\
+	 echo "#define U8_PATCHLEVEL $$PATCHLEVEL" >> $@;				\
+	 echo "#define U8_SOURCE_BRANCH $$BRANCH" >> $@;				\
+	 echo "#define LIBU8_VERSION \"libu8-$$VERSION\"" >> $@;			\
+	 echo "#define LIBU8_BASE_VERSION \"libu8-$$BASE_VERSION\"" >> $@; 		\
+	 echo "#define LIBU8_GIT_VERSION \"libu8-$$FULL_VERSION\"" >> $@;
 
 # configure/autoconf stuff
 
@@ -848,7 +852,7 @@ staging/libu8-@U8VERSION@: $(LIBU8_SOURCES) $(LIBU8_HEADERS)
 	            -o staging/libu8-@U8VERSION@.tar HEAD
 	@cd staging; tar -xf libu8-@U8VERSION@.tar; rm libu8-@U8VERSION@.tar
 	@cp dist/libu8.spec staging/libu8-@U8VERSION@/dist/libu8-@U8MAJOR@.@U8MINOR@.spec;
-	@./scripts/u8_gitversion etc/base_version full > staging/libu8-@U8VERSION@/VERSION
+	@./scripts/u8_gitversion etc/base_version -full > staging/libu8-@U8VERSION@/GITINFO
 
 staging/libu8-@U8VERSION@.tar.gz: $(LIBU8_SOURCES) $(COMMON_HEADERS)
 	@make staging/libu8-@U8VERSION@

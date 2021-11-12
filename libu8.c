@@ -101,7 +101,7 @@ int u8_debug_errno=0;
 int u8_utf8warn=1, u8_utf8err=0;
 
 u8_string u8_version=LIBU8_VERSION;
-u8_string u8_full_version=LIBU8_FULL_VERSION;
+u8_string u8_full_version=LIBU8_GIT_VERSION;
 int u8_major_version=U8_MAJOR_VERSION;
 int u8_minor_version=U8_MINOR_VERSION;
 int u8_release_version=1;
@@ -417,7 +417,7 @@ U8_EXPORT
 **/
 u8_string u8_getrevision()
 {
-  return LIBU8_FULL_VERSION;
+  return LIBU8_GIT_VERSION;
 }
 
 U8_EXPORT

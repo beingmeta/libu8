@@ -1,22 +1,14 @@
 #!/bin/sh
 U8BIN=${U8BIN:-scripts/}
 OUTPUT=${1:-../source.tar}
-PREFIX=${2:-libu8}
-BRANCH=$3
-DIR=$(dirname $0)
-if [ ! -z "${DIR}" ]; then cd ${DIR}; fi
-if [ ! -z "${BRANCH}" ]; then git checkout ${BRANCH}; fi
-VERSION=$(${U8BIN}/u8_gitversion etc/base_version 2>/dev/null | cat etc/base_version)
-git archive --prefix=${PREFIX}/ -o ${OUTPUT} HEAD;
-if [ -d ${PREFIX} ]; then
-    rm -rf ${PREFIX}/*;
-else mkdir ${PREFIX}
-fi;
-cat etc/base_version > ${PREFIX}/BASE_VERSION
-${U8BIN}u8_gitversion etc/base_version > ${PREFIX}/VERSION
-${U8BIN}u8_gitversion etc/base_version full > ${PREFIX}/FULL_VERSION
-${U8BIN}u8_gitbranch > ${PREFIX}/BRANCH
-cut -d '.' -f1 < etc/base_version > ${PREFIX}/MAJOR_VERSION
-cut -d '.' -f2 < etc/base_version > ${PREFIX}/MINOR_VERSION
-tar -rf ${OUTPUT} ${PREFIX}
-rm -rf ${PREFIX}
+git archive -o ${OUTPUT} HEAD;
+cat etc/base_version > BASE_VERSION
+scripts/u8_gitversion etc/base_version > VERSION
+scripts/u8_gitversion etc/base_version full > FULL_VERSION
+scripts/u8_gitbranch > BRANCH
+echo ${VERSION%-*} > REL_VERSION
+cut -d '.' -f1 < etc/base_version > MAJOR_VERSION
+cut -d '.' -f2 < etc/base_version > MINOR_VERSION
+tar -rf ${OUTPUT} BASE_VERSION VERSION FULL_VERSION REL_VERSION BRANCH
+
+

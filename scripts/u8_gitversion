@@ -27,46 +27,21 @@ else
     PATCHLEVEL=$((${N_COMMITS}+1));
 fi;
 VERSION=${BASE_VERSION}.${PATCHLEVEL}
-if [ -z "${BRANCH_NAME}" ]; then
-    BRANCH_NAME="nobranch";
-    BRANCH_TEXT=""
-elif [ ${BRANCH_NAME} = "main" ] || 
-     [ ${BRANCH_NAME} = "trunk" ] || 
-     [ ${BRANCH_NAME} = "master" ] || 
-     [ ${BRANCH_NAME} = "pkgtest" ] || 
-     [ ${BRANCH_NAME%-pkgtest} != ${BRANCH_NAME} ] || 
-     [ ${BRANCH_NAME} = "current" ]; then
-    BRANCH_TEXT="";
-else BRANCH_TEXT="-${BRANCH_NAME}";
-fi;
+
 if [ -z "${FORMAT}" ]; then
-    echo ${VERSION}${BRANCH_TEXT};
-elif [ ${FORMAT} = "full" ]; then
+    echo ${VERSION}
+elif [ ${FORMAT} = "-branch" ]; then
+    echo ${VERSION}-${BRANCH_NAME}
+elif [ ${FORMAT} = "-nobranch" ]; then
+    echo ${VERSION}
+elif [ ${FORMAT} = "-full" ]; then
     if [ ! -z "${CUR_COMMIT}" ]; then CUR_COMMIT="-${CUR_COMMIT}"; fi;
     if [ ! -z "${BASE_COMMIT}" ]; then BASE_COMMIT="-${BASE_COMMIT}"; fi;
     echo ${BASE_VERSION}${BRANCH_TEXT}-${N_COMMITS}${CUR_COMMIT}${BASE_COMMIT};
-elif [ ${FORMAT} = "commit" ]; then
+elif [ ${FORMAT} = "-commit" ]; then
     echo ${VERSION}-${BRANCH_NAME}-${CUR_COMMIT};
-elif [ ${FORMAT} = "branch" ]; then
-    echo ${VERSION}-${BRANCH_NAME}
-elif [ ${FORMAT} = "nobranch" ]; then
-    echo ${VERSION}
-else case ${FORMAT} in
-	 branch=*)
-	     echo ${VERSION}-${FORMAT#branch=};
-	     ;;
-	 suffix=*)
-	     echo ${VERSION}${FORMAT#suffix=};
-	     ;;
-	 unless=*)
-	     if [ "${BRANCH_NAME}" = "${FORMAT#unless=}" ]; then
-		 echo ${VERSION};
-	     else
-		 echo ${VERSION}-${BRANCH_NAME};
-	     fi;
-	     ;;
-	 *)
-	     echo ${VERSION}${BRANCH_TEXT};	 
-	     ;;
-     esac;
+elif [ "${FORMAT}" = "${BRANCH_NAME}" ]; then
+    echo ${VERSION};
+else
+    echo ${VERSION}-${BRANCH_NAME};
 fi;
