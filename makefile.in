@@ -216,8 +216,10 @@ configure: configure.ac etc/base_version
 	fi
 include/libu8/config.h: include/libu8/config.h.in
 	./config.status
+	touch -r $< $@
 include/libu8/u8source.h: include/libu8/u8source.h.in
 	./config.status
+	touch -r $< $@
 
 # Fileinfo gets version-related information about a file to pass in
 # with -D

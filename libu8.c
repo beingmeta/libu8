@@ -1086,6 +1086,14 @@ U8_EXPORT void u8_free_list(u8_memlist lst)
     scan=next;}
 }
 
+/* Shims */
+
+U8_EXPORT int u8_execvpe(char *prog,char *const argv[],char *envp[])
+{
+  environ = envp;
+  return execvp(prog,(char **)argv);
+}
+
 /* Initialization */
 
 U8_EXPORT void u8_initialize_logging_c(void);

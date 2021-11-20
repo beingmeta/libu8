@@ -25,23 +25,40 @@
     @returns a character string in the local encoding
 **/
 U8_EXPORT char *u8_2libc(u8_string string);
+
 /** Converts a UTF-8 string to the encoding expected by system (libc) functions.
     If the system encoding is UTF-8, this validates and copies the argument.
     @param string a utf-8 string
     @returns a character string in the local encoding
 **/
 U8_EXPORT char *u8_tolibc(u8_string string);
+
 /** Converts a natively encoded string into a UTF-8 string.
     If the system encoding is UTF-8, this validates and copies the argument.
     @param local_string a locally encoded text string
     @returns a utf-8 encoded string
 **/
 U8_EXPORT u8_string u8_fromlibc(char *local_string);
+
 /** This sets the functions used to map to and from libc.
     @param fromfn a function from character strings to utf-8 strings
     @param tofn a function from utf-8 strings to character strings.
     @returns void */
 U8_EXPORT void u8_set_libcfns
 (u8_string (*fromfn)(char *),char *(*tofn)(u8_string));
+
+/* Shims */
+
+/** This is a shim for execvpe in environments (notably MacOS) which lack it.
+    @param a program name which will be looked up in PATH
+    @param a NULL-terminated array of string arguments
+    @param a NULL-terminated array of environment binding strings of the form `var=val`
+    @returns -1 on error, otherwise doesn't return */
+U8_EXPORT int u8_execvpe
+(char *prog,char *const argv[],char *envp[]);
+
+#if ! HAVE_EXECVPE
+#define execvpe u8_execvpe
+#endif
 
 #endif

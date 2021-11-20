@@ -1,0 +1,4 @@
+#!/bin/sh
+# This executes the local u8run with LD_LIBRARY_PATH
+if [ -f ./dou8run_env ]; then . ./dou8run_env; fi
+LD_LIBRARY_PATH=../lib DYLD_LIBRARY_PATH=../lib exec ./u8run $@

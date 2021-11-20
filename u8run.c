@@ -24,8 +24,11 @@
 #include "libu8/u8timefns.h"
 #include "libu8/u8fileio.h"
 #include "libu8/u8printf.h"
+#include "libu8/u8status.h"
+#include "libu8/libu8io.h"
 
 #include <stdio.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
@@ -35,6 +38,7 @@
 #include <grp.h>
 
 static u8_string run_dir = NULL;
+static u8_string run_prefix = NULL;
 static u8_string log_dir = NULL;
 static u8_string log_file = NULL;
 static u8_string err_file = NULL;
@@ -52,26 +56,18 @@ static u8_string done_file = NULL;
 static u8_string cmd_file = NULL;
 static pid_t dependent = -1;
 
+static int just_exec = 0;
 static int run_as_daemon = 0;
-static int run_without_fork = 0;
 static int restart_on_error = 0;
 static int restart_on_exit = 0;
-
-#if ! HAVE_EXECVPE
-extern char *const *environ;
-static int execvpe(char *prog,char *const argv[],char *const envp[])
-{
-  environ = envp;
-  return execvp(prog,(char **)argv);
-}
-#endif
 
 void usage()
 {
   fprintf(stderr,"u8run [+opt|env=val|@jobid]* exename [args..]\n");
   fprintf(stderr,"  [opt]\t+launch +service +chain +insane +restart\n");
   fprintf(stderr,"  [opt]\t+restart=onerr +restart=onexit\n");
-  fprintf(stderr,"  [env]\tJOBID=jobid RUNDIR=dir STOPFILE=filename DONEFILE=filename\n");
+  fprintf(stderr,"  [env]\tJOBID=jobid RUNDIR=dir RUNPREFIX=string\n");
+  fprintf(stderr,"  [env]\tSTATUSFILE=filename STOPFILE=filename DONEFILE=filename\n");
   fprintf(stderr,"  [env]\tU8LOGFILE|LOGFILE=file U8ERRFILE|ERRFILE=file\n");
   fprintf(stderr,"  [env]\tLOGDIR=dir LOGLEVEL=n\n");
   fprintf(stderr,"  [env]\tRESTART=never|error|exit|always\n");
@@ -86,7 +82,9 @@ static u8_string procpath(u8_string job_id,u8_string suffix)
   if (strchr(job_id,'/'))
     return u8_string_append(job_id,".",suffix,NULL);
   else {
-    u8_string name = u8_string_append(job_id,".",suffix,NULL);
+    u8_string name = (run_prefix) ?
+      (u8_string_append(run_prefix,job_id,".",suffix,NULL)) :
+      (u8_string_append(job_id,".",suffix,NULL));
     u8_string path = u8_mkpath(run_dir,name);
     u8_free(name);
     return path;}
@@ -203,7 +201,7 @@ double xgetenv_float(u8_string var,u8_string alternate,u8_string backup,double d
 static int doexit=0, paused=0, restart=0;
 static double last_launch = -1, fast_fail = 3, fail_start=-1;
 static double restart_wait=0, max_wait=120, backoff=10;
-static double pid_wait=0, pid_min_wait=2.0;
+static double pid_wait=3.0, status_wait=-1;
 
 static void launch_loop(u8_string job_id,char **launch_args,int n_args);
 static pid_t dolaunch(char **launch_args);
@@ -218,6 +216,16 @@ static int same_filep(u8_string path1,u8_string path2)
   return same;
 }
 
+static int wait_for_file(u8_string filename,double secs)
+{
+  if (u8_file_existsp(filename)) return 1;
+  double start = u8_elapsed_time();
+  while ( (u8_elapsed_time()-start) < secs) {
+    if (u8_file_existsp(filename)) return 1;
+    else u8_sleep(0.25);}
+  return 0;
+}
+
 int main(int argc,char *argv[])
 {
   int i = 1, n_args = 0;
@@ -229,7 +237,8 @@ int main(int argc,char *argv[])
   u8_log_show_elapsed=1;
   u8_log_show_appid=1;
 
-  run_dir = xgetenv("U8RUNDIR","U8_RUNDIR","RUNDIR");
+  run_dir = xgetenv("U8_RUNDIR","U8RUNDIR","RUNDIR");
+  run_prefix = xgetenv("U8_RUNPREFIX","U8RUNPREFIX","RUNDIR");
 
   if (argc<2) {
     usage();
@@ -241,9 +250,9 @@ int main(int argc,char *argv[])
       job_id = u8_fromlibc(arg+1);
       i++;}
     else if (arg[0] == '+') {
-      if (run_without_fork) {
+      if (just_exec) {
         u8_log(LOG_CRIT,"InconsistentRunOption",
-               "The run option '%s' cannot be used when "
+               "The restart option '%s' cannot be used when "
                "running without forking (+exec)",
                arg);
         usage();
@@ -255,8 +264,13 @@ int main(int argc,char *argv[])
       else if ( (strcasecmp(arg,"+launch")==0) ||
                 (strcasecmp(arg,"+daemon")==0) )
         run_as_daemon = 1;
-      else if (strcasecmp(arg,"+exec")==0)
-        run_without_fork = 1;
+      else if (strcasecmp(arg,"+exec")==0) {
+        run_as_daemon = 0;
+        just_exec = 1;}
+      else if ( (strcasecmp(arg,"+oneshot")==0) ||
+                (strcasecmp(arg,"+noloop")==0) ) {
+        run_as_daemon = 1;
+        just_exec = 1;}
       else if ( (strcasecmp(arg,"+insane")==0) ||
                 (strcasecmp(arg,"+restart=onerr")==0) )
         restart_on_error = 1;
@@ -285,19 +299,22 @@ int main(int argc,char *argv[])
         exit(1);}
       char varname[name_len+5];
       /* Write the U8 version */
-      strcpy(varname,"U8");
+      strcpy(varname,"U8_");
       strncat(varname,arg,name_len);
-      varname[name_len+2]='\0';
+      varname[name_len+3]='\0';
       setenv(varname,eqpos+1,1);
-      /* Write the direct version */
+      /* Write the same value to the varname without the U8_ prefix */
       strncpy(varname,arg,name_len);
       varname[name_len]='\0';
       setenv(varname,eqpos+1,1);
 
-      /* Handle some special cases here */
+      /* Settings which will be used immediately to generate paths */
       if (strcasecmp(varname,"rundir")==0) {
         if (run_dir) u8_free(run_dir);
         run_dir = u8_strdup(eqpos+1);}
+      if (strcasecmp(varname,"runprefix")==0) {
+        if (run_prefix) u8_free(run_prefix);
+        run_prefix = u8_strdup(eqpos+1);}
       if (strcasecmp(varname,"jobid")==0) {
         if (job_id) u8_free(job_id);
         job_id = u8_strdup(eqpos+1);}
@@ -311,6 +328,7 @@ int main(int argc,char *argv[])
   /* Terminate the launch args */
   launch_args[n_args]=NULL;
 
+ got_args:
   /* Make sure we have a jobid */
   if (job_id == NULL) {
     u8_string path = u8_fromlibc(cmd);
@@ -322,7 +340,17 @@ int main(int argc,char *argv[])
     if (run_dir == NULL) {
       if ( (u8_directoryp("_")) && (u8_file_writablep("_")) )
         run_dir = u8_abspath("_",NULL);
-      else run_dir = u8_getcwd();}}
+      else if ( (u8_directoryp("_runs")) && (u8_file_writablep("_runs")) )
+        run_dir = u8_abspath("_runs",NULL);
+      else {
+        run_dir = u8_getcwd();
+        /* If the command is in the current directory (or on the
+           search path), default the run_prefix to '_' to simplify
+           references to the run files */
+        if ( (run_prefix == NULL) &&
+             ( ( (cmd[0] == '.') && (cmd[1] == '/') ) ||
+               (strchr(cmd,'/') == NULL) ) )
+          run_prefix="_";}}}
 
   if ( (! (u8_directoryp(run_dir)) ) ||
        (! (u8_file_writablep(run_dir)) ) ) {
@@ -334,21 +362,39 @@ int main(int argc,char *argv[])
   if (!(log_dir)) log_dir = u8_strdup(run_dir);
 
   {/* Compute runbase (run_dir/job_id) */
-    u8_string runbase = u8_mkpath(run_dir,job_id);
-    setenv("RUNBASE",runbase,0);
-    u8_free(runbase);}
+    u8_string local_name = (run_prefix) ?
+      (u8_string_append(run_prefix,job_id,NULL)) :
+      (job_id);
+    job_prefix = u8_mkpath(run_dir,local_name);
+    setenv("RUNBASE",job_prefix,0);
+    setenv("U8_RUNBASE",job_prefix,0);
+    if (run_prefix) u8_free(local_name);}
 
-  if (err_file == NULL) err_file=xgetenv("U8ERRFILE","U8_ERRFILE","ERRFILE");
+  if (log_file == NULL) log_file = xgetenv("U8_LOGFILE","U8LOGFILE","LOGFILE");
+  if (err_file == NULL) err_file=xgetenv("U8_ERRFILE","U8ERRFILE","ERRFILE");
 
-  if (log_file == NULL) log_file = xgetenv("U8LOGFILE","U8_LOGFILE","LOGFILE");
+  /* Handle log file configurations which just specify the suffix */
+  if ( (log_file) && (log_file[0] == '.') && (isalnum(log_file[1])) ) {
+    u8_string full_logfile = (run_prefix) ?
+      (u8_string_append(run_prefix,job_id,log_file,NULL)) :
+      (u8_string_append(job_id,log_file,NULL));
+    u8_free(log_file);
+    log_file=full_logfile;}
 
-  u8_loglevel = xgetenv_int("U8LOGLEVEL","U8_LOGLEVEL","LOGLEVEL",5);
-  fast_fail = xgetenv_float("U8FASTFAIL","U8_FASTFAIL","FASTFAIL",fast_fail);
-  restart_wait = xgetenv_float("U8WAIT","U8_WAIT","WAIT",1);
-  backoff = xgetenv_float("U8BACKOFF","U8_BACKOFF","BACKOFF",backoff);
-  max_wait = xgetenv_float("U8MAXWAIT","U8_MAXWAIT","MAXWAIT",max_wait);
-  pid_wait = xgetenv_float("U8PIDWAIT","U8_PIDWAIT","PIDWAIT",pid_wait);
-  pid_min_wait = xgetenv_float("U8PIDMINWAIT","U8_PIDMINWAIT","PIDMINWAIT",2.0);
+  if ( (err_file) && (err_file[0] == '.') && (isalnum(err_file[1])) ) {
+    u8_string full_errfile = (run_prefix) ?
+      (u8_string_append(run_prefix,job_id,err_file,NULL)) :
+      (u8_string_append(job_id,err_file,NULL));
+    u8_free(err_file);
+    err_file=full_errfile;}
+
+  u8_loglevel = xgetenv_int("U8_LOGLEVEL","U8LOGLEVEL","LOGLEVEL",5);
+  fast_fail = xgetenv_float("U8_FASTFAIL","U8FASTFAIL","FASTFAIL",fast_fail);
+  restart_wait = xgetenv_float("U8_RESTART_WAIT","U8RESTARTWAIT","RESTARTWAIT",1);
+  backoff = xgetenv_float("U8_BACKOFF","U8BACKOFF","BACKOFF",backoff);
+  max_wait = xgetenv_float("U8_MAXWAIT","U8MAXWAIT","MAXWAIT",max_wait);
+  pid_wait = xgetenv_float("U8_PIDWAIT","U8PIDWAIT","PIDWAIT",pid_wait);
+  status_wait = xgetenv_float("U8_WAIT","U8RUN_WAIT","STATUSWAIT",status_wait);
 
   pid_file = xgetenv("U8_PIDFILE","U8PIDFILE","PIDFILE");
   status_file = xgetenv("U8_STATUSFILE","U8STATUSFILE","STATUSFILE");
@@ -357,14 +403,21 @@ int main(int argc,char *argv[])
   done_file = xgetenv("U8_DONEFILE","U8DONEFILE","DONEFILE");
   cmd_file = xgetenv("U8_CMDFILE","U8CMDFILE","CMDFILE");
 
+ get_defaults:
   /* Default values */
   if (pid_file == NULL) pid_file = procpath(job_id,"pid");
-  if (cmd_file == NULL) pid_file = procpath(job_id,"cmd");
   if (ppid_file == NULL) ppid_file = procpath(job_id,"ppid");
-  if (status_file == NULL) status_file = procpath(job_id,"stat");
+  if (cmd_file == NULL) cmd_file = procpath(job_id,"cmd");
+  if (status_file == NULL) status_file = procpath(job_id,"status");
   if (stop_file == NULL) stop_file = procpath(job_id,"stop");
   if (done_file == NULL) done_file = procpath(job_id,"done");
 
+  if (log_file == NULL) {
+    if (run_prefix)
+      log_file=u8_mkstring("%s%s.log",run_prefix,job_id);}
+    else log_file=u8_mkstring("%s.log",job_id);
+
+ setup_env:
   /* Setenv for this process */
   u8_setenv("U8_JOBID",job_id,1);
   u8_byte loglevel_tmp[64];
@@ -374,10 +427,12 @@ int main(int argc,char *argv[])
   if (status_file) u8_setenv("U8_STATUSFILE",status_file,1);
   if (run_dir)   u8_setenv("U8_RUNDIR",run_dir,1);
   if (log_dir)   u8_setenv("U8_LOGDIR",log_dir,1);
-  if (log_file)  u8_setenv("U8_LOGFILE",log_file,1);
-  if (cmd_file)  u8_setenv("U8_CMDFILE",log_file,1);
-
-  job_prefix = u8_mkpath(job_id,run_dir);
+  if (log_file) {
+    u8_setenv("U8_LOGFILE",log_file,1);
+    u8_string log_path = u8_abspath(log_file,log_dir);
+    u8_setenv("U8_LOGPATH",log_path,1);
+    u8_free(log_path);}
+  if (cmd_file)  u8_setenv("U8_CMDFILE",cmd_file,1);
 
   u8_string restart_val = xgetenv("U8_RESTART","U8RESTART","RESTART");
   if (restart_val==NULL) {}
@@ -396,10 +451,9 @@ int main(int argc,char *argv[])
     usage();
     exit(0);}
 
-  if (log_file == NULL) log_file=u8_mkstring("%s.log",job_id);
-
   int log_fd = -1;
 
+ setup_stdout:
   /* Now that we're past the usage checks, redirect output if
      requested. */
   if (log_file == NULL) {
@@ -470,7 +524,8 @@ int main(int argc,char *argv[])
         close(err_fd);
         if (log_fd>0) close(log_fd);
         exit(1);}}}
-  
+
+ check_files:
   if (u8_file_existsp(done_file)) {
     u8_log(LOG_WARN,"DoneFile","Exiting for done file %s",done_file);
     exit(0);}
@@ -511,8 +566,6 @@ int main(int argc,char *argv[])
       u8_removefile(status_file);
       u8_removefile(pid_file);}}
 
-  write_pid_file(pid_file);
-
   if (log_file) {
     u8_string run_log_file = procpath(job_id,"log");
     if ( ! ( (u8_file_existsp(run_log_file)) &&
@@ -534,6 +587,9 @@ int main(int argc,char *argv[])
                "Error (%s) linking errlog for job %s, '%s' ==>' %s'",
                u8_strerror(saved_errno),job_id,err_file,run_err_file);}}}
 
+  int restartable = (restart_on_error) || (restart_on_exit);
+
+ start_run:
   if (run_as_daemon) {
     pid_t launched = fork();
     if (launched<0) {
@@ -541,37 +597,55 @@ int main(int argc,char *argv[])
              "Couldn't fork to launch %s",job_id);
       exit(1);}
     else if (launched) {
-      /* When launched, we wait for a PID file to exist before we exit
-         ourselves and leave the daemon running.
-         If pid_wait is specified, we wait for the core application to
-         create the PID file; otherwise, we just wait PID_MIN_WAIT and
-         we'll create the PID file after we fork. */
-      u8_log(LOG_NOTICE,"u8run/launch",
-             "Forked (%lld) launch loop for %s (%s), waiting for %s",
-             (long long)launched,job_id,cmd,status_file);
-      double launch_start = u8_elapsed_time();
-      while (! (u8_file_existsp(status_file)) ) {
-        if ( (elapsed_since(launch_start)) >
-             ( (pid_wait > 0) ? (pid_wait) : (pid_min_wait) ) )
-          break;
-        sleep(1);}
-      if (u8_file_existsp(status_file))
-        exit(0);
-      else {
+      /* When launched, we wait for a PID file to exist before we exit */
+      int rv = (restartable) ? (wait_for_file(ppid_file,pid_wait)) :
+        (wait_for_file(pid_file,pid_wait));
+      if (rv) {
+        u8_string launch_noun = (restartable) ? ("launch loop") : ("subproc");
+        u8_log(LOG_NOTICE,"u8run/launch",
+               "Forked %s (%lld) for %s (%s)%s%s",
+               launch_noun,(long long)launched,job_id,cmd,
+               ((status_wait>0) ? (", waiting for ") : ("")),
+               ((status_wait>0) ? (status_file) : (U8S(""))));}
+      else  {
         /* Does this need to clean anything up? */
         u8_log(LOGCRIT,"AppLaunchFailed",
                "Timed out waiting for STAT file %s for job %s",
                status_file,job_id);
         kill_child(job_id,launched,pid_file);
-        exit(1);}}}
+        exit(1);}
+      if (restartable) {
+        /* Wait for a grandchild */
+        rv = wait_for_file(pid_file,pid_wait);
+        if (rv==0) {
+          /* Does this need to clean anything up? */
+          u8_log(LOGCRIT,"AppLaunchFailed",
+                 "Timed out waiting for granchild pid file (%s) for job %s",
+                 pid_file,job_id);
+          kill_child(job_id,launched,pid_file);
+          exit(1);}
+        else if (status_wait>0) {
+          rv = wait_for_file(pid_file,status_wait);
+          if (rv) {
+            u8_string status = u8_filestring(status_file,NULL);
+            u8_log(LOG_NOTICE,"u8run/status","For %s (%s)\n\t%s",job_id,cmd,status);}
+          else {
+            /* Does this need to clean anything up? */
+            u8_log(LOGCRIT,"AppLaunchFailed",
+                   "Timed out waiting for status file %s for job %s",
+                   status_file,job_id);
+            kill_child(job_id,launched,pid_file);
+            exit(1);}}
+        else exit(0);}
+      else exit(0);}}
   setup_signals();
-  if (run_without_fork) {
+  if (restartable) {
+    launch_loop(job_id,launch_args,n_args);
+    return 0;}
+  else  {
     pid_t pid = dolaunch(launch_args);
     /* Never reached */
     return (pid>0);}
-  else {
-    launch_loop(job_id,launch_args,n_args);
-    return 0;}
 }
 
 static pid_t kill_child(u8_string job_id,pid_t pid,u8_string pid_file)
@@ -638,7 +712,7 @@ static pid_t dolaunch(char **launch_args)
   if (umask_init) umask_value = parse_umask(umask_init);
   last_launch = u8_elapsed_time();
   write_cmd_file(launch_args);
-  pid_t pid = (run_without_fork) ? (0) : (fork());
+  pid_t pid = (just_exec) ? (0) : (fork());
   if (pid == 0) {
     if (umask_value>=0) umask(umask_value);
     if (! (u8_getenv_int("NOMASK",0)) ) {
@@ -663,7 +737,7 @@ static pid_t dolaunch(char **launch_args)
         exit(13);}
       else u8_log(LOG_NOTICE,"SetUID","Set UID to %d",run_user);}
     write_pid_file(job_id);
-    if (pid_file) setenv("PIDFILE",pid_file,1);
+    if (pid_file) setenv("U8RUNPIDFILE",pid_file,1);
     if (job_id) setenv("U8RUNJOBID",job_id,1);
     if (job_prefix) setenv("U8RUNJOBPREFIX",job_id,1);
     if (status_file) setenv("U8RUNSTATUSFILE",status_file,1);
@@ -762,6 +836,13 @@ static void exit_u8run()
     int rv = u8_removefile(filename);
     if (rv<0) u8_log(LOGERR,"FileRemoveFailed","For %s",filename);
     ppid_file=NULL;
+    u8_free(filename);}
+  if (pid_file) {
+    u8_string filename = pid_file;
+    if (u8_file_existsp(filename)) {
+      int rv = u8_removefile(filename);
+      if (rv<0) u8_log(LOGERR,"FileRemoveFailed","For %s",filename);}
+    pid_file=NULL;
     u8_free(filename);}
 }
 
