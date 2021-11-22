@@ -3,7 +3,7 @@ SOURCE=$1
 BASE=$(basename ${SOURCE} .@shared_suffix@)
 DIR=$2
 VERSION=$3
-INSTALLER=${4:-@INSTALL@}
+INSTALLER=${4:-@INSTALL@ a+r,ug+w}
 if [ "@shared_suffix@" = "dylib" ]; then
     INSTALL_NAME=${BASE}.${VERSION}.@shared_suffix@
 else

@@ -9,14 +9,17 @@ fi
 
 export INPUT=
 export OUTPUT=
-export QUIET=
+export QUIET=${QUIET}
+export SEP=${SEP:-|}
 check_quiet() {
     if [ "$1" = "-q" ] || [ "$1" = "--quiet" ]; then
 	QUIET=yes; shift;
     fi;}
 
-check_quiet; INPUT=$1; shift;
-check_quiet; OUTPUT=$1; shift;
+if [ "$1" = "-q" ] || [ "$1" = "--quiet" ]; then QUIET=yes; shift; fi
+INPUT=$1; shift;
+if [ "$1" = "-q" ] || [ "$1" = "--quiet" ]; then QUIET=yes; shift; fi
+OUTPUT=$1; shift;
 
 if [ "${OUTPUT}" = "inplace" ] || [ "${OUTPUT}" = "-" ] || [ "${OUTPUT}" = "." ]; then
     OUTPUT=${INPUT};
@@ -26,7 +29,7 @@ cp $INPUT $OUTPUT.tmp;
 EDIT_ARGS=
 while [ $# -gt 1 ]; do
     find=$1; replace=$2; shift; shift;
-    EDIT_EXPR="s/@${find}@/${replace}/g"
+    EDIT_EXPR="s${SEP}@${find}@${SEP}${replace}${SEP}g"
     EDIT_ARGS="${EDIT_ARGS} -e ${EDIT_EXPR}";
     done;
 #echo EDIT_ARGS=${EDIT_ARGS}

@@ -27,7 +27,7 @@ MANDIR		= $(DESTDIR)@mandir@
 LIBSOURCE	= lib
 EXESOURCE	= exe
 LIBINSTALLDIR	= $(DESTDIR)@libdir@
-BININSTALLDIR	= $(DESTDIR)@bindir@
+EXEINSTALLDIR	= $(DESTDIR)@bindir@
 ENCDIR		= $(DESTDIR)@prefix@/share/libu8/encodings
 XRPMFLAGS	=
 RPMFLAGS	= $(XRPMFLAGS) @RPMFLAGS@
@@ -37,7 +37,8 @@ GPGID           = $(cat .gpgid 2>/dev/null || echo @GPGID@)
 GZIP            = @GZIP@
 CLEAN		= @CLEAN@
 SUDO		= @SUDO@
-INSTALL		= @INSTALL@
+INSTALL		= @INSTALL@ -m a+r,ug+w
+INSTALLEXE	= @INSTALL@ -m a+rx,ug+w
 RANLIB		= @RANLIB@
 MKSTATIC	= @MKSTATIC@ -o 
 DOXYGEN		= @doxygen@
@@ -318,20 +319,20 @@ $(LIBINSTALLDIR)/%@suffix@.dylib: \
 	@echo "# (libu8)" Linking to $@
 	@$(SUDO) ln -sf $(shell basename $<) $@
 
-$(BININSTALLDIR)/%: ${EXESOURCE}/%
+$(EXEINSTALLDIR)/%: ${EXESOURCE}/%
 	@echo "# (libu8)" Installing exe $@
-	@$(SUDO) $(INSTALL) -d $(BININSTALLDIR)
-	@$(SUDO) $(INSTALL) $< $(BININSTALLDIR)
+	@$(SUDO) $(INSTALL) -d $(EXEINSTALLDIR)
+	@$(SUDO) $(INSTALLEXE) $< $(EXEINSTALLDIR)
 
-$(BININSTALLDIR)/%: etc/%
+$(EXEINSTALLDIR)/%: etc/%
 	@echo "# (libu8)" Installing script $@ from $<
-	@$(SUDO) $(INSTALL) -d $(BININSTALLDIR)
-	@$(SUDO) $(INSTALL) $< $(BININSTALLDIR)
+	@$(SUDO) $(INSTALL) -d $(EXEINSTALLDIR)
+	@$(SUDO) $(INSTALLEXE) $< $(EXEINSTALLDIR)
 
-$(BININSTALLDIR)/%: scripts/%
+$(EXEINSTALLDIR)/%: scripts/%
 	@echo "# (libu8)" Installing script $@ from $<
-	@$(SUDO) $(INSTALL) -d $(BININSTALLDIR)
-	@$(SUDO) $(INSTALL) $< $(BININSTALLDIR)
+	@$(SUDO) $(INSTALL) -d $(EXEINSTALLDIR)
+	@$(SUDO) $(INSTALLEXE) $< $(EXEINSTALLDIR)
 
 check:
 
@@ -498,13 +499,13 @@ install-dev: install-headers install-pkgconfig install-dev-scripts
 install-shared: @install_shared@
 install-libs: install-static install-shared
 install-bin: install-shared install-static install-exe
-install-scripts: $(BININSTALLDIR)/u8_xsubst $(BININSTALLDIR)/u8ctl
-install-dev-scripts: $(BININSTALLDIR)/u8_xsubst $(BININSTALLDIR)/u8ctl \
-	$(BININSTALLDIR)/u8_gitpatchcount $(BININSTALLDIR)/u8_gitbranch \
-	$(BININSTALLDIR)/u8_gitversion $(BININSTALLDIR)/u8_gitcommit \
-	$(BININSTALLDIR)/u8_aptversion $(BININSTALLDIR)/u8_debchangelog \
-	$(BININSTALLDIR)/u8_install_shared $(BININSTALLDIR)/u8_gzinstall \
-	$(BININSTALLDIR)/u8_dupload
+install-scripts: $(EXEINSTALLDIR)/u8_xsubst $(EXEINSTALLDIR)/u8ctl
+install-dev-scripts: $(EXEINSTALLDIR)/u8_xsubst $(EXEINSTALLDIR)/u8ctl \
+	$(EXEINSTALLDIR)/u8_gitpatchcount $(EXEINSTALLDIR)/u8_gitbranch \
+	$(EXEINSTALLDIR)/u8_gitversion $(EXEINSTALLDIR)/u8_gitcommit \
+	$(EXEINSTALLDIR)/u8_aptversion $(EXEINSTALLDIR)/u8_debchangelog \
+	$(EXEINSTALLDIR)/u8_install_shared $(EXEINSTALLDIR)/u8_gzinstall \
+	$(EXEINSTALLDIR)/u8_dupload
 install-stripped:
 	make LIBSOURCE=lib/stripped LIBSOURCE=exe/stripped install-bin
 install-extras:  install-encodings @INSTALLI18N@ install-doc
@@ -530,7 +531,7 @@ install-static: $(LIBINSTALLDIR)/libu8.a \
 		$(LIBINSTALLDIR)/libu8stdio.a \
 		$(LIBINSTALLDIR)/libu8syslog.a
 
-install-exe: $(BININSTALLDIR)/u8run $(BININSTALLDIR)/u8_fileinfo
+install-exe: $(EXEINSTALLDIR)/u8run $(EXEINSTALLDIR)/u8_fileinfo
 
 install-so: $(LIBINSTALLDIR)/libu8@suffix@.so                  		\
 	    $(LIBINSTALLDIR)/libu8@suffix@.so.@U8MAJOR@      		\
