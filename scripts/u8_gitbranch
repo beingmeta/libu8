@@ -1,7 +1,7 @@
 #!/bin/sh
-if [ ! -d .git ]; then
-    echo default;
-    exit;
+if ! git status 2>/dev/null 1>/dev/null; then
+   if [ -n "${DEFAULT_GITBRANCH}" ]; then echo ${DEFAULT_GITBRANCH}; fi;
+   exit;
 fi
 branch_name=$(git symbolic-ref -q HEAD)
 branch_name=${branch_name##refs/heads/}
