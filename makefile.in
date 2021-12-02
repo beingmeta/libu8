@@ -38,7 +38,8 @@ GZIP            = @GZIP@
 CLEAN		= @CLEAN@
 SUDO		= @SUDO@
 INSTALL		= @INSTALL@ -m a+r,ug+w
-INSTALLEXE	= @INSTALL@ -m a+rx,ug+w
+INSTALLEXE	= @INSTALL@ -m a+rx,ug+wx
+INSTALLDIR	= @INSTALL@ -m a+rx,ug+wx -d
 RANLIB		= @RANLIB@
 MKSTATIC	= @MKSTATIC@ -o 
 DOXYGEN		= @doxygen@
@@ -287,13 +288,14 @@ exe/stripped/%: exe/%
 
 $(LIBINSTALLDIR)/%.a: ${LIBSOURCE}/%.a
 	@echo "# (libu8)" Installing $@ from $<
-	@$(SUDO) $(INSTALL) -d $(LIBINSTALLDIR)
-	@$(SUDO) $(INSTALL) $< $(LIBINSTALLDIR)
+	@$(SUDO) $(INSTALLDIR) $(LIBINSTALLDIR)
+	@$(SUDO) $(INSTALLEXE) $< $(LIBINSTALLDIR)
 
 $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@: ${LIBSOURCE}/%@suffix@.so
 	@echo "# (libu8)" Installing $@ from $<
-	@$(SUDO) $(INSTALL) -d $(@D)
-	@$(SUDO) $(INSTALL) $< $@
+	@$(SUDO) $(INSTALLDIR) $(@D)
+	@$(SUDO) $(INSTALLEXE) $< $@
+
 $(LIBINSTALLDIR)/%@suffix@.so.@U8MAJOR@: \
 	$(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 	@echo "# (libu8)" Linking $< to $@
@@ -304,8 +306,9 @@ $(LIBINSTALLDIR)/%@suffix@.so: $(LIBINSTALLDIR)/%@suffix@.so.@U8VERSION@
 
 $(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib: ${LIBSOURCE}/%@suffix@.dylib
 	@echo "# (libu8)" Installing $@
-	@$(SUDO) $(INSTALL) -d $(LIBINSTALLDIR)
-	@$(SUDO) $(INSTALL) $< $@
+	@$(SUDO) $(INSTALLDIR) $(LIBINSTALLDIR)
+	@$(SUDO) $(INSTALLEXE) $< $@
+
 $(LIBINSTALLDIR)/%@suffix@.@U8MAJOR@.dylib: \
 	$(LIBINSTALLDIR)/%@suffix@.@U8VERSION@.dylib
 	@echo "# (libu8)" Linking $< to $@
@@ -321,17 +324,17 @@ $(LIBINSTALLDIR)/%@suffix@.dylib: \
 
 $(EXEINSTALLDIR)/%: ${EXESOURCE}/%
 	@echo "# (libu8)" Installing exe $@
-	@$(SUDO) $(INSTALL) -d $(EXEINSTALLDIR)
+	@$(SUDO) $(INSTALLDIR) $(EXEINSTALLDIR)
 	@$(SUDO) $(INSTALLEXE) $< $(EXEINSTALLDIR)
 
 $(EXEINSTALLDIR)/%: etc/%
 	@echo "# (libu8)" Installing script $@ from $<
-	@$(SUDO) $(INSTALL) -d $(EXEINSTALLDIR)
+	@$(SUDO) $(INSTALLDIR) $(EXEINSTALLDIR)
 	@$(SUDO) $(INSTALLEXE) $< $(EXEINSTALLDIR)
 
 $(EXEINSTALLDIR)/%: scripts/%
 	@echo "# (libu8)" Installing script $@ from $<
-	@$(SUDO) $(INSTALL) -d $(EXEINSTALLDIR)
+	@$(SUDO) $(INSTALLDIR) $(EXEINSTALLDIR)
 	@$(SUDO) $(INSTALLEXE) $< $(EXEINSTALLDIR)
 
 check:
@@ -514,13 +517,13 @@ install-headers: $(DESTDIR)@prefix@/include/libu8
 	@echo "# (libu8) Installing headers in $(DESTDIR)@prefix@/include/libu8"
 	@$(SUDO) $(INSTALL) include/libu8/*.h $(DESTDIR)@prefix@/include/libu8
 $(DESTDIR)@prefix@/include/libu8:
-	$(SUDO) $(INSTALL) -d $(DESTDIR)@prefix@/include/libu8
+	$(SUDO) $(INSTALLDIR) $(DESTDIR)@prefix@/include/libu8
 
 install-pkgconfig: $(DESTDIR)@PKGCONFIG_DIR@
 	@echo "# (libu8) Installing libu8 pkgconfig file in $(DESTDIR)@PKGCONFIG_DIR@"
 	@$(SUDO) $(INSTALL) etc/libu8.pc $(DESTDIR)@PKGCONFIG_DIR@
 $(DESTDIR)@PKGCONFIG_DIR@:
-	$(SUDO) $(INSTALL) -d $(DESTDIR)@PKGCONFIG_DIR@
+	$(SUDO) $(INSTALLDIR) $(DESTDIR)@PKGCONFIG_DIR@
 
 # Installing documentation
 
@@ -745,7 +748,7 @@ install-encodings: $(DESTDIR)@prefix@/share/libu8/encodings
 		then $(SUDO) ln -sf MACCENTRALEUROPE $(ENCDIR)/$$x; fi; done;
 
 $(DESTDIR)@prefix@/share/libu8/encodings:
-	$(SUDO) $(INSTALL) -d $(DESTDIR)@prefix@/share/libu8/encodings
+	$(SUDO) $(INSTALLDIR) $(DESTDIR)@prefix@/share/libu8/encodings
 
 # Documentation
 
@@ -767,8 +770,8 @@ libu8.org: docs/doxygen.done
 	aws s3 cp --recursive docs/html/ s3://www.libu8.org/docs/
 
 install-core-manpages: alldocs
-	@$(SUDO) $(INSTALL) -d $(MANDIR);
-	@$(SUDO) $(INSTALL) -d $(MANDIR)/man1;
+	@$(SUDO) $(INSTALLDIR) $(MANDIR);
+	@$(SUDO) $(INSTALLDIR) $(MANDIR)/man1;
 	@for manpage in docs/man/*.1; do 				\
 	  if test -f "$${manpage}"; then				\
 	    base=$$(basename $${manpage});				\
@@ -782,8 +785,8 @@ install-core-manpages: alldocs
 
 install-dev-manpages: alldocs
 	@echo "# (libu8)" "Writing man pages from doxygen"
-	@$(SUDO) $(INSTALL) -d $(MANDIR);
-	@$(SUDO) $(INSTALL) -d $(MANDIR)/man3;
+	@$(SUDO) $(INSTALLDIR) $(MANDIR);
+	@$(SUDO) $(INSTALLDIR) $(MANDIR)/man3;
 	@for manpage in docs/man/man3/*.3; do\
 	  if test -f "$${manpage}"; then 				\
 	    base=$$(basename $${manpage});				\
