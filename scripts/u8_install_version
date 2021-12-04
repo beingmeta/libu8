@@ -1,0 +1,48 @@
+#!/bin/sh
+usage() {
+    echo "Usage: u8_install_version libfile libdir version [installer]"
+    echo "  Installs the shared library *libfile* (e.g. mylib.so or mylib.dylib)"
+    echo "  into the directory *libdir* with *version* and creates symlinks"
+    echo "  to the installed file from coarser-grained versions."
+}
+if [ $# -lt 3 ] || [ ~ -f "$1" ]; then
+    usage;
+    exit;
+fi;
+SOURCE=$1
+DIR=$2
+VERSION=$3
+INSTALLER=${4:-@INSTALL@ a+rx,ug+rwx}
+SUFFIX=${SOURCE##*.}
+BASE=$(basename ${SOURCE%.*})
+if [ "${SUFFIX}" = "${SOURCE}" ]; then
+    SUFFIX=
+else
+    SUFFIX=".${SUFFIX}";
+fi
+if [ "${SUFFIX}" = "dylib" ]; then
+    INSTALL_NAME=${BASE}.${VERSION}${SUFFIX}
+else
+    INSTALL_NAME=${BASE}${SUFFIX}.${VERSION}
+fi;
+${INSTALLER} ${SOURCE} ${DIR}/${INSTALL_NAME}
+LAST_VERSION=${VERSION}
+VERSION=${LAST_VERSION%.[0123456789]*}
+while [ "${VERSION}" != "${LAST_VERSION}" ]; do
+    if [ "${SUFFIX}" = ".dylib" ]; then
+	NEW_NAME=${BASE}.${VERSION}${SUFFIX}
+    else
+	NEW_NAME=${BASE}${SUFFIX}.${VERSION}
+    fi;
+    if [ ! -f "${DIR}/${NEW_NAME}" ] || [ -h "${DIR}/${NEW_NAME}" ]; then
+	ln -sf ${INSTALL_NAME} ${DIR}/${NEW_NAME};
+    else
+	echo "# Skipping overwrite of non-symlink ${DIR}/${NEW_NAME}";
+	ls -l "${DIR}/${NEW_NAME}";
+    fi;
+    INSTALL_NAME=${NEW_NAME};
+    LAST_VERSION=${VERSION};
+    VERSION=${LAST_VERSION%.[0123456789]*}
+done;
+ln -sf ${INSTALL_NAME} ${DIR}/${BASE}${SUFFIX}
+

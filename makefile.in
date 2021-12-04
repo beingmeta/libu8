@@ -508,7 +508,7 @@ install-dev-scripts: $(EXEINSTALLDIR)/u8_xsubst $(EXEINSTALLDIR)/u8ctl \
 	$(EXEINSTALLDIR)/u8_gitversion $(EXEINSTALLDIR)/u8_gitcommit \
 	$(EXEINSTALLDIR)/u8_aptversion $(EXEINSTALLDIR)/u8_debchangelog \
 	$(EXEINSTALLDIR)/u8_install_shared $(EXEINSTALLDIR)/u8_gzinstall \
-	$(EXEINSTALLDIR)/u8_dupload
+	$(EXEINSTALLDIR)/u8_dupload $(EXEINSTALLDIR)/u8_install_version
 install-stripped:
 	make LIBSOURCE=lib/stripped LIBSOURCE=exe/stripped install-bin
 install-extras:  install-encodings @INSTALLI18N@ install-doc

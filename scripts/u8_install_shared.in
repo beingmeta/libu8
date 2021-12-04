@@ -1,9 +1,19 @@
 #!/bin/sh
+usage() {
+    echo "Usage: u8_install_shared libfile libdir version [installer]"
+    echo "  Installs the shared library *libfile* (e.g. mylib.so or mylib.dylib)"
+    echo "  into the directory *libdir* with *version* and creates symlinks"
+    echo "  to the installed file from coarser-grained versions."
+}
+if [ $# -lt 3 ] || [ ! -f "$1" ]; then
+    usage;
+    exit;
+fi;
 SOURCE=$1
 BASE=$(basename ${SOURCE} .@shared_suffix@)
 DIR=$2
 VERSION=$3
-INSTALLER=${4:-@INSTALL@ a+r,ug+w}
+INSTALLER=${4:-@INSTALL@ a+rx,ug+wx}
 if [ "@shared_suffix@" = "dylib" ]; then
     INSTALL_NAME=${BASE}.${VERSION}.@shared_suffix@
 else
