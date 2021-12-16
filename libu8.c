@@ -66,6 +66,11 @@
 #define MAX_U8RUN_PREFIX_LEN 512
 #endif
 
+#if U8_DARWIN_TARGET
+#include <crt_externs.h>
+#define environ (*_NSGetEnviron())
+#endif
+
 /* Just in case */
 
 #define LOG_EMERG	0	/* system is unusable */
