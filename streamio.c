@@ -368,6 +368,14 @@ U8_EXPORT int _u8_getc(struct U8_INPUT *f)
   return ch;
 }
 
+U8_EXPORT int _u8_merge_substream(u8_output out,u8_output sub)
+{
+  int rv = u8_putn(out,u8_outstring(sub),u8_outlen(sub));
+  if (U8_TAINTEDP(sub)) {U8_SET_TAINTED(out);}
+  return rv;
+}
+
+
 static int peekc(struct U8_INPUT *f,int fill)
 {
   int i, ch, byte, size;

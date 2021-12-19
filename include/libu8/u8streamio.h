@@ -106,21 +106,25 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
 /** Whether or not the stream should not be verbose. **/
 #define U8_OUTPUT_TACITURN    0x10000
 #define U8_STREAM_TACITURN    U8_OUTPUT_TACITURN
+
 /** This bit indicates that the stream should be verbose. **/
 #define U8_OUTPUT_VERBOSE     0x20000
 #define U8_STREAM_VERBOSE     U8_OUTPUT_VERBOSE
+
 /** This bit indicates that the stream is intended for humans to read **/
 #define U8_HUMAN_OUTPUT       0x40000
 #define U8_HUMANE_OUTPUT      U8_HUMAN_OUTPUT
 #define U8_OUTPUT_HUMANE      U8_HUMAN_OUTPUT
 #define U8_STREAM_HUMANE      U8_HUMAN_OUTPUT
 
+/** This bit indicates that the stream is 'tainted' by unprotected input data **/
+#define U8_TAINTED_OUTPUT     0x80000
+
+#define U8_STREAM_NEXT_FLAG  0x100000
+
 #define U8_SUB_STREAM_MASK					\
   ( U8_STREAM_TACITURN | U8_STREAM_VERBOSE | U8_STREAM_HUMANE | U8_STREAM_TTY )
 
-#define U8_STREAM_NEXT_FLAG 0x10000
-
-#define U8_IO_STREAM_FLAGS 0xFF000000
 #define U8_IO_STREAM_FLAGS 0xFF000000
 
 #define U8_STREAM_FIELDS		      \
@@ -128,6 +132,9 @@ U8_EXPORT int u8_utf8warn, u8_utf8err;
   u8_byte *u8_strbuf, *u8_strptr, *u8_strlim; \
   void *u8_cfn; void *u8_xfn;		      \
   u8_string u8_typetag; void *u8_typedata
+
+#define U8_TAINTEDP(s) ( ((s)->u8_streaminfo) & (U8_TAINTED_OUTPUT) )
+#define U8_SET_TAINTED(s) ((s)->u8_streaminfo) |= (U8_TAINTED_OUTPUT)
 
 /** struct U8_STREAM is an abstract structural type which is extended
     by U8_INPUT and U8_OUTPUT.	The general layout of a stream structure is
@@ -345,6 +352,7 @@ static U8_MAYBE_UNUSED void U8_INIT_OUTPUT_X(u8_output s,size_t sz,
 U8_EXPORT int _u8_putc(struct U8_OUTPUT *f,int c);
 U8_EXPORT int _u8_putn(struct U8_OUTPUT *f,u8_string string,int len);
 U8_EXPORT int _u8_output_needs(u8_output out,size_t n_bytes);
+U8_EXPORT int _u8_merge_substream(u8_output out,u8_output sub);
 
 #if U8_INLINE_IO
 /** Writes the unicode code point @a c to the stream @a f.
@@ -394,10 +402,18 @@ U8_INLINE_FCN int u8_output_needs(u8_output out,size_t n_bytes)
     return 0;
   else return _u8_output_needs(out,n_bytes);
 }
+
+U8_INLINE_FCN int u8_merge_substream(u8_output out,u8_output sub)
+{
+  int rv = u8_putn(out,u8_outstring(sub),u8_outlen(sub));
+  if (U8_TAINTEDP(sub)) {U8_SET_TAINTED(out);}
+  return rv;
+}
 #else
 #define u8_putc _u8_putc
 #define u8_putn _u8_putn
 #define u8_output_needs _u8_output_needs
+#define u8_merge_substream _u8_merge_substream
 #endif
 
 #define u8_puts(f,s) _u8_putn(f,s,strlen(s))
