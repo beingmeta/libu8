@@ -361,6 +361,8 @@ if test $target = "i686-pc-mingw32"; then
    LIBS="$LIBS -lwsock32"
 fi
 
+AC_DEFINE_UNQUOTED(U8_SHARED_SUFFIX,"${shared_suffix}")
+
 AC_PATH_PROG(XGETTEXT,xgettext)
 AC_PATH_PROG(MSGMERGE,msgmerge)
 AC_PATH_PROG(MSGFMT,msgfmt)

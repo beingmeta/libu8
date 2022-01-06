@@ -498,6 +498,9 @@
 #undef UID_T_UNSIGNED
 #undef GID_T_UNSIGNED
 
+/* The shared library suffix */
+#undef U8_SHARED_SUFFIX
+
 /* What kind of sanitization (if any) is being applied */
 #undef U8_SANITIZE
 

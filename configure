@@ -5035,6 +5035,11 @@ if test $target = "i686-pc-mingw32"; then
    LIBS="$LIBS -lwsock32"
 fi
 
+cat >>confdefs.h <<_ACEOF
+#define U8_SHARED_SUFFIX "${shared_suffix}"
+_ACEOF
+
+
 # Extract the first word of "xgettext", so it can be a program name with args.
 set dummy xgettext; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5

@@ -577,8 +577,10 @@ static u8_condition FailedDLopen=_("Call to DLOPEN failed");
 
 #if HAVE_DLFCN_H
 U8_EXPORT
-void *u8_dynamic_load(u8_string name)
+void *u8_dynamic_load(u8_string name_arg)
 {
+  u8_string name = (strchr(name_arg,'.')) ? (u8_strdup(name_arg)) :
+    (u8_string_append(name,".",U8_SHARED_SUFFIX,NULL);
   char *modname=u8_tolibc(name);
   void *module=dlopen(modname,RTLD_NOW|RTLD_GLOBAL);
 #if U8_DARWIN_TARGET
