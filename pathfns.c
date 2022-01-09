@@ -1,7 +1,7 @@
 /* -*- Mode: C; Character-encoding: utf-8; -*- */
 
 /* Copyright (C) 2004-2019 beingmeta, inc.
-   Copyright (C) 2020-2022 beingmeta, LLC
+   Copyright (C) 2020-2022 Kenneth Haase (ken.haase@alum.mit.edu)
    This file is part of the libu8 UTF-8 unicode library.
 
    This program comes with absolutely NO WARRANTY, including implied
