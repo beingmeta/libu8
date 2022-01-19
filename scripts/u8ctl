@@ -1,92 +1,118 @@
 #!/bin/sh
-find_control_file ( ) {
-    local arg=$1
-    local suffix=${2:-.pid}
-    local base=$(basename $arg ${suffix})
-    local ctl_file=${base}.${suffix}
-    if [ -f _/${arg} ]; then
-	echo _/${arg};
-    elif [ -f _/${arg}.${suffix} ]; then
-	echo _/${arg}.${suffix};
-    elif [ -f _/${ctl_file} ]; then
-	echo _/${ctl_file};
-    elif [ -f ${arg} ]; then
-	echo ${arg};
-    elif [ -f ${arg}.${suffix} ]; then
-	echo ${arg}.${suffix};
-    elif [ -f ${ctl_file} ]; then
-	echo ${ctl_file};
-    else for dir in "${U8_RUNDIR}" "${U8RUNDIR}" ${U8RUNDIRS}; do
-	     if [ -f ${dir}/${ctl_file} ]; then
-		 echo ${dir}/${ctl_file};
-		 return;
-	     fi;
-	 done;
-    fi;
-}
 getabspath ( ) {
     local path=$1
     case ${path} in
 	/*) echo ${path}; ;;
+	./*) echo $(pwd)${path#./}; ;;
+	../*) echo $(dirname $(pwd))${path#../}; ;;
 	*)  echo $(pwd)/${path}; ;;
     esac;
 }
 
-
+find_control_prefix ( ) {
+    local arg=$1
+    local suffix=${2:-pid}
+    local dir=${3}
+    local base=${arg%.*}
+    local ctl_file=${base}.${suffix}
+    if [ -n "${dir}" ]; then
+	if [ -f "${dir}/${ctl_file}" ]; then
+	    echo "${dir}/${ctl_file}";
+	elif [ -f "${dir}/${ctl_file}.${suffix}" ]; then
+	    echo "${dir}/${ctl_file}";
+	else return 1;
+	fi;
+    elif [ -f "${base}.${suffix}" ]; then
+	echo $(dirname $(abspath ${arg}))/$(basename ${base});
+    elif [ -f "_${base}.${suffix}" ]; then
+	echo "_${base}";
+    elif [ -f _/${base}.${suffix} ]; then
+	echo _/${base};
+    elif [ -z "${dir}" ]; then
+	for dir in "~/.u8run" "${U8_RUNDIR}" "${U8RUNDIR}" ${U8RUNDIRS}; do
+	    if [ -n "${dir}" ] && [ -d "${dir}" ]; then
+		if find_control_prefix ${arg} "${suffix}" "${dir}"; then
+		    return;
+		fi;
+	    fi;
+	done;
+    else
+	return;
+    fi;
+}
 spec=$1
-ctl_file=
-for suffix in .pid .ppid .cmd .log; do
-    if [ ! -z "${ctl_file}" ]; then break; fi;
-    ctl_file=$(find_control_file ${spec} ${suffix});
-done;
-if [ -z "${ctl_file}" ]; then
-    echo "Couldn't locate control files for '${spec}";
-    exit;
-fi;
-ctl_base=${ctl_file##.*/}
-case ${ctl_base} in
-    /*)
-	ctl_path=${ctl_base};
+case ${spec} in
+    default|all|tail|logtail|watch|monitor|tailf|logfile|command|cmd)
+	cmd=${spec};
+	spec=$2;
 	;;
     *)
-	ctl_path=$(pwd)/${ctl_base};
+	cmd=${2:-default};
 	;;
-esac;
-cmd=${2:-default}
+esac
+ctl_prefix=
+for suffix in pid ppid cmd log status; do
+    ctl_prefix=$(find_control_prefix ${spec} ${suffix});
+    if [ ! -z "${ctl_prefix}" ]; then break; fi;
+done;
+if [ -z "${ctl_prefix}" ]; then
+    echo "Usage: u8ctl *jobspec* ";
+    echo "  Couldn't locate control files for '${spec}'";
+    exit;
+fi;
 case ${cmd} in
     default|all)
-	for path in ${ctl_base}*; do
+	for path in ${ctl_prefix}*; do
 	    if [ ! -z "${path}" ] && [ -f "${path}" ]; then
-		echo "  ${path}=$(cat ${path})";
+		suffix=${path##*.}
+		if [ -z "${suffix}" ]; then
+		    echo "  ${path}=$(cat ${path})";
+		else case ${suffix} in
+			 log)
+			     echo "  ${path}=$(ls -l ${path})";
+			     ;;
+			 *)
+			     echo "  ${path}=$(cat ${path})";
+			     ;;
+		     esac;
+		fi;
 	    fi;
 	done;
 	;;
-    tail)
-	if [ -f ${ctl_base}.log ]; then
-	    tail ${ctl_base}.log;
-	else echo "The log for '${spec}' is not available"; fi;
+    tail|logtail)
+	if [ ! -f ${ctl_prefix}.log ]; then
+	    echo "The log for '${spec}' is not available";
+	elif [ $# -gt 2 ]; then
+	    tail -$3 ${ctl_prefix}.log;
+	else 
+	    tail ${ctl_prefix}.log;
+	fi;
 	;;
-    watch|monitor)
-	if [ -f ${ctl_base}.log ]; then
-	    tail -f ${ctl_base}.log;
-	else echo "The log for '${spec}' is not available"; fi;
+    watch|monitor|tailf)
+	if [ ! -f ${ctl_prefix}.log ]; then
+	    echo "The log for '${spec}' is not available";
+	elif [ $# -gt 2 ]; then
+	    tail -f -$3 ${ctl_prefix}.log;
+	else 
+	    tail -f ${ctl_prefix}.log;
+	fi;
 	;;
     logfile)
-	if [ -L ${ctl_base}.log ]; then
+	if [ -L ${ctl_prefix}.log ]; then
 	    linktext=$(readlink ${ctl_path}.log);
 	    echo $(getabspath ${linktext});
-	elif [ -f ${ctl_base}.log ]; then
+	elif [ -f ${ctl_prefix}.log ]; then
 	    echo $(getabspath ${ctl_path}.log);
 	else echo "The command for '${spec}' is not available"; fi;
 	;;
-    command)
-	if [ -f ${ctl_base}.${cmd} ]; then
-	    cat ${ctl_base}.${cmd};
+    command|cmd)
+	if [ -f ${ctl_prefix}.cmd ]; then
+	    cat ${ctl_prefix}.cmd;
 	else echo "The command for '${spec}' is not available"; fi;
 	;;
     *)
-	if [ -f ${ctl_base}.${cmd} ]; then
-	    cat ${ctl_base}.${cmd};
+	if [ -f ${ctl_prefix}.${cmd} ]; then
+	    cat ${ctl_prefix}.${cmd};
 	else echo "The command '${cmd}' wasn't recognized"; fi;
 	;;
 esac
