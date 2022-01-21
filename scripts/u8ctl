@@ -79,6 +79,54 @@ case ${cmd} in
 	    fi;
 	done;
 	;;
+    stop|kill)
+	if [ -f ${ctl_prefix}.ppid ]; then
+	    kill $(cat ${ctl_prefix}.ppid);
+	elif [ -f ${ctl_prefix}.pid ]; then
+	    kill $(cat ${ctl_prefix}.pid);
+	else
+	    echo "No PID found for ${spec}";
+	    exit;
+	fi;
+	;;
+    kill9)
+	if [ -f ${ctl_prefix}.ppid ]; then
+	    kill -9 $(cat ${ctl_prefix}.ppid);
+	elif [ -f ${ctl_prefix}.pid ]; then
+	    kill -9 $(cat ${ctl_prefix}.pid);
+	else
+	    echo "No PID found for ${spec}";
+	    exit;
+	fi;
+	;;
+    restart)
+	if [ -f ${ctl_prefix}.ppid ] && [ -f ${ctl_prefix}.pid ]; then
+	    kill $(cat ${ctl_prefix}.pid);
+	else
+	    echo "Can't restart job for ${spec}";
+	    exit;
+	fi;
+	;;
+    pause|continue|resume|hup)
+	if [ -f ${ctl_prefix}.ppid ]; then
+	    controller = $(cat ${ctl_prefix}.ppid);
+	    case ${cmd} in
+		pause|suspend)
+		    kill -STOP ${controller}; break;
+		    ;;
+		resume|continue)
+		    kill -CONT ${controller}; break;
+		    ;;
+		hup)
+		    kill -HUP ${controller}; break;
+		    ;;
+		exit;
+	    esac;
+	else
+	    echo "No controller PID found for ${spec}";
+	    exit;
+	fi;
+	;;
     tail|logtail)
 	if [ ! -f ${ctl_prefix}.log ]; then
 	    echo "The log for '${spec}' is not available";

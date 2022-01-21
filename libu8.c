@@ -602,6 +602,7 @@ void *u8_dynamic_load(u8_string name_arg)
   if (module==NULL) 
     u8_seterr(FailedDLopen,"u8_dynamic_load",u8_fromlibc((char *)dlerror()));
   u8_free(modname);
+  u8_free(name);
   U8_CLEAR_ERRNO();
   return module;
 }
