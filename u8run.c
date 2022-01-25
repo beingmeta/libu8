@@ -373,20 +373,22 @@ int main(int argc,char *argv[])
   if (log_file == NULL) log_file = xgetenv("U8_LOGFILE","U8LOGFILE","LOGFILE");
   if (err_file == NULL) err_file=xgetenv("U8_ERRFILE","U8ERRFILE","ERRFILE");
 
+  u8_string log_suffix = ".log", err_suffix = NULL;
   /* Handle log file configurations which just specify the suffix */
   if ( (log_file) && (log_file[0] == '.') && (isalnum(log_file[1])) ) {
-    u8_string full_logfile = (run_prefix) ?
-      (u8_string_append(run_prefix,job_id,log_file,NULL)) :
-      (u8_string_append(job_id,log_file,NULL));
-    u8_free(log_file);
-    log_file=full_logfile;}
+    log_suffix=log_file;
+    log_file=NULL;}
+  else NO_ELSE;
 
-  if ( (err_file) && (err_file[0] == '.') && (isalnum(err_file[1])) ) {
-    u8_string full_errfile = (run_prefix) ?
-      (u8_string_append(run_prefix,job_id,err_file,NULL)) :
-      (u8_string_append(job_id,err_file,NULL));
-    u8_free(err_file);
-    err_file=full_errfile;}
+  if (err_file) {
+    if ( (err_file[0] == '.') && (isalnum(err_file[1])) ) {
+      err_suffix=err_file;
+      err_file=NULL;}
+    else if ( (strcasecmp(err_file,"yes")==0) || (strcasecmp(err_file,"separate")==0) ) {
+      err_suffix=".err";
+      err_file=NULL;}
+    else NO_ELSE;}
+  else NO_ELSE;
 
   u8_loglevel = xgetenv_int("U8_LOGLEVEL","U8LOGLEVEL","LOGLEVEL",5);
   fast_fail = xgetenv_float("U8_FASTFAIL","U8FASTFAIL","FASTFAIL",fast_fail);
@@ -413,9 +415,22 @@ int main(int argc,char *argv[])
   if (done_file == NULL) done_file = procpath(job_id,"done");
 
   if (log_file == NULL) {
-    if (run_prefix)
-      log_file=u8_mkstring("%s%s.log",run_prefix,job_id);}
-    else log_file=u8_mkstring("%s.log",job_id);
+    if (log_dir) {
+      u8_string logname = u8_mkstring("%s%s",job_id,log_suffix);
+      log_file=u8_mkpath(log_dir,logname);
+      u8_free(logname);}
+    else if (run_prefix)
+      log_file=u8_mkstring("%s%%s",run_prefix,job_id,log_suffix);
+    else log_file=u8_mkstring("%s%s",job_id,log_suffix);}
+
+  if ( (err_file == NULL) && (err_suffix) ) {
+    if (log_dir) {
+      u8_string logname = u8_mkstring("%s%s",job_id,err_suffix);
+      err_file=u8_mkpath(log_dir,logname);
+      u8_free(logname);}
+    else if (run_prefix)
+      err_file=u8_mkstring("%s%s%s",run_prefix,job_id,err_suffix);
+    else err_file=u8_mkstring("%s%s",job_id,err_suffix);}
 
  setup_env:
   /* Setenv for this process */

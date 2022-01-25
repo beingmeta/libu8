@@ -42,7 +42,7 @@ find_control_prefix ( ) {
 }
 spec=$1
 case ${spec} in
-    default|all|tail|logtail|watch|monitor|tailf|logfile|command|cmd)
+    default|all|stop|kill|kill9|restart|pause|continue|resume|hup|log|tail|logtail|watch|monitor|tailf|logfile|command|cmd)
 	cmd=${spec};
 	spec=$2;
 	;;
@@ -120,14 +120,14 @@ case ${cmd} in
 		hup)
 		    kill -HUP ${controller}; break;
 		    ;;
-		exit;
 	    esac;
+	    exit;
 	else
 	    echo "No controller PID found for ${spec}";
 	    exit;
 	fi;
 	;;
-    tail|logtail)
+    log|tail|logtail)
 	if [ ! -f ${ctl_prefix}.log ]; then
 	    echo "The log for '${spec}' is not available";
 	elif [ $# -gt 2 ]; then
