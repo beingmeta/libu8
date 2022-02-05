@@ -386,21 +386,40 @@ AC_C_BIGENDIAN
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
 AC_CHECK_SIZEOF(long long)
-AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(off_t)
 
-# Check whether to use an architecture specific
-dnl if test "x${libdir}" != "x\${exec_prefix}/lib"; then
-dnl  echo using explicit libdir ${libdir};
-dnl elif test ${ac_cv_sizeof_long} -eq 4 && test -d ${prefix}/lib32; then
-dnl   libdir=${prefix}/lib32;
-dnl   echo using libdir ${libdir};
-dnl elif test ${ac_cv_sizeof_long} -eq 8 && test -d ${prefix}/lib64; then
-dnl   libdir=${prefix}/lib64;
-dnl   echo using libdir ${libdir};
-dnl else
-dnl  echo using default libdir ${libdir};
-dnl fi
+AC_CHECK_SIZEOF(void *)
+TRY_LIBNAME=
+
+# Check whether to use an architecture specific libdir
+if test "x${libdir}" != "x\${exec_prefix}/lib"; then
+  echo using explicit libdir ${libdir};
+else case ${target_cpu} in
+     *i386*)
+	TRY_LIBNAME=lib32;
+	;;
+     *64*)
+	TRY_LIBNAME=lib64;
+	;;
+     esac;	
+  if test -n "${TRY_LIBNAME}"; then
+    :;
+  elif test ${ac_cv_sizeof_void_p} -eq 8; then
+    TRY_LIBNAME=lib64;
+  elif test ${ac_cv_sizeof_void_p} -eq 8; then
+    TRY_LIBNAME=lib32;
+  else
+    TRY_LIBNAME=lib;
+  fi;
+  if test -z "${TRY_LIBNAME}"; then
+    echo using default libdir ${libdir};
+  elif test -d /usr/${TRY_LIBNAME} && test -f /usr/${TRY_LIBNAME}/libc.so; then
+    libdir=\${exec_prefix}/${TRY_LIBNAME};
+    echo using libdir ${libdir};
+  else
+    echo using default libdir ${libdir};
+  fi;	 
+fi
 
 AC_HEADER_STAT
 
