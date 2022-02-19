@@ -167,7 +167,6 @@ case ${arg1} in
 	fi;
 	;;
 esac
-if [ -n "${DEBUG}" ]; then echo for ${cmd} on ${jobspec} args=$*; fi
 
 ctl_prefix=
 if [ -z "${jobspec}" ] || [ "${jobspec}" = "." ] || [ "${jobspec}" = "-" ] || [ "${jobspec}" = "_" ]; then
@@ -177,12 +176,12 @@ if [ -z "${jobspec}" ] || [ "${jobspec}" = "." ] || [ "${jobspec}" = "-" ] || [ 
 	echo "u8ctl: No saved control prefix";
 	exit;
     fi;
-elif [ -f "${jobspec}" ] && [ ! -d "${jobspec}" ]; then
-    ctl_prefix=${jobspec$.*};
+elif [ -f "${jobspec}" ] && [ ! -d "${jobspec}" ] && [ "${jobspec%.*}" != "${jobspec}" ]; then
+    # If it's a regular file and has a .suffix, assume it's the ctl_prefix
+    echo "Got it directly";
+    ctl_prefix=${jobspec%.*};
 elif [ -f "${jobspec}.pid" ] || [ -f "${jobspec}.status" ] || [ -f "${jobspec}.cmd" ] || [ -f "${jobspec}.log" ]; then
     ctl_prefix=${jobspec$.*};
-elif ls ${jobspec}.* 2> /dev/null 1> /dev/null; then
-    ctl_prefix=${jobspec};
 else
     for suffix in pid ppid cmd log status; do
 	ctl_prefix=$(find_control_prefix ${jobspec} ${suffix});
@@ -214,6 +213,10 @@ else
     echo "  Couldn't locate control files for '${jobspec}'";
     usage;
     exit;
+fi;
+
+if [ -n "${DEBUG}" ]; then
+    echo "u8ctl:" jobspec=${jobspec} ctl_prefix=${ctl_prefix} cmd=${cmd};
 fi;
 
 if [ -f ${ctl_prefix}.${cmd} ]; then
