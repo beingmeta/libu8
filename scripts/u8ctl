@@ -1,4 +1,8 @@
 #!/bin/sh
+usage() {
+    echo "u8ctl *jobid* *cmd=list* args..."
+    echo "u8ctl *cmd* *jobid* args..."
+}
 getabspath ( ) {
     local path=$1
     case ${path} in
@@ -15,7 +19,7 @@ find_control_prefix ( ) {
     local dir=${3}
     local base=${arg%.*}
     local ctl_file=${base}.${suffix}
-    if [ -n "${dir}" ]; then
+    if [ -n "${dir}" ] && [ -d "${dir}" ]; then
 	if [ -f "${dir}/${ctl_file}" ]; then
 	    echo "${dir}/${ctl_file}";
 	elif [ -f "${dir}/${ctl_file}.${suffix}" ]; then
@@ -23,7 +27,7 @@ find_control_prefix ( ) {
 	else return 1;
 	fi;
     elif [ -f "${base}.${suffix}" ]; then
-	echo $(dirname $(abspath ${arg}))/$(basename ${base});
+	echo $(dirname $(getabspath ${arg}))/$(basename ${base});
     elif [ -f "_${base}.${suffix}" ]; then
 	echo "_${base}";
     elif [ -f _/${base}.${suffix} ]; then
@@ -40,127 +44,336 @@ find_control_prefix ( ) {
 	return;
     fi;
 }
-spec=$1
-case ${spec} in
-    default|all|stop|kill|kill9|restart|pause|continue|resume|hup|log|tail|logtail|watch|monitor|tailf|logfile|command|cmd)
-	cmd=${spec};
-	spec=$2;
-	;;
-    *)
-	cmd=${2:-default};
-	;;
-esac
-ctl_prefix=
-for suffix in pid ppid cmd log status; do
-    ctl_prefix=$(find_control_prefix ${spec} ${suffix});
-    if [ ! -z "${ctl_prefix}" ]; then break; fi;
-done;
-if [ -z "${ctl_prefix}" ]; then
-    echo "Usage: u8ctl *jobspec* ";
-    echo "  Couldn't locate control files for '${spec}'";
-    exit;
-fi;
-case ${cmd} in
-    default|all)
-	for path in ${ctl_prefix}*; do
-	    if [ ! -z "${path}" ] && [ -f "${path}" ]; then
-		suffix=${path##*.}
-		if [ -z "${suffix}" ]; then
-		    echo "  ${path}=$(cat ${path})";
-		else case ${suffix} in
-			 log)
-			     echo "  ${path}=$(ls -l ${path})";
-			     ;;
-			 *)
-			     echo "  ${path}=$(cat ${path})";
-			     ;;
-		     esac;
-		fi;
+
+check_control_prefix ( ) {
+    local dir=$1;
+    local base=$2;
+    local suffix=$3;
+    if [ -d "${dir}" ]; then
+	if [ -z "${base}" ]; then
+	    if ls ${dir}/*.${suffix} 1> /dev/null 2> /dev/null; then
+		for match in $(ls ${dir}/*${base}*.${suffix}); do
+		    echo ${match%.*};
+		done;
+	    fi;
+	elif ls ${dir}/*${base}*.${suffix} 1> /dev/null 2> /dev/null; then
+	    for match in $(ls ${dir}/*${base}*.${suffix}); do
+		echo ${match%.*};
+	    done;
+	fi;
+    fi;
+}
+	
+search_control_prefix ( ) {
+    local arg=$1
+    local suffix=${2:-pid}
+    local dir=${3}
+    local base=${arg%.*}
+    if [ -n "${dir}" ]; then
+	check_control_prefix "${dir}" "${base}" "${suffix}";
+    fi;
+    check_control_prefix "." "${base}" "${suffix}";
+    check_control_prefix "." "_${base}" "${suffix}";
+    check_control_prefix "_" "${base}" "${suffix}";
+    if [ -z "${dir}" ]; then
+	for dir in "~/.u8run" "${U8_RUNDIR}" "${U8RUNDIR}" ${U8RUNDIRS}; do
+	    if [ -n "${dir}" ] && [ -d "${dir}" ]; then
+		check_control_prefix "${dir}" "${base}" "${suffix}";
 	    fi;
 	done;
+    else
+	return;
+    fi;
+}
+
+search_control_files ( ) {
+    base=$1;
+    for suffix in pid ppid cmd log status; do
+	search_control_prefix "${base}" "${suffix}";
+    done;
+}
+
+show_procinfo() {
+    pid=$1
+    cmd=$2
+    if [ -d /proc/${pid} ]; then
+	if [ "${cmd}" = "head" ]; then
+	    head /proc/${pid}/$3;
+	elif [ "${cmd}" = "more" ]; then
+	    more /proc/${pid}/$3;
+	elif [ -d /proc/${pid}/${cmd} ]; then
+	    ls -l /proc/${pid}/${cmd};
+	elif [ -L /proc/${pid}/${cmd} ]; then
+	    ls -ld /proc/${pid}/${cmd};
+	elif [ -f /proc/${pid}/${cmd} ]; then
+	    cat /proc/${pid}/${cmd};
+	else case ${cmd} in 
+		 stdio|logs)
+		     ls -l /proc/${pid}/fd/0 /proc/${pid}/fd/1 /proc/${pid}/fd/2;
+		     ;;
+	     esac;
+	fi;
+    else echo "Can't get procinfo for pid ${pid}";
+    fi;
+}
+show_ctl_header() {
+    local prefix=$1
+    if [ -f "${prefix}.pid" ]; then
+	fileinfo=$(ls -l "${prefix}.pid");
+	echo "("$(cat ${prefix}.pid)") " ${fileinfo};
+	( cd $(dirname ${prefix}); ls $(basename ${prefix}).* );
+    else
+	ls ${prefix}.*;
+    fi;
+}
+
+jobspec=
+cmd=
+if [ $# -gt 0 ]; then
+    arg1=$1;
+    shift;
+else
+    arg1="default";
+fi;
+
+case ${arg1} in
+    list)
+	matches=$(search_control_files "$1" | sort | uniq)
+	for match in ${matches}; do
+	    echo "  " $(basename ${match}) "...\t at" $(getabspath ${match});
+	done;
+	exit;
 	;;
-    stop|kill)
-	if [ -f ${ctl_prefix}.ppid ]; then
-	    kill $(cat ${ctl_prefix}.ppid);
-	elif [ -f ${ctl_prefix}.pid ]; then
-	    kill $(cat ${ctl_prefix}.pid);
+    default|all|stop|kill|kill9|restart|pause|continue|resume|hup|log|tail|logtail|watch|monitor|tailf|logfile|command|cmd|proc|htop|top|perf|perftop|gdb|knogdb|pid|ppid|err|status)
+	# If the jobspec is a command, the next thing should be the jobspec
+	cmd=${arg1};
+	if [ $# -gt 0 ]; then
+	    jobspec=$1;
+	    shift;
 	else
-	    echo "No PID found for ${spec}";
-	    exit;
+	    jobspec=;
 	fi;
-	;;
-    kill9)
-	if [ -f ${ctl_prefix}.ppid ]; then
-	    kill -9 $(cat ${ctl_prefix}.ppid);
-	elif [ -f ${ctl_prefix}.pid ]; then
-	    kill -9 $(cat ${ctl_prefix}.pid);
-	else
-	    echo "No PID found for ${spec}";
-	    exit;
-	fi;
-	;;
-    restart)
-	if [ -f ${ctl_prefix}.ppid ] && [ -f ${ctl_prefix}.pid ]; then
-	    kill $(cat ${ctl_prefix}.pid);
-	else
-	    echo "Can't restart job for ${spec}";
-	    exit;
-	fi;
-	;;
-    pause|continue|resume|hup)
-	if [ -f ${ctl_prefix}.ppid ]; then
-	    controller = $(cat ${ctl_prefix}.ppid);
-	    case ${cmd} in
-		pause|suspend)
-		    kill -STOP ${controller}; break;
-		    ;;
-		resume|continue)
-		    kill -CONT ${controller}; break;
-		    ;;
-		hup)
-		    kill -HUP ${controller}; break;
-		    ;;
-	    esac;
-	    exit;
-	else
-	    echo "No controller PID found for ${spec}";
-	    exit;
-	fi;
-	;;
-    log|tail|logtail)
-	if [ ! -f ${ctl_prefix}.log ]; then
-	    echo "The log for '${spec}' is not available";
-	elif [ $# -gt 2 ]; then
-	    tail -$3 ${ctl_prefix}.log;
-	else 
-	    tail ${ctl_prefix}.log;
-	fi;
-	;;
-    watch|monitor|tailf)
-	if [ ! -f ${ctl_prefix}.log ]; then
-	    echo "The log for '${spec}' is not available";
-	elif [ $# -gt 2 ]; then
-	    tail -f -$3 ${ctl_prefix}.log;
-	else 
-	    tail -f ${ctl_prefix}.log;
-	fi;
-	;;
-    logfile)
-	if [ -L ${ctl_prefix}.log ]; then
-	    linktext=$(readlink ${ctl_path}.log);
-	    echo $(getabspath ${linktext});
-	elif [ -f ${ctl_prefix}.log ]; then
-	    echo $(getabspath ${ctl_path}.log);
-	else echo "The command for '${spec}' is not available"; fi;
-	;;
-    command|cmd)
-	if [ -f ${ctl_prefix}.cmd ]; then
-	    cat ${ctl_prefix}.cmd;
-	else echo "The command for '${spec}' is not available"; fi;
 	;;
     *)
-	if [ -f ${ctl_prefix}.${cmd} ]; then
-	    cat ${ctl_prefix}.${cmd};
-	else echo "The command '${cmd}' wasn't recognized"; fi;
+	if which "u8ctl_${arg1}" 1> /dev/null 2> /dev/null; then
+	    cmd=$arg1;
+	else
+	    jobspec=${arg1};
+	    if [ $# -gt 0 ]; then
+		cmd=$1;
+		shift;
+	    else cmd="default";
+	    fi;
+	fi;
 	;;
 esac
+if [ -n "${DEBUG}" ]; then echo for ${cmd} on ${jobspec} args=$*; fi
+
+ctl_prefix=
+if [ -z "${jobspec}" ] || [ "${jobspec}" = "." ] || [ "${jobspec}" = "-" ] || [ "${jobspec}" = "_" ]; then
+    if [ -f ./.u8ctl_prefix ]; then
+	ctl_prefix=$(cat ./.u8ctl_prefix);
+    else
+	echo "u8ctl: No saved control prefix";
+	exit;
+    fi;
+elif [ -f "${jobspec}" ] && [ ! -d "${jobspec}" ]; then
+    ctl_prefix=${jobspec$.*};
+elif [ -f "${jobspec}.pid" ] || [ -f "${jobspec}.status" ] || [ -f "${jobspec}.cmd" ] || [ -f "${jobspec}.log" ]; then
+    ctl_prefix=${jobspec$.*};
+elif ls ${jobspec}.* 2> /dev/null 1> /dev/null; then
+    ctl_prefix=${jobspec};
+else
+    for suffix in pid ppid cmd log status; do
+	ctl_prefix=$(find_control_prefix ${jobspec} ${suffix});
+	if [ ! -z "${ctl_prefix}" ]; then break;
+	fi;
+    done;
+    if [ -z "${ctl_prefix}" ]; then
+	ctl_prefixes=$(search_control_files ${jobspec} | sort | uniq);
+	if [ -n "${ctl_prefixes}" ]; then
+	    ctl_prefix_count=$(echo "${ctl_prefixes}" | wc | awk '{print $1}' -);
+	    if [ "${ctl_prefix_count}" = "1" ]; then
+		echo "# u8ctl: Using control prefix '${ctl_prefixes}'" >&2;
+		ctl_prefix=${ctl_prefixes};
+	    else
+		echo "u8ctl: '${jobspec}' matches ${ctl_prefix_count} control prefixes:";
+		for prefix in ${ctl_prefixes}; do
+		    echo "    ${prefix}";
+		done;
+		exit;
+	    fi;
+	fi;
+    fi;
+fi;
+if [ -n "${ctl_prefix}" ]; then
+    echo "${ctl_prefix}" > ./.u8ctl_prefix || echo "Couldn't save control prefix ${ctl_prefix}";
+    if [ -n "${VERBOSE}" ]; then show_ctl_header ${ctl_prefix}; fi;
+    echo "${ctl_prefix}" > ./.ctl_prefix || echo "Couldn't save control prefix ${ctl_prefix}";
+else
+    echo "  Couldn't locate control files for '${jobspec}'";
+    usage;
+    exit;
+fi;
+
+if [ -f ${ctl_prefix}.${cmd} ]; then
+    cat ${ctl_prefix}.${cmd};
+    echo;
+else case ${cmd} in
+	 default|all)
+	     for path in ${ctl_prefix}*; do
+		 if [ ! -z "${path}" ] && [ -f "${path}" ]; then
+		     suffix=${path##*.}
+		     if [ -z "${suffix}" ]; then
+			 echo "  ${path}=$(cat ${path})";
+		     else case ${suffix} in
+			      log)
+				  echo "  ${path}=$(ls -l ${path})";
+				  ;;
+			      *)
+				  echo "  ${path}=$(cat ${path})";
+				  ;;
+			  esac;
+		     fi;
+		 fi;
+	     done;
+	     ;;
+	 stop|kill)
+	     if [ -f ${ctl_prefix}.ppid ]; then
+		 kill $(cat ${ctl_prefix}.ppid);
+	     elif [ -f ${ctl_prefix}.pid ]; then
+		 kill $(cat ${ctl_prefix}.pid);
+	     else
+		 echo "No PID found for ${jobspec}";
+		 exit;
+	     fi;
+	     ;;
+	 kill9)
+	     if [ -f ${ctl_prefix}.ppid ]; then
+		 kill -9 $(cat ${ctl_prefix}.ppid);
+	     elif [ -f ${ctl_prefix}.pid ]; then
+		 kill -9 $(cat ${ctl_prefix}.pid);
+	     else
+		 echo "No PID found for ${jobspec}";
+		 exit;
+	     fi;
+	     ;;
+	 proc|info)
+	     pid=$(cat ${ctl_prefix}.pid || echo);
+	     if [ -n "${pid}" ]; then
+		 show_procinfo ${pid} $1;
+	     else echo "Can't determine PID for ${ct_prefix}";
+	     fi;
+	     ;;
+	 restart)
+	     if [ -f ${ctl_prefix}.ppid ] && [ -f ${ctl_prefix}.pid ]; then
+		 kill $(cat ${ctl_prefix}.pid);
+	     else
+		 echo "Can't restart job for ${jobspec}";
+		 exit;
+	     fi;
+	     ;;
+	 pause|continue|resume|hup)
+	     if [ -f ${ctl_prefix}.ppid ]; then
+		 controller = $(cat ${ctl_prefix}.ppid);
+		 case ${cmd} in
+		     pause|suspend)
+			 kill -STOP ${controller}; break;
+			 ;;
+		     resume|continue)
+			 kill -CONT ${controller}; break;
+			 ;;
+		     hup)
+			 kill -HUP ${controller}; break;
+			 ;;
+		 esac;
+		 exit;
+	     else
+		 echo "No controller PID found for ${jobspec}";
+		 exit;
+	     fi;
+	     ;;
+	 log|tail|logtail)
+	     if [ ! -f ${ctl_prefix}.log ]; then
+		 echo "The log for '${jobspec}' is not available";
+	     elif [ $# -gt 2 ]; then
+		 tail -$3 ${ctl_prefix}.log;
+	     else 
+		 tail ${ctl_prefix}.log;
+	     fi;
+	     ;;
+	 watch|monitor|tailf)
+	     if [ ! -f ${ctl_prefix}.log ]; then
+		 echo "The log for '${jobspec}' is not available";
+	     elif [ $# -gt 2 ]; then
+		 tail -f -$3 ${ctl_prefix}.log;
+	     else 
+		 tail -f ${ctl_prefix}.log;
+	     fi;
+	     ;;
+	 logfile)
+	     if [ -L ${ctl_prefix}.log ]; then
+		 linktext=$(readlink ${ctl_path}.log);
+		 echo $(getabspath ${linktext});
+	     elif [ -f ${ctl_prefix}.log ]; then
+		 echo $(getabspath ${ctl_path}.log);
+	     else echo "The command for '${jobspec}' is not available"; fi;
+	     ;;
+	 htop|top)
+	     if which htop 2> /dev/null 1> /dev/null; then
+		 exec htop -p $(cat ${ctl_prefix}.pid);
+	     elif which top 2> /dev/null 1> /dev/null; then
+		 exec htop -p $(cat ${ctl_prefix}.pid);
+	     fi;
+	     ;;
+	 perftop)
+	     if which perf 2> /dev/null 1> /dev/null; then
+		 exec perf top -p $(cat ${ctl_prefix}.pid);
+	     else
+		 echo "No perf command in path";
+	     fi;
+	     ;;
+	 perf)
+	     if which perf 2> /dev/null 1> /dev/null; then
+		 if [ $# -eq 0 ]; then
+		     exec perf top $* -p $(cat ${ctl_prefix}.pid);
+		 else
+		     perf_cmd=$1; shift;
+		     exec perf ${perf_cmd} -p $(cat ${ctl_prefix}.pid) $*;
+		 fi;
+	     else
+		 echo "No perf command in path";
+	     fi;
+	     ;;
+	 gdb)
+	     if which gdb 2> /dev/null 1> /dev/null; then
+		 exec gdb -p $(cat ${ctl_prefix}.pid) $*;
+	     else
+		 echo "No gdb command in path";
+	     fi;
+	     ;;
+	 knogdb)
+	     if which knogdb 2> /dev/null 1> /dev/null; then
+		 exec knogdb -p $(cat ${ctl_prefix}.pid) $*;
+	     else
+		 echo "No gdb command in path";
+	     fi;
+	     ;;
+	 command|cmd)
+	     if [ -f ${ctl_prefix}.cmd ]; then
+		 cat ${ctl_prefix}.cmd;
+	     else echo "The command for '${jobspec}' is not available";
+	     fi;
+	     ;;
+	 *)
+	     if which "u8ctl_{cmd}" 1> /dev/null 2> /dev/null; then
+		 if [ -z "${ctl_prefix}" ]; then
+		     exec u8ctl_{cmd} "-"  $*;
+		 else exec u8ctl_{cmd} "${ctl_prefix}"  $*;
+		 fi;
+	     else
+		 echo "The command '${cmd}' wasn't recognized";
+	     fi;
+	     ;;
+     esac
+fi;
