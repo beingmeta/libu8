@@ -120,9 +120,6 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
     return bytes_read;
   /* Update the buflen to reflect what we read from the socket */
   xf->u8_xbuflive=xf->u8_xbuflive+bytes_read;
-  /* Do the conversion.  First we set up _reader_ and _limit_ to scan
-     the data we just read from the socket */
-  reader=xf->u8_xbuf; limit=reader+xf->u8_xbuflive;
   /* Now we initialize a temporary output stream from our input
      buffer, arranging the output to write to the end of the valid
      input. Conversion will write to this output stream, filling up
@@ -132,12 +129,26 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
                     (((xf->u8_streaminfo)&(U8_STREAM_MALLOCD))?
                      (U8_STREAM_MALLOCD):
                      (U8_FIXED_STREAM)) );}
-  /* Now we do the actual conversion, where u8_convert writes into the
-     string stream passed it as its first argument. If this has any trouble,
-     it will stop and reader will hold the most recent conversion state. */
-  convert_val=
-    u8_convert(xf->u8_xencoding,(xf->u8_streaminfo&U8_STREAM_CRLFS),
-               &tmpout,&reader,limit);
+  reader=xf->u8_xbuf; limit=reader+xf->u8_xbuflive;
+  u8_encoding enc = xf->u8_xencoding;
+  if (enc == NULL) {
+    u8_byte *scan=xf->u8_xbuf+((xf->u8_xbuflive)-1), *start=xf->u8_xbuf;
+    while ( (scan>start) && (*scan>=0x80) && (((*scan)&0x40)==0) ) scan--;
+    if (scan > start) {
+      /* Scan points to just after the last complete UTF-8 character sequence */
+      if (*scan<0x80) scan++;
+      u8_putn(&tmpout,xf->u8_xbuf,scan-xf->u8_xbuf);
+      convert_val=scan-xf->u8_xbuf;}}
+  else {
+    /* We need to use encgetc to read from the raw data, setting up
+       _reader_ and _limit_ to scan the data we just read from the
+       socket */
+    /* Now we do the actual conversion, where u8_convert writes into the
+       string stream passed it as its first argument. If this has any trouble,
+       it will stop and reader will hold the most recent conversion state. */
+    convert_val=
+      u8_convert(xf->u8_xencoding,(xf->u8_streaminfo&U8_STREAM_CRLFS),
+                 &tmpout,&reader,limit);}
   /* Now we start updating the input stream to reflect all of the new
      data (and possibly a new buffer) */
   if (((start)!=(tmpout.u8_outbuf)) &&
@@ -158,7 +169,7 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
   /* Now, overwrite what you've converted with what you haven't converted
      yet and updated the buflen. */
   bytes_converted=reader-xf->u8_xbuf;
-  memmove(xf->u8_xbuf,xf->u8_xbuf+bytes_converted,xf->u8_xbuflive-bytes_converted);
+p  memmove(xf->u8_xbuf,xf->u8_xbuf+bytes_converted,xf->u8_xbuflive-bytes_converted);
   xf->u8_xbuflive=xf->u8_xbuflive-bytes_converted;
   if (convert_val<0) {
     /* If you erred, return the errval */
