@@ -138,7 +138,8 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
       /* Scan points to just after the last complete UTF-8 character sequence */
       if (*scan<0x80) scan++;
       u8_putn(&tmpout,xf->u8_xbuf,scan-xf->u8_xbuf);
-      convert_val=scan-xf->u8_xbuf;}}
+      convert_val=scan-xf->u8_xbuf;
+      reader=scan;}}
   else {
     /* We need to use encgetc to read from the raw data, setting up
        _reader_ and _limit_ to scan the data we just read from the
@@ -169,7 +170,7 @@ U8_EXPORT int u8_fill_xinput(struct U8_XINPUT *xf)
   /* Now, overwrite what you've converted with what you haven't converted
      yet and updated the buflen. */
   bytes_converted=reader-xf->u8_xbuf;
-p  memmove(xf->u8_xbuf,xf->u8_xbuf+bytes_converted,xf->u8_xbuflive-bytes_converted);
+  memmove(xf->u8_xbuf,xf->u8_xbuf+bytes_converted,xf->u8_xbuflive-bytes_converted);
   xf->u8_xbuflive=xf->u8_xbuflive-bytes_converted;
   if (convert_val<0) {
     /* If you erred, return the errval */
