@@ -3,8 +3,7 @@
 **libu8** is a portability and utility library written in modern C for
 Unix-based platforms. *libu8* is licensed under the
 [LGPL](https://www.gnu.org/licenses/lgpl.html) and the GPL
-[version 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html)
-or [later](https://www.gnu.org/licenses/gpl.html).  You can find the
+[version 2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.html).  You can find the
 source to libu8 on [github](https://github.com/beingmeta/libu8).
 
 
@@ -16,13 +15,11 @@ Unix-based platforms. libu8 is licensed under the LGPL (V2.1) and GPL
 
 **libu8** provides:
 
-* string utilities for portably working with UTF-8 encodings
+* string utilities for portably working with UTF-8 encodings and converting to and from a wide variety of other text encodings;
 
-* stream-based text I/O using UTF-8 internally but allowing
-  output to multiple encodings
+* stream-based text I/O using UTF-8 internally but supporting automatic conversion to and from other encodings;
 
-* a client networking library for socket io, connection pools, and
-simple hostname lookup;
+* an extensible printf (`u8_printf`) function including output to strings;
 
 * extensible and customizable logging functions (using `u8_printf`);
 
@@ -32,12 +29,13 @@ simple hostname lookup;
 * an exception handling library using `setjmp`/`longjmp` with
   unwinds and dynamic error catching;
 
-* signal handlers for turning synchronous signals into exceptions;
+* signal handlers for turning signals into exceptions;
 
-* a server networking library for lightweight multi-threaded server
-  implementation.
+* a client networking library for socket io, connection pools, and
+simple hostname lookup;
 
-* an extensible printf (`u8_printf`)  function including output to strings;
+* a server networking library for lightweight multi-threaded high-performance server
+  implementation;
 
 * various hash and digest functions, including MD5, Google's cityhash,
   and various SHAx functions;
@@ -50,7 +48,7 @@ simple hostname lookup;
 
 * wrappers for accessing file and directory contents and metadata;
 
-* support for lookup up and interpreting named character entities;
+* support for lookup up and interpretation of named character entities;
 
 **libu8** is especially intended for software which uses UTF-8
 internally but may interact with applications and services employing
