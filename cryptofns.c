@@ -501,7 +501,9 @@ U8_EXPORT unsigned char *u8_encrypt
     (1,cipher,key,keylen,iv,ivlen,
      (u8_block_reader)u8_bbreader,(u8_block_writer)u8_bbwriter,
      &in,&out,"u8_encrypt");
-  if (bytecount<0) return NULL;
+  if (bytecount<0) {
+    u8_free(out.u8_buf);
+    return NULL;}
   else *result_len=bytecount;
   return out.u8_buf;
 }
@@ -525,7 +527,9 @@ U8_EXPORT unsigned char *u8_decrypt
     (0,cipher,key,keylen,iv,ivlen,
      (u8_block_reader)u8_bbreader,(u8_block_writer)u8_bbwriter,
      &in,&out,"u8_decrypt");
-  if (bytecount<0) return NULL;
+  if (bytecount<0) {
+    u8_free(out.u8_buf);
+    return NULL;}
   else *result_len=bytecount;
   return out.u8_buf;
 }
