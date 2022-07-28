@@ -78,6 +78,17 @@ static void fill_bytebuf(struct U8_BYTEBUF *out,
 
 static u8_context OPENSSL_CRYPTIC="u8_cryptic/OpenSSL";
 
+static char *evp_error(u8_string tag)
+{
+  char buf[512];
+  unsigned long err=ERR_get_error();
+  buf[0]='\0';
+  if (err) {
+    ERR_error_string_n(err,buf,512);
+    return (char *) u8_mkstring("%s:%s",tag,buf);}
+  else return (char *) u8_mkstring("%s:no error",tag);
+}
+
 U8_EXPORT ssize_t u8_cryptic
 (int do_encrypt,const char *cname,
  const unsigned char *key,int keylen,
@@ -136,9 +147,7 @@ U8_EXPORT ssize_t u8_cryptic
       if (out) u8_free(out);}
     u8_free(bb.u8_buf);
     if (retval<0) {
-      unsigned long err=ERR_get_error(); char buf[512];
-      buf[0]='\0'; ERR_error_string_n(err,buf,512);
-      u8_seterr(u8_InternalCryptoError,OPENSSL_CRYPTIC,u8_fromlibc((char *)buf));
+      u8_seterr(u8_InternalCryptoError,OPENSSL_CRYPTIC,evp_error(cname));
       ERR_clear_error();}
     if (ctx) EVP_PKEY_CTX_free(ctx);
     if (pkey)  EVP_PKEY_free(pkey);
@@ -170,7 +179,7 @@ U8_EXPORT ssize_t u8_cryptic
       if (retval==0)
 	u8_seterr(u8_CipherInit_Failed,
 		  ((caller)?(caller):(OPENSSL_CRYPTIC)),
-		  u8_strdup(cname));
+		  evp_error(cname));
       else {
 	retval=EVP_CIPHER_CTX_set_key_length(ctx,keylen);
 	if (retval==0)
@@ -198,9 +207,7 @@ U8_EXPORT ssize_t u8_cryptic
 	  break;}
 	else totalin=totalin+inlen;
 	if (!(EVP_CipherUpdate(ctx,outbuf,&outlen,inbuf,inlen))) {
-	  char *details=u8_malloc(256);
-	  unsigned long err=ERR_get_error();
-	  ERR_error_string_n(err,details,256);
+	  char *details=(char *)evp_error(cname);
 	  if (ctx) EVP_CIPHER_CTX_free(ctx);
 	  return u8_reterr(u8_InternalCryptoError,
 			   ((caller)?(caller):((u8_context)"u8_cryptic")),
@@ -215,9 +222,7 @@ U8_EXPORT ssize_t u8_cryptic
 	  writer(outbuf,outlen,writestate);
 	  totalout=totalout+outlen;}}
       if (!(EVP_CipherFinal(ctx,outbuf,&outlen))) {
-	char *details=u8_malloc(256);
-	unsigned long err=ERR_get_error();
-	ERR_error_string_n(err,details,256);
+	char *details=evp_error(cname);
 	if (ctx) EVP_CIPHER_CTX_free(ctx);
 	return u8_reterr(u8_InternalCryptoError,
 			 ((caller)?(caller):(OPENSSL_CRYPTIC)),
